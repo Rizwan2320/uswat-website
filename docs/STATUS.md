@@ -1,11 +1,11 @@
 # Status
 
-Updated: 2026-11-06 (Fri) 12:00 PKT
+Updated: 2026-11-06 (Fri) PKT
 
 | Phase | State | Gate |
 | --- | --- | --- |
 | P0 Decide and verify | Spike S-1 done; waiting on user inputs | G0 pending (see below) |
-| P1 Foundation | In progress | G1 pending |
+| P1 Foundation | Code done and checked locally; CI and live URL pending | G1 partly met, see `docs/evidence/G1/g1-report.md` |
 | P2 to P8 | Not started | |
 
 ## G0 checklist
@@ -18,5 +18,15 @@ Updated: 2026-11-06 (Fri) 12:00 PKT
 - [ ] Spike items not run: per-version access, preview, R2/Blob, Vercel/Neon, Node 24/26, Next 16.4.x (P1 or after accounts exist)
 - [x] Push to GitHub works (2026-11-06)
 
+## G1 checklist
+- [x] App skeleton in `apps/web`: Payload on Postgres, EN/UR localization, migrations, env validation
+- [x] `/healthz` and `/readyz` (200 and 503 both observed)
+- [x] Typecheck, lint, 6 tests, production build pass locally; fresh clone green in 25 s (warm store)
+- [ ] CI result on GitHub (workflow pushed; result not yet seen)
+- [ ] Docker path (`ops/`) run: no Docker daemon in the sandbox
+- [ ] Skeleton URL live: needs the user's Vercel and Neon accounts
+
 ## Next step
-Start P1: generate the app from the `v3.93.0` website template, set `agentRules: false`, wire CI. User decided on 2026-11-06 to proceed to P1 while still waiting on the DCST confirmation and the content export; G0 stays open until both arrive.
+1. Confirm the first CI run is green after the push; fix if not.
+2. User: Chairman DCST confirmation (Q2), content export or PDFs (Q3), paid-builder answer, brand assets. G0 stays open until Q2 and Q3 arrive.
+3. Then P2 (content model and verified data) per plan section 11. Facts without a source stay labelled Sample.
