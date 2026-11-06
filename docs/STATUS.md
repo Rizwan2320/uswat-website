@@ -22,11 +22,10 @@ Updated: 2026-11-06 (Fri) PKT
 - [x] App skeleton in `apps/web`: Payload on Postgres, EN/UR localization, migrations, env validation
 - [x] `/healthz` and `/readyz` (200 and 503 both observed)
 - [x] Typecheck, lint, 6 tests, production build pass locally; fresh clone green in 25 s (warm store)
-- [ ] CI result on GitHub (workflow pushed; result not yet seen)
+- [x] CI green on GitHub (run 42212230542, commit 38cd496: install, typecheck, lint, migrate, tests, build)
 - [ ] Docker path (`ops/`) run: no Docker daemon in the sandbox
 - [ ] Skeleton URL live: needs the user's Vercel and Neon accounts
 
 ## Next step
-1. Confirm the first CI run is green after the push; fix if not.
-2. User: Chairman DCST confirmation (Q2), content export or PDFs (Q3), paid-builder answer, brand assets. G0 stays open until Q2 and Q3 arrive.
-3. Then P2 (content model and verified data) per plan section 11. Facts without a source stay labelled Sample.
+1. User: Chairman DCST confirmation (Q2), content export or PDFs (Q3), paid-builder answer, brand assets. G0 stays open until Q2 and Q3 arrive.
+2. Then P2 (content model and verified data) per plan section 11. Facts without a source stay labelled Sample.

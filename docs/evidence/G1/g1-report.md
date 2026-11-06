@@ -19,7 +19,6 @@ Date: 2026-11-06. Environment: the build sandbox (Linux, Node 22.23.4, pnpm 11.2
 
 ## Not run (and why)
 
-- **GitHub Actions CI.** The workflow is in `.github/workflows/ci.yml` and mirrors the local sequence, but it has not executed until the push; its result is recorded in `docs/STATUS.md` once seen.
 - **Docker.** `ops/docker-compose.yml` and `ops/Dockerfile` were written but not run: this sandbox has no Docker daemon. The 15-minute README path that uses `docker compose` is therefore unverified; the same steps were run against a directly installed Postgres.
 - **The 15-minute claim from a cold machine.** The 25 s figure had a warm package store. A cold install was not timed.
 - **Skeleton URL live (Vercel and Neon).** Needs the user's accounts. Not run. Predicted Neon cold-start (P1-a) therefore remains untested.
@@ -31,7 +30,7 @@ Date: 2026-11-06. Environment: the build sandbox (Linux, Node 22.23.4, pnpm 11.2
 | G1 criterion | State |
 | --- | --- |
 | Fresh clone starts in under 15 minutes by README alone | Partly: steps run without Docker in 25 s warm; Docker path and cold timing not run |
-| CI passes | Not run yet (pending first push) |
+| CI passes | Met: run 42212230542 on commit 38cd496 succeeded (Postgres 17 service, all steps) |
 | Skeleton URL live | Not run (needs user's Vercel and Neon accounts) |
 | Readiness endpoint reports the database | Met (200 and 503 both observed) |
 
