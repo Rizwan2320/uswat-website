@@ -1,0 +1,11 @@
+# ADR-0004 Free demo hosting
+- Status: Proposed; waiting for the user's answer on the Vercel commercial-use rule
+- Context: Plan v2 section 9. Vercel Hobby is for non-commercial personal use.
+- Decision: Vercel Hobby, Neon Free and Cloudflare R2; fallback on an Oracle Always Free VM with Docker Compose.
+- Alternatives considered: Render Free, Cloudflare Workers Free, Oracle only.
+- Evidence: provider limits read on 2026-11-05 (plan section 9.1). Not yet run on any host.
+- Consequences: Free tiers sleep and have no SLA.
+- Cost of reversal: Low (same container, env vars only).
+- Reversal trigger: commercial rule cannot be cleared, or limits are hit.
+- Owner: user. Review date: end of P0.
+- Prediction: P0-a, P1-a.

@@ -1,0 +1,11 @@
+# ADR-0003 Own design tokens with Tailwind
+- Status: Accepted 2026-11-06
+- Context: Plan v2 section 5; mockup defines the look.
+- Decision: Tokens in one package, Tailwind 4 for utilities, no component-library lock-in.
+- Alternatives considered: Bootstrap, a full component library.
+- Evidence: Tailwind 4.3.4 resolves and builds in the template.
+- Consequences: We maintain components ourselves.
+- Cost of reversal: Medium.
+- Reversal trigger: maintenance exceeds one engineer-day a month.
+- Owner: user / Claude. Review date: end of P2.
+- Prediction: P2-a (Urdu layout fixes) in `docs/predictions.md`.

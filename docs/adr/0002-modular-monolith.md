@@ -1,0 +1,11 @@
+# ADR-0002 Modular monolith
+- Status: Accepted 2026-11-06
+- Context: Plan v2 sections 2 and 7.
+- Decision: One Next.js app with Payload embedded, one PostgreSQL, one object store. No microservices, Kafka, Kubernetes or Elasticsearch.
+- Alternatives considered: separate CMS and frontend services; microservices.
+- Evidence: spike S-1 runs admin, API and site in one process.
+- Consequences: One deploy unit couples releases.
+- Cost of reversal: Medium; modules are separated by folder and interface.
+- Reversal trigger: a module needs independent scaling shown by measurement.
+- Owner: user / Claude. Review date: each admissions season.
+- Prediction: none.
