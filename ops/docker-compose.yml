@@ -1,0 +1,18 @@
+# Local Postgres only. NOT RUN in the build sandbox (no Docker daemon) - see docs/evidence/G1.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: uswat
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d uswat']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+volumes:
+  pgdata:
