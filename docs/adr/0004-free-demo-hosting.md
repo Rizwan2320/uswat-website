@@ -1,5 +1,5 @@
 # ADR-0004 Free demo hosting
-- Status: Proposed; waiting for the user's answer on the Vercel commercial-use rule
+- Status: Accepted 2026-11-06 for the demo only. User stated (2026-11-06): Vercel is used only to present the prototype; there is no plan to host the real university website on it. Residual condition: Hobby is for non-commercial use, so nobody may be paid for building or hosting the demo (user has not yet confirmed this point).
 - Context: Plan v2 section 9. Vercel Hobby is for non-commercial personal use.
 - Decision: Vercel Hobby, Neon Free and Cloudflare R2; fallback on an Oracle Always Free VM with Docker Compose.
 - Alternatives considered: Render Free, Cloudflare Workers Free, Oracle only.
