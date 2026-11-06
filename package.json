@@ -1,0 +1,22 @@
+{
+  "name": "uswat-website",
+  "private": true,
+  "version": "0.1.0",
+  "description": "University of Swat website and CMS (competition prototype)",
+  "packageManager": "pnpm@11.28.11",
+  "engines": {
+    "node": "^22.23.4 || >=24.22.1",
+    "pnpm": "^11"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @uswat/web dev",
+    "build": "pnpm --filter @uswat/web build",
+    "start": "pnpm --filter @uswat/web start",
+    "typecheck": "pnpm --filter @uswat/web typecheck",
+    "lint": "pnpm --filter @uswat/web lint",
+    "test:unit": "pnpm --filter @uswat/web test:unit",
+    "test:int": "pnpm --filter @uswat/web test:int",
+    "db:migrate": "pnpm --filter @uswat/web db:migrate",
+    "db:migrate:create": "pnpm --filter @uswat/web db:migrate:create"
+  }
+}
