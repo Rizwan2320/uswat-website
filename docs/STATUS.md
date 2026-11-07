@@ -26,7 +26,8 @@ Updated: 2026-11-07 (Sat) PKT
 - [x] CI green on GitHub (run 42212230542, commit 38cd496: install, typecheck, lint, migrate, tests, build)
 - [ ] Docker path (`ops/`) run: no Docker daemon in the sandbox
 - [x] Neon project `uswat-website` (shiny-pine-02268194, Singapore) and Vercel project `uswat-website` created; env vars set; migration applied by the Vercel build (ADR-0005)
-- [ ] Skeleton URL live: BLOCKED. Build is READY but app routes (`/`, `/healthz`, `/readyz`, `/admin`) return the platform 404 on https://uswat-website.vercel.app while static `/robots.txt` returns 200. `/readyz` 200 not seen. Cause unknown; Node 26.x on Vercel is the first thing to test (set Node 24.x or 22.x in project settings), then check the dashboard Functions tab.
+- [x] Skeleton URL live (2026-11-07): https://uswat-website.vercel.app. `/healthz` 200, `/readyz` 200 with database ok, `/` 200 (still the stock Payload template page). Needed Node 24.x in the Vercel project settings; Node 26.x gave platform 404s on every app route. Checked through the Vercel connector only. Deployment Protection (Vercel login) is ON, so the public cannot open it yet: turn it off before judges or a presentation (user decision).
+- [ ] Not run: P1-a (Neon cold-start timing), Playwright, Docker path, a check from an anonymous browser.
 
 ## Inputs received 2026-11-07
 - `Swat_Plan_v2_Addendum_Templates_Architecture_Challenges.md` (project doc). Where it disagrees with v2, it wins; section 17 lists the edits. Read before P3 to P5.
@@ -35,6 +36,6 @@ Updated: 2026-11-07 (Sat) PKT
 - Decision needed before P4: the addendum puts crawl data in `/scripts/import/data/` of this public repo. That would publish staff emails and phone numbers. Keep data out of the repo, or commit only a scrubbed subset.
 
 ## Next step
-1. Skeleton URL: app routes 404 on Vercel (see G1). Try Node 24.x or 22.x in project settings, then check the Functions tab.
+1. Optional: narrow `engines.node` to `^24` so Vercel cannot auto-upgrade to 26 again (not done).
 2. P2 (design system and shell): needs the brand assets (crest, confirmed names, address, phone) and a decision on which look wins (mockup palette per plan, or old-site styling).
 3. User: written DCST confirmation, the organized data pack, the crest and photographs.
