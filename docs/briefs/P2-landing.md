@@ -6,7 +6,7 @@ Date: 2026-11-07. Decision (user): the mockup wins; this is a redesign, not a re
 Built under the `swat-homepage-nextjs` skill and ADR-0006. Where this brief disagrees, the skill and ADR win:
 - Pages live in the `(site)` route group; components in `apps/web/src/site/components`, typed content in `src/site/content`, getters in `src/site/lib`.
 - Fonts: Playfair Display (headings), Inter (body), Noto Nastaliq Urdu (translated chrome only). Source Serif 4 is removed.
-- The hero IS a carousel (4 slides, 6 s autoplay, pause on hover/focus/button, reduced-motion safe), per the skill.
+- The hero headline is the tagline and is static. Only background photos rotate (6 s autoplay, pause on hover/focus/button, reduced-motion safe) once two or more photos exist; the skill's four text slides were dropped on the user's instruction (2026-11-08).
 - Tagline everywhere: "Aspiring for Quality Education with Relevance" (user, 2026-11-07).
 - The Vice Chancellor photo is the user-supplied image (`public/images/vc-husnul-amin.png`). Other photographs are still placeholders.
 - Tokens: three brand colours (ivory, forest, gold) plus tints; 19 contrast tests.
