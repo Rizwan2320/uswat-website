@@ -1,6 +1,6 @@
 # Status
 
-Updated: 2026-11-06 (Fri) PKT
+Updated: 2026-11-07 (Sat) PKT
 
 | Phase | State | Gate |
 | --- | --- | --- |
@@ -24,7 +24,8 @@ Updated: 2026-11-06 (Fri) PKT
 - [x] Typecheck, lint, 6 tests, production build pass locally; fresh clone green in 25 s (warm store)
 - [x] CI green on GitHub (run 42212230542, commit 38cd496: install, typecheck, lint, migrate, tests, build)
 - [ ] Docker path (`ops/`) run: no Docker daemon in the sandbox
-- [ ] Skeleton URL live: needs the user's Vercel and Neon accounts
+- [x] Neon project `uswat-website` (shiny-pine-02268194, Singapore) and Vercel project `uswat-website` created; env vars set; migration applied by the Vercel build (ADR-0005)
+- [ ] Skeleton URL live: BLOCKED. Build is READY but app routes (`/`, `/healthz`, `/readyz`, `/admin`) return the platform 404 on https://uswat-website.vercel.app while static `/robots.txt` returns 200. `/readyz` 200 not seen. Cause unknown; Node 26.x on Vercel is the first thing to test (set Node 24.x or 22.x in project settings), then check the dashboard Functions tab.
 
 ## Next step
 1. User: Chairman DCST confirmation (Q2), content export or PDFs (Q3), paid-builder answer, brand assets. G0 stays open until Q2 and Q3 arrive.
