@@ -1,0 +1,123 @@
+import { images } from '../content/images'
+import { dateBlock, isPast, itemDate } from '../lib/dates'
+import { getEvents, getNews } from '../lib/content'
+import { T } from './I18n'
+import { ArrowRightIcon, CalendarIcon } from './icons'
+import SafeImage from './SafeImage'
+import styles from './NewsEvents.module.css'
+
+const ALL_NEWS = 'https://uswat.edu.pk/category/latestnews/'
+const ALL_EVENTS = 'https://uswat.edu.pk/category/events/'
+
+/* Three equal columns: Latest News (one photo), a second story (two stacked thumbnails) and an events card.
+   Titles are forest (the mockup's blue is not a brand colour). Images fall back to a gradient until real photos are added. */
+export default async function NewsEvents() {
+  const [news, events] = await Promise.all([getNews(), getEvents()])
+  const [first, second] = news
+  const now = new Date()
+  const upcoming = events.filter((e) => e.startISO && !isPast(e.startISO, now))
+  const shown = upcoming.length ? upcoming : events
+  const heading = upcoming.length ? 'Upcoming Events' : 'Recent Events'
+
+  return (
+    <section className={`${styles.section} on-light`} aria-labelledby="news-title">
+      <div className="container">
+        <div className={styles.head}>
+          <h2 id="news-title" className={`section-title ${styles.title}`}><T k="News & Events" /></h2>
+          <a className={`btn btn--outline-dark ${styles.all}`} href={ALL_NEWS} rel="noopener noreferrer">
+            <T k="View All News & Events" /> <ArrowRightIcon className="btn-arrow" />
+          </a>
+        </div>
+
+        <div className={`${styles.grid} pop-grid`}>
+          {first ? (
+            <article className={`pop ${styles.card}`}>
+              <span className={styles.tab}><T k="Latest News" /></span>
+              <div className={styles.row}>
+                <div className={`media ${styles.photo}`}>
+                  <SafeImage src={images.newsThumbs.niibs.src} alt={images.newsThumbs.niibs.alt} fill sizes="(max-width: 1023px) 40vw, 160px" />
+                </div>
+                <NewsText item={first} />
+              </div>
+            </article>
+          ) : null}
+
+          {second ? (
+            <article className={`pop ${styles.card}`}>
+              <div className={styles.row}>
+                <div className={styles.stack}>
+                  <div className={`media ${styles.thumb}`}>
+                    <SafeImage src={images.newsThumbs.climate.src} alt={images.newsThumbs.climate.alt} fill sizes="120px" />
+                  </div>
+                  <div className={`media ${styles.thumb}`}>
+                    <SafeImage src={images.newsThumbs.climateAlt.src} alt={images.newsThumbs.climateAlt.alt} fill sizes="120px" />
+                  </div>
+                </div>
+                <NewsText item={second} />
+              </div>
+            </article>
+          ) : null}
+
+          <article className={`pop ${styles.card} ${styles.events}`} aria-labelledby="events-title">
+            <header className={styles.eventsHead}>
+              <span className={`card-icon ${styles.eventsIcon}`}><CalendarIcon /></span>
+              <h3 id="events-title" className={`card-title ${styles.eventsTitle}`}><T k={heading} /></h3>
+            </header>
+            {shown.length === 0 ? (
+              <p className={styles.none}>No upcoming events</p>
+            ) : (
+              <ul className={styles.eventList}>
+                {shown.map((e) => {
+                  const b = dateBlock(e)
+                  const d = itemDate(e)
+                  const body = (
+                    <>
+                      {b ? (
+                        <time className={styles.block} dateTime={b.dateTime}>
+                          <span className={styles.day}>{b.top}</span>
+                          <span className={styles.mon}>{b.bottom}</span>
+                        </time>
+                      ) : null}
+                      <span className={styles.evText}>
+                        <span className={`row-title ${styles.evTitle}`}>{e.title}</span>
+                        {e.venue ? <span className={styles.venue}>{e.venue}</span> : null}
+                        {d ? <span className="visually-hidden">{d.label}</span> : null}
+                      </span>
+                    </>
+                  )
+                  return (
+                    <li key={e.id} className={`row ${styles.ev}`}>
+                      {e.href ? <a className={styles.evLink} href={e.href} rel="noopener noreferrer">{body}</a> : <div className={styles.evLink}>{body}</div>}
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+            <a className={styles.evAll} href={ALL_EVENTS} rel="noopener noreferrer">
+              <T k="View All" /> <ArrowRightIcon className={`card-arrow flip`} />
+            </a>
+          </article>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function NewsText({ item }: { item: { title: string; href: string; dateISO?: string; month?: string } }) {
+  const d = itemDate(item)
+  return (
+    <div className={styles.text}>
+      <h3 className={`card-title ${styles.newsTitle}`}>
+        <a className="stretched" href={item.href} rel="noopener noreferrer">{item.title}</a>
+      </h3>
+      {d ? (
+        <p className={styles.meta}>
+          <CalendarIcon /> <time dateTime={d.dateTime}>{d.label}</time>
+        </p>
+      ) : null}
+      <span className={styles.more}>
+        <T k="Read More" /> <ArrowRightIcon className="card-arrow flip" />
+      </span>
+    </div>
+  )
+}

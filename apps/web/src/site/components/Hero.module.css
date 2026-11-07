@@ -1,0 +1,8 @@
+.hero {
+  position: relative; isolation: isolate; overflow: hidden; background: var(--forest); color: #fff;
+  /* Room for the stats card that overlaps the bottom edge. */
+  padding-block: clamp(48px, 7vw, 88px) clamp(120px, 12vw, 170px);
+  min-height: clamp(520px, 52vw, 680px);
+}
+.wave { position: absolute; inset-inline: 0; bottom: -1px; width: 100%; height: clamp(46px, 6vw, 90px); z-index: 2; pointer-events: none; }
+@media print { .hero { min-height: 0; } }

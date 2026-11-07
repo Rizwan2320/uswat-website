@@ -1,0 +1,8 @@
+.header {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--ivory);
+  box-shadow: 0 1px 0 var(--ivory-deep), 0 6px 18px rgba(0, 42, 16, 0.06);
+}
+.inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 78px; }
+.apply { flex: none; }
+@media (max-width: 767px) { .apply { display: none; } }

@@ -1,0 +1,11 @@
+.logo { display: inline-flex; align-items: center; gap: 12px; flex: none; text-decoration: none; }
+.text { display: grid; line-height: 1.15; white-space: nowrap; }
+.name { font-family: var(--stack-serif); font-weight: 700; letter-spacing: 0.04em; font-size: 1.15rem; color: var(--forest); }
+.tag { font-family: var(--stack-serif); font-style: italic; font-size: 0.74rem; color: var(--forest-soft); }
+.light .name { color: var(--ivory); }
+.light .tag { color: rgb(252 250 244 / 0.85); }
+@media (max-width: 479px) {
+  .logo { gap: 8px; }
+  .name { font-size: 0.98rem; letter-spacing: 0.02em; }
+  .tag { display: none; }
+}

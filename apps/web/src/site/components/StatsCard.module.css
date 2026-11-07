@@ -1,0 +1,15 @@
+.wrap { position: relative; z-index: 3; margin-top: calc(-1 * clamp(86px, 9vw, 128px)); }
+.card {
+  display: grid; grid-template-columns: repeat(4, 1fr); padding: 28px 12px; border-radius: var(--radius);
+  box-shadow: 0 14px 40px rgba(0, 42, 16, 0.16);
+}
+.stat { display: grid; justify-items: center; align-content: start; gap: 6px; padding: 4px 16px; text-align: center; }
+.stat + .stat { border-inline-start: 1px solid var(--ivory-deep); }
+.icon { font-size: 2rem; color: var(--forest); }
+.number { font-family: var(--stack-serif); font-size: clamp(1.5rem, 2.4vw, 1.9rem); font-weight: 700; color: var(--forest); line-height: 1.1; }
+.label { font-size: 0.9rem; color: var(--text); }
+.note { margin-top: 14px; text-align: center; font-size: 0.8rem; color: var(--text); }
+@media (max-width: 767px) {
+  .card { grid-template-columns: repeat(2, 1fr); row-gap: 24px; }
+  .stat + .stat { border-inline-start: 0; }
+}

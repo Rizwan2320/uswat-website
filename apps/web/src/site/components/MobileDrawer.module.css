@@ -1,0 +1,25 @@
+.drawer {
+  position: fixed; inset: 0; margin: 0; width: 100%; max-width: none; height: 100%; max-height: none;
+  padding: 80px var(--gutter) 24px; border: 0; background: var(--ivory); color: var(--forest);
+  overflow-y: auto;
+}
+.drawer[open] { display: flex; flex-direction: column; gap: 24px; }
+.drawer::backdrop { background: rgba(0, 42, 16, 0.5); }
+.list { display: grid; gap: 4px; }
+.row {
+  display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 48px; padding: 10px 12px;
+  border: 0; border-bottom: 1px solid var(--ivory-deep); background: transparent; color: var(--forest);
+  font: inherit; font-weight: 600; font-size: 1.05rem; text-align: start; text-decoration: none; cursor: pointer;
+}
+.caret { transition: transform 0.2s ease; }
+[aria-expanded='true'] > .caret { transform: rotate(180deg); }
+.sub { padding: 4px 12px 12px; display: grid; gap: 2px; }
+.sub[hidden] { display: none; }
+.sub a { display: block; padding: 10px 12px; border-radius: 10px; color: var(--forest); text-decoration: none; }
+.sub a:hover { background: rgb(242 183 5 / 0.16); }
+.apply { margin-top: auto; width: 100%; }
+
+.close {
+  position: absolute; top: 16px; inset-inline-end: var(--gutter); display: grid; place-items: center; width: 48px; height: 48px;
+  border: 2px solid var(--forest); border-radius: 50%; background: transparent; color: var(--forest); font-size: 1.5rem; cursor: pointer;
+}

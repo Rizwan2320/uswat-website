@@ -1,0 +1,19 @@
+.form { display: grid; gap: 8px; max-width: 320px; }
+.field { display: flex; }
+.input {
+  flex: 1 1 auto; min-width: 0; min-height: 46px; padding: 10px 14px; border: 0; border-radius: 10px 0 0 10px;
+  background: #fff; color: var(--forest); font: inherit;
+}
+[dir='rtl'] .input { border-radius: 0 10px 10px 0; }
+.go {
+  flex: none; display: grid; place-items: center; width: 52px; border: 0; border-radius: 0 10px 10px 0;
+  background: var(--gold); color: var(--forest); font-size: 1.4rem; cursor: pointer;
+}
+[dir='rtl'] .go { border-radius: 10px 0 0 10px; }
+.go:hover:not(:disabled) { background: var(--gold-light); }
+.go:disabled { opacity: 0.6; cursor: progress; }
+.form { position: relative; }
+/* Honeypot: clipped to 1px in place (no off-screen offset, which would create scroll in RTL). */
+.trap { position: absolute; top: 0; inset-inline-start: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); opacity: 0; pointer-events: none; }
+.msg { min-height: 1.4em; font-size: 0.85rem; color: rgb(252 250 244 / 0.92); }
+.msg[data-kind='error'] { color: var(--gold-light); }
