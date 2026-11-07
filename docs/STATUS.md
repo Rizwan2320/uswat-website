@@ -6,15 +6,16 @@ Updated: 2026-11-07 (Sat) PKT
 | --- | --- | --- |
 | P0 Decide and verify | Spike S-1 done; waiting on user inputs | G0 pending (see below) |
 | P1 Foundation | Code done and checked locally; CI and live URL pending | G1 partly met, see `docs/evidence/G1/g1-report.md` |
-| P2 to P8 | Not started | |
+| P2 Design system and shell (plan v2 section 11; the 2026-11-06 handoff mislabelled it "content model") | Not started | G2 |
+| P3 CMS core, P4 content and real data, P5 to P8 | Not started | Addendum edits P3 to P5 (see below) |
 
 ## G0 checklist
 - [x] Spike S-1 run, results in `docs/evidence/G0/spike-report.md`
 - [x] `docs/tooling.md` with exact versions
 - [x] ADR-0001 to 0003 accepted; ADR-0004 proposed
 - [x] Data-gap list with owners (`docs/evidence/G0/data-gaps.md`)
-- [x] Vercel: demo/presentation only, not for the real site (user, 2026-11-06). Open detail: confirm nobody is paid for the demo.
-- [ ] Chairman DCST confirmation that the flyer's stack is not mandatory (user)
+- [x] Vercel: demo/presentation only, not for the real site (user, 2026-11-06). User states on 2026-11-07 that nobody makes money from it (Hobby non-commercial rule; user's statement, no document).
+- [~] Stack not mandatory: user reports on 2026-11-07 that the DCST confirmed it. No written confirmation seen; the addendum (section 16) asks for it in writing, together with crawl and watcher permission. Treat as reported, not evidenced.
 - [ ] Spike items not run: per-version access, preview, R2/Blob, Vercel/Neon, Node 24/26, Next 16.4.x (P1 or after accounts exist)
 - [x] Push to GitHub works (2026-11-06)
 
@@ -27,6 +28,13 @@ Updated: 2026-11-07 (Sat) PKT
 - [x] Neon project `uswat-website` (shiny-pine-02268194, Singapore) and Vercel project `uswat-website` created; env vars set; migration applied by the Vercel build (ADR-0005)
 - [ ] Skeleton URL live: BLOCKED. Build is READY but app routes (`/`, `/healthz`, `/readyz`, `/admin`) return the platform 404 on https://uswat-website.vercel.app while static `/robots.txt` returns 200. `/readyz` 200 not seen. Cause unknown; Node 26.x on Vercel is the first thing to test (set Node 24.x or 22.x in project settings), then check the dashboard Functions tab.
 
+## Inputs received 2026-11-07
+- `Swat_Plan_v2_Addendum_Templates_Architecture_Challenges.md` (project doc). Where it disagrees with v2, it wins; section 17 lists the edits. Read before P3 to P5.
+- `uswat_text.zip` (raw crawl, kept OUT of the repo): 406 page folders (`page.json`, `page.txt`), `sitemap.csv` (406 rows), `errors.csv` (5 dead links), `index.json`, `assets_index.json` (image URLs only, no image files), `navigation.json` (11 items), `design_tokens.json` (old site styling: maroon links, Arial/Roboto; differs from the mockup palette in plan 5.x). Inspected as data: no path traversal, no instruction-like text, emails mostly `uswat.edu.pk` (6 personal gmail/yahoo), 92 phone strings.
+- NOT in the zip: the organized pack the addendum's importer reads (`departments.json`, `faculty.json`, `route_map.csv` with 1,613 rows, etc.) and the 1254x1254 crest. P4 needs them.
+- Decision needed before P4: the addendum puts crawl data in `/scripts/import/data/` of this public repo. That would publish staff emails and phone numbers. Keep data out of the repo, or commit only a scrubbed subset.
+
 ## Next step
-1. User: Chairman DCST confirmation (Q2), content export or PDFs (Q3), paid-builder answer, brand assets. G0 stays open until Q2 and Q3 arrive.
-2. Then P2 (content model and verified data) per plan section 11. Facts without a source stay labelled Sample.
+1. Skeleton URL: app routes 404 on Vercel (see G1). Try Node 24.x or 22.x in project settings, then check the Functions tab.
+2. P2 (design system and shell): needs the brand assets (crest, confirmed names, address, phone) and a decision on which look wins (mockup palette per plan, or old-site styling).
+3. User: written DCST confirmation, the organized data pack, the crest and photographs.
