@@ -52,8 +52,10 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
           <a className="skip-link" href="#main">
             <T k="Skip to content" />
           </a>
-          <TopBar />
-          <Header />
+          <div className="site-head">
+            <TopBar />
+            <Header />
+          </div>
           <main id="main" tabIndex={-1}>
             {children}
           </main>

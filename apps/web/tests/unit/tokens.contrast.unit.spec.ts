@@ -68,7 +68,7 @@ const pairs: Array<[string, Rgb, Rgb, number]> = [
 describe('design tokens: WCAG 2.2 contrast', () => {
   it('parses every hex token', () => {
     expect(Object.keys(tokens).sort()).toEqual(
-      ['forest', 'forest-deep', 'forest-soft', 'gold', 'gold-dark', 'gold-light', 'ivory', 'ivory-deep'].sort(),
+      ['forest', 'forest-deep', 'forest-soft', 'gold', 'gold-dark', 'gold-dim', 'gold-light', 'ivory', 'ivory-deep'].sort(),
     )
   })
   it('finds the body text alpha', () => {

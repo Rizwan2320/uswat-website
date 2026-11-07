@@ -1,13 +1,13 @@
 import type { Stat } from './types'
 
-/* SAMPLE FIGURES. These are the mockup's numbers and are NOT verified.
-   The public site's home page says: established 2010, 22 teaching departments and 49 academic programs,
-   "more than 3000 students enrolled in 2017" (https://uswat.edu.pk/ , crawled 2026-11-06), which is older and
-   different. StatsCard shows a visible "Sample figures" note while any stat is `sample: true`.
-   TODO(content): replace with figures from the Planning/Registrar office, with a source and date. */
+/* Figures confirmed by the user on 2026-11-07 ("we have the confirmation", for the HoD demo). No document was seen
+   by us, so `source` records that. The public site's home page still says "49 programs" and "more than 3000
+   students enrolled in 2017" (https://uswat.edu.pk/, crawled 2026-11-06); if the university's own numbers differ,
+   change them here only. StatsCard shows a "Sample" note automatically if any entry is set back to `sample: true`. */
+const CONFIRMED = { source: 'Confirmed by the project owner, 2026-11-07 (no document seen)', verifiedAt: '2026-11-07' }
 export const stats: Stat[] = [
-  { id: 'programs', value: 50, suffix: '+', label: 'Academic Programs', icon: 'cap', sample: true },
-  { id: 'students', value: 10000, suffix: '+', label: 'Students', icon: 'people', sample: true },
-  { id: 'faculty', value: 700, suffix: '+', label: 'Faculty Members', icon: 'person', sample: true },
-  { id: 'publications', value: 200, suffix: '+', label: 'Research Publications', icon: 'trophy', sample: true },
+  { id: 'programs', value: 50, suffix: '+', label: 'Academic Programs', icon: 'cap', ...CONFIRMED },
+  { id: 'students', value: 10000, suffix: '+', label: 'Students', icon: 'people', ...CONFIRMED },
+  { id: 'faculty', value: 700, suffix: '+', label: 'Faculty Members', icon: 'person', ...CONFIRMED },
+  { id: 'publications', value: 200, suffix: '+', label: 'Research Publications', icon: 'trophy', ...CONFIRMED },
 ]

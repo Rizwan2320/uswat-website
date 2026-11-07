@@ -1,9 +1,9 @@
 .bar { background: var(--forest-deep); color: var(--ivory); font-size: 12px; }
-.inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 36px; }
+.inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 32px; }
 .left { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .place { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .divider { width: 1px; height: 14px; background: rgb(252 250 244 / 0.4); }
-.tagline { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tagline { white-space: nowrap; font-style: italic; letter-spacing: 0.01em; }
 .right { display: flex; align-items: center; gap: 8px; flex: none; }
 .right a { color: inherit; text-decoration: none; padding: 8px 4px; }
 .right a:hover { text-decoration: underline; text-underline-offset: 4px; }
@@ -14,6 +14,8 @@
   background: transparent; color: inherit; font-size: 1.1rem; cursor: pointer;
 }
 .search:hover { background: rgb(252 250 244 / 0.14); }
+/* The tagline never gets cut off: the place name gives way first, then the whole left side moves into the logo block. */
+@media (max-width: 1099px) { .place, .divider { display: none; } }
 @media (max-width: 767px) {
   .left { display: none; }
   .inner { justify-content: flex-end; }

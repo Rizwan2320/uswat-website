@@ -6,7 +6,7 @@ import styles from './StatsCard.module.css'
 const icons = { cap: CapIcon, people: PeopleIcon, person: PersonIcon, trophy: TrophyIcon }
 
 /* Ivory card overlapping the hero bottom by ~50px. Server component; only CountUp is client.
-   Numbers are the mockup's SAMPLE figures, so the card says so until verified values replace them. */
+   A "Sample" note appears only while an entry is flagged `sample: true` in content/stats.ts. */
 export default async function StatsCard() {
   const stats = await getStats()
   const anySample = stats.some((s) => s.sample)
@@ -19,10 +19,12 @@ export default async function StatsCard() {
             return (
               <li key={s.id} className={styles.stat}>
                 <Icon className={styles.icon} />
-                <p className={styles.number}>
-                  <CountUp value={s.value} suffix={s.suffix} label={s.label} />
-                </p>
-                <p className={styles.label} aria-hidden="true">{s.label}</p>
+                <div className={styles.text}>
+                  <p className={styles.number}>
+                    <CountUp value={s.value} suffix={s.suffix} label={s.label} />
+                  </p>
+                  <p className={styles.label} aria-hidden="true">{s.label}</p>
+                </div>
               </li>
             )
           })}

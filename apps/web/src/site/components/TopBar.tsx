@@ -4,7 +4,7 @@ import { PinIcon } from './icons'
 import SearchOverlay from './SearchOverlay'
 import styles from './TopBar.module.css'
 
-/* Darkest green utility bar. It scrolls away; only the header is sticky.
+/* Darkest green utility bar. Sticks with the header (see .site-head) so the tagline is always visible.
    The street address is NOT shown here: it is unconfirmed (Odigram vs Charbagh) and is labelled Sample in the footer. */
 export default function TopBar() {
   return (

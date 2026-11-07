@@ -22,6 +22,7 @@
   --ivory-deep: #f3efe3; /* hairlines, alternating section tints */
   --gold-light: #ffd84d; /* glow highlights */
   --gold-dark: #8a6700; /* gold-coloured TEXT on ivory (AA) */
+  --gold-dim: #d9a406; /* solid, slightly dimmed gold for hover rings and borders */
 
   /* Body text: forest at 85% over ivory. The unit test blends the same way. */
   --text: rgb(0 59 23 / 0.85);
@@ -31,7 +32,7 @@
   --gutter: clamp(16px, 4vw, 32px);
   --gap: 24px;
   --radius: 16px;
-  --section-y: clamp(56px, 7vw, 96px);
+  --section-y: clamp(32px, 4vw, 56px);
 
   /* Type stacks. The families come from next/font-style CSS variables on <html>. */
   --stack-serif: var(--font-serif), Georgia, 'Times New Roman', serif;

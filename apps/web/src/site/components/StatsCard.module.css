@@ -1,15 +1,23 @@
-.wrap { position: relative; z-index: 3; margin-top: calc(-1 * clamp(86px, 9vw, 128px)); }
+.wrap { position: relative; z-index: 3; margin-top: calc(-1 * clamp(44px, 4.5vw, 60px)); }
 .card {
-  display: grid; grid-template-columns: repeat(4, 1fr); padding: 28px 12px; border-radius: var(--radius);
-  box-shadow: 0 14px 40px rgba(0, 42, 16, 0.16);
+  display: grid; grid-template-columns: repeat(4, 1fr); padding: 18px 8px; border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0, 42, 16, 0.14);
 }
-.stat { display: grid; justify-items: center; align-content: start; gap: 6px; padding: 4px 16px; text-align: center; }
+/* Icon beside a number and its label, as in the mockup. */
+.stat { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 4px 12px; }
 .stat + .stat { border-inline-start: 1px solid var(--ivory-deep); }
-.icon { font-size: 2rem; color: var(--forest); }
-.number { font-family: var(--stack-serif); font-size: clamp(1.5rem, 2.4vw, 1.9rem); font-weight: 700; color: var(--forest); line-height: 1.1; }
-.label { font-size: 0.9rem; color: var(--text); }
-.note { margin-top: 14px; text-align: center; font-size: 0.8rem; color: var(--text); }
+.icon { flex: none; font-size: 2.4rem; color: var(--forest); }
+.text { display: grid; gap: 2px; min-width: 0; }
+/* Inter, lining and tabular figures: even, clean digits that do not jitter while counting. */
+.number {
+  font-family: var(--stack-sans); font-weight: 700; font-size: clamp(1.4rem, 2vw, 1.7rem); line-height: 1.1;
+  color: var(--forest); font-variant-numeric: lining-nums tabular-nums; letter-spacing: -0.01em;
+}
+.label { font-size: 0.88rem; line-height: 1.25; color: var(--text); }
+.note { margin-top: 12px; text-align: center; font-size: 0.8rem; color: var(--text); }
+@media (max-width: 1023px) { .icon { font-size: 2rem; } .stat { gap: 10px; padding-inline: 6px; } }
 @media (max-width: 767px) {
-  .card { grid-template-columns: repeat(2, 1fr); row-gap: 24px; }
+  .card { grid-template-columns: repeat(2, 1fr); row-gap: 18px; padding-block: 16px; }
   .stat + .stat { border-inline-start: 0; }
+  .stat:nth-child(even) { border-inline-start: 1px solid var(--ivory-deep); }
 }
