@@ -1,0 +1,250 @@
+/*
+ * Site-wide CSS for the redesigned pages (route group `(site)`): base, shared utilities, card pop-up,
+ * counters, image fallback. Colours and layout variables live in tokens.css (imported first by layout.tsx).
+ * From the swat-homepage-nextjs skill snippets; `.pop`, `.container`, `.section-title` are shared utilities,
+ * so they are global on purpose (not CSS Modules).
+ */
+
+/* Self-hosted variable fonts (@fontsource-variable, imported in the layout): no build-time or runtime call to Google.
+   The Urdu face is split into unicode-range subsets by fontsource, so English visitors never download it. */
+:root {
+  --font-serif: 'Playfair Display Variable';
+  --font-sans: 'Inter Variable';
+  --font-urdu: 'Noto Nastaliq Urdu Variable';
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+/* The card shine and glow are positioned outside their cards (so they are never clipped); clip any horizontal spill at the page level. */
+body { overflow-x: clip; }
+body {
+  margin: 0;
+  background: var(--ivory);
+  color: var(--text);
+  font-family: var(--stack-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+/* Urdu typeface only on strings marked lang="ur" (translated chrome). Nastaliq needs generous line height. */
+[lang='ur'] > :is(span, button, a), span[lang='ur'] { font-family: var(--stack-urdu); line-height: 1.9; }
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+h1, h2, h3, h4 { margin: 0; }
+p { margin: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+button { font: inherit; }
+
+/* One container for EVERY section so left/right edges align. */
+.container {
+  width: min(100% - 2 * var(--gutter), var(--container));
+  margin-inline: auto;
+}
+.section { padding-block: var(--section-y); }
+/* Room around .pop card grids so the lift and glow are never clipped. */
+.pop-grid { overflow: visible; padding: 24px 0; }
+
+.section-title {
+  display: flex; align-items: center; justify-content: center; gap: 20px;
+  font-family: var(--stack-serif); color: var(--forest);
+  font-size: clamp(1.6rem, 3vw, 2.25rem); text-align: center; margin: 0 0 32px;
+  font-weight: 600;
+}
+.section-title::before, .section-title::after { content: ''; height: 2px; flex: 1 1 40px; max-width: 160px; }
+.section-title::before { background: linear-gradient(to right, transparent, var(--gold)); }
+.section-title::after { background: linear-gradient(to left, transparent, var(--gold)); }
+
+.skip-link {
+  position: absolute; inset-inline-start: 8px; top: -64px; z-index: 1000;
+  background: var(--gold); color: var(--forest); padding: 10px 16px; border-radius: 8px; font-weight: 600;
+}
+.skip-link:focus { top: 8px; }
+
+.visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+/* On ivory the gold ring is low-contrast, so use forest there (3:1 required for focus indicators). */
+.on-light :focus-visible { outline-color: var(--forest); }
+
+/* Pill buttons: gold fill, forest fill, outline on dark. */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 44px; padding: 10px 24px; border-radius: 999px;
+  font-weight: 600; font-size: .95rem; text-decoration: none; border: 2px solid transparent; cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease;
+}
+.btn .btn-arrow { display: inline-block; transition: transform .2s ease; }
+.btn--gold { background: var(--gold); color: var(--forest); }
+.btn--gold:hover { background: var(--gold-light); }
+.btn--forest { background: var(--forest); color: var(--ivory); }
+.btn--forest:hover { background: var(--forest-soft); }
+.btn--outline-light { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .85); }
+.btn--outline-light:hover { background: rgba(255, 255, 255, .12); }
+.btn--outline-dark { background: transparent; color: var(--forest); border-color: var(--forest); }
+.btn--outline-dark:hover { background: var(--forest); color: var(--ivory); }
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0, 42, 16, .22); }
+  .btn:hover .btn-arrow { transform: translateX(4px); }
+  [dir='rtl'] .btn:hover .btn-arrow { transform: translateX(-4px) scaleX(-1); }
+}
+[dir='rtl'] .flip, [dir='rtl'] .btn-arrow { transform: scaleX(-1); }
+
+/* RTL: numbers and untranslated English must not take the page direction.
+   Counters read "200+" not "+200"; each English line keeps its own punctuation and alignment until it is translated. */
+[dir='rtl'] .count { direction: ltr; unicode-bidi: isolate; }
+[dir='rtl'] :is(h1, h2, h3, h4, p, li, figcaption, blockquote, .btn, :is(h1, h2) > span) { unicode-bidi: plaintext; }
+
+
+@media print {
+  .no-print, header[data-sticky], .hero-controls { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .btn, .btn * { transition: none !important; }
+}
+
+/* ===== card-hover.css (skill snippet) ===== */
+/* Gold-glow pop-up for interactive cards.
+   Markup: <article class="card pop"> ... <a class="card-link stretched">Title</a> <span class="card-arrow">→</span>
+           <span class="card-icon">svg</span> </article>
+   Grids/wrappers holding .pop cards need overflow: visible and >= 24px padding so the glow is never clipped. */
+
+.pop {
+  position: relative;
+  isolation: isolate;
+  background: var(--ivory);
+  border-radius: var(--radius);
+  border: 1px solid var(--ivory-deep);
+  box-shadow: 0 6px 18px rgba(0, 59, 23, .08);
+  transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Gold ring via pseudo-element so layout never shifts */
+.pop::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  border: 2px solid var(--gold); opacity: 0;
+  transition: opacity .22s ease; pointer-events: none; z-index: 2;
+}
+
+/* One-time diagonal shine */
+.pop::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 1;
+  /* The sweep moves the gradient (background-position) instead of translating the box, so it never extends past the
+     card: nothing for the page to scroll to, in LTR or RTL. */
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 216, 77, .35) 50%, transparent 65%) no-repeat;
+  background-size: 300% 100%; background-position: 100% 0; opacity: 0;
+}
+
+/* Stretched link: whole card clickable without nesting links */
+.stretched::after { content: ""; position: absolute; inset: 0; z-index: 3; }
+
+.pop .card-icon  { transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease, background-color .3s ease; }
+.pop .card-arrow { display: inline-block; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.pop .card-title { transition: color .3s ease; }
+.pop .media img  { transition: transform .6s ease; }
+.pop .media      { overflow: hidden; border-radius: inherit; }
+
+@media (hover: hover) and (pointer: fine) {
+  .pop:hover {
+    transform: translateY(-8px) scale(1.03) translateZ(0);
+    z-index: 5;
+    box-shadow:
+      0 0 0 2px var(--gold),
+      0 0 28px rgba(242, 183, 5, .45),
+      0 18px 40px rgba(0, 59, 23, .18);
+    transition-duration: .32s;
+    will-change: transform;
+  }
+  .pop:hover::before { opacity: 1; }
+  .pop:hover::after  { animation: pop-shine .6s ease forwards; }
+  .pop:hover .card-icon {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 6px rgba(242, 183, 5, .28);
+  }
+  .pop:hover .card-arrow { transform: translateX(6px); }
+  [dir="rtl"] .pop:hover .card-arrow { transform: translateX(-6px) scaleX(-1); }
+  .pop:hover .card-title { color: var(--forest-soft); }
+  .pop:hover .media img  { transform: scale(1.06); }
+
+  /* Row hover inside Notices / Jobs / Tenders */
+  .pop .row { transition: background-color .2s ease, transform .2s ease; border-radius: 8px; }
+  .pop .row:hover { background: rgba(242, 183, 5, .12); }
+  .pop .row:hover .row-title { transform: translateX(4px); }
+  [dir="rtl"] .pop .row:hover .row-title { transform: translateX(-4px); }
+  .pop .row .dot { transition: transform .2s ease, background-color .2s ease; }
+  .pop .row:hover .dot { transform: scale(1.5); background: var(--gold); }
+  .row-title { display: inline-block; transition: transform .2s ease; }
+}
+
+/* Keyboard focus: same pop and glow (kept in separate rules so an older browser
+   that lacks :has() does not drop the hover rules above). */
+.pop:focus-within::before { opacity: 1; }
+@supports selector(:has(*)) {
+  .pop:has(:focus-visible) {
+    transform: translateY(-8px) scale(1.03) translateZ(0);
+    z-index: 5;
+    box-shadow:
+      0 0 0 2px var(--gold),
+      0 0 28px rgba(242, 183, 5, .45),
+      0 18px 40px rgba(0, 59, 23, .18);
+  }
+  .pop:has(:focus-visible) .card-icon  { transform: scale(1.08); box-shadow: 0 0 0 6px rgba(242,183,5,.28); }
+  .pop:has(:focus-visible) .card-arrow { transform: translateX(6px); }
+  [dir="rtl"] .pop:has(:focus-visible) .card-arrow { transform: translateX(-6px) scaleX(-1); }
+}
+
+/* Touch: quick press instead of a sticky hover */
+@media (hover: none) {
+  .pop:active { transform: scale(.98); box-shadow: 0 0 0 2px var(--gold), 0 0 18px rgba(242,183,5,.4); }
+}
+
+@keyframes pop-shine {
+  0%   { background-position: 100% 0; opacity: 1; }
+  100% { background-position: 0 0;    opacity: 0; }
+}
+[dir="rtl"] .pop:hover::after { animation-name: pop-shine-rtl; }
+@keyframes pop-shine-rtl {
+  0%   { background-position: 0 0;    opacity: 1; }
+  100% { background-position: 100% 0; opacity: 0; }
+}
+
+/* Reduced motion: no movement, keep a gold border/glow color change */
+@media (prefers-reduced-motion: reduce) {
+  .pop, .pop * { transition: none !important; animation: none !important; }
+  .pop:hover, .pop:focus-within { transform: none !important; }
+  .pop:hover::before, .pop:focus-within::before { opacity: 1; }
+  .pop:hover { box-shadow: 0 0 0 2px var(--gold), 0 0 18px rgba(242,183,5,.35); }
+}
+
+/* ===== count-up.css (skill snippet) ===== */
+/* Counter styles. Needs <html data-js> set by the inline script in layout.tsx. */
+.count { display: inline-block; font-variant-numeric: tabular-nums; }
+
+/* Hide the server-rendered final number only when JS is running AND motion is allowed,
+   so the visitor never sees "10,000+" flash before the count restarts from 1.
+   The 3s animation is a safety net: if hydration never happens the number reappears. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-js] .count[data-pending] { visibility: hidden; animation: count-reveal 0s 3s forwards; }
+}
+@keyframes count-reveal { to { visibility: visible; } }
+
+/* ===== img-fallback.css (skill snippet) ===== */
+/* Fallback shown by SafeImage when a photo is missing or fails to load. On-brand, never a broken icon. */
+.img-fallback {
+  width: 100%; height: 100%; min-height: 120px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(242,183,5,.18), transparent 45%),
+    linear-gradient(135deg, var(--forest) 0%, var(--forest-soft) 100%);
+  border-radius: inherit;
+}
+.img-fallback--fill { position: absolute; inset: 0; }
+
+/* "Sample" label: shown next to any value that has no source URL and verifiedAt yet. */
+.sample-tag {
+  display: inline-block; margin-inline-start: 8px; padding: 1px 8px; border-radius: 999px; vertical-align: middle;
+  background: var(--gold); color: var(--forest); font: 700 .65rem/1.6 var(--stack-sans); letter-spacing: .08em; text-transform: uppercase;
+}

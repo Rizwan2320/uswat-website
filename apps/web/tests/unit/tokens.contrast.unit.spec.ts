@@ -5,53 +5,77 @@ import { describe, expect, it } from 'vitest'
 const css = readFileSync(join(__dirname, '../../src/design/tokens.css'), 'utf8')
 
 const tokens: Record<string, string> = {}
-for (const m of css.matchAll(/--color-([a-z0-9-]+):\s*(#[0-9a-fA-F]{6});/g)) {
+for (const m of css.matchAll(/--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6});/g)) {
   tokens[m[1]!] = m[2]!
 }
 
+type Rgb = [number, number, number]
+const toRgb = (hex: string): Rgb => {
+  const n = parseInt(hex.slice(1), 16)
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+}
+// Composite `fg` at `alpha` over `bg` (what the browser paints for rgb(... / alpha)).
+const blend = (fg: string, bg: string, alpha: number): Rgb => {
+  const f = toRgb(fg)
+  const b = toRgb(bg)
+  return [0, 1, 2].map((i) => Math.round(f[i]! * alpha + b[i]! * (1 - alpha))) as Rgb
+}
 const channel = (v: number) => {
   const s = v / 255
   return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
 }
-const luminance = (hex: string) => {
-  const n = parseInt(hex.slice(1), 16)
-  return 0.2126 * channel((n >> 16) & 255) + 0.7152 * channel((n >> 8) & 255) + 0.0722 * channel(n & 255)
-}
-export const ratio = (fg: string, bg: string) => {
-  const a = luminance(tokens[fg]!)
-  const b = luminance(tokens[bg]!)
+const luminance = ([r, g, b]: Rgb) => 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+const ratio = (fg: Rgb, bg: Rgb) => {
+  const a = luminance(fg)
+  const b = luminance(bg)
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)
 }
+const c = (name: string): Rgb => {
+  const hex = tokens[name]
+  if (!hex) throw new Error(`token --${name} not found in tokens.css`)
+  return toRgb(hex)
+}
 
-// [foreground, background, minimum ratio, where it is used]
+// The body text token is rgb(0 59 23 / 0.85); assert the CSS still says so, then blend the same way.
+const bodyAlpha = css.match(/--text:\s*rgb\(0 59 23 \/ ([0-9.]+)\)/)
+const textOnIvory = blend(tokens.forest!, tokens.ivory!, Number(bodyAlpha?.[1] ?? NaN))
+const textOnIvoryDeep = blend(tokens.forest!, tokens['ivory-deep']!, Number(bodyAlpha?.[1] ?? NaN))
+// Secondary footer text: ivory at 78% over the footer base.
+const dimOnDeep = blend(tokens.ivory!, tokens['forest-deep']!, 0.78)
+
+// [label, foreground, background, minimum ratio]
 // 4.5 = WCAG 2.2 AA normal text; 3 = large text and non-text UI (focus rings, icons).
-const pairs: Array<[string, string, number, string]> = [
-  ['ink-900', 'cream-50', 4.5, 'body text on page'],
-  ['ink-900', 'paper', 4.5, 'body text on cards'],
-  ['ink-600', 'cream-50', 4.5, 'secondary text on page'],
-  ['ink-600', 'paper', 4.5, 'secondary text on cards'],
-  ['green-800', 'cream-50', 4.5, 'headings and links on page'],
-  ['green-800', 'paper', 4.5, 'headings and links on cards'],
-  ['green-800', 'sage-100', 4.5, 'text on quiet panels'],
-  ['amber-800', 'cream-50', 4.5, 'accent text on page (replaces failing mockup amber)'],
-  ['amber-800', 'paper', 4.5, 'accent text on cards'],
-  ['paper', 'green-900', 4.5, 'footer text'],
-  ['paper', 'green-800', 4.5, 'hero and banner text'],
-  ['paper', 'green-700', 4.5, 'primary button and active nav'],
-  ['green-800', 'gold-500', 4.5, 'gold button label'],
-  ['green-800', 'gold-400', 4.5, 'gold button label on hover'],
-  ['gold-500', 'green-800', 4.5, 'hero accent word and headings on green'],
-  ['gold-500', 'green-900', 4.5, 'footer headings'],
-  ['gold-400', 'green-900', 3, 'focus ring on dark'],
-  ['green-700', 'cream-50', 3, 'focus ring on light'],
+const pairs: Array<[string, Rgb, Rgb, number]> = [
+  ['body text on ivory', textOnIvory, c('ivory'), 4.5],
+  ['body text on ivory-deep', textOnIvoryDeep, c('ivory-deep'), 4.5],
+  ['forest headings on ivory', c('forest'), c('ivory'), 4.5],
+  ['forest headings on ivory-deep', c('forest'), c('ivory-deep'), 4.5],
+  ['forest-soft hover title on ivory', c('forest-soft'), c('ivory'), 4.5],
+  ['ivory on forest (active nav, badges)', c('ivory'), c('forest'), 4.5],
+  ['ivory on forest-deep (top bar, footer)', c('ivory'), c('forest-deep'), 4.5],
+  ['ivory on forest-soft (hover fills)', c('ivory'), c('forest-soft'), 4.5],
+  ['dim ivory on forest-deep (footer secondary text)', dimOnDeep, c('forest-deep'), 4.5],
+  ['forest on gold (gold button label)', c('forest'), c('gold'), 4.5],
+  ['forest on gold-light (gold button hover)', c('forest'), c('gold-light'), 4.5],
+  ['gold on forest (hero accent word, quote mark)', c('gold'), c('forest'), 4.5],
+  ['gold on forest-deep (footer headings)', c('gold'), c('forest-deep'), 4.5],
+  ['gold-dark on ivory (dates, small gold labels)', c('gold-dark'), c('ivory'), 4.5],
+  ['gold-dark on ivory-deep (dates on tinted cards)', c('gold-dark'), c('ivory-deep'), 4.5],
+  ['gold focus ring on forest', c('gold'), c('forest'), 3],
+  ['forest focus ring on ivory', c('forest'), c('ivory'), 3],
 ]
 
 describe('design tokens: WCAG 2.2 contrast', () => {
-  it('parses every colour token', () => {
-    expect(Object.keys(tokens).length).toBeGreaterThanOrEqual(11)
+  it('parses every hex token', () => {
+    expect(Object.keys(tokens).sort()).toEqual(
+      ['forest', 'forest-deep', 'forest-soft', 'gold', 'gold-dark', 'gold-light', 'ivory', 'ivory-deep'].sort(),
+    )
   })
-  for (const [fg, bg, min, use] of pairs) {
-    it(`${fg} on ${bg} >= ${min}:1 (${use})`, () => {
+  it('finds the body text alpha', () => {
+    expect(Number(bodyAlpha?.[1])).toBeGreaterThan(0.5)
+  })
+  for (const [label, fg, bg, min] of pairs) {
+    it(`${label} >= ${min}:1`, () => {
       expect(ratio(fg, bg)).toBeGreaterThanOrEqual(min)
     })
   }

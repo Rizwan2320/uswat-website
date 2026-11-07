@@ -1,29 +1,40 @@
 /*
- * Design tokens. Single source of truth for colour, type, shape and shadow.
- * Colours were sampled from the approved mockup (plan v2, section 5.2); replace with the
- * university brand guide values when supplied. tests/unit/tokens.contrast.spec.ts reads this
- * file, so a token edit that breaks a contrast pair fails CI.
+ * Design tokens: single source of truth for colour, layout and shape.
+ * Plain :root custom properties, so both the redesigned (site) pages and the Tailwind pages can use them.
+ *
+ * Three brand colours (swat-homepage-nextjs skill, sampled from the approved mockup; the university
+ * has not supplied a brand guide, so replace the hex values here in one place when it does):
+ *   ivory #FCFAF4 · forest #003B17 · gold #F2B705
+ * Everything else is a shade of those three.
+ *
+ * tests/unit/tokens.contrast.unit.spec.ts reads this file, so a token edit that breaks a WCAG 2.2 AA pair fails CI.
+ * Font families (--font-serif / --font-sans / --font-urdu) are set in site.css next to the @fontsource imports.
  */
-@theme {
-  --color-green-900: #013619;
-  --color-green-800: #034820;
-  --color-green-700: #0a5025;
-  --color-gold-500: #f7b923;
-  --color-gold-400: #fdc532;
-  --color-amber-800: #8a5a00;
-  --color-cream-50: #fbf6eb;
-  --color-sage-100: #e7e9d7;
-  --color-ink-900: #1f2a24;
-  --color-ink-600: #5b6b60;
-  --color-paper: #ffffff;
+:root {
+  /* The three brand colours */
+  --ivory: #fcfaf4;
+  --forest: #003b17;
+  --gold: #f2b705;
 
-  --font-serif: 'Source Serif 4 Variable', 'Source Serif 4', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Derived tints */
+  --forest-deep: #002a10; /* top bar, footer base */
+  --forest-soft: #0b5a27; /* hover, gradient ends */
+  --ivory-deep: #f3efe3; /* hairlines, alternating section tints */
+  --gold-light: #ffd84d; /* glow highlights */
+  --gold-dark: #8a6700; /* gold-coloured TEXT on ivory (AA) */
 
-  --radius-card: 1rem;
-  --radius-pill: 9999px;
-  --shadow-soft: 0 8px 28px -12px rgb(1 54 25 / 0.28);
+  /* Body text: forest at 85% over ivory. The unit test blends the same way. */
+  --text: rgb(0 59 23 / 0.85);
 
-  --text-hero: clamp(2.5rem, 1.6rem + 3.6vw, 4.25rem);
-  --text-section: clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem);
+  /* Layout */
+  --container: 1200px;
+  --gutter: clamp(16px, 4vw, 32px);
+  --gap: 24px;
+  --radius: 16px;
+  --section-y: clamp(56px, 7vw, 96px);
+
+  /* Type stacks. The families come from next/font-style CSS variables on <html>. */
+  --stack-serif: var(--font-serif), Georgia, 'Times New Roman', serif;
+  --stack-sans: var(--font-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --stack-urdu: var(--font-urdu), 'Noto Naskh Arabic', var(--font-sans), serif;
 }
