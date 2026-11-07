@@ -19,7 +19,13 @@ export default function NavMenu({ items, apply }: { items: NavItem[]; apply: Nav
   const [drawer, setDrawer] = useState(false)
   const root = useRef<HTMLUListElement>(null)
 
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const close = useCallback(() => setOpen(null), [])
+  const cancelClose = () => { if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null } }
+  /* Mouse only: a short grace period so a slight slip off the link or the gap above the panel does not shut it. */
+  const closeSoon = () => { cancelClose(); closeTimer.current = setTimeout(() => setOpen(null), 220) }
+  useEffect(() => cancelClose, [])
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -64,8 +70,8 @@ export default function NavMenu({ items, apply }: { items: NavItem[]; apply: Nav
                 key={item.label}
                 className={styles.item}
                 onKeyDown={(e) => onKey(e, i)}
-                onMouseEnter={(e) => { if (window.matchMedia('(hover: hover)').matches) { setOpen(i); void e } }}
-                onMouseLeave={() => { if (window.matchMedia('(hover: hover)').matches) close() }}
+                onMouseEnter={() => { if (window.matchMedia('(hover: hover)').matches) { cancelClose(); setOpen(i) } }}
+                onMouseLeave={() => { if (window.matchMedia('(hover: hover)').matches) closeSoon() }}
               >
                 <button
                   type="button"
@@ -77,7 +83,7 @@ export default function NavMenu({ items, apply }: { items: NavItem[]; apply: Nav
                 >
                   <T k={item.label} /> <ChevronDownIcon className={styles.caret} />
                 </button>
-                <ul id={id} data-sub className={styles.sub} hidden={open !== i}>
+                <ul id={id} data-sub className={styles.sub} data-open={open === i ? '' : undefined}>
                   {item.children.map((c) => (
                     <li key={c.label}>
                       <a href={c.href} rel="noopener noreferrer" onClick={close}>

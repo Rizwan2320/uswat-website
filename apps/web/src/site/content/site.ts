@@ -7,6 +7,9 @@ export const site = {
   nameCaps: 'UNIVERSITY OF SWAT',
   /** Replaces the mockup's "Striving for Academic Excellence" (user decision, 2026-11-07). */
   tagline: 'Aspiring for Quality Education with Relevance',
+  /** Small line under the name in the header logo (the tagline itself is in the top bar, hero and footer).
+   *  Source: https://uswat.edu.pk/ home page, "established in the year 2010", crawled 2026-11-06. */
+  logoLine: 'Established 2010',
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://uswat-website.vercel.app',
   /** Address as drawn in the mockup. The public site names Charbagh for the main campus, so this one is unconfirmed. */
   address: {

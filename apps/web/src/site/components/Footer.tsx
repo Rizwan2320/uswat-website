@@ -25,7 +25,7 @@ export default async function Footer() {
       <div className={`container ${styles.grid}`}>
         <div className={styles.brand}>
           <p className={styles.brandRow}>
-            <Crest size={48} />
+            <Crest size={52} />
             <span>
               <span className={styles.brandName}>{site.nameCaps}</span>
               <span className={styles.brandTag}>{site.tagline}</span>

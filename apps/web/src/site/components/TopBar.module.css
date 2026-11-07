@@ -1,5 +1,5 @@
 .bar { background: var(--forest-deep); color: var(--ivory); font-size: 12px; }
-.inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 32px; }
+.inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 30px; }
 .left { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .place { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .divider { width: 1px; height: 14px; background: rgb(252 250 244 / 0.4); }

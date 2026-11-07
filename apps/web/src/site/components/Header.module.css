@@ -3,6 +3,6 @@
   background: var(--ivory);
   box-shadow: 0 1px 0 var(--ivory-deep), 0 6px 18px rgba(0, 42, 16, 0.06);
 }
-.inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; }
-.apply { flex: none; padding-inline: 18px; }
+.inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; }
+.apply { flex: none; padding: 6px 18px; min-height: 40px; }
 @media (max-width: 767px) { .apply { display: none; } }

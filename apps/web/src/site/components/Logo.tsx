@@ -1,29 +1,22 @@
+import Image from 'next/image'
 import Link from 'next/link'
 
 import { site } from '../content/site'
 import styles from './Logo.module.css'
 
-/* SIMPLIFIED CREST PLACEHOLDER (not the official emblem). The only crest on the public site is a 70x71 px PNG, too
-   small for a header. TODO(brand): replace the circle below with the official crest as SVG or a >=256 px PNG. */
-export function Crest({ size = 52 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-      <circle cx="32" cy="32" r="30" fill="#fff" stroke="#003B17" strokeWidth="3" />
-      <circle cx="32" cy="32" r="25" fill="none" stroke="#B3261E" strokeWidth="2" />
-      <path d="M12 42 24 24l7 9 6-8 15 17H12Z" fill="#003B17" />
-      <path d="M12 42h40v4c-6 4-14 6-20 6s-14-2-20-6v-4Z" fill="#0B5A27" />
-      <circle cx="42" cy="19" r="4" fill="#F2B705" />
-    </svg>
-  )
+/* Official crest, supplied by the project owner from the university's Drive on 2026-11-08 (1254 px original, kept out
+   of the repo; /images/crest.png is a 256 px circular crop of it). Decorative: the link carries the name. */
+export function Crest({ size = 44 }: { size?: number }) {
+  return <Image src="/images/crest.png" alt="" width={size} height={size} className={styles.crest} priority />
 }
 
-export function Logo({ light = false, tagline = true }: { light?: boolean; tagline?: boolean }) {
+export function Logo({ light = false, line = site.logoLine }: { light?: boolean; line?: string | null }) {
   return (
     <Link href="/" aria-label={`${site.name} home`} className={`${styles.logo} ${light ? styles.light : ''}`}>
-      <Crest />
+      <Crest size={42} />
       <span className={styles.text}>
         <span className={styles.name}>{site.nameCaps}</span>
-        {tagline ? <span className={styles.tag}>{site.tagline}</span> : null}
+        {line ? <span className={styles.tag}>{line}</span> : null}
       </span>
     </Link>
   )

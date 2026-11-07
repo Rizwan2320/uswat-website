@@ -7,18 +7,6 @@ const U = 'https://uswat.edu.pk'
 export const nav: NavItem[] = [
   { label: 'Home', href: '/' },
   {
-    label: 'About',
-    href: `${U}/about-university/`,
-    external: true,
-    children: [
-      { label: 'About University', href: `${U}/about-university/`, external: true },
-      { label: 'Vice Chancellor’s Message', href: `${U}/vice-chancellors-message-2/`, external: true },
-      { label: 'Affiliated Colleges', href: `${U}/public-sector-affiliated-colleges/`, external: true },
-      { label: 'Proctorial Board', href: `${U}/proctorial-board/`, external: true },
-      { label: 'Alumni Association', href: `${U}/alumni/`, external: true },
-    ],
-  },
-  {
     label: 'Academics',
     href: `${U}/faculty/`,
     external: true,
@@ -75,6 +63,18 @@ export const nav: NavItem[] = [
       { label: 'Announcements', href: `${U}/category/announcements/`, external: true },
       { label: 'Events', href: `${U}/category/events/`, external: true },
       { label: 'Press Releases', href: `${U}/press-release/`, external: true },
+    ],
+  },
+  {
+    label: 'About',
+    href: `${U}/about-university/`,
+    external: true,
+    children: [
+      { label: 'About University', href: `${U}/about-university/`, external: true },
+      { label: 'Vice Chancellor’s Message', href: `${U}/vice-chancellors-message-2/`, external: true },
+      { label: 'Affiliated Colleges', href: `${U}/public-sector-affiliated-colleges/`, external: true },
+      { label: 'Proctorial Board', href: `${U}/proctorial-board/`, external: true },
+      { label: 'Alumni Association', href: `${U}/alumni/`, external: true },
     ],
   },
 ]
