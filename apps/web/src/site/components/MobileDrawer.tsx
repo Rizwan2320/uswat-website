@@ -71,7 +71,7 @@ export default function MobileDrawer({
           ),
         )}
       </ul>
-      <a className={`btn btn--gold ${styles.apply}`} href={apply.href} rel="noopener noreferrer">
+      <a className={`btn btn--maroon ${styles.apply}`} href={apply.href} rel="noopener noreferrer">
         <T k="Apply Online" /> <ArrowRightIcon className="btn-arrow" />
       </a>
     </dialog>

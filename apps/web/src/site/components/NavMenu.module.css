@@ -28,7 +28,7 @@
 .sub a {
   display: block; padding: 10px 12px; border-radius: 10px; color: var(--forest); text-decoration: none; font-size: 0.92rem;
 }
-.sub a:hover, .sub a:focus-visible { background: rgb(242 183 5 / 0.16); }
+.sub a:hover, .sub a:focus-visible { background: rgb(122 31 38 / 0.08); }
 .burger {
   display: none; place-items: center; width: 48px; height: 48px; border: 2px solid var(--forest); border-radius: 50%;
   background: transparent; color: var(--forest); font-size: 1.5rem; cursor: pointer;

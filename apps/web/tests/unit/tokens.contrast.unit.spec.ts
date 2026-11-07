@@ -59,8 +59,10 @@ const pairs: Array<[string, Rgb, Rgb, number]> = [
   ['forest on gold-light (gold button hover)', c('forest'), c('gold-light'), 4.5],
   ['gold on forest (hero accent word, quote mark)', c('gold'), c('forest'), 4.5],
   ['gold on forest-deep (footer headings)', c('gold'), c('forest-deep'), 4.5],
-  ['gold-dark on ivory (dates, small gold labels)', c('gold-dark'), c('ivory'), 4.5],
-  ['gold-dark on ivory-deep (dates on tinted cards)', c('gold-dark'), c('ivory-deep'), 4.5],
+  ['maroon on ivory (dates, quote mark, small accents)', c('maroon'), c('ivory'), 4.5],
+  ['maroon on ivory-deep (dates on tinted cards)', c('maroon'), c('ivory-deep'), 4.5],
+  ['ivory on maroon (Apply button label)', c('ivory'), c('maroon'), 4.5],
+  ['ivory on maroon-deep (Apply button hover)', c('ivory'), c('maroon-deep'), 4.5],
   ['gold focus ring on forest', c('gold'), c('forest'), 3],
   ['forest focus ring on ivory', c('forest'), c('ivory'), 3],
 ]
@@ -68,7 +70,7 @@ const pairs: Array<[string, Rgb, Rgb, number]> = [
 describe('design tokens: WCAG 2.2 contrast', () => {
   it('parses every hex token', () => {
     expect(Object.keys(tokens).sort()).toEqual(
-      ['forest', 'forest-deep', 'forest-soft', 'gold', 'gold-dark', 'gold-dim', 'gold-light', 'ivory', 'ivory-deep'].sort(),
+      ['forest', 'forest-deep', 'forest-soft', 'gold', 'gold-light', 'ivory', 'ivory-deep', 'maroon', 'maroon-deep'].sort(),
     )
   })
   it('finds the body text alpha', () => {

@@ -14,7 +14,7 @@ export default async function Header() {
       <div className={`container ${styles.inner}`}>
         <Logo />
         <NavMenu items={nav} apply={applyLink} />
-        <a className={`btn btn--gold ${styles.apply}`} href={applyLink.href} rel="noopener noreferrer">
+        <a className={`btn btn--maroon ${styles.apply}`} href={applyLink.href} rel="noopener noreferrer">
           <T k="Apply Online" /> <ArrowRightIcon className="btn-arrow" />
         </a>
       </div>
