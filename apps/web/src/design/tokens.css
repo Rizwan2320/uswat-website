@@ -1,0 +1,29 @@
+/*
+ * Design tokens. Single source of truth for colour, type, shape and shadow.
+ * Colours were sampled from the approved mockup (plan v2, section 5.2); replace with the
+ * university brand guide values when supplied. tests/unit/tokens.contrast.spec.ts reads this
+ * file, so a token edit that breaks a contrast pair fails CI.
+ */
+@theme {
+  --color-green-900: #013619;
+  --color-green-800: #034820;
+  --color-green-700: #0a5025;
+  --color-gold-500: #f7b923;
+  --color-gold-400: #fdc532;
+  --color-amber-800: #8a5a00;
+  --color-cream-50: #fbf6eb;
+  --color-sage-100: #e7e9d7;
+  --color-ink-900: #1f2a24;
+  --color-ink-600: #5b6b60;
+  --color-paper: #ffffff;
+
+  --font-serif: 'Source Serif 4 Variable', 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --radius-card: 1rem;
+  --radius-pill: 9999px;
+  --shadow-soft: 0 8px 28px -12px rgb(1 54 25 / 0.28);
+
+  --text-hero: clamp(2.5rem, 1.6rem + 3.6vw, 4.25rem);
+  --text-section: clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem);
+}
