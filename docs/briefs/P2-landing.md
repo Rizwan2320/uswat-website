@@ -2,6 +2,15 @@
 
 Date: 2026-11-07. Decision (user): the mockup wins; this is a redesign, not a re-implementation of the old site. Build the landing page thoroughly, then apply the same design across the site and the CMS.
 
+## Update 2026-11-07 (supersedes parts of this brief)
+Built under the `swat-homepage-nextjs` skill and ADR-0006. Where this brief disagrees, the skill and ADR win:
+- Pages live in the `(site)` route group; components in `apps/web/src/site/components`, typed content in `src/site/content`, getters in `src/site/lib`.
+- Fonts: Playfair Display (headings), Inter (body), Noto Nastaliq Urdu (translated chrome only). Source Serif 4 is removed.
+- The hero IS a carousel (4 slides, 6 s autoplay, pause on hover/focus/button, reduced-motion safe), per the skill.
+- Tagline everywhere: "Aspiring for Quality Education with Relevance" (user, 2026-11-07).
+- The Vice Chancellor photo is the user-supplied image (`public/images/vc-husnul-amin.png`). Other photographs are still placeholders.
+- Tokens: three brand colours (ivory, forest, gold) plus tints; 19 contrast tests.
+
 ## Objective
 Home page (T1) and the shell (utility bar, header, mobile drawer, footer) built from tokens and reusable components, in the mockup's look. The components and tokens built here are the design system for every later template (plan 5.4).
 
