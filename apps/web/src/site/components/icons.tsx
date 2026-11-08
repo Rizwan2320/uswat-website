@@ -108,3 +108,17 @@ export const LinkedinIcon = (p: IconProps) => (
 export const TiktokIcon = (p: IconProps) => (
   <Mark {...p}><path d="M16.5 3.5c.3 2.2 1.6 3.5 3.8 3.7v3a6.6 6.6 0 0 1-3.7-1.2v5.5a5.3 5.3 0 1 1-5.3-5.3c.3 0 .6 0 .8.1v3.1a2.3 2.3 0 1 0 1.5 2.1V3.5h2.9Z" /></Mark>
 )
+
+/* Navigation dropdown icons */
+export const LaptopIcon = (p: IconProps) => <Svg {...p}><rect x="4" y="5" width="16" height="11" rx="1.6" /><path d="M2 19.5h20" /></Svg>
+export const ClipboardCheckIcon = (p: IconProps) => <Svg {...p}><rect x="5" y="4.5" width="14" height="16.5" rx="2" /><path d="M9 4.5V3h6v1.5M9 13.5l2.2 2.2L15.5 11" /></Svg>
+export const TrendingIcon = (p: IconProps) => <Svg {...p}><path d="m3 17 6-6 4 4 8-8" /><path d="M15 7h6v6" /></Svg>
+export const LayersIcon = (p: IconProps) => <Svg {...p}><path d="m12 3 9 5-9 5-9-5 9-5Z" /><path d="m3 12.5 9 5 9-5" /><path d="m3 17 9 5 9-5" /></Svg>
+export const BuildingIcon = (p: IconProps) => <Svg {...p}><path d="M4 21V8.5L12 3l8 5.5V21" /><path d="M2 21h20M9.5 21v-6h5v6M9 10.5h6" /></Svg>
+export const HeartIcon = (p: IconProps) => <Svg {...p}><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20Z" /></Svg>
+export const FlaskIcon = (p: IconProps) => <Svg {...p}><path d="M9 3h6M10 3v6l-5 9.6A1.6 1.6 0 0 0 6.4 21h11.2a1.6 1.6 0 0 0 1.4-2.4L14 9V3" /><path d="M7.5 15h9" /></Svg>
+export const NewspaperIcon = (p: IconProps) => <Svg {...p}><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M8 9h8M8 13h8M8 17h5" /></Svg>
+export const VideoIcon = (p: IconProps) => <Svg {...p}><rect x="3" y="6" width="13" height="12" rx="2" /><path d="m16 11 5-3v8l-5-3" /></Svg>
+export const DownloadIcon = (p: IconProps) => <Svg {...p}><path d="M12 4v11M7 11l5 5 5-5M5 20h14" /></Svg>
+export const WalletIcon = (p: IconProps) => <Svg {...p}><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18M16 14.5h2" /></Svg>
+export const PaletteIcon = (p: IconProps) => <Svg {...p}><path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.5-2s0-2 1.5-2H17a4 4 0 0 0 4-4c0-5-4-10-9-10Z" /><circle cx="7.5" cy="11" r="1" /><circle cx="10" cy="7" r="1" /><circle cx="15" cy="7.5" r="1" /></Svg>

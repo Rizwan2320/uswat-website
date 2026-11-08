@@ -6,11 +6,13 @@ import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 're
 
 import type { Link as NavLink, NavItem } from '../content/types'
 import { T, useI18n } from './I18n'
-import { ChevronDownIcon, CloseIcon, MenuIcon } from './icons'
+import { ArrowRightIcon, ChevronDownIcon, CloseIcon, MenuIcon } from './icons'
+import { NavIcon } from './navIcons'
 import MobileDrawer from './MobileDrawer'
 import styles from './NavMenu.module.css'
 
-/* Desktop: pill links with disclosure dropdowns. Opens on hover (mouse) and on click/Enter/Space; Esc or an outside
+/* Desktop: links with disclosure dropdowns (two columns of icon rows plus an "Explore All" row; the panel hangs under the
+   floating bar with a notch that points at its link). Opens on hover (mouse) and on click/Enter/Space; Esc or an outside
    click closes; Up/Down move between links. Below 1024px the hamburger opens MobileDrawer. */
 export default function NavMenu({ items, apply }: { items: NavItem[]; apply: NavLink }) {
   const pathname = usePathname()
@@ -26,6 +28,21 @@ export default function NavMenu({ items, apply }: { items: NavItem[]; apply: Nav
   /* Mouse only: a short grace period so a slight slip off the link or the gap above the panel does not shut it. */
   const closeSoon = () => { cancelClose(); closeTimer.current = setTimeout(() => setOpen(null), 220) }
   useEffect(() => cancelClose, [])
+
+  /* Place the open panel under the bar: left edge on its link (kept inside the bar), notch under the link's middle. */
+  useEffect(() => {
+    if (open === null) return
+    const li = root.current?.children[open] as HTMLElement | undefined
+    const panel = li?.querySelector<HTMLElement>('[data-sub]')
+    const bar = li?.closest<HTMLElement>('[data-pill]')
+    if (!li || !panel || !bar) return
+    const l = li.getBoundingClientRect()
+    const b = bar.getBoundingClientRect()
+    const w = panel.offsetWidth
+    const left = Math.max(12, Math.min(l.left - b.left - 8, b.width - w - 12))
+    panel.style.setProperty('--sub-x', `${left}px`)
+    panel.style.setProperty('--notch-x', `${Math.max(20, l.left - b.left + l.width / 2 - left - 9)}px`)
+  }, [open])
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -83,15 +100,25 @@ export default function NavMenu({ items, apply }: { items: NavItem[]; apply: Nav
                 >
                   <T k={item.label} /> <ChevronDownIcon className={styles.caret} />
                 </button>
-                <ul id={id} data-sub className={styles.sub} data-open={open === i ? '' : undefined}>
-                  {item.children.map((c) => (
-                    <li key={c.label}>
-                      <a href={c.href} rel="noopener noreferrer" onClick={close}>
-                        {c.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+                <div id={id} data-sub className={styles.sub} data-open={open === i ? '' : undefined}>
+                  <div className={styles.cols}>
+                    {[item.children.slice(0, Math.ceil(item.children.length / 2)), item.children.slice(Math.ceil(item.children.length / 2))].map((col, c) => (
+                      <ul key={c} className={styles.col}>
+                        {col.map((child) => (
+                          <li key={child.label}>
+                            <a href={child.href} rel="noopener noreferrer" onClick={close}>
+                              <span className={styles.ico}><NavIcon name={child.icon} /></span>
+                              <span>{child.label}</span>
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    ))}
+                  </div>
+                  <a className={styles.all} href={item.href} rel="noopener noreferrer" onClick={close}>
+                    <span><T k="Explore All" /> <T k={item.label} /></span> <ArrowRightIcon className="flip" />
+                  </a>
+                </div>
               </li>
             )
           })}

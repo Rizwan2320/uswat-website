@@ -6,16 +6,19 @@ import { Logo } from './Logo'
 import NavMenu from './NavMenu'
 import styles from './Header.module.css'
 
-/* Sticky ivory header. Server component; only NavMenu (dropdowns, drawer) is a client component. */
+/* Floating rounded bar, as in the design reference: crest, a thin rule, the menu in the middle, a thin rule and the
+   gold "Apply Here" button. Server component; only NavMenu (dropdowns, drawer) is a client component. */
 export default async function Header() {
   const nav = await getNav()
   return (
     <header className={`${styles.header} on-light`} data-sticky>
-      <div className={`container ${styles.inner}`}>
+      <div className={styles.pill} data-pill>
         <Logo />
+        <span className={styles.rule} aria-hidden="true" />
         <NavMenu items={nav} apply={applyLink} />
-        <a className={`btn btn--maroon ${styles.apply}`} href={applyLink.href} rel="noopener noreferrer">
-          <T k="Apply Online" /> <ArrowRightIcon className="btn-arrow" />
+        <span className={styles.rule} aria-hidden="true" />
+        <a className={`btn btn--gold ${styles.apply}`} href={applyLink.href} rel="noopener noreferrer">
+          <T k={applyLink.label} /> <ArrowRightIcon className="btn-arrow" />
         </a>
       </div>
     </header>

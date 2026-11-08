@@ -1,34 +1,58 @@
-.nav { flex: 1 1 auto; display: flex; justify-content: center; }
-.list { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; }
-.item { position: relative; }
+.nav { flex: 1 1 auto; display: flex; justify-content: center; min-width: 0; }
+.list { display: flex; align-items: center; gap: 2px; flex-wrap: nowrap; }
+/* The item is NOT positioned: its panel is placed against the floating bar (see the effect in NavMenu.tsx). */
+.item { position: static; }
 .link {
-  display: inline-flex; align-items: center; gap: 4px; min-height: 40px; padding: 6px 10px;
+  position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 6px 15px;
   border: 0; border-radius: 999px; background: transparent; color: var(--forest);
-  font: inherit; font-weight: 600; font-size: 0.9rem; text-decoration: none; cursor: pointer; white-space: nowrap;
+  font: inherit; font-weight: 500; font-size: 1.02rem; letter-spacing: -0.005em; text-decoration: none; cursor: pointer; white-space: nowrap;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
-.link:hover { background: var(--ivory-deep); }
-.active, .active:hover { background: var(--forest); color: var(--ivory); }
-.caret { font-size: 0.9em; transition: transform 0.2s ease; }
+.link:hover, .link[aria-expanded='true'] { background: #e8efe1; }
+/* Current page: forest text with a maroon bar under it (as on "Home" in the reference). */
+.active, .active:hover { font-weight: 600; background: transparent; }
+.active::after {
+  content: ''; position: absolute; inset-inline: 14px; bottom: 1px; height: 3px; border-radius: 3px; background: var(--maroon);
+}
+.caret { font-size: 0.95em; transition: transform 0.2s ease; }
 [aria-expanded='true'] > .caret { transform: rotate(180deg); }
+
 .sub {
-  position: absolute; top: calc(100% + 6px); inset-inline-start: 0; z-index: 60;
-  min-width: 260px; padding: 8px; border-radius: 14px; background: var(--ivory);
-  box-shadow: 0 0 0 1px var(--ivory-deep), 0 18px 40px rgba(0, 42, 16, 0.18);
+  position: absolute; top: calc(100% + 10px); left: var(--sub-x, 0); z-index: 60;
+  width: min(700px, calc(100vw - 32px)); padding: 16px 16px 14px; border-radius: 24px; background: var(--ivory);
+  border: 1px solid rgb(0 59 23 / 0.06);
+  box-shadow: 0 22px 50px -10px rgb(0 42 16 / 0.28), 0 4px 12px rgb(0 42 16 / 0.08);
   /* Fades in and out instead of snapping; hidden panels are not focusable or announced (visibility). */
   opacity: 0; visibility: hidden; transform: translateY(6px); pointer-events: none;
   transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
 }
 .sub[data-open] { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition-delay: 0s; }
-/* Invisible bridge over the 6px gap so the pointer can travel from the link to the panel without leaving the item. */
-.sub::before { content: ''; position: absolute; inset-inline: 0; top: -12px; height: 12px; }
-/* The last item sits next to the Apply button: open its panel towards the inside. */
-.item:last-child .sub { inset-inline-start: auto; inset-inline-end: 0; }
-@media (prefers-reduced-motion: reduce) { .sub { transition: none; transform: none; } }
-.sub a {
-  display: block; padding: 10px 12px; border-radius: 10px; color: var(--forest); text-decoration: none; font-size: 0.92rem;
+/* Invisible bridge over the gap so the pointer can travel from the link to the panel without leaving the item. */
+.sub::before { content: ''; position: absolute; inset-inline: 0; top: -22px; height: 22px; }
+/* The notch that points up at the link. */
+.sub::after {
+  content: ''; position: absolute; top: -9px; left: var(--notch-x, 40px); width: 18px; height: 18px; border-radius: 4px 0 0 0;
+  background: var(--ivory); border-top: 1px solid rgb(0 59 23 / 0.06); border-left: 1px solid rgb(0 59 23 / 0.06);
+  transform: rotate(45deg);
 }
-.sub a:hover, .sub a:focus-visible { background: rgb(122 31 38 / 0.08); }
+@media (prefers-reduced-motion: reduce) { .sub { transition: none; transform: none; } }
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; }
+.col { display: grid; align-content: start; gap: 2px; padding-inline: 4px; }
+.col + .col { border-inline-start: 1px solid var(--ivory-deep); padding-inline-start: 16px; }
+.col:first-child { padding-inline-end: 16px; }
+.col a {
+  display: flex; align-items: center; gap: 16px; min-height: 56px; padding: 10px 14px; border-radius: 14px;
+  color: var(--forest); text-decoration: none; font-size: 1rem; font-weight: 500; line-height: 1.25;
+}
+.ico { flex: none; display: grid; place-items: center; width: 28px; font-size: 1.65rem; color: var(--forest); }
+.col a:hover, .col a:focus-visible { background: #e8efe1; }
+.all {
+  display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; margin-top: 12px; padding: 10px 16px;
+  border-radius: 16px; background: #e8efe1; color: var(--forest); text-decoration: none; font-size: 1.02rem; font-weight: 600;
+}
+.all:hover, .all:focus-visible { background: #dbe6d1; }
+
 .burger {
   display: none; place-items: center; width: 48px; height: 48px; border: 2px solid var(--forest); border-radius: 50%;
   background: transparent; color: var(--forest); font-size: 1.5rem; cursor: pointer;

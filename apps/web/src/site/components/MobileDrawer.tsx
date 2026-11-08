@@ -9,7 +9,7 @@ import { ArrowRightIcon, ChevronDownIcon, CloseIcon } from './icons'
 import styles from './MobileDrawer.module.css'
 
 /* Full-height drawer built on <dialog>: focus trap and Esc come from the platform; body scroll is locked while open.
-   Sub-menus are accordions. The Apply Online button stays visible at the bottom. */
+   Sub-menus are accordions. The Apply Here button stays visible at the bottom. */
 export default function MobileDrawer({
   open,
   onClose,
@@ -71,8 +71,8 @@ export default function MobileDrawer({
           ),
         )}
       </ul>
-      <a className={`btn btn--maroon ${styles.apply}`} href={apply.href} rel="noopener noreferrer">
-        <T k="Apply Online" /> <ArrowRightIcon className="btn-arrow" />
+      <a className={`btn btn--gold ${styles.apply}`} href={apply.href} rel="noopener noreferrer">
+        <T k={apply.label} /> <ArrowRightIcon className="btn-arrow" />
       </a>
     </dialog>
   )

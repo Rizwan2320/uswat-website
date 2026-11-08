@@ -14,6 +14,8 @@ export const ur: Record<string, string> = {
   'Campus Life': 'کیمپس لائف',
   'News & Events': 'خبریں اور تقریبات',
   'Apply Online': 'آن لائن درخواست دیں',
+  'Apply Here': 'یہاں درخواست دیں',
+  'Explore All': 'تمام دیکھیں',
   'Explore Programs': 'پروگرام دیکھیں',
   'Read More': 'مزید پڑھیں',
   'Read Full Message': 'مکمل پیغام پڑھیں',

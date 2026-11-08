@@ -2,7 +2,8 @@
    so the editorial CMS can replace the data files later with no component changes. */
 
 export type Link = { label: string; href: string; external?: boolean }
-export type NavItem = Link & { children?: Link[] }
+/** `icon` names an entry in components/navIcons.tsx (dropdown rows). */
+export type NavItem = Link & { children?: (Link & { icon?: string })[] }
 
 /** Where a fact came from. Real institutional facts need a source and a date; otherwise `sample: true`. */
 export type Provenance = { source?: string; verifiedAt?: string; sample?: boolean }

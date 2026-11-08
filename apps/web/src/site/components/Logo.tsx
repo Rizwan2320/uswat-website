@@ -10,14 +10,11 @@ export function Crest({ size = 44 }: { size?: number }) {
   return <Image src="/images/crest.png" alt="" width={size} height={size} className={styles.crest} priority />
 }
 
-export function Logo({ light = false, line = site.logoLine }: { light?: boolean; line?: string | null }) {
+/* The navigation bar shows the crest only (no name, no tagline), as in the design reference. */
+export function Logo({ size = 54 }: { size?: number }) {
   return (
-    <Link href="/" aria-label={`${site.name} home`} className={`${styles.logo} ${light ? styles.light : ''}`}>
-      <Crest size={42} />
-      <span className={styles.text}>
-        <span className={styles.name}>{site.nameCaps}</span>
-        {line ? <span className={styles.tag}>{line}</span> : null}
-      </span>
+    <Link href="/" aria-label={`${site.name} home`} className={styles.logo}>
+      <Crest size={size} />
     </Link>
   )
 }
