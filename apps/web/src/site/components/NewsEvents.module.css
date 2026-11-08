@@ -21,23 +21,26 @@
 .grid .card:not(:hover):not(:has(:focus-visible)) {
   box-shadow: 0 12px 16px -10px rgb(0 42 16 / 0.34), 0 3px 6px rgb(0 42 16 / 0.07);
 }
-/* News cards: no padding, so the photo column runs edge to edge and the text carries its own padding. */
-.grid .newsCard { padding: 0; min-height: 200px; }
+/* News cards: no padding. One photo fills the top of the card and fades into the white below it, where the text sits. */
+.grid .newsCard { padding: 0; }
 .tab {
   position: absolute; top: -14px; inset-inline-start: 16px; z-index: 4; padding: 6px 16px; border-radius: 999px 999px 999px 4px;
   background: var(--forest); color: var(--ivory); font-size: 0.8rem; font-weight: 600;
 }
-.row { display: grid; grid-template-columns: 42% 1fr; gap: 0; align-items: stretch; flex: 1 1 auto; }
-.photo, .thumb { position: relative; overflow: hidden; min-height: 0; }
-/* .pop .media (global) would give these the row's small radius, so match its specificity or better. */
-.grid .row .photo, .grid .row .stack { border-radius: 0; border-start-start-radius: calc(var(--radius) - 1px); border-end-start-radius: calc(var(--radius) - 1px); overflow: hidden; }
-.grid .row .thumb { border-radius: 0; }
+.row { display: flex; flex-direction: column; flex: 1 1 auto; }
+.photo { position: relative; flex: none; height: 176px; overflow: hidden; min-height: 0; }
+/* .pop .media (global) gives the photo the row's small radius, so match its specificity or better.
+   The mask fades the bottom of the picture into the white card. */
+.grid .row .photo {
+  border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 42%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0, #000 42%, transparent 100%);
+}
 .grid .newsCard .row, .grid .newsCard .row:hover { border-radius: var(--radius); background: none; }
-.stack { display: grid; grid-template-rows: 1fr 1fr; gap: 3px; min-height: 0; }
-.fillImg { object-fit: cover; object-position: 25% 30%; }
-.posPlaque { object-position: 52% 35%; }
-.posSpeaker { object-position: 50% 30%; }
-.text { display: flex; flex-direction: column; gap: 8px; min-height: 100%; padding: 30px 16px 14px 16px; }
+.fillImg { object-fit: cover; }
+.posNiibs { object-position: 50% 28%; }
+.posPlaque { object-position: 50% 22%; }
+.text { display: flex; flex-direction: column; gap: 8px; flex: 1 1 auto; margin-top: -6px; padding: 0 18px 14px; position: relative; }
 .newsTitle { font-family: var(--stack-serif); font-weight: 600; font-size: 1rem; line-height: 1.3; color: var(--forest); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 .newsTitle a { text-decoration: none; color: inherit; }
 .meta { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--maroon); }
@@ -56,4 +59,4 @@
 .none { padding: 12px 8px; color: var(--text); }
 .evAll { margin-top: 8px; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 0.9rem; font-weight: 600; color: var(--forest); text-decoration: none; }
 @media (max-width: 1023px) { .grid { grid-template-columns: repeat(2, 1fr); } .events { grid-column: 1 / -1; } }
-@media (max-width: 639px) { .grid { grid-template-columns: 1fr; } .row { grid-template-columns: 38% 1fr; } .grid .newsCard { min-height: 190px; } .head { justify-content: center; } }
+@media (max-width: 639px) { .grid { grid-template-columns: 1fr; } .head { justify-content: center; } }

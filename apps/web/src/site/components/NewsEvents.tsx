@@ -9,7 +9,7 @@ import styles from './NewsEvents.module.css'
 const ALL_NEWS = 'https://uswat.edu.pk/category/latestnews/'
 const ALL_EVENTS = 'https://uswat.edu.pk/category/events/'
 
-/* Three equal columns: Latest News (one photo), a second story (two stacked thumbnails) and an events card.
+/* Three equal columns: two news stories (one photo each, fading into the text below it) and an events card.
    Titles are forest (the mockup's blue is not a brand colour). Images fall back to a gradient until real photos are added. */
 export default async function NewsEvents() {
   const [news, events] = await Promise.all([getNews(), getEvents()])
@@ -35,7 +35,7 @@ export default async function NewsEvents() {
               <span className={styles.tab}><T k="Latest News" /></span>
               <div className={styles.row}>
                 <div className={`media ${styles.photo}`}>
-                  <SafeImage src={images.newsThumbs.niibs.src} alt={images.newsThumbs.niibs.alt} fill sizes="(max-width: 639px) 40vw, (max-width: 1023px) 22vw, 180px" className={styles.fillImg} />
+                  <SafeImage src={images.newsThumbs.niibs.src} alt={images.newsThumbs.niibs.alt} fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px" className={`${styles.fillImg} ${styles.posNiibs}`} />
                 </div>
                 <NewsText item={first} />
               </div>
@@ -45,13 +45,8 @@ export default async function NewsEvents() {
           {second ? (
             <article className={`pop ${styles.card} ${styles.newsCard}`}>
               <div className={styles.row}>
-                <div className={styles.stack}>
-                  <div className={`media ${styles.thumb}`}>
-                    <SafeImage src={images.newsThumbs.climate.src} alt={images.newsThumbs.climate.alt} fill sizes="(max-width: 639px) 40vw, (max-width: 1023px) 22vw, 180px" className={`${styles.fillImg} ${styles.posPlaque}`} />
-                  </div>
-                  <div className={`media ${styles.thumb}`}>
-                    <SafeImage src={images.newsThumbs.climateAlt.src} alt={images.newsThumbs.climateAlt.alt} fill sizes="(max-width: 639px) 40vw, (max-width: 1023px) 22vw, 180px" className={`${styles.fillImg} ${styles.posSpeaker}`} />
-                  </div>
+                <div className={`media ${styles.photo}`}>
+                  <SafeImage src={images.newsThumbs.climate.src} alt={images.newsThumbs.climate.alt} fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px" className={`${styles.fillImg} ${styles.posPlaque}`} />
                 </div>
                 <NewsText item={second} />
               </div>

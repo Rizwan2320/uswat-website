@@ -36,7 +36,6 @@ export const images = {
   newsThumbs: {
     niibs: { src: '/images/news/niibs-visit.webp', alt: 'University of Swat hosts the visiting delegation with a welcome bouquet', width: 900, height: 600 },
     climate: { src: '/images/news/climate-plaque.webp', alt: 'A commemorative shield is presented at the climate resilience conference at Bara Gali', width: 900, height: 600 },
-    climateAlt: { src: '/images/news/climate-speaker.webp', alt: 'A University of Swat representative seated at the conference at Bara Gali Summer Camp', width: 900, height: 600 },
     solar: { src: '', alt: '', width: 640, height: 420 },
   } satisfies Record<string, SiteImage>,
 }
