@@ -36,6 +36,9 @@ button { font: inherit; }
 
 /* Top bar + header stick together, so the tagline is always on screen. */
 .site-head { position: sticky; top: 0; z-index: 50; }
+/* Height of the floating navbar strip: the hero is pulled up behind it (see Header.module.css, Hero.module.css). */
+:root { --nav-h: 66px; }
+@media (max-width: 767px) { :root { --nav-h: 62px; } }
 
 /* One container for EVERY section so left/right edges align. */
 .container {
