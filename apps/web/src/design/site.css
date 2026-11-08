@@ -252,3 +252,6 @@ button { font: inherit; }
   display: inline-block; margin-inline-start: 8px; padding: 1px 8px; border-radius: 999px; vertical-align: middle;
   background: var(--gold); color: var(--forest); font: 700 .65rem/1.6 var(--stack-sans); letter-spacing: .08em; text-transform: uppercase;
 }
+
+/* While a modal <dialog> is open (e.g. the Vice Chancellor's full message), the page behind it must not scroll. */
+html:has(dialog[open]) { overflow: hidden; }

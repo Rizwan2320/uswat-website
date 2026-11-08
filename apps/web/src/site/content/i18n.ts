@@ -38,4 +38,5 @@ export const ur: Record<string, string> = {
   'Skip to content': 'مواد پر جائیں',
   Menu: 'مینو',
   Close: 'بند کریں',
+  'Read the complete message on the university website': 'مکمل پیغام جامعہ کی ویب سائٹ پر پڑھیں',
 }

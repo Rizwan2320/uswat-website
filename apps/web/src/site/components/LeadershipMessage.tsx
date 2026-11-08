@@ -1,7 +1,7 @@
 import { images } from '../content/images'
 import { getLeadership } from '../lib/content'
 import { T } from './I18n'
-import { ArrowRightIcon } from './icons'
+import LeadershipDialog from './LeadershipDialog'
 import SafeImage from './SafeImage'
 import styles from './LeadershipMessage.module.css'
 
@@ -11,21 +11,27 @@ export default async function LeadershipMessage() {
   const vc = await getLeadership()
   return (
     <section className={`section ${styles.section} on-light`} aria-labelledby="leadership-title">
-      {images.campus.src ? (
-        <SafeImage src={images.campus.src} alt="" fill sizes="50vw" className={styles.bgPhoto} />
-      ) : null}
+      {/* Decorative backdrops: they fade to white and are multiplied into the ivory so no edge shows. */}
+      <div className={`${styles.bg} ${styles.bgLeft}`} aria-hidden="true">
+        <SafeImage src={images.vcBackdropLeft.src} alt="" fill sizes="(max-width: 767px) 70vw, 40vw" className={styles.bgImg} />
+      </div>
+      <div className={`${styles.bg} ${styles.bgRight}`} aria-hidden="true">
+        <SafeImage src={images.vcBackdropRight.src} alt="" fill sizes="(max-width: 767px) 100vw, 52vw" className={styles.bgImg} />
+      </div>
       <div className={`container ${styles.grid}`}>
         <figure className={styles.figure}>
           <div className={styles.arch}>
-            <SafeImage
-              src={images.vc.src}
-              alt={images.vc.alt}
-              width={images.vc.width}
-              height={images.vc.height}
-              sizes="(max-width: 767px) 80vw, 380px"
-              priority
-              className={styles.portrait}
-            />
+            <div className={styles.archInner}>
+              <SafeImage
+                src={images.vc.src}
+                alt={images.vc.alt}
+                width={images.vc.width}
+                height={images.vc.height}
+                sizes="(max-width: 767px) 80vw, 320px"
+                priority
+                className={styles.portrait}
+              />
+            </div>
           </div>
           <figcaption className={styles.plate}>
             <span className={styles.name}>{vc.name}</span>
@@ -45,9 +51,13 @@ export default async function LeadershipMessage() {
             <span className={styles.mark} aria-hidden="true">“</span>
             <p>{vc.quote}</p>
           </blockquote>
-          <a className="btn btn--forest" href={vc.readMoreHref} rel="noopener noreferrer">
-            <T k="Read Full Message" /> <ArrowRightIcon className="btn-arrow" />
-          </a>
+          <LeadershipDialog
+            name={vc.name}
+            role={vc.role}
+            paragraphs={vc.fullMessage}
+            complete={vc.fullMessageComplete}
+            sourceHref={vc.readMoreHref}
+          />
         </div>
       </div>
     </section>

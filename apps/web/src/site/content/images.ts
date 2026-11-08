@@ -26,6 +26,10 @@ export const images = {
     { src: '/images/hero/hero-5-corridor.jpg', alt: 'Faculty members walking along a corridor in a university building', width: 813, height: 535 },
   ] satisfies SiteImage[],
   campus: { src: '', alt: 'University of Swat campus building with mountains behind', width: 1200, height: 800 } satisfies SiteImage,
+  /* Decorative backdrops for the Vice Chancellor section (supplied by the project owner, 2026-11-08). Both fade to
+     near-white, so they are blended into the ivory section with mix-blend-mode: multiply. */
+  vcBackdropLeft: { src: '/images/leadership/bg-left.webp', alt: '', width: 900, height: 1031 } satisfies SiteImage,
+  vcBackdropRight: { src: '/images/leadership/bg-right.webp', alt: '', width: 1400, height: 986 } satisfies SiteImage,
   newsThumbs: {
     niibs: { src: '', alt: '', width: 640, height: 420 },
     climate: { src: '', alt: '', width: 640, height: 420 },
