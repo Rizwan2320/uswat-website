@@ -46,7 +46,7 @@ export default async function LeadershipMessage() {
             <span className={styles.rule} aria-hidden="true" />
           </p>
           <h2 id="leadership-title" className={styles.title}>
-            <T k="A Message from the Vice Chancellor" />
+            <T k={"A Message from\nOur Vice Chancellor"} />
           </h2>
           <blockquote className={styles.quote}>
             <span className={styles.mark} aria-hidden="true">“</span>

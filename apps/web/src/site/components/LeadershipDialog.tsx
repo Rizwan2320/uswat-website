@@ -96,7 +96,7 @@ export default function LeadershipDialog({ name, role, paragraphs, complete, clo
               <div className={styles.panel}>
                 <header className={styles.head}>
                   <h3 id={titleId} className={styles.title}>
-                    <T k="A Message from the Vice Chancellor" />
+                    <T k="A Message from Our Vice Chancellor" />
                   </h3>
                   <button ref={closeRef} type="button" className={styles.close} onClick={close} aria-label={t('Close')}>
                     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
