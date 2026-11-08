@@ -60,6 +60,8 @@ export default function HeroCarousel({ content, slides }: { content: HeroContent
     if (Math.abs(dx) > 50) go(index + (dx < 0 ? 1 : -1))
   }
 
+  const anyMissing = slides.some((s) => !s.image.src)
+
   return (
     <div
       onMouseEnter={() => setHovering(true)}
@@ -72,32 +74,69 @@ export default function HeroCarousel({ content, slides }: { content: HeroContent
         if (e.key === 'ArrowRight') go(index + 1)
         if (e.key === 'ArrowLeft') go(index - 1)
       }}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
+      className={styles.root}
     >
-      <div className={styles.media} aria-hidden="true"><Ridge /></div>
+      {anyMissing ? <div className={styles.media} aria-hidden="true"><Ridge /></div> : null}
+
+      {/* Photographs fill the far side of the hero and fade into the green (a mask), as in the mockup. */}
+      <div className={styles.photos} aria-live={rotating ? 'off' : 'polite'}>
+        {slides.map((s, i) => (
+          <div
+            key={s.image.src || i}
+            className={styles.photo}
+            data-active={i === index ? '' : undefined}
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`${i + 1} of ${count}`}
+            aria-hidden={i === index ? undefined : true}
+          >
+            <SafeImage
+              src={s.image.src}
+              alt={s.image.alt}
+              fill
+              sizes="(max-width: 899px) 100vw, 62vw"
+              priority={i === 0}
+              className={styles.img}
+            />
+          </div>
+        ))}
+      </div>
+      <div className={styles.shade} aria-hidden="true" />
 
       <div className={`container ${styles.grid}`}>
-        <div className={styles.photos} onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
-          <div className={styles.frame} aria-live={rotating ? 'off' : 'polite'}>
-            {slides.map((s, i) => (
-              <div
-                key={s.image.src || i}
-                className={styles.photo}
-                data-active={i === index ? '' : undefined}
-                role="group"
-                aria-roledescription="slide"
-                aria-label={`${i + 1} of ${count}`}
-                aria-hidden={i === index ? undefined : true}
-              >
-                <SafeImage
-                  src={s.image.src}
-                  alt={s.image.alt}
-                  fill
-                  sizes="(max-width: 900px) 100vw, 600px"
-                  priority={i === 0}
-                  className={styles.img}
-                />
-              </div>
+        <div className={styles.text}>
+          <p className={styles.eyebrow}>
+            <span>{content.eyebrow}</span>
+            <span className={styles.rule} aria-hidden="true" />
+          </p>
+          <h1 className={styles.title}>
+            {content.lines.map((l) => (
+              <span key={l.text + (l.accent ?? '')} className={styles.line}>
+                {l.text}{' '}
+                {l.accent ? <span className={styles.accent}>{l.accent}</span> : null}
+              </span>
             ))}
+          </h1>
+          <p className={styles.sub}>{content.sub}</p>
+
+          <div className={styles.ctaStack}>
+            {slides.map((s, i) => {
+              const P = icons[s.primary.icon ?? 'cap']
+              const S = icons[s.secondary.icon ?? 'document']
+              const active = i === index
+              return (
+                <div key={s.primary.label} className={styles.ctas} data-active={active ? '' : undefined} inert={!active}>
+                  <a className="btn btn--gold" href={s.primary.href} rel="noopener noreferrer">
+                    <P /> {s.primary.label} <ArrowRightIcon className="btn-arrow" />
+                  </a>
+                  <a className="btn btn--outline-light" href={s.secondary.href} rel="noopener noreferrer">
+                    <S /> {s.secondary.label} <ArrowRightIcon className="btn-arrow" />
+                  </a>
+                </div>
+              )
+            })}
           </div>
 
           {multi ? (
@@ -134,40 +173,6 @@ export default function HeroCarousel({ content, slides }: { content: HeroContent
               </button>
             </div>
           ) : null}
-        </div>
-
-        <div className={styles.text}>
-          <p className={styles.eyebrow}>
-            <span>{content.eyebrow}</span>
-            <span className={styles.rule} aria-hidden="true" />
-          </p>
-          <h1 className={styles.title}>
-            {content.lines.map((l) => (
-              <span key={l.text + (l.accent ?? '')} className={styles.line}>
-                {l.text}{' '}
-                {l.accent ? <span className={styles.accent}>{l.accent}</span> : null}
-              </span>
-            ))}
-          </h1>
-          <p className={styles.sub}>{content.sub}</p>
-
-          <div className={styles.ctaStack}>
-            {slides.map((s, i) => {
-              const P = icons[s.primary.icon ?? 'cap']
-              const S = icons[s.secondary.icon ?? 'document']
-              const active = i === index
-              return (
-                <div key={s.primary.label} className={styles.ctas} data-active={active ? '' : undefined} inert={!active}>
-                  <a className="btn btn--gold" href={s.primary.href} rel="noopener noreferrer">
-                    <P /> {s.primary.label} <ArrowRightIcon className="btn-arrow" />
-                  </a>
-                  <a className="btn btn--outline-light" href={s.secondary.href} rel="noopener noreferrer">
-                    <S /> {s.secondary.label} <ArrowRightIcon className="btn-arrow" />
-                  </a>
-                </div>
-              )
-            })}
-          </div>
         </div>
       </div>
     </div>

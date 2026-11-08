@@ -1,53 +1,60 @@
+.root { display: contents; }
 .media { position: absolute; inset: 0; z-index: -2; }
 .ridge { position: absolute; inset-inline: 0; bottom: 0; width: 100%; height: 70%; }
 
-.grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); gap: clamp(28px, 4vw, 56px); align-items: center; }
-
-/* Photographs */
-.photos { position: relative; touch-action: pan-y; }
-.frame {
-  position: relative; height: clamp(220px, 19.5vw, 280px); border-radius: 20px; overflow: hidden; background: var(--forest-soft);
-  box-shadow: 0 0 0 3px rgb(252 250 244 / 0.14), 0 18px 40px rgb(0 20 8 / 0.35);
+/* Photographs: the whole far side of the hero, edge to edge and full height. Their near edge fades into the hero's
+   own green with a mask, so photo and background merge with no box, border or second green. Mirrored in RTL. */
+.photos {
+  position: absolute; z-index: -1; top: 0; bottom: 0; inset-inline-end: 0; width: min(64%, 1150px);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.55) 22%, #000 48%);
+  mask-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.55) 22%, #000 48%);
 }
-/* Soft shade along the bottom so the round controls stay readable on any photo. */
-.frame::after { content: ''; position: absolute; inset-inline: 0; bottom: 0; height: 90px; background: linear-gradient(to top, rgb(0 30 12 / 0.6), transparent); pointer-events: none; }
+[dir='rtl'] .photos {
+  -webkit-mask-image: linear-gradient(to left, transparent 0%, rgb(0 0 0 / 0.55) 22%, #000 48%);
+  mask-image: linear-gradient(to left, transparent 0%, rgb(0 0 0 / 0.55) 22%, #000 48%);
+}
 .photo { position: absolute; inset: 0; opacity: 0; transition: opacity 0.7s ease; }
 .photo[data-active] { opacity: 1; }
-.img { object-fit: cover; object-position: 50% 38%; }
+.img { object-fit: cover; object-position: 50% 35%; }
+/* Soft green wash over the photos so the white wave and the stats card sit on a calm base. */
+.shade { position: absolute; z-index: -1; inset: 0; background: linear-gradient(to bottom, rgb(0 42 16 / 0.12), rgb(0 42 16 / 0.35)); pointer-events: none; }
 
-/* The small round buttons from the mockup, bottom-left of the photographs (mirrored in RTL). */
-.controls { position: absolute; z-index: 2; inset-inline-start: 14px; bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.grid { display: grid; grid-template-columns: minmax(0, 560px) 1fr; align-items: center; }
+.text { display: grid; align-content: center; }
+.eyebrow { display: flex; align-items: center; gap: 14px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.18em; color: var(--ivory); }
+.rule { flex: 0 1 120px; height: 2px; background: linear-gradient(to right, var(--gold), transparent); }
+[dir='rtl'] .rule { background: linear-gradient(to left, var(--gold), transparent); }
+.title { margin-top: 10px; font-family: var(--stack-serif); font-weight: 600; line-height: 1.1; font-size: clamp(1.8rem, 3.1vw, 2.6rem); color: var(--ivory); }
+.line { display: block; }
+.accent { color: var(--gold); }
+.sub { margin-top: 10px; max-width: 470px; font-size: 1rem; color: rgb(252 250 244 / 0.92); }
+
+/* The buttons change with the photograph; the stack is as tall as the tallest pair so nothing jumps. */
+.ctaStack { margin-top: 16px; display: grid; }
+.ctas { grid-area: 1 / 1; display: flex; flex-wrap: wrap; gap: 12px; align-content: flex-start; opacity: 0; visibility: hidden; transition: opacity 0.5s ease, visibility 0s linear 0.5s; }
+.ctas[data-active] { opacity: 1; visibility: visible; transition-delay: 0s; }
+
+/* The small round buttons from the mockup, under the main buttons. */
+.controls { margin-top: 18px; display: flex; align-items: center; gap: 6px; }
 .round {
   display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; font-size: 0.95rem; cursor: pointer;
   border: 2px solid rgb(255 255 255 / 0.9); transition: background-color 0.2s ease, color 0.2s ease;
 }
-.ghost { background: rgb(0 30 12 / 0.25); color: #fff; }
-.ghost:hover:not(:disabled) { background: rgb(255 255 255 / 0.2); }
+.ghost { background: transparent; color: #fff; }
+.ghost:hover:not(:disabled) { background: rgb(255 255 255 / 0.14); }
 .solid { background: #fff; color: var(--forest); }
 .solid:hover { background: var(--ivory-deep); }
 .round:disabled { opacity: 0.5; cursor: not-allowed; }
 .dots { display: flex; align-items: center; }
 .dotBtn { display: grid; place-items: center; width: 24px; height: 30px; border: 0; background: transparent; cursor: pointer; }
-.dot { width: 9px; height: 9px; border-radius: 50%; background: rgb(255 255 255 / 0.8); transition: transform 0.2s ease, background-color 0.2s ease; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: rgb(255 255 255 / 0.75); transition: transform 0.2s ease, background-color 0.2s ease; }
 .dot[data-active] { background: var(--gold); transform: scale(1.3); }
 
-/* Text: the headline never changes; only the buttons below it do. */
-.text { display: grid; align-content: center; gap: 0; }
-.eyebrow { display: flex; align-items: center; gap: 14px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.18em; color: var(--ivory); }
-.rule { flex: 0 1 120px; height: 2px; background: linear-gradient(to right, var(--gold), transparent); }
-[dir='rtl'] .rule { background: linear-gradient(to left, var(--gold), transparent); }
-.title { margin-top: 10px; font-family: var(--stack-serif); font-weight: 600; line-height: 1.12; font-size: clamp(1.7rem, 2.9vw, 2.4rem); color: var(--ivory); }
-.line { display: block; }
-.accent { color: var(--gold); }
-.sub { margin-top: 10px; max-width: 470px; font-size: 1rem; color: rgb(252 250 244 / 0.92); }
-
-.ctaStack { margin-top: 16px; display: grid; }
-.ctas { grid-area: 1 / 1; display: flex; flex-wrap: wrap; gap: 12px; align-content: flex-start; opacity: 0; visibility: hidden; transition: opacity 0.5s ease, visibility 0s linear 0.5s; }
-.ctas[data-active] { opacity: 1; visibility: visible; transition-delay: 0s; }
-
 @media (max-width: 899px) {
-  .grid { grid-template-columns: minmax(0, 1fr); gap: 22px; }
-  .frame { height: clamp(190px, 52vw, 300px); }
+  /* Narrow screens: the photograph sits behind the text under a strong green wash so the words stay readable. */
+  .photos { width: 100%; -webkit-mask-image: none; mask-image: none; }
+  .shade { background: rgb(0 42 16 / 0.8); }
+  .grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {
   .photo, .ctas { transition: none; }
