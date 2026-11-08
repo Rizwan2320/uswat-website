@@ -12,8 +12,11 @@ const empty = { notices: 'No current notices', jobs: 'No current job openings', 
 export default async function FeedCards() {
   const feeds = await getFeeds()
   return (
-    <section className={`${styles.section} on-light`} aria-label="Notices, jobs and tenders">
+    <section className={`${styles.section} on-light`} aria-labelledby="announcements-title">
       <div className="container">
+        <h2 id="announcements-title" className="section-title">
+          <T k="Announcement" />
+        </h2>
         <div className={`${styles.grid} pop-grid`}>
           {feeds.map((f) => {
             const Icon = icons[f.id]

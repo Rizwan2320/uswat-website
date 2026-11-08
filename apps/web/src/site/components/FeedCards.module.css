@@ -1,6 +1,15 @@
-.section { padding-bottom: var(--section-y); }
+/* Same treatment as the portal cards above: a slightly deeper cream band that fades out at both ends, pure white cards,
+   a soft shadow under each. Only colour, shadow and the new heading were added: the card padding and grid are as before. */
+.section {
+  padding-block: clamp(4px, 1vw, 12px) clamp(40px, 4vw, 56px);
+  background: linear-gradient(to bottom, var(--ivory) 0, var(--ivory-deep) 30%, var(--ivory-deep) 76%, var(--ivory) 100%);
+}
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); align-items: stretch; }
 .card { padding: 22px 22px 14px; display: flex; flex-direction: column; }
+.grid .card { background: #fff; border-color: rgb(0 59 23 / 0.07); }
+.grid .card:not(:hover):not(:has(:focus-visible)) {
+  box-shadow: 0 12px 16px -10px rgb(0 42 16 / 0.34), 0 3px 6px rgb(0 42 16 / 0.07);
+}
 .head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 .icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--forest); color: var(--ivory); font-size: 1.2rem; flex: none; }
 .title { flex: 1 1 auto; font-family: var(--stack-sans); font-weight: 700; font-size: 1.1rem; color: var(--forest); }
