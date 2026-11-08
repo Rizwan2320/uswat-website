@@ -43,6 +43,23 @@ export const nav: NavItem[] = [
     ],
   },
   {
+    /* Not in the mockup. Added at the owner's request on 2026-11-08 because the official site has an Administration menu. Its real
+       submenu was not retrievable (see docs/plan/official-data-raw-2026-11-05.md section 6), so the rows are the office pages that
+       were read on 2026-11-05 (section 5); the owner should confirm them against the official menu. No landing page was verified, so
+       there is no "Explore All" row (noExplore). */
+    label: 'Administration',
+    href: U,
+    external: true,
+    noExplore: true,
+    children: [
+      { label: 'Controller of Examinations', href: `${U}/controller-of-examination-office/`, external: true, icon: 'clipboard' },
+      { label: 'Directorate of IT', href: `${U}/directorate-of-it/`, external: true, icon: 'laptop' },
+      { label: 'Directorate of Works', href: `${U}/directorate-of-works/`, external: true, icon: 'building' },
+      { label: 'Directorate of Advanced Studies & Research', href: `${U}/advanced-studies-and-research-board/`, external: true, icon: 'cap' },
+      { label: 'Proctorial Board', href: `${U}/proctorial-board/`, external: true, icon: 'gavel' },
+    ],
+  },
+  {
     label: 'Campus Life',
     href: `${U}/maincampus/`,
     external: true,
@@ -63,23 +80,6 @@ export const nav: NavItem[] = [
       { label: 'Announcements', href: `${U}/category/announcements/`, external: true, icon: 'megaphone' },
       { label: 'Events', href: `${U}/category/events/`, external: true, icon: 'calendar' },
       { label: 'Press Releases', href: `${U}/press-release/`, external: true, icon: 'document' },
-    ],
-  },
-  {
-    /* Not in the mockup. Added at the owner's request on 2026-11-08 because the official site has an Administration menu. Its real
-       submenu was not retrievable (see docs/plan/official-data-raw-2026-11-05.md section 6), so the rows are the office pages that
-       were read on 2026-11-05 (section 5); the owner should confirm them against the official menu. No landing page was verified, so
-       there is no "Explore All" row (noExplore). */
-    label: 'Administration',
-    href: U,
-    external: true,
-    noExplore: true,
-    children: [
-      { label: 'Controller of Examinations', href: `${U}/controller-of-examination-office/`, external: true, icon: 'clipboard' },
-      { label: 'Directorate of IT', href: `${U}/directorate-of-it/`, external: true, icon: 'laptop' },
-      { label: 'Directorate of Works', href: `${U}/directorate-of-works/`, external: true, icon: 'building' },
-      { label: 'Directorate of Advanced Studies & Research', href: `${U}/advanced-studies-and-research-board/`, external: true, icon: 'cap' },
-      { label: 'Proctorial Board', href: `${U}/proctorial-board/`, external: true, icon: 'gavel' },
     ],
   },
   {
