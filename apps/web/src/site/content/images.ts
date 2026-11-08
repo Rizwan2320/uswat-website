@@ -24,13 +24,16 @@ export const images = {
     { src: '/images/hero/hero-3-group-outside.jpg', alt: 'Faculty, staff and students gathered for a group photograph outside a university building', width: 828, height: 550 },
     { src: '/images/hero/hero-4-conference-hall.jpg', alt: 'A seminar in progress in a conference hall', width: 854, height: 535 },
     { src: '/images/hero/hero-5-corridor.jpg', alt: 'Faculty members walking along a corridor in a university building', width: 813, height: 535 },
+    /* Added 2026-11-08, supplied by the owner. The gate photo is only 450 x 298 px: ask for the original to avoid softness. */
+    { src: '/images/hero/hero-6-campus-sunset.jpg', alt: 'The University of Swat main campus at sunset, with wet paths, lit buildings and misty mountains', width: 1000, height: 653 },
+    { src: '/images/hero/hero-7-main-gate.jpg', alt: 'The University of Swat entrance gate seen from above, with the road winding into the valley', width: 450, height: 298, focus: '50% 95%' },
   ] satisfies SiteImage[],
   campus: { src: '', alt: 'University of Swat campus building with mountains behind', width: 1200, height: 800 } satisfies SiteImage,
   /* Decorative backdrops for the Vice Chancellor section (supplied by the project owner, 2026-11-08). The left one
      fades to near-white and is multiplied into the ivory; the right one (a campus building, replaced 2026-11-08) is
      faded into the ivory with a CSS mask. */
   vcBackdropLeft: { src: '/images/leadership/bg-left.webp', alt: '', width: 900, height: 1031 } satisfies SiteImage,
-  vcBackdropRight: { src: '/images/leadership/bg-right-campus.webp', alt: '', width: 800, height: 1067 } satisfies SiteImage,
+  vcBackdropRight: { src: '/images/leadership/bg-right-building.webp', alt: '', width: 800, height: 1067 } satisfies SiteImage,
   /* Photos from the university's own news posts (copied from the project's Drive crawl, resized to 900 px wide).
      Alt text describes the scene only, with no names. Not yet confirmed by the owner for public use (people are visible). */
   newsThumbs: {

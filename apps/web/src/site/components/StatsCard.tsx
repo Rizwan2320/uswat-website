@@ -5,7 +5,7 @@ import styles from './StatsCard.module.css'
 
 const icons = { cap: CapIcon, people: PeopleIcon, person: PersonIcon, trophy: TrophyIcon }
 
-/* Ivory card overlapping the hero bottom by ~50px. Server component; only CountUp is client.
+/* Ivory card overlapping the hero bottom by ~50px. It stays put on hover (no pop, owner request 2026-11-08). Server component; only CountUp is client.
    A "Sample" note appears only while an entry is flagged `sample: true` in content/stats.ts. */
 export default async function StatsCard() {
   const stats = await getStats()
@@ -13,7 +13,7 @@ export default async function StatsCard() {
   return (
     <section className={styles.wrap} aria-label="University at a glance">
       <div className="container">
-        <ul className={`${styles.card} pop on-light`}>
+        <ul className={`${styles.card} on-light`}>
           {stats.map((s) => {
             const Icon = icons[s.icon]
             return (

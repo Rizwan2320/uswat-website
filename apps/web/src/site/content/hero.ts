@@ -17,7 +17,7 @@ export type HeroContent = {
 
 /* Layout: photographs on one side, the text on the other. The headline (the tagline) and the sub line never change
    (user decision 2026-11-07: "sticky, not changing"). The photograph AND the two buttons change together, one slide
-   every 10 seconds (user decision 2026-11-08; 5 s was too fast). Buttons point at the main things: programs, admissions, scholarships, research, campus life, news. Every destination is a real uswat.edu.pk page already used in nav.ts. Labels are short so each pair stays on one row beside the photo. */
+   every 7 seconds (user decisions 2026-11-08: 5 s was too fast, 10 s too slow). Buttons point at the main things: programs, admissions, scholarships, research, campus life, news. Every destination is a real uswat.edu.pk page already used in nav.ts. Labels are short so each pair stays on one row beside the photo. */
 export const hero: HeroContent = {
   eyebrow: 'UNIVERSITY OF SWAT',
   lines: [{ text: 'Aspiring for' }, { text: 'Quality Education' }, { text: 'with ', accent: 'Relevance' }],
@@ -36,6 +36,11 @@ export const heroSlides: HeroSlide[] = [
     secondary: { label: 'Admissions Fall 2026', href: `${U}/2026/10/undergraduate-admissions-fall-2026-phase-ii/`, icon: 'document' },
   },
   {
+    image: images.heroSlides[5]!,
+    primary: { label: 'About University', href: `${U}/about-university/`, icon: 'book' },
+    secondary: { label: 'Main Campus', href: `${U}/maincampus/`, icon: 'people' },
+  },
+  {
     image: images.heroSlides[1]!,
     primary: { label: 'Apply Online', href: 'https://cms1.uswat.edu.pk/admission/program/list', icon: 'document' },
     secondary: { label: 'Scholarships', href: `${U}/2026/11/kpef-merit-cum-inaffordability-scholarship-scheme-2025-26/`, icon: 'badge' },
@@ -44,6 +49,11 @@ export const heroSlides: HeroSlide[] = [
     image: images.heroSlides[2]!,
     primary: { label: 'Research', href: `${U}/oric-2/`, icon: 'book' },
     secondary: { label: 'Digital Library', href: 'http://www.digitallibrary.edu.pk/uniofswat.html', icon: 'book' },
+  },
+  {
+    image: images.heroSlides[6]!,
+    primary: { label: 'Alumni', href: `${U}/alumni/`, icon: 'people' },
+    secondary: { label: 'Affiliated Colleges', href: `${U}/public-sector-affiliated-colleges/`, icon: 'badge' },
   },
   {
     image: images.heroSlides[3]!,

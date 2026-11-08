@@ -4,7 +4,7 @@ import { PinIcon } from './icons'
 import SearchOverlay from './SearchOverlay'
 import styles from './TopBar.module.css'
 
-/* Darkest green utility bar. Sticks with the header (see .site-head) so the tagline is always visible.
+/* Darkest green utility bar. Sticks with the header (see .site-head) so the "Established in 2010" line is always visible.
    The street address is NOT shown here: it is unconfirmed (Odigram vs Charbagh) and is labelled Sample in the footer. */
 export default function TopBar() {
   return (
@@ -15,7 +15,7 @@ export default function TopBar() {
             <PinIcon /> <span>Swat, Khyber Pakhtunkhwa, Pakistan</span>
           </span>
           <span className={styles.divider} aria-hidden="true" />
-          <span className={styles.tagline}>{site.tagline}</span>
+          <span className={styles.tagline}>{site.established}</span>
         </p>
         <nav className={styles.right} aria-label="Portals and language">
           <a href={site.portalLinks.student} rel="noopener noreferrer">

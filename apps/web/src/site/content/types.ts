@@ -35,7 +35,8 @@ export type Feed = {
   items: FeedItem[]
 }
 
-export type SiteImage = { src: string; alt: string; width: number; height: number }
+/** `focus` is an optional CSS object-position for crops (hero), e.g. '50% 90%'. */
+export type SiteImage = { src: string; alt: string; width: number; height: number; focus?: string }
 
 export type NewsItem = Dated &
   Provenance & {

@@ -10,7 +10,7 @@ import {
 import SafeImage from './SafeImage'
 import styles from './HeroCarousel.module.css'
 
-const AUTOPLAY_MS = 10000
+const AUTOPLAY_MS = 7000
 const icons = { cap: CapIcon, document: DocumentIcon, book: BookIcon, calendar: CalendarIcon, people: PeopleIcon, badge: BadgeIcon }
 
 /* Hero. Photographs on one side, the static headline (the tagline) and sub line on the other. The photograph and the
@@ -99,6 +99,7 @@ export default function HeroCarousel({ content, slides }: { content: HeroContent
               sizes="(max-width: 899px) 100vw, 62vw"
               priority={i === 0}
               className={styles.img}
+              style={s.image.focus ? { objectPosition: s.image.focus } : undefined}
             />
           </div>
         ))}

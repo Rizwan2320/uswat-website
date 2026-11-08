@@ -1,6 +1,6 @@
 .wrap { position: relative; z-index: 3; margin-top: calc(-1 * clamp(44px, 4.5vw, 60px)); }
 .card {
-  display: grid; grid-template-columns: repeat(4, 1fr); padding: 12px 6px; border-radius: var(--radius);
+  display: grid; grid-template-columns: repeat(4, 1fr); padding: 12px 6px; border-radius: var(--radius); background: var(--ivory);
   max-width: 1040px; margin-inline: auto;
   box-shadow: 0 8px 24px rgba(0, 42, 16, 0.12);
 }
