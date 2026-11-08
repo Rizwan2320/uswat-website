@@ -10,11 +10,11 @@ import {
 import SafeImage from './SafeImage'
 import styles from './HeroCarousel.module.css'
 
-const AUTOPLAY_MS = 5000
+const AUTOPLAY_MS = 10000
 const icons = { cap: CapIcon, document: DocumentIcon, book: BookIcon, calendar: CalendarIcon, people: PeopleIcon, badge: BadgeIcon }
 
 /* Hero. Photographs on one side, the static headline (the tagline) and sub line on the other. The photograph and the
-   two buttons change together, one slide every 5 s. Autoplay pauses on hover, on focus inside, when the tab is hidden
+   two buttons change together, one slide every 10 s. Autoplay pauses on hover, on focus inside, when the tab is hidden
    and under prefers-reduced-motion; there is a visible pause/play button, previous/next (the small round buttons from
    the mockup), labelled dots, arrow keys and swipe. Inactive slides are aria-hidden and their buttons are inert. */
 export default function HeroCarousel({ content, slides }: { content: HeroContent; slides: HeroSlide[] }) {

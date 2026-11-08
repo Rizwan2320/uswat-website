@@ -17,7 +17,7 @@ export type HeroContent = {
 
 /* Layout: photographs on one side, the text on the other. The headline (the tagline) and the sub line never change
    (user decision 2026-11-07: "sticky, not changing"). The photograph AND the two buttons change together, one slide
-   every 5 seconds (user decision 2026-11-08). Every destination is a real uswat.edu.pk page already used in nav.ts. Labels are short so each pair stays on one row beside the photo. */
+   every 10 seconds (user decision 2026-11-08; 5 s was too fast). Buttons point at the main things: programs, admissions, scholarships, research, campus life, news. Every destination is a real uswat.edu.pk page already used in nav.ts. Labels are short so each pair stays on one row beside the photo. */
 export const hero: HeroContent = {
   eyebrow: 'UNIVERSITY OF SWAT',
   lines: [{ text: 'Aspiring for' }, { text: 'Quality Education' }, { text: 'with ', accent: 'Relevance' }],
@@ -37,22 +37,22 @@ export const heroSlides: HeroSlide[] = [
   },
   {
     image: images.heroSlides[1]!,
-    primary: { label: 'Research', href: `${U}/oric-2/`, icon: 'book' },
-    secondary: { label: 'Quality Enhancement', href: `${U}/quality-enhancement-cell/`, icon: 'badge' },
+    primary: { label: 'Apply Online', href: 'https://cms1.uswat.edu.pk/admission/program/list', icon: 'document' },
+    secondary: { label: 'Scholarships', href: `${U}/2026/11/kpef-merit-cum-inaffordability-scholarship-scheme-2025-26/`, icon: 'badge' },
   },
   {
     image: images.heroSlides[2]!,
+    primary: { label: 'Research', href: `${U}/oric-2/`, icon: 'book' },
+    secondary: { label: 'Digital Library', href: 'http://www.digitallibrary.edu.pk/uniofswat.html', icon: 'book' },
+  },
+  {
+    image: images.heroSlides[3]!,
     primary: { label: 'Campus Life', href: `${U}/maincampus/`, icon: 'people' },
     secondary: { label: 'Student Services', href: `${U}/campus-management-system-uswat/`, icon: 'document' },
   },
   {
-    image: images.heroSlides[3]!,
+    image: images.heroSlides[4]!,
     primary: { label: 'Latest News', href: `${U}/category/latestnews/`, icon: 'document' },
     secondary: { label: 'Upcoming Events', href: `${U}/category/events/`, icon: 'calendar' },
-  },
-  {
-    image: images.heroSlides[4]!,
-    primary: { label: 'About Us', href: `${U}/about-university/`, icon: 'cap' },
-    secondary: { label: 'Vice Chancellor’s Message', href: `${U}/vice-chancellors-message-2/`, icon: 'people' },
   },
 ]

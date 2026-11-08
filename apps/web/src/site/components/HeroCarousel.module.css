@@ -38,12 +38,12 @@
 .controls { margin-top: 18px; display: flex; align-items: center; gap: 6px; }
 .round {
   display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; font-size: 0.95rem; cursor: pointer;
-  border: 2px solid rgb(255 255 255 / 0.9); transition: background-color 0.2s ease, color 0.2s ease;
+  border: 2px solid var(--gold); transition: background-color 0.2s ease, color 0.2s ease;
 }
-.ghost { background: transparent; color: #fff; }
-.ghost:hover:not(:disabled) { background: rgb(255 255 255 / 0.14); }
-.solid { background: #fff; color: var(--forest); }
-.solid:hover { background: var(--ivory-deep); }
+.ghost { background: transparent; color: var(--gold); }
+.ghost:hover:not(:disabled) { background: rgb(242 183 5 / 0.18); }
+.solid { background: var(--gold); color: var(--forest); }
+.solid:hover { background: var(--gold-light); }
 .round:disabled { opacity: 0.5; cursor: not-allowed; }
 .dots { display: flex; align-items: center; }
 .dotBtn { display: grid; place-items: center; width: 24px; height: 30px; border: 0; background: transparent; cursor: pointer; }
