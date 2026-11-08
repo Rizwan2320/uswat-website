@@ -1,7 +1,7 @@
 import { admissions } from '../content/admissions'
 import { events } from '../content/events'
 import { feeds } from '../content/feeds'
-import { hero, heroBackgrounds } from '../content/hero'
+import { hero, heroSlides } from '../content/hero'
 import { leadership } from '../content/leadership'
 import { nav } from '../content/nav'
 import { news } from '../content/news'
@@ -13,7 +13,7 @@ import { stats } from '../content/stats'
    (local API) with no component changes. */
 export async function getSite() { return site }
 export async function getNav() { return nav }
-export async function getHero() { return { content: hero, backgrounds: heroBackgrounds } }
+export async function getHero() { return { content: hero, slides: heroSlides } }
 export async function getStats() { return stats }
 export async function getLeadership() { return leadership }
 export async function getAdmissions() { return admissions }

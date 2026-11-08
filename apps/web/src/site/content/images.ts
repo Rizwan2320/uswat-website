@@ -2,8 +2,8 @@ import type { SiteImage } from './types'
 
 /* Every image reference lives here. `src: ''` renders the on-brand fallback (SafeImage).
    Real photos are in the project's Google Drive folder uswat_data/assets/images (crawled from the public site);
-   they are not copied into the repo yet because the Drive connector only returns base64 into the chat.
-   TODO(images): add the chosen files to apps/web/public/images/ and set `src` here (root-relative, e.g. '/images/hero-gate.jpg').
+   Large Drive downloads are saved to a file by the connector, so they can be decoded and copied into apps/web/public/images/.
+   TODO(images): add the chosen files there and set `src` here (root-relative, e.g. '/images/hero-gate.jpg').
    Suggested Drive files: cover-photo-c4f9957e.jpg, 5-a4f2119b.jpg, 3-443b3b5d.jpg, 1-1-1a2b66d0.jpg (campus),
    River-Swat-Pakistan-3-5caeb332.jpg (valley), WhatsApp-Image-* (news photos; check each for faces and consent). */
 
@@ -15,11 +15,15 @@ export const images = {
     width: 450,
     height: 438,
   } satisfies SiteImage,
+  /** Supplied by the project owner on 2026-11-08 (event photographs from the university). Slider arrows and the dot strip
+   *  that were in the screenshots are cropped off; about 830x550 px each, shown at about 600 px wide. Alt text describes the
+   *  scene only; it does not name anyone. TODO(images): swap for full-resolution originals when available. */
   heroSlides: [
-    { src: '', alt: 'Main gate of the University of Swat', width: 1600, height: 900 },
-    { src: '', alt: 'Students in an admissions counselling session', width: 1600, height: 900 },
-    { src: '', alt: 'Researchers in a university laboratory', width: 1600, height: 900 },
-    { src: '', alt: 'The Swat valley campus in the mountains', width: 1600, height: 900 },
+    { src: '/images/hero/hero-1-lecture-hall.jpg', alt: 'Faculty, staff and students gathered for a group photograph in a lecture hall', width: 850, height: 556 },
+    { src: '/images/hero/hero-2-hec-meeting.jpg', alt: 'Officials in a meeting in an office with the Higher Education Commission emblem on the wall', width: 820, height: 555 },
+    { src: '/images/hero/hero-3-group-outside.jpg', alt: 'Faculty, staff and students gathered for a group photograph outside a university building', width: 828, height: 550 },
+    { src: '/images/hero/hero-4-conference-hall.jpg', alt: 'A seminar in progress in a conference hall', width: 854, height: 535 },
+    { src: '/images/hero/hero-5-corridor.jpg', alt: 'Faculty members walking along a corridor in a university building', width: 813, height: 535 },
   ] satisfies SiteImage[],
   campus: { src: '', alt: 'University of Swat campus building with mountains behind', width: 1200, height: 800 } satisfies SiteImage,
   newsThumbs: {
