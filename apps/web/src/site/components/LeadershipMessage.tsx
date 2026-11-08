@@ -5,8 +5,8 @@ import LeadershipDialog from './LeadershipDialog'
 import SafeImage from './SafeImage'
 import styles from './LeadershipMessage.module.css'
 
-/* Leadership section. The portrait is the photo supplied for this project; it is rectangular and 450 px wide, so it is
-   masked into an arch with object-fit: cover (never upscaled past its size). The quote is the VC's own published text. */
+/* Leadership section, as in the mockup: the Vice Chancellor (supplied photo, studio backdrop removed) stands on the
+   campus photo, with a green ribbon name plate over the base. The quote is the opening of his message. */
 export default async function LeadershipMessage() {
   const vc = await getLeadership()
   return (
@@ -20,20 +20,21 @@ export default async function LeadershipMessage() {
       </div>
       <div className={`container ${styles.grid}`}>
         <figure className={styles.figure}>
-          <div className={styles.arch}>
-            <div className={styles.archInner}>
-              <SafeImage
-                src={images.vc.src}
-                alt={images.vc.alt}
-                width={images.vc.width}
-                height={images.vc.height}
-                sizes="(max-width: 767px) 80vw, 320px"
-                priority
-                className={styles.portrait}
-              />
-            </div>
-          </div>
-          <figcaption className={styles.plate}>
+          <SafeImage
+            src={images.vc.src}
+            alt={images.vc.alt}
+            width={images.vc.width}
+            height={images.vc.height}
+            sizes="(max-width: 767px) 80vw, 340px"
+            priority
+            className={styles.portrait}
+          />
+          {/* Ribbon name plate from the mockup: forest green, gold edge, wings that sweep out to each side. */}
+          <figcaption className={styles.ribbon}>
+            <svg className={styles.ribbonBg} viewBox="0 0 400 64" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+              <path d="M0 64 C34 64 46 56 66 34 C80 18 98 6 132 6 H268 C302 6 320 18 334 34 C354 56 366 64 400 64 Z" fill="var(--forest)" />
+              <path d="M0 64 C34 64 46 56 66 34 C80 18 98 6 132 6 H268 C302 6 320 18 334 34 C354 56 366 64 400 64" fill="none" stroke="var(--gold)" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
+            </svg>
             <span className={styles.name}>{vc.name}</span>
             <span className={styles.role}>{vc.role}</span>
           </figcaption>
@@ -56,6 +57,7 @@ export default async function LeadershipMessage() {
             role={vc.role}
             paragraphs={vc.fullMessage}
             complete={vc.fullMessageComplete}
+            closing={vc.closing}
             sourceHref={vc.readMoreHref}
           />
         </div>

@@ -1,22 +1,31 @@
 /* Vice Chancellor's message. Text is quoted VERBATIM from https://uswat.edu.pk/vice-chancellors-message-2/
    (first two sentences, crawled 2026-11-06). The mockup's paragraph is not used because it is not the VC's text.
-   Name check: the mockup spelled "Husnun Amin"; the supplied photo caption says "Husnul Amin" (name set by the project owner).
-   OPEN: the 2026-11-05 crawl and a re-read on 2026-11-08 show that page signed by "Prof. Dr. Muhammad Qasim", so the
-   attribution of this text to the person named above must be confirmed before this goes public. */
+   Name: the mockup spelled "Husnun Amin"; the owner confirmed on 2026-11-08 that the current Vice Chancellor is
+   Prof. Dr. Husnul Amin (the public page was crawled on 2026-11-05 and was then signed by a different name, so the
+   public site may be out of date). Full message supplied by the owner 2026-11-08. */
 export const leadership = {
   name: 'Prof. Dr. Husnul Amin',
   role: 'Vice Chancellor, University of Swat',
   quote:
     'It is with immense pride, humility, and a profound sense of responsibility that I assume the office of Vice Chancellor of the University of Swat. I am honored to serve this distinguished institution at a pivotal moment in its journey and look forward to working collectively with our students, faculty, staff, alumni, partners, and stakeholders to shape a future defined by excellence, innovation, and impact.',
-  /* Paragraphs shown in the "Read Full Message" dialog. Only the opening paragraph is verified text so far: the full
-     message could not be copied verbatim (the fetch tool returns summaries only) and nothing is invented. While
-     fullMessageComplete is false the dialog says the complete text is on the university site and links to it.
-     TODO(content): paste the complete message (from the page above) here and set fullMessageComplete to true. */
+  /* Paragraphs shown in the "Read Full Message" window. Text supplied by the project owner on 2026-11-08 (the
+     fetch tool could only summarise the university's page, so it was not copied from there by this project). */
   fullMessage: [
     'It is with immense pride, humility, and a profound sense of responsibility that I assume the office of Vice Chancellor of the University of Swat. I am honored to serve this distinguished institution at a pivotal moment in its journey and look forward to working collectively with our students, faculty, staff, alumni, partners, and stakeholders to shape a future defined by excellence, innovation, and impact.',
+    'The University of Swat stands at the heart of one of the world’s most breathtaking and ecologically significant regions. Nestled amidst the mountains, rivers, and rich cultural heritage of the Swat Valley, our University possesses a unique identity and an extraordinary opportunity to contribute to the advancement of knowledge, sustainable development, and human prosperity. We are not merely an institution of higher learning; we are a catalyst for transformation, a center for intellectual inquiry, and a beacon of hope for future generations.',
+    'As we embark on a new chapter, our collective ambition must be clear: to establish the University of Swat as a nationally recognized and internationally connected center of academic excellence, research innovation, and societal engagement. We must aspire not only to educate students but also to create leaders, innovators, entrepreneurs, researchers, and responsible citizens who will shape the future of Pakistan and contribute meaningfully to the global community.',
+    'The challenges confronting our world today—climate change, environmental degradation, technological disruption, economic uncertainty, and social inequalities—require universities to assume a more active and transformative role. Institutions of higher education must generate knowledge, foster innovation, and provide solutions that address the pressing needs of society. The University of Swat is uniquely positioned to contribute to these efforts, particularly in areas relating to environmental sustainability, climate resilience, biodiversity conservation, water resource management, mountain ecosystems, emerging technologies, public policy, and community development.',
+    'My vision is to cultivate a vibrant academic ecosystem where excellence in teaching is matched by excellence in research, where innovation flourishes alongside tradition, and where diversity of thought is celebrated as a source of strength. We will continue to strengthen academic quality, modernize curricula, expand research opportunities, encourage interdisciplinary collaboration, and promote a culture of continuous learning and discovery.',
+    'Research will remain a cornerstone of our institutional growth. We will strive to enhance our research capacity, establish meaningful national and international collaborations, attract competitive research funding, and encourage scholarship that generates tangible benefits for society. Our faculty and students will be empowered to pursue knowledge that addresses local challenges while contributing to global scientific and intellectual discourse.',
+    'The future of higher education is increasingly shaped by digital technologies, artificial intelligence, entrepreneurship, and innovation-driven economies. The University of Swat must position itself at the forefront of these developments. We will work to strengthen digital transformation, promote technological literacy, support entrepreneurial initiatives, and create opportunities that prepare our graduates to thrive in a rapidly evolving world.',
+    'At the same time, we remain firmly committed to the values that define great universities: integrity, merit, inclusivity, transparency, academic freedom, and respect for diversity. We will continue to foster an environment where every student has the opportunity to learn, grow, and realize their full potential regardless of background or circumstance.',
+    'The success of any university is ultimately measured not by its buildings or statistics but by the lives it transforms and the contributions it makes to society. Our students are at the center of everything we do. Their aspirations, achievements, and success will remain our highest priority. We will continue to strengthen student support services, enhance learning opportunities, and provide an educational experience that equips graduates with the knowledge, skills, character, and confidence necessary for meaningful lives and careers.',
+    'As we move forward, I invite all members of the University community to join me in a shared commitment to excellence. Together, we can build a University that not only meets the challenges of the present but also shapes the opportunities of the future. Through collaboration, innovation, dedication, and a shared sense of purpose, we will elevate the University of Swat to new heights of academic distinction and societal relevance.',
+    'The journey ahead is filled with promise. Let us embrace it with confidence, determination, and an unwavering commitment to excellence. I warmly welcome you to the University of Swat and invite you to be part of this exciting journey of growth, discovery, and transformation.',
   ],
-  fullMessageComplete: false,
+  fullMessageComplete: true,
+  closing: 'With best regards,',
   readMoreHref: 'https://uswat.edu.pk/vice-chancellors-message-2/',
   source: 'https://uswat.edu.pk/vice-chancellors-message-2/',
-  verifiedAt: '2026-11-06',
+  verifiedAt: '2026-11-08',
 }

@@ -8,9 +8,9 @@ import type { SiteImage } from './types'
    River-Swat-Pakistan-3-5caeb332.jpg (valley), WhatsApp-Image-* (news photos; check each for faces and consent). */
 
 export const images = {
-  /** Supplied by the user on 2026-11-07 for the leadership section. 450x438 is below the 600 px portrait minimum, so it is masked and not upscaled. */
+  /** Supplied by the user on 2026-11-07 for the leadership section. The studio backdrop was removed (segmentation model, 2026-11-08) so the portrait stands on the campus photo; 450x438 is not upscaled. */
   vc: {
-    src: '/images/vc-husnul-amin.png',
+    src: '/images/vc-husnul-amin-cutout.webp',
     alt: 'Portrait of Prof. Dr. Husnul Amin, Vice Chancellor of the University of Swat',
     width: 450,
     height: 438,
