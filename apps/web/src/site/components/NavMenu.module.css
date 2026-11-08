@@ -1,18 +1,18 @@
 .nav { flex: 1 1 auto; display: flex; justify-content: center; min-width: 0; }
-.list { display: flex; align-items: center; gap: 2px; flex-wrap: nowrap; }
+.list { display: flex; align-items: center; gap: 0; flex-wrap: nowrap; }
 /* The item is NOT positioned: its panel is placed against the floating bar (see the effect in NavMenu.tsx). */
 .item { position: static; }
 .link {
-  position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 6px 12px;
+  position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 6px 9px;
   border: 0; border-radius: 999px; background: transparent; color: var(--forest);
-  font: inherit; font-weight: 500; font-size: 0.98rem; letter-spacing: -0.005em; text-decoration: none; cursor: pointer; white-space: nowrap;
+  font: inherit; font-weight: 500; font-size: 0.95rem; letter-spacing: -0.005em; text-decoration: none; cursor: pointer; white-space: nowrap;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 .link:hover, .link[aria-expanded='true'] { background: #e8efe1; }
 /* Current page: forest text with a maroon bar under it (as on "Home" in the reference). */
 .active, .active:hover { font-weight: 600; background: transparent; }
 .active::after {
-  content: ''; position: absolute; inset-inline: 12px; bottom: 0; height: 3px; border-radius: 3px; background: var(--maroon);
+  content: ''; position: absolute; inset-inline: 9px; bottom: 0; height: 3px; border-radius: 3px; background: var(--maroon);
 }
 .caret { font-size: 0.95em; transition: transform 0.2s ease; }
 [aria-expanded='true'] > .caret { transform: rotate(180deg); }

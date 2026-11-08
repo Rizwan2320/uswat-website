@@ -115,9 +115,11 @@ export default function NavMenu({ items, apply }: { items: NavItem[]; apply: Nav
                       </ul>
                     ))}
                   </div>
-                  <a className={styles.all} href={item.href} rel="noopener noreferrer" onClick={close}>
-                    <span><T k="Explore All" /> <T k={item.label} /></span> <ArrowRightIcon className="flip" />
-                  </a>
+                  {item.noExplore ? null : (
+                    <a className={styles.all} href={item.href} rel="noopener noreferrer" onClick={close}>
+                      <span><T k="Explore All" /> <T k={item.label} /></span> <ArrowRightIcon className="flip" />
+                    </a>
+                  )}
                 </div>
               </li>
             )

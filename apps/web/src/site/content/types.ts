@@ -3,7 +3,7 @@
 
 export type Link = { label: string; href: string; external?: boolean }
 /** `icon` names an entry in components/navIcons.tsx (dropdown rows). */
-export type NavItem = Link & { children?: (Link & { icon?: string })[] }
+export type NavItem = Link & { children?: (Link & { icon?: string })[]; /** Hide the dropdown's "Explore All" row (no verified landing page). */ noExplore?: boolean }
 
 /** Where a fact came from. Real institutional facts need a source and a date; otherwise `sample: true`. */
 export type Provenance = { source?: string; verifiedAt?: string; sample?: boolean }

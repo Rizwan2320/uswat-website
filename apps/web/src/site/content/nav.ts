@@ -66,6 +66,23 @@ export const nav: NavItem[] = [
     ],
   },
   {
+    /* Not in the mockup. Added at the owner's request on 2026-11-08 because the official site has an Administration menu. Its real
+       submenu was not retrievable (see docs/plan/official-data-raw-2026-11-05.md section 6), so the rows are the office pages that
+       were read on 2026-11-05 (section 5); the owner should confirm them against the official menu. No landing page was verified, so
+       there is no "Explore All" row (noExplore). */
+    label: 'Administration',
+    href: U,
+    external: true,
+    noExplore: true,
+    children: [
+      { label: 'Controller of Examinations', href: `${U}/controller-of-examination-office/`, external: true, icon: 'clipboard' },
+      { label: 'Directorate of IT', href: `${U}/directorate-of-it/`, external: true, icon: 'laptop' },
+      { label: 'Directorate of Works', href: `${U}/directorate-of-works/`, external: true, icon: 'building' },
+      { label: 'Directorate of Advanced Studies & Research', href: `${U}/advanced-studies-and-research-board/`, external: true, icon: 'cap' },
+      { label: 'Proctorial Board', href: `${U}/proctorial-board/`, external: true, icon: 'gavel' },
+    ],
+  },
+  {
     label: 'About',
     href: `${U}/about-university/`,
     external: true,
@@ -73,7 +90,6 @@ export const nav: NavItem[] = [
       { label: 'About University', href: `${U}/about-university/`, external: true, icon: 'building' },
       { label: 'Vice Chancellor’s Message', href: `${U}/vice-chancellors-message-2/`, external: true, icon: 'person' },
       { label: 'Affiliated Colleges', href: `${U}/public-sector-affiliated-colleges/`, external: true, icon: 'cap' },
-      { label: 'Proctorial Board', href: `${U}/proctorial-board/`, external: true, icon: 'gavel' },
       { label: 'Alumni Association', href: `${U}/alumni/`, external: true, icon: 'people' },
     ],
   },
