@@ -32,6 +32,7 @@ export const images = {
   /* Decorative backdrops for the Vice Chancellor section (supplied by the project owner, 2026-11-08). The left one
      fades to near-white and is multiplied into the ivory; the right one (a campus building, replaced 2026-11-08) is
      faded into the ivory with a CSS mask. */
+  admissionsStudents: { src: '/images/admissions/students.webp', alt: '', width: 900, height: 524 } satisfies SiteImage,
   vcBackdropLeft: { src: '/images/leadership/bg-left-leaves.webp', alt: '', width: 768, height: 1152 } satisfies SiteImage,
   vcBackdropRight: { src: '/images/leadership/bg-left-building.webp', alt: '', width: 900, height: 1200 } satisfies SiteImage,
   /* Photos from the university's own news posts (copied from the project's Drive crawl, resized to 900 px wide).
