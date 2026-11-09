@@ -1,0 +1,8 @@
+.nav { display: flex; justify-content: center; margin-block: 28px 8px; }
+.list { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.num, .step { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; min-height: 40px; padding: 0 14px; border-radius: 999px; font-size: 0.9rem; font-weight: 600; color: var(--forest); text-decoration: none; background: #fff; border: 1px solid rgb(0 59 23 / 0.14); }
+.num { padding: 0; }
+.num:hover, .step:hover:not(.off) { border-color: var(--forest); }
+.current { background: var(--forest); color: var(--ivory); border-color: var(--forest); }
+.off { opacity: 0.45; }
+.gap { color: var(--text); padding-inline: 4px; }
