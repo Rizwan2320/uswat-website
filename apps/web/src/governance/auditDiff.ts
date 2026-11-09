@@ -58,11 +58,16 @@ export function buildChanges(
     const to = after.get(path)
     if (stableStringify(from) === stableStringify(to)) continue
     if (count >= MAX_PATHS) {
-      changes._truncated = { from: null, to: `${paths.length - MAX_PATHS} more changed fields not listed` }
+      changes._truncated = {
+        from: null,
+        to: `${paths.length - MAX_PATHS} more changed fields not listed`,
+      }
       break
     }
     const leaf = path.split('.').at(-1) ?? path
-    changes[path] = SENSITIVE_KEY.test(leaf) ? { redacted: true } : { from: shrink(from), to: shrink(to) }
+    changes[path] = SENSITIVE_KEY.test(leaf)
+      ? { redacted: true }
+      : { from: shrink(from), to: shrink(to) }
     count += 1
   }
   return changes

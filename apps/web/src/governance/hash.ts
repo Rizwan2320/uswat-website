@@ -18,7 +18,10 @@ export function stableStringify(value: unknown): string {
 export const sha256 = (text: string): string => createHash('sha256').update(text).digest('hex')
 
 /** Hash of the named content fields of a document (missing fields count as null). */
-export function hashContent(doc: Record<string, unknown> | null | undefined, fields: string[]): string {
+export function hashContent(
+  doc: Record<string, unknown> | null | undefined,
+  fields: readonly string[],
+): string {
   const picked: Record<string, unknown> = {}
   for (const f of fields) picked[f] = doc?.[f] ?? null
   return sha256(stableStringify(picked))

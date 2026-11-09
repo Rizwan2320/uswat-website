@@ -36,6 +36,7 @@ const record = (o: Partial<RecordState> = {}): RecordState => ({
   verification: 'unverified',
   risk: 'standard',
   ownerOffice: 'registrar',
+  source: 'Registrar circular 12/2026',
   reviewDueAt: null,
   pinned: false,
   ...o,
@@ -52,7 +53,7 @@ const save = (o: Partial<SaveInput> & Pick<SaveInput, 'actor'>): ReturnType<type
     ...o,
   })
 
-function allowed(actor: Actor, rec: typeof standard, from: WorkflowStatus, to: WorkflowStatus): boolean {
+function allowed(actor: Actor, rec: Pick<RecordState, 'ownerOffice' | 'risk'>, from: WorkflowStatus, to: WorkflowStatus): boolean {
   return checkTransition(actor, rec, from, to) === null
 }
 
@@ -68,9 +69,9 @@ describe('actors', () => {
     expect(actorFromRequest({ user: null })).toEqual({ kind: 'anonymous' })
   })
 
-  it('ignores malformed offices', () => {
-    expect(actorFromUser({ id: 1, role: 'editor', offices: ['a', 3, '', null] })).toMatchObject({
-      offices: ['a'],
+  it('ignores malformed offices and normalizes case and spacing', () => {
+    expect(actorFromUser({ id: 1, role: 'editor', offices: ['a', 3, '', null, '  Admissions   Office ', 'A'] })).toMatchObject({
+      offices: ['a', 'admissions office'],
     })
   })
 })
@@ -272,6 +273,16 @@ describe('VER-01: an unverified record can never be published', () => {
     ).toMatchObject({ ok: true })
   })
 
+  it('needs an owner office and a source before anything goes live', () => {
+    expect(publish(admin, { verification: 'verified', ownerOffice: null })).toMatchObject({
+      ok: false,
+      code: 'OWNER_REQUIRED',
+    })
+    for (const source of [null, '', '   ']) {
+      expect(publish(admin, { verification: 'verified', source })).toMatchObject({ ok: false, code: 'SOURCE_REQUIRED' })
+    }
+  })
+
   it('restoring an archived record (select Published, then Publish) is gated the same way', () => {
     const r = save({
       actor: approverIn,
@@ -365,6 +376,26 @@ describe('publishing, archiving and editing live content', () => {
       contentChanged: true,
     })
     expect(r).toMatchObject({ ok: true, values: { status: 'draft', verification: 'unverified' } })
+  })
+})
+
+describe('taking published content offline (Unpublish)', () => {
+  const live = record({ status: 'published', verification: 'verified' })
+  const unpublish = (actor: Actor) =>
+    save({ actor, prev: live, next: live, unpublishing: true, contentChanged: false })
+
+  it('needs a reviewer; the system may do it; the result is a draft', () => {
+    expect(unpublish(approverIn)).toMatchObject({ ok: true, values: { status: 'draft' } })
+    expect(unpublish(manager)).toMatchObject({ ok: true })
+    expect(unpublish(system)).toMatchObject({ ok: true })
+    for (const a of [editorIn, contributor, approverOut]) {
+      expect(unpublish(a), JSON.stringify(a)).toMatchObject({ ok: false, code: 'UNPUBLISH_FORBIDDEN' })
+    }
+  })
+
+  it('a draft revision saved over live content is not an unpublish', () => {
+    const r = save({ actor: editorIn, prev: live, next: live, unpublishing: false, contentChanged: true })
+    expect(r).toMatchObject({ ok: true, values: { status: 'draft' } })
   })
 })
 

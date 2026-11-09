@@ -37,6 +37,9 @@ export type PolicyCode =
   | 'PIN_FORBIDDEN'
   | 'NOT_VERIFIED'
   | 'REVIEW_DATE_REQUIRED'
+  | 'OWNER_REQUIRED'
+  | 'SOURCE_REQUIRED'
+  | 'UNPUBLISH_FORBIDDEN'
 
 export interface Denial {
   ok: false
@@ -50,6 +53,8 @@ export interface RecordState {
   verification: VerificationStatus
   risk: RiskClass
   ownerOffice: string | null
+  /** Where the facts come from (a URL or a named document). Required to publish. */
+  source: string | null
   reviewDueAt: string | null
   pinned: boolean
 }
@@ -136,21 +141,29 @@ export function checkTransition(
     case 'draft>in_review':
       return canSubmitFor(actor, rec)
         ? null
-        : forbidden('an editor or approver of the owning office, a site manager or a platform admin (contributors can only save drafts)')
+        : forbidden(
+            'an editor or approver of the owning office, a site manager or a platform admin (contributors can only save drafts)',
+          )
     case 'in_review>draft':
     case 'approved>draft':
     case 'draft>approved':
     case 'in_review>approved':
       return reviewer
         ? null
-        : forbidden('a reviewer: an approver of the owning office, a platform admin, or a site manager for records that are not high-impact')
+        : forbidden(
+            'a reviewer: an approver of the owning office, a platform admin, or a site manager for records that are not high-impact',
+          )
     case 'approved>published':
     case 'published>archived':
       return reviewer || system
         ? null
-        : forbidden('a reviewer: an approver of the owning office, a platform admin, or a site manager for records that are not high-impact')
+        : forbidden(
+            'a reviewer: an approver of the owning office, a platform admin, or a site manager for records that are not high-impact',
+          )
     case 'archived>published':
-      return canRestore(actor, rec) ? null : forbidden('an approver of the owning office or a platform admin')
+      return canRestore(actor, rec)
+        ? null
+        : forbidden('an approver of the owning office or a platform admin')
     default:
       return deny('TRANSITION_ILLEGAL', `Unsupported move "${from}" to "${to}".`, 400)
   }
@@ -167,6 +180,11 @@ export interface SaveInput {
   next: RecordState
   /** Did the content fields change in this save? */
   contentChanged: boolean
+  /**
+   * True when the request takes published content offline (Payload's Unpublish button),
+   * as opposed to saving a draft revision over it. Needs a reviewer.
+   */
+  unpublishing?: boolean
   /** ISO time, injected so tests are deterministic. */
   now: string
 }
@@ -208,7 +226,11 @@ function evaluateCreate(input: SaveInput): SaveOutcome {
       400,
     )
   }
-  if (isUser(actor) && (actor.role === 'approver' || actor.role === 'editor') && !inScope(actor, next.ownerOffice)) {
+  if (
+    isUser(actor) &&
+    (actor.role === 'approver' || actor.role === 'editor') &&
+    !inScope(actor, next.ownerOffice)
+  ) {
     return deny('OWNER_OUT_OF_SCOPE', 'You can only create records for an office you belong to.')
   }
 
@@ -316,6 +338,20 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
           400,
         )
       }
+      if (!next.ownerOffice) {
+        return deny(
+          'OWNER_REQUIRED',
+          'Set the owner office before publishing, so the record has someone accountable for it.',
+          400,
+        )
+      }
+      if (!next.source?.trim()) {
+        return deny(
+          'SOURCE_REQUIRED',
+          'Record where this information comes from (source) before publishing.',
+          400,
+        )
+      }
       if (scope.risk === 'high_impact' && !next.reviewDueAt) {
         return deny(
           'REVIEW_DATE_REQUIRED',
@@ -325,6 +361,17 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
       }
     }
   } else {
+    if (
+      input.unpublishing &&
+      prev.status === 'published' &&
+      !reviewerOnPrev &&
+      actor.kind !== 'system'
+    ) {
+      return deny(
+        'UNPUBLISH_FORBIDDEN',
+        'Taking published content offline needs a reviewer: an approver of the owning office, a platform admin, or a site manager for records that are not high-impact.',
+      )
+    }
     let requested = next.status
     if (requested === 'published' || requested === 'archived') {
       if (requested === prev.status) {
@@ -343,14 +390,23 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
     if (requested !== effectivePrev) {
       const move = checkTransition(actor, scope, effectivePrev, requested)
       if (move) return move
-    } else if (!reviewer && contentChanged && (effectivePrev === 'in_review' || effectivePrev === 'approved')) {
+    } else if (
+      !reviewer &&
+      contentChanged &&
+      (effectivePrev === 'in_review' || effectivePrev === 'approved')
+    ) {
       requested = 'draft'
       notes.push('approval_invalidated')
     }
     status = requested
   }
 
-  if (!reviewer && contentChanged && prev.verification === 'verified' && verification === 'verified') {
+  if (
+    !reviewer &&
+    contentChanged &&
+    prev.verification === 'verified' &&
+    verification === 'verified'
+  ) {
     verification = 'unverified'
     verifiedAt = undefined
     notes.push('verification_invalidated')

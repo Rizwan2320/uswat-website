@@ -22,7 +22,13 @@ export const ROLE_LABELS: Record<Role, string> = {
   auditor: 'Auditor (read only)',
 }
 
-export const WORKFLOW_STATUSES = ['draft', 'in_review', 'approved', 'published', 'archived'] as const
+export const WORKFLOW_STATUSES = [
+  'draft',
+  'in_review',
+  'approved',
+  'published',
+  'archived',
+] as const
 export type WorkflowStatus = (typeof WORKFLOW_STATUSES)[number]
 
 export const WORKFLOW_LABELS: Record<WorkflowStatus, string> = {
@@ -38,6 +44,11 @@ export type VerificationStatus = (typeof VERIFICATION_STATUSES)[number]
 
 export const RISK_CLASSES = ['low', 'standard', 'high_impact'] as const
 export type RiskClass = (typeof RISK_CLASSES)[number]
+export const RISK_LABELS: Record<RiskClass, string> = {
+  low: 'Low',
+  standard: 'Standard',
+  high_impact: 'High impact',
+}
 export const RISK_RANK: Record<RiskClass, number> = { low: 0, standard: 1, high_impact: 2 }
 
 export const ORIGINS = ['editor', 'importer', 'watcher'] as const
@@ -56,6 +67,11 @@ export type Actor =
   | { kind: 'system' }
   | { kind: 'anonymous' }
 
+/** Offices are compared as trimmed, lower-case, single-spaced text (until Offices is a collection). */
+export function normalizeOffice(value: unknown): string {
+  return typeof value === 'string' ? value.trim().replace(/\s+/g, ' ').toLowerCase() : ''
+}
+
 export function isRole(value: unknown): value is Role {
   return typeof value === 'string' && (ROLES as readonly string[]).includes(value)
 }
@@ -72,7 +88,7 @@ interface UserLike {
  */
 export function actorFromUser(user: UserLike): Actor {
   const offices = Array.isArray(user.offices)
-    ? user.offices.filter((o): o is string => typeof o === 'string' && o.length > 0)
+    ? [...new Set(user.offices.map(normalizeOffice).filter((o) => o.length > 0))]
     : []
   return {
     kind: 'user',
@@ -83,10 +99,7 @@ export function actorFromUser(user: UserLike): Actor {
 }
 
 /** `payloadAPI` is 'local', 'REST' or 'GraphQL' on a Payload request. */
-export function actorFromRequest(req: {
-  user?: UserLike | null
-  payloadAPI?: string
-}): Actor {
+export function actorFromRequest(req: { user?: UserLike | null; payloadAPI?: string }): Actor {
   if (req.user) return actorFromUser(req.user)
   return req.payloadAPI === 'local' ? { kind: 'system' } : { kind: 'anonymous' }
 }
