@@ -17,8 +17,9 @@ import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { plugins } from './plugins'
+import { lifecycleSweepTask } from './governance/jobs'
 import { governancePlugin } from './governance/plugin'
-import { folderAccessOverride } from './governance/staffAccess'
+import { folderAccessOverride, GLOBAL_ACCESS } from './governance/staffAccess'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { env } from './env'
@@ -26,7 +27,7 @@ import { env } from './env'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-export default buildConfig({
+const built = buildConfig({
   admin: {
     components: {
       // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
@@ -122,6 +123,14 @@ export default buildConfig({
         return authHeader === `Bearer ${secret}`
       },
     },
-    tasks: [],
+    tasks: [lifecycleSweepTask],
   },
+})
+
+// Payload adds the job-stats global while sanitising, after plugins have run, so its access rule
+// is applied to the finished config here (see staffAccess.ts).
+export default built.then((config) => {
+  const stats = config.globals?.find((g) => g.slug === 'payload-jobs-stats')
+  if (stats) stats.access = { ...stats.access, ...GLOBAL_ACCESS['payload-jobs-stats'] }
+  return config
 })

@@ -56,6 +56,8 @@ const COLLECTIONS: Record<string, Rule> = {
 const GLOBALS: Record<string, Rule> = {
   header: { read: ALL, update: ADMINS },
   footer: { read: ALL, update: ADMINS },
+  // Written by Payload on every job run; operators only.
+  'payload-jobs-stats': { read: ADMINS, update: NOBODY },
 }
 /** Payload's own bookkeeping; per-user or system, not editorial content. */
 const INTERNAL = new Set([

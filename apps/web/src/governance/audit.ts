@@ -30,6 +30,9 @@ export const AUDIT_EXCLUDED = new Set<string>([
   'payload-jobs',
 ])
 
+/** Globals that are never audited (written by Payload itself on every job run). */
+export const AUDIT_EXCLUDED_GLOBALS = new Set<string>(['payload-jobs-stats'])
+
 export type AuditAction = 'create' | 'update' | 'delete' | 'login'
 
 interface Entry {

@@ -43,6 +43,8 @@ export const COLLECTION_ACCESS: Record<string, Partial<CollectionAccess>> = {
 export const GLOBAL_ACCESS: Record<string, NonNullable<GlobalConfig['access']>> = {
   header: { update: admins },
   footer: { update: admins },
+  // Written by Payload on every job run (the lifecycle sweep); operators may read it.
+  'payload-jobs-stats': { read: admins, update: nobody },
 }
 
 /**
