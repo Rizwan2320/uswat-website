@@ -1,7 +1,7 @@
 /* The band behind the cards is a touch deeper than the page ivory and fades out at both ends, so the pure white cards
    stand out from the cream. Only the portal cards are styled here; the Notices / Jobs / Tenders cards are untouched. */
 .section {
-  padding-block: clamp(20px, 2.4vw, 32px) clamp(40px, 4vw, 56px);
+  padding-block: 4px 0;
   background: linear-gradient(to bottom, var(--ivory) 0, var(--ivory-deep) 30%, var(--ivory-deep) 76%, var(--ivory) 100%);
 }
 .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--gap); max-width: 1120px; margin-inline: auto; }

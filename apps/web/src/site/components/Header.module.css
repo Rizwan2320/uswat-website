@@ -1,7 +1,7 @@
-/* Full-width ivory bar that sits directly under the dark utility bar (no gap), with a light-green line along its bottom edge. */
+/* Full-width pure-white bar that sits directly under the dark utility bar (no gap), with a light-green line along its bottom edge. */
 .header {
-  position: relative; background: var(--ivory); border-bottom: 1.5px solid #b4d0a9;
-  box-shadow: 0 8px 20px -10px rgb(0 42 16 / 0.28);
+  position: relative; background: #fff; border-bottom: 1.5px solid #b4d0a9;
+  box-shadow: 0 12px 16px -10px rgb(0 42 16 / 0.34), 0 3px 6px rgb(0 42 16 / 0.07);
 }
 .pill {
   position: relative; display: flex; align-items: center; gap: clamp(12px, 1.4vw, 20px);

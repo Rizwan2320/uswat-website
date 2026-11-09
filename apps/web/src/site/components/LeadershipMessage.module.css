@@ -6,23 +6,23 @@ section.section { position: relative; isolation: isolate; overflow: hidden; back
 .bgImg { object-fit: cover; }
 .bgLeft { inset-block: 0; inset-inline-start: 0; width: min(44vw, 620px); }
 .bgLeft .bgImg { object-position: left bottom; }
-.bgRight { inset-block: 0; inset-inline-end: 0; width: min(30vw, 440px); mix-blend-mode: normal; }
-.bgRight .bgImg { object-position: 50% 100%; transform: scaleX(-1); } /* mirrored so the building stands on the far side, away from the text */
+.bgRight { inset-block: 0; inset-inline-end: -36px; width: min(28vw, 400px); mix-blend-mode: normal; }
+/* The owner's building photo in its true orientation, standing on the section floor like the left photo. */
+.bgRight .bgImg { object-position: 0 100%; }
 /* Soften the cropped top edge of each photo. */
 .bg { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 22%); mask-image: linear-gradient(to bottom, transparent 0, #000 22%); }
 /* The right photo is a full-colour picture (sky and lawn), so it is faded into the ivory on its top, bottom and text side. */
 .bgRight {
-  -webkit-mask-image: linear-gradient(to right, transparent 0, rgb(0 0 0 / 0.55) 30%, #000 62%), linear-gradient(to bottom, transparent 0, #000 22%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, rgb(0 0 0 / 0.8) 18%, #000 36%), linear-gradient(to bottom, transparent 0, #000 22%);
   -webkit-mask-composite: source-in;
-  mask-image: linear-gradient(to right, transparent 0, rgb(0 0 0 / 0.55) 30%, #000 62%), linear-gradient(to bottom, transparent 0, #000 22%);
+  mask-image: linear-gradient(to right, transparent 0, rgb(0 0 0 / 0.8) 18%, #000 36%), linear-gradient(to bottom, transparent 0, #000 22%);
   mask-composite: intersect;
 }
 /* The photos fade towards the text on their inner side; in RTL the layout mirrors, so mirror the photos too. */
 [dir='rtl'] .bg { transform: scaleX(-1); }
-[dir='rtl'] .bgRight .bgImg { transform: none; }
 
 .grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(250px, 476px) minmax(0, 1fr); gap: clamp(20px, 3vw, 40px); align-items: center; }
-.figure { position: relative; margin: 0; width: min(100%, 432px); margin-inline-start: clamp(0px, 1.4vw, 18px); justify-self: start; display: grid; justify-items: center; }
+.figure { position: relative; margin: 0; width: min(100%, 432px); margin-inline-start: clamp(-30px, -2vw, 0px); justify-self: start; display: grid; justify-items: center; }
 /* The photo is cut off flat at the chest and at the left shoulder; feather those two edges so only the ribbon is a hard shape. */
 .portrait {
   position: relative; z-index: 0; width: 90%; height: auto;

@@ -7,7 +7,6 @@ import SafeImage from './SafeImage'
 import styles from './NewsEvents.module.css'
 
 const ALL_NEWS = 'https://uswat.edu.pk/category/latestnews/'
-const ALL_EVENTS = 'https://uswat.edu.pk/category/events/'
 
 /* Three equal columns: two news stories (one photo each, fading into the text below it) and an events card.
    Titles are forest (the mockup's blue is not a brand colour). Images fall back to a gradient until real photos are added. */
@@ -22,12 +21,7 @@ export default async function NewsEvents() {
   return (
     <section className={`${styles.section} on-light`} aria-labelledby="news-title">
       <div className="container">
-        <div className={styles.head}>
-          <h2 id="news-title" className={`section-title ${styles.title}`}><T k="News & Events" /></h2>
-          <a className={styles.all} href={ALL_NEWS} rel="noopener noreferrer">
-            <T k="View All News & Events" /> <ArrowRightIcon className={`btn-arrow ${styles.allArrow}`} />
-          </a>
-        </div>
+        <h2 id="news-title" className="section-title"><T k="News & Events" /></h2>
 
         <div className={`${styles.grid} pop-grid`}>
           {first ? (
@@ -88,8 +82,9 @@ export default async function NewsEvents() {
                 })}
               </ul>
             )}
-            <a className={styles.evAll} href={ALL_EVENTS} rel="noopener noreferrer">
-              <T k="View All" /> <ArrowRightIcon className={`card-arrow flip`} />
+            {/* The one "view all" link for the section: sits in the empty space at the foot of the events card. */}
+            <a className={styles.all} href={ALL_NEWS} rel="noopener noreferrer">
+              <T k="View All News & Events" /> <ArrowRightIcon className={`btn-arrow ${styles.allArrow}`} />
             </a>
           </article>
         </div>

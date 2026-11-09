@@ -36,11 +36,6 @@ export const heroSlides: HeroSlide[] = [
     secondary: { label: 'Admissions Fall 2026', href: `${U}/2026/10/undergraduate-admissions-fall-2026-phase-ii/`, icon: 'document' },
   },
   {
-    image: images.heroSlides[5]!,
-    primary: { label: 'About University', href: `${U}/about-university/`, icon: 'book' },
-    secondary: { label: 'Main Campus', href: `${U}/maincampus/`, icon: 'people' },
-  },
-  {
     image: images.heroSlides[1]!,
     primary: { label: 'Apply Online', href: 'https://cms1.uswat.edu.pk/admission/program/list', icon: 'document' },
     secondary: { label: 'Scholarships', href: `${U}/2026/11/kpef-merit-cum-inaffordability-scholarship-scheme-2025-26/`, icon: 'badge' },
@@ -51,11 +46,6 @@ export const heroSlides: HeroSlide[] = [
     secondary: { label: 'Digital Library', href: 'http://www.digitallibrary.edu.pk/uniofswat.html', icon: 'book' },
   },
   {
-    image: images.heroSlides[6]!,
-    primary: { label: 'Alumni', href: `${U}/alumni/`, icon: 'people' },
-    secondary: { label: 'Affiliated Colleges', href: `${U}/public-sector-affiliated-colleges/`, icon: 'badge' },
-  },
-  {
     image: images.heroSlides[3]!,
     primary: { label: 'Campus Life', href: `${U}/maincampus/`, icon: 'people' },
     secondary: { label: 'Student Services', href: `${U}/campus-management-system-uswat/`, icon: 'document' },
@@ -64,5 +54,15 @@ export const heroSlides: HeroSlide[] = [
     image: images.heroSlides[4]!,
     primary: { label: 'Latest News', href: `${U}/category/latestnews/`, icon: 'document' },
     secondary: { label: 'Upcoming Events', href: `${U}/category/events/`, icon: 'calendar' },
+  },
+  {
+    image: images.heroSlides[5]!,
+    primary: { label: 'About University', href: `${U}/about-university/`, icon: 'book' },
+    secondary: { label: 'Main Campus', href: `${U}/maincampus/`, icon: 'people' },
+  },
+  {
+    image: images.heroSlides[6]!,
+    primary: { label: 'Alumni', href: `${U}/alumni/`, icon: 'people' },
+    secondary: { label: 'Affiliated Colleges', href: `${U}/public-sector-affiliated-colleges/`, icon: 'badge' },
   },
 ]

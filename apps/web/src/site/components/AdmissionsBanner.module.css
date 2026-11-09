@@ -1,4 +1,4 @@
-.wrap { position: relative; z-index: 2; margin-block: -24px 0; padding-bottom: var(--section-y); }
+.wrap { position: relative; z-index: 2; margin-block: -24px 0; padding-bottom: 10px; }
 .bar {
   display: grid; grid-template-columns: 1.45fr 1fr auto; align-items: center; gap: 0;
   padding: 14px 28px; border-radius: 16px; background: var(--forest); color: var(--ivory);

@@ -1,8 +1,8 @@
-.wrap { position: relative; z-index: 3; margin-top: calc(-1 * clamp(44px, 4.5vw, 60px)); }
+.wrap { position: relative; z-index: 3; margin-top: calc(-1 * clamp(26px, 2.8vw, 40px)); }
 .card {
-  display: grid; grid-template-columns: repeat(4, 1fr); padding: 12px 6px; border-radius: var(--radius); background: var(--ivory);
+  display: grid; grid-template-columns: repeat(4, 1fr); padding: 12px 6px; border-radius: var(--radius); background: #fff;
   max-width: 1040px; margin-inline: auto;
-  box-shadow: 0 8px 24px rgba(0, 42, 16, 0.12);
+  box-shadow: 0 12px 16px -10px rgb(0 42 16 / 0.34), 0 3px 6px rgb(0 42 16 / 0.07);
 }
 /* A visible but soft forest-green outline, semi-transparent (more specific than the .pop border it replaces). */
 .wrap .card { border: 1.5px solid rgb(0 59 23 / 0.38); }

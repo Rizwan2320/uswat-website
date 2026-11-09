@@ -15,7 +15,7 @@ export default async function FeedCards() {
     <section className={`${styles.section} on-light`} aria-labelledby="announcements-title">
       <div className="container">
         <h2 id="announcements-title" className="section-title">
-          <T k="Announcement" />
+          <T k="Announcements" />
         </h2>
         <div className={`${styles.grid} pop-grid`}>
           {feeds.map((f) => {

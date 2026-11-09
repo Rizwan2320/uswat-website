@@ -1,7 +1,7 @@
 /* Same treatment as the portal cards above: a slightly deeper cream band that fades out at both ends, pure white cards,
    a soft shadow under each. Only colour, shadow and the new heading were added: the card padding and grid are as before. */
 .section {
-  padding-block: clamp(4px, 1vw, 12px) clamp(40px, 4vw, 56px);
+  padding-block: 4px 0;
   background: linear-gradient(to bottom, var(--ivory) 0, var(--ivory-deep) 30%, var(--ivory-deep) 76%, var(--ivory) 100%);
 }
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); align-items: stretch; }

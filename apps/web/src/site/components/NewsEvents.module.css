@@ -1,14 +1,12 @@
 /* Same treatment as the portal and announcement cards: a slightly deeper cream band that fades out at both ends,
    pure white cards, a soft shadow under each. The news photos fill the whole left side of their card. */
 .section {
-  padding-block: clamp(8px, 1.2vw, 16px) var(--section-y);
+  padding-block: 4px var(--section-y);
   background: linear-gradient(to bottom, var(--ivory) 0, var(--ivory-deep) 24%, var(--ivory-deep) 80%, var(--ivory) 100%);
 }
-.head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin: 0 auto 4px; max-width: 1120px; }
-.title { flex: 1 1 auto; margin-bottom: 0; }
 /* Compact outlined pill (replaces the large .btn): fills with forest green on hover. */
 .all {
-  flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 16px;
+  flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 16px; align-self: center; margin-top: auto;
   border: 1.5px solid var(--forest); border-radius: 999px; color: var(--forest); background: transparent;
   font-size: 0.85rem; font-weight: 600; text-decoration: none; white-space: nowrap;
   transition: background-color .2s ease, color .2s ease;
@@ -57,6 +55,5 @@
 .evTitle { font-weight: 600; font-size: 0.98rem; }
 .venue { font-size: 0.85rem; color: var(--text); }
 .none { padding: 12px 8px; color: var(--text); }
-.evAll { margin-top: 8px; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 0.9rem; font-weight: 600; color: var(--forest); text-decoration: none; }
 @media (max-width: 1023px) { .grid { grid-template-columns: repeat(2, 1fr); } .events { grid-column: 1 / -1; } }
-@media (max-width: 639px) { .grid { grid-template-columns: 1fr; } .head { justify-content: center; } }
+@media (max-width: 639px) { .grid { grid-template-columns: 1fr; } }
