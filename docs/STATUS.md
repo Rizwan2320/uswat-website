@@ -1,13 +1,14 @@
 # Status
 
-Updated: 2026-11-07 (Sat) PKT
+Updated: 2026-11-09 (Mon) PKT
 
 | Phase | State | Gate |
 | --- | --- | --- |
 | P0 Decide and verify | Spike S-1 done; waiting on user inputs | G0 pending (see below) |
 | P1 Foundation | Code done and checked locally; CI and live URL pending | G1 partly met, see `docs/evidence/G1/g1-report.md` |
-| P2 Design system and shell (plan v2 section 11; the 2026-11-06 handoff mislabelled it "content model") | Landing built on branch `p2/landing` (not merged); awaiting user review | G2 pending (see below) |
-| P3 CMS core, P4 content and real data, P5 to P8 | Not started | Addendum edits P3 to P5 (see below) |
+| P2 Design system and shell (plan v2 section 11; the 2026-11-06 handoff mislabelled it "content model") | Landing approved by the owner and merged to `main` on 2026-11-09 (live demo https://uswat-website.vercel.app). Milestone C (inner-page template kit, Geist removal, RTL pass, `/design`, baselines) in progress; about 60% of P2 done | G2 pending: needs committed baselines, keyboard tests and filed evidence; owner approval of the design recorded 2026-11-09 |
+| P3 CMS core | Assigned to a second agent on a separate branch; lanes and PR checklist in `docs/briefs/P3-coordination.md`; no P3 branch on GitHub yet (checked 2026-11-09) |
+| P4 content and real data, P5 to P8 | Not started | Addendum edits P3 to P5 (see below) |
 
 ## G0 checklist
 - [x] Spike S-1 run, results in `docs/evidence/G0/spike-report.md`
