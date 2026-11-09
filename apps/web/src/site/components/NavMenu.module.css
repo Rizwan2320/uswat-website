@@ -1,0 +1,63 @@
+.nav { flex: 1 1 auto; display: flex; justify-content: center; min-width: 0; }
+.list { display: flex; align-items: center; gap: 0; flex-wrap: nowrap; }
+/* The item is NOT positioned: its panel is placed against the floating bar (see the effect in NavMenu.tsx). */
+.item { position: static; }
+.link {
+  position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 4px 9px;
+  border: 0; border-radius: 999px; background: transparent; color: var(--forest);
+  font: inherit; font-weight: 500; font-size: 0.95rem; letter-spacing: -0.005em; text-decoration: none; cursor: pointer; white-space: nowrap;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.link:hover, .link[aria-expanded='true'] { background: #e8efe1; }
+/* Current page: forest text with a maroon bar under it (as on "Home" in the reference). */
+.active, .active:hover { font-weight: 600; background: transparent; }
+.active::after {
+  content: ''; position: absolute; inset-inline: 9px; bottom: 0; height: 3px; border-radius: 3px; background: var(--maroon);
+}
+.caret { font-size: 0.95em; transition: transform 0.2s ease; }
+[aria-expanded='true'] > .caret { transform: rotate(180deg); }
+
+.sub {
+  position: absolute; top: calc(100% + 10px); left: var(--sub-x, 0); z-index: 60;
+  width: min(450px, calc(100vw - 32px)); padding: 8px; border-radius: 18px; background: var(--ivory);
+  border: 1.5px solid #b4d0a9;
+  box-shadow: 0 22px 50px -10px rgb(0 42 16 / 0.28), 0 4px 12px rgb(0 42 16 / 0.08);
+  /* Fades in and out instead of snapping; hidden panels are not focusable or announced (visibility). */
+  opacity: 0; visibility: hidden; transform: translateY(6px); pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
+}
+.sub[data-open] { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition-delay: 0s; }
+/* Invisible bridge over the gap so the pointer can travel from the link to the panel without leaving the item. */
+.sub::before { content: ''; position: absolute; inset-inline: 0; top: -22px; height: 22px; }
+/* The notch that points up at the link. */
+.sub::after {
+  content: ''; position: absolute; top: -9px; left: var(--notch-x, 40px); width: 18px; height: 18px; border-radius: 4px 0 0 0;
+  background: var(--ivory); border-top: 1.5px solid #b4d0a9; border-left: 1.5px solid #b4d0a9;
+  transform: rotate(45deg);
+}
+@media (prefers-reduced-motion: reduce) { .sub { transition: none; transform: none; } }
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; }
+.col { display: grid; align-content: start; gap: 2px; padding-inline: 4px; }
+.col + .col { border-inline-start: 1px solid var(--ivory-deep); padding-inline-start: 6px; }
+.col:first-child { padding-inline-end: 6px; }
+.col a {
+  display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 4px 8px; border-radius: 10px;
+  color: var(--forest); text-decoration: none; font-size: 0.88rem; font-weight: 500; line-height: 1.25;
+}
+.ico { flex: none; display: grid; place-items: center; width: 22px; font-size: 1.25rem; color: var(--forest); }
+.col a:hover, .col a:focus-visible { background: #e8efe1; }
+.all {
+  display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; margin-top: 6px; padding: 6px 14px;
+  border-radius: 10px; background: #e8efe1; color: var(--forest); text-decoration: none; font-size: 0.9rem; font-weight: 600;
+}
+.all:hover, .all:focus-visible { background: #dbe6d1; }
+
+.burger {
+  display: none; place-items: center; width: 48px; height: 48px; border: 2px solid var(--forest); border-radius: 50%;
+  background: transparent; color: var(--forest); font-size: 1.5rem; cursor: pointer;
+}
+@media (max-width: 1279px) {
+  .nav { display: none; }
+  .burger { display: grid; margin-inline-start: auto; }
+}

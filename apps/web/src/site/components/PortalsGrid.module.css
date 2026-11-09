@@ -1,0 +1,23 @@
+/* The band behind the cards is a touch deeper than the page ivory and fades out at both ends, so the pure white cards
+   stand out from the cream. Only the portal cards are styled here; the Notices / Jobs / Tenders cards are untouched. */
+.section {
+  padding-block: 4px 0;
+  background: linear-gradient(to bottom, var(--ivory) 0, var(--ivory-deep) 30%, var(--ivory-deep) 76%, var(--ivory) 100%);
+}
+.grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--gap); max-width: 1120px; margin-inline: auto; }
+.cell { display: flex; }
+.card { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; padding: 18px 18px 16px; }
+/* Pure white cards with a soft shadow along the bottom edge (offset down, pulled in at the sides, so it reads as a
+   glimmer under the card rather than a halo). Rest state only: the shared hover and focus glow is left as it was. */
+.grid .card { background: #fff; border-color: rgb(0 59 23 / 0.07); }
+.grid .card:not(:hover):not(:has(:focus-visible)) {
+  box-shadow: 0 12px 16px -10px rgb(0 42 16 / 0.34), 0 3px 6px rgb(0 42 16 / 0.07);
+}
+.icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--forest); color: var(--ivory); font-size: 1.4rem; }
+.title { font-family: var(--stack-sans); font-weight: 700; font-size: 1rem; color: var(--forest); }
+.title a { text-decoration: none; color: inherit; }
+.desc { margin: 0; font-size: 0.9rem; line-height: 1.45; color: var(--text); flex: 1 1 auto; }
+.arrow { color: var(--forest); font-size: 1.2rem; line-height: 1; margin-top: 2px; }
+@media (max-width: 1199px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 767px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 479px) { .grid { grid-template-columns: 1fr; } }

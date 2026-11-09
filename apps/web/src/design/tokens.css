@@ -1,0 +1,42 @@
+/*
+ * Design tokens: single source of truth for colour, layout and shape.
+ * Plain :root custom properties, so both the redesigned (site) pages and the Tailwind pages can use them.
+ *
+ * Brand colours (swat-homepage-nextjs skill, sampled from the approved mockup; the university
+ * has not supplied a brand guide, so replace the hex values here in one place when it does):
+ *   ivory #FCFAF4 · forest #003B17 · gold #F2B705, plus the crest's maroon #7A1F26 (added 2026-11-08).
+ *   Rule: maroon is for light surfaces (it is 1.3:1 on forest, unreadable); gold is for dark-green surfaces.
+ * Everything else is a shade of those.
+ *
+ * tests/unit/tokens.contrast.unit.spec.ts reads this file, so a token edit that breaks a WCAG 2.2 AA pair fails CI.
+ * Font families (--font-serif / --font-sans / --font-urdu) are set in site.css next to the @fontsource imports.
+ */
+:root {
+  /* The three brand colours */
+  --ivory: #fcfaf4;
+  --forest: #003b17;
+  --gold: #f2b705;
+
+  /* Derived tints */
+  --forest-deep: #002a10; /* top bar, footer base */
+  --forest-soft: #0b5a27; /* hover, gradient ends */
+  --ivory-deep: #f3efe3; /* hairlines, alternating section tints */
+  --gold-light: #ffd84d; /* glow highlights */
+  --maroon: #7a1f26; /* the crest's maroon: buttons, rings, dates and small accents on LIGHT surfaces (9.8:1 on ivory) */
+  --maroon-deep: #5e171c; /* maroon hover */
+
+  /* Body text: forest at 85% over ivory. The unit test blends the same way. */
+  --text: rgb(0 59 23 / 0.85);
+
+  /* Layout */
+  --container: 1200px;
+  --gutter: clamp(16px, 4vw, 32px);
+  --gap: 24px;
+  --radius: 16px;
+  --section-y: clamp(32px, 4vw, 56px);
+
+  /* Type stacks. The families come from next/font-style CSS variables on <html>. */
+  --stack-serif: var(--font-serif), Georgia, 'Times New Roman', serif;
+  --stack-sans: var(--font-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --stack-urdu: var(--font-urdu), 'Noto Naskh Arabic', var(--font-sans), serif;
+}

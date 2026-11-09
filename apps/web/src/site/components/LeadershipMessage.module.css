@@ -1,0 +1,73 @@
+/* Compact leadership band: the Vice Chancellor stands on a campus photo with a ribbon name plate on the left, message on the right, a second campus photo fading in on the far right. */
+section.section { position: relative; isolation: isolate; overflow: hidden; background: var(--ivory); padding-block: clamp(24px, 2.6vw, 38px) clamp(40px, 3.6vw, 52px); }
+
+/* Backdrops. The photos are near-white at their fading edges, so multiply makes that white vanish into the ivory. */
+.bg { position: absolute; z-index: 0; pointer-events: none; mix-blend-mode: multiply; }
+.bgImg { object-fit: cover; }
+/* Left slot: soft green leaves on white. The white multiplies away into the ivory, and the top, bottom and text side are masked, so the photo merges from every side. */
+.bgLeft { inset-block: 0; inset-inline-start: 0; width: min(46vw, 660px); }
+.bgLeft .bgImg { object-position: 0 50%; }
+.bgRight { inset-block: 0; inset-inline-end: -36px; width: min(28vw, 400px); mix-blend-mode: normal; }
+/* The owner's building photo in its true orientation, standing on the section floor like the left photo. */
+.bgRight .bgImg { object-position: 100% 100%; }
+/* Soften the cropped top edge of each photo. */
+.bg { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 22%); mask-image: linear-gradient(to bottom, transparent 0, #000 22%); }
+/* The leaves fade out on the top, bottom and message sides. */
+.bgLeft {
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 55%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, #000 0, #000 55%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
+  mask-composite: intersect;
+}
+/* The right photo is a full-colour picture (sky and lawn), so it is faded into the ivory on its top, bottom and text side. */
+.bgRight {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, rgb(0 0 0 / 0.8) 18%, #000 36%), linear-gradient(to bottom, transparent 0, #000 22%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent 0, rgb(0 0 0 / 0.8) 18%, #000 36%), linear-gradient(to bottom, transparent 0, #000 22%);
+  mask-composite: intersect;
+}
+/* The photos fade towards the text on their inner side; in RTL the layout mirrors, so mirror the photos too. */
+[dir='rtl'] .bg { transform: scaleX(-1); }
+
+.grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(250px, 476px) minmax(0, 1fr); gap: clamp(20px, 3vw, 40px); align-items: center; }
+.figure { position: relative; margin: 0; width: min(100%, 432px); margin-inline-start: clamp(0px, 4.2vw, 60px); justify-self: start; display: grid; justify-items: center; }
+/* The photo is cut off flat at the chest and at the left shoulder; feather those two edges so only the ribbon is a hard shape. */
+.portrait {
+  position: relative; z-index: 0; width: 90%; height: auto;
+  -webkit-mask-image: linear-gradient(to top, transparent 0, #000 17%), linear-gradient(to right, transparent 0, #000 9%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to top, transparent 0, #000 17%), linear-gradient(to right, transparent 0, #000 9%);
+  mask-composite: intersect;
+}
+[dir='rtl'] .portrait { transform: scaleX(-1); }
+/* Ribbon: wider than the portrait so its wings hide the cut at the bottom of the photo. */
+.ribbon {
+  position: relative; z-index: 1; width: 100%; margin-top: -46px; padding: 17px 54px 15px; text-align: center; color: #fff;
+  display: grid; gap: 1px; filter: drop-shadow(0 8px 14px rgb(0 42 16 / 0.28));
+}
+.ribbonBg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
+.name { display: block; font-family: var(--stack-serif); font-weight: 700; font-size: 1.15rem; line-height: 1.25; }
+.role { display: block; font-style: italic; font-size: 0.85rem; line-height: 1.3; }
+
+.text { max-width: 600px; }
+.badge { display: flex; align-items: center; gap: 14px; margin: 0; }
+.badge > span:first-child { padding: 6px 16px; border-radius: 999px; background: var(--forest); color: var(--ivory); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.16em; }
+.rule { flex: 0 1 120px; height: 2px; background: linear-gradient(to right, var(--maroon), transparent); }
+[dir='rtl'] .rule { background: linear-gradient(to left, var(--maroon), transparent); }
+.title { white-space: pre-line; margin: 12px 0 14px; font-family: var(--stack-serif); font-weight: 600; font-size: clamp(1.6rem, 2.8vw, 2.25rem); line-height: 1.15; color: var(--forest); }
+.quote { position: relative; margin: 0 0 20px; padding-inline-start: 48px; max-width: 480px; }
+.mark { position: absolute; inset-inline-start: 0; top: -10px; font-family: var(--stack-serif); font-size: 68px; line-height: 1; color: var(--maroon); }
+.quote p { margin: 0; font-size: 1rem; line-height: 1.65; }
+
+@media (max-width: 767px) {
+  .grid { grid-template-columns: 1fr; gap: 22px; }
+  .bgLeft { width: 80vw; height: 46%; inset-block-end: auto; }
+  .bgRight { width: 100%; height: 50%; inset-block-start: auto; opacity: 0.2; }
+  .quote { padding-inline-start: 40px; }
+  /* Slimmer name plate on phones. */
+  .ribbon { margin-top: -34px; padding: 10px 44px 9px; }
+  .name { font-size: 1.02rem; line-height: 1.2; }
+  .role { font-size: 0.78rem; line-height: 1.25; }
+}
+/* Below about 1100 px the message column runs under the right-hand photo, so the photo is dropped to keep the text readable. */
+@media (max-width: 1100px) { .bgRight { display: none; } }

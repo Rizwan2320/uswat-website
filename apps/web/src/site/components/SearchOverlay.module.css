@@ -1,0 +1,25 @@
+.dialog {
+  margin: 12vh auto auto;
+  width: min(500px, calc(100% - 32px));
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ivory);
+  box-shadow: 0 24px 60px rgba(0, 42, 16, 0.35);
+  color: var(--forest);
+}
+.dialog:focus, .dialog:focus-visible { outline: none; }
+.dialog::backdrop { background: rgba(0, 42, 16, 0.55); }
+.form { display: flex; gap: 8px; align-items: center; }
+.input {
+  flex: 1 1 auto; min-width: 0; min-height: 44px; padding: 8px 16px;
+  border: 1.5px solid #b4d0a9; border-radius: 999px; background: #fff; color: var(--forest); font: inherit;
+}
+.input:focus, .input:focus-visible { outline: none; border-color: var(--forest); }
+.go { flex: none; min-height: 40px; }
+.close {
+  flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
+  border: 0; background: transparent; color: var(--forest); font-size: 1.4rem; cursor: pointer;
+}
+.close:hover { background: var(--ivory-deep); }
+@media (max-width: 480px) { .go span { display: none; } }
