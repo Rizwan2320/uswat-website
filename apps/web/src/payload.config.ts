@@ -4,7 +4,11 @@ import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
+import { AffiliatedColleges } from './collections/AffiliatedColleges'
+import { ArticleTags } from './collections/ArticleTags'
 import { AuditLogs } from './collections/AuditLogs'
+import { ContactDirectory } from './collections/ContactDirectory'
+import { MeritLists } from './collections/MeritLists'
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
@@ -78,7 +82,18 @@ export default buildConfig({
     defaultLocale: 'en',
     fallback: true,
   },
-  collections: [Pages, Posts, Media, Categories, Users, AuditLogs],
+  collections: [
+    Pages,
+    Posts,
+    Media,
+    Categories,
+    Users,
+    AffiliatedColleges,
+    ArticleTags,
+    ContactDirectory,
+    MeritLists,
+    AuditLogs,
+  ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   plugins: [...plugins, governancePlugin],

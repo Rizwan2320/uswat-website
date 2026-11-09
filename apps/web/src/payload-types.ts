@@ -72,6 +72,10 @@ export interface Config {
     media: Media;
     categories: Category;
     users: User;
+    'affiliated-colleges': AffiliatedCollege;
+    'article-tags': ArticleTag;
+    'contact-directory': ContactDirectory;
+    'merit-lists': MeritList;
     'audit-logs': AuditLog;
     redirects: Redirect;
     forms: Form;
@@ -95,6 +99,10 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    'affiliated-colleges': AffiliatedCollegesSelect<false> | AffiliatedCollegesSelect<true>;
+    'article-tags': ArticleTagsSelect<false> | ArticleTagsSelect<true>;
+    'contact-directory': ContactDirectorySelect<false> | ContactDirectorySelect<true>;
+    'merit-lists': MeritListsSelect<false> | MeritListsSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -285,6 +293,10 @@ export interface Post {
   };
   relatedPosts?: (number | Post)[] | null;
   categories?: (number | Category)[] | null;
+  /**
+   * Secondary topics. The first category is the main type; other old categories become tags.
+   */
+  tags?: (number | ArticleTag)[] | null;
   meta?: {
     title?: string | null;
     /**
@@ -490,6 +502,69 @@ export interface Category {
     | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "article-tags".
+ */
+export interface ArticleTag {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Other words people search for (for example "CS" for Computer Science).
+   */
+  aliases?:
+    | {
+        alias: string;
+        id?: string | null;
+      }[]
+    | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * Pinned records are protected from automatic expiry. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -861,6 +936,204 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "affiliated-colleges".
+ */
+export interface AffiliatedCollege {
+  id: number;
+  name: string;
+  /**
+   * As the university lists it. Together with the number, this identifies the college.
+   */
+  sector?: string | null;
+  number?: number | null;
+  affiliationYear?: number | null;
+  /**
+   * Programme names as the college offers them.
+   */
+  programmes?:
+    | {
+        name: string;
+        id?: string | null;
+      }[]
+    | null;
+  address?: string | null;
+  /**
+   * The college website (full URL).
+   */
+  link?: string | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * Pinned records are protected from automatic expiry. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-directory".
+ */
+export interface ContactDirectory {
+  id: number;
+  /**
+   * The heading this entry is listed under. Together with the name, this identifies the entry.
+   */
+  section: string;
+  name: string;
+  phones?:
+    | {
+        number: string;
+        id?: string | null;
+      }[]
+    | null;
+  email?: string | null;
+  hours?: string | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * Pinned records are protected from automatic expiry. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "merit-lists".
+ */
+export interface MeritList {
+  id: number;
+  title: string;
+  /**
+   * The address of the page on the old site. Used to match records on re-import and to redirect.
+   */
+  legacyUrl?: string | null;
+  /**
+   * For example "Fall 2026".
+   */
+  admissionCycle?: string | null;
+  programme?: string | null;
+  /**
+   * The PDF lists, as links.
+   */
+  documents?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * Pinned records are protected from automatic expiry. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-logs".
  */
 export interface AuditLog {
@@ -1098,6 +1371,22 @@ export interface PayloadLockedDocument {
         value: number | User;
       } | null)
     | ({
+        relationTo: 'affiliated-colleges';
+        value: number | AffiliatedCollege;
+      } | null)
+    | ({
+        relationTo: 'article-tags';
+        value: number | ArticleTag;
+      } | null)
+    | ({
+        relationTo: 'contact-directory';
+        value: number | ContactDirectory;
+      } | null)
+    | ({
+        relationTo: 'merit-lists';
+        value: number | MeritList;
+      } | null)
+    | ({
         relationTo: 'audit-logs';
         value: number | AuditLog;
       } | null)
@@ -1327,6 +1616,7 @@ export interface PostsSelect<T extends boolean = true> {
   content?: T;
   relatedPosts?: T;
   categories?: T;
+  tags?: T;
   meta?:
     | T
     | {
@@ -1506,6 +1796,160 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "affiliated-colleges_select".
+ */
+export interface AffiliatedCollegesSelect<T extends boolean = true> {
+  name?: T;
+  sector?: T;
+  number?: T;
+  affiliationYear?: T;
+  programmes?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
+  address?: T;
+  link?: T;
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "article-tags_select".
+ */
+export interface ArticleTagsSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  aliases?:
+    | T
+    | {
+        alias?: T;
+        id?: T;
+      };
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-directory_select".
+ */
+export interface ContactDirectorySelect<T extends boolean = true> {
+  section?: T;
+  name?: T;
+  phones?:
+    | T
+    | {
+        number?: T;
+        id?: T;
+      };
+  email?: T;
+  hours?: T;
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "merit-lists_select".
+ */
+export interface MeritListsSelect<T extends boolean = true> {
+  title?: T;
+  legacyUrl?: T;
+  admissionCycle?: T;
+  programme?: T;
+  documents?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
