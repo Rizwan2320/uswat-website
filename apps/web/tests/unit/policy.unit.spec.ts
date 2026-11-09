@@ -47,6 +47,7 @@ const record = (o: Partial<RecordState> = {}): RecordState => ({
   ownerOffice: 'registrar',
   source: 'Registrar circular 12/2026',
   reviewDueAt: null,
+  expireAt: null,
   pinned: false,
   createdBy: 7, // the contributor below
   ...o,
@@ -644,5 +645,37 @@ describe('moving through the whole workflow', () => {
     expect(state.status).toBe('archived')
     step(approverIn, { status: 'published' }, true)
     expect(state.status).toBe('published')
+  })
+})
+
+describe('LIF-04: types that need an expiry', () => {
+  const submit = (next: Partial<RecordState>, expiryRequired = true) =>
+    save({
+      actor: editorIn,
+      expiryRequired,
+      prev: record({ status: 'draft' }),
+      next: record({ status: 'in_review', ...next }),
+    })
+
+  it('lets a draft be saved without an expiry', () => {
+    const r = save({
+      actor: editorIn,
+      expiryRequired: true,
+      prev: record(),
+      next: record({ status: 'draft' }),
+    })
+    expect(r.ok).toBe(true)
+  })
+
+  it('refuses to leave draft without an expiry', () => {
+    expect(submit({ expireAt: null })).toMatchObject({ ok: false, code: 'EXPIRY_REQUIRED' })
+  })
+
+  it('accepts the same transition once an expiry is set', () => {
+    expect(submit({ expireAt: '2026-12-31T00:00:00.000Z' }).ok).toBe(true)
+  })
+
+  it('does not apply to types that do not require an expiry', () => {
+    expect(submit({ expireAt: null }, false).ok).toBe(true)
   })
 })

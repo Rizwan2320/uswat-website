@@ -53,6 +53,7 @@ export function toRecordState(gov: Gov | null | undefined): RecordState {
     ownerOffice: normalizeOffice(g.ownerOffice) || null,
     source: text(g.source),
     reviewDueAt: text(g.reviewDueAt),
+    expireAt: text(g.expireAt),
     pinned: g.pinned === true,
     createdBy: idOf(g.createdBy),
   }
@@ -79,8 +80,13 @@ export function contentChanged(
   )
 }
 
+export interface GovernanceOptions {
+  /** Jobs, tenders, events and admissions cycles (LIF-04). */
+  expiryRequired?: boolean
+}
+
 export const governanceBeforeChange =
-  (contentFields: readonly string[]): CollectionBeforeChangeHook =>
+  (contentFields: readonly string[], options: GovernanceOptions = {}): CollectionBeforeChangeHook =>
   async ({ data, originalDoc, operation, req, collection }) => {
     if (operation !== 'create' && operation !== 'update') return data
 
@@ -116,6 +122,7 @@ export const governanceBeforeChange =
       actor,
       publishing,
       unpublishing,
+      expiryRequired: options.expiryRequired,
       prev: operation === 'update' ? toRecordState(prevGov) : null,
       next: toRecordState(merged),
       contentChanged:
