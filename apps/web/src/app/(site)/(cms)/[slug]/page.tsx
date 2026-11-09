@@ -9,8 +9,8 @@ import { homeStatic } from '@/endpoints/seed/home-static'
 
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
+import PageHeader from '@/site/components/kit/PageHeader'
 import { generateMeta } from '@/utilities/generateMeta'
-import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 
 export async function generateStaticParams() {
@@ -64,17 +64,23 @@ export default async function Page({ params: paramsPromise }: Args) {
     return <PayloadRedirects url={url} />
   }
 
-  const { hero, layout } = page
+  const { hero, layout, title } = page
+  // A full-width hero brings its own headline; every other page gets the standard title band (the page's one h1).
+  const ownHeadline = hero?.type === 'highImpact'
 
   return (
-    <article className="pt-16 pb-24">
-      <PageClient />
+    <article className="pb-16">
       {/* Allows redirects for valid pages too */}
       <PayloadRedirects disableNotFound url={url} />
 
       {draft && <LivePreviewListener />}
 
-      <RenderHero {...hero} />
+      {ownHeadline ? null : (
+        <PageHeader title={title} crumbs={[{ label: 'Home', href: '/' }, { label: title }]} />
+      )}
+      <div className={ownHeadline ? undefined : 'pt-8'}>
+        <RenderHero {...hero} />
+      </div>
       <RenderBlocks blocks={layout} />
     </article>
   )

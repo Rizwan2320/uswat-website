@@ -1,0 +1,138 @@
+/*
+ * Tailwind utilities for the blocks that render CMS content (pages, posts, search): ADR-0011.
+ *
+ * Only the theme and the utilities are loaded, not Tailwind's reset (preflight), so nothing here can
+ * restyle the shell (header, footer, landing). The little reset the blocks still need lives in
+ * `@layer base` under `.cms`. Colours are the site tokens (tokens.css); `.container` is the site's own.
+ * There is one light theme. `dark:` classes stay inert unless an ancestor has data-theme="dark".
+ */
+@layer theme, base, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@import 'tw-animate-css';
+
+@config '../../tailwind.config.mjs';
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is([data-theme='dark'] *));
+@custom-variant sm (@media (width >= theme(--breakpoint-sm)));
+@custom-variant md (@media (width >= theme(--breakpoint-md)));
+@custom-variant lg (@media (width >= theme(--breakpoint-lg)));
+@custom-variant xl (@media (width >= theme(--breakpoint-xl)));
+@custom-variant 2xl (@media (width >= theme(--breakpoint-2xl)));
+
+@source inline("lg:col-span-4");
+@source inline("lg:col-span-6");
+@source inline("lg:col-span-8");
+@source inline("lg:col-span-12");
+@source inline("border-border");
+@source inline("bg-card");
+@source inline("border-error");
+@source inline("bg-error/30");
+@source inline("border-success");
+@source inline("bg-success/30");
+@source inline("border-warning");
+@source inline("bg-warning/30");
+
+@theme {
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+  --breakpoint-2xl: 86rem;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* The stock colour names, pointed at the site tokens. */
+:root {
+  --background: var(--ivory);
+  --foreground: var(--forest);
+  --card: #fff;
+  --card-foreground: var(--forest);
+  --popover: #fff;
+  --popover-foreground: var(--forest);
+  --primary: var(--forest);
+  --primary-foreground: var(--ivory);
+  --secondary: var(--ivory-deep);
+  --secondary-foreground: var(--forest);
+  --muted: var(--ivory-deep);
+  --muted-foreground: rgb(0 59 23 / 0.78);
+  --accent: var(--ivory-deep);
+  --accent-foreground: var(--forest);
+  --destructive: var(--maroon);
+  --destructive-foreground: var(--ivory);
+  --border: rgb(0 59 23 / 0.16);
+  --input: rgb(0 59 23 / 0.3);
+  --ring: var(--forest-soft);
+  --radius: 0.75rem;
+  --success: oklch(78% 0.08 200deg);
+  --warning: oklch(89% 0.1 75deg);
+  --error: oklch(75% 0.15 25deg);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+}
+
+/* What preflight would have given the blocks, for the blocks only. */
+@layer base {
+  .cms *,
+  .cms ::before,
+  .cms ::after {
+    border: 0 solid var(--border);
+  }
+  .cms :is(h1, h2, h3, h4, h5, h6) {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+  .cms :is(h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd, pre) {
+    margin: 0;
+  }
+  .cms :is(ul, ol) {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .cms :is(button, input, select, textarea) {
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+  }
+  .cms button {
+    background: transparent;
+    cursor: pointer;
+  }
+  .cms :is(img, svg, video, canvas) {
+    display: block;
+  }
+  .cms :is(img, video) {
+    max-width: 100%;
+    height: auto;
+  }
+}
