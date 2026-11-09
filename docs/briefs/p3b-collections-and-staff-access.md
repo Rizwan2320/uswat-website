@@ -31,6 +31,11 @@ New: `src/collections/{AffiliatedColleges,ContactDirectory,MeritLists,ArticleTag
 
   Matches plan 7.3: site manager owns navigation and redirects; auditor edits nothing; contributor drafts only (Media upload is allowed because a draft needs a picture; media rules come later).
 
+## Changes made while building
+- `dbName: 'colleges'` and `'contacts'` on two collections: with the governance group, the generated enum names exceeded Postgres's 63-character limit (predictions P3b-b). Slugs and API paths are unchanged.
+- Media-folder access is set through the root `folders.collectionOverrides` option, because Payload creates that collection after plugins run.
+- Form submissions are immutable for everyone (the plugin already disabled update).
+
 ## Assumptions to confirm
 1. Fields exactly as above; `sector` is free text because the Addendum gives no values.
 2. ArticleTags are governed like everything else (draft, verify, publish) even though they are low-risk; one rule is simpler than an exception.

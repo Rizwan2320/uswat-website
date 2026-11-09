@@ -80,6 +80,12 @@ Updated: 2026-11-09 (Mon) PKT
 - Not in this slice: AffiliatedColleges, MeritLists, ContactDirectory, ArticleTags, scheduled publish and expiry (LIF-01 to LIF-04), media rules, accessibility guard, editor dashboard, editor guide.
 - Main (P2 landing, coordination brief) was merged into this branch on 2026-11-09; P2 changed no collection or migration. If another PR adds a migration first, regenerate this one.
 
+## P3 slice 3b (2026-11-09, branch `p3/collections-3b`, stacked on `p3/cms-core`)
+- Done: role rules for every collection and global (a whole-config matrix test fails on any collection without a stated rule); four governed collections (AffiliatedColleges, ContactDirectory, MeritLists, ArticleTags) with fields from the Addendum mapping table; `tags` on Posts; generated migration `20261109_115039_p3b_governed_collections` (up, down, up proven; 6 generated `DROP CONSTRAINT` lines made `IF EXISTS`); 25 lifecycle tests plus the matrix; CI-like run on an empty database green locally. Brief: `docs/briefs/p3b-collections-and-staff-access.md`.
+- Found: the template let any signed-in user (auditor, contributor) write categories, media, redirects, forms and the header and footer, and let editors read form submissions. Fixed here.
+- Not run: Playwright, CI for this branch until its PR is opened, public templates and revalidation for the new types (P5), importer, search indexing for the new types, scheduled publish and expiry (LIF), media rules, accessibility guard, editor dashboard, getter switch to CMS reads.
+- Depends on PR #1 (3a). Review and merge 3a first; this PR targets the 3a branch.
+
 ## Next step
 1. User: review the landing (screenshots or a preview deployment of `p2/landing`), then say go for G2 and the merge to `main` (merging redeploys the demo site).
 2. User: commit the real photographs and a high-resolution crest; confirm the address; get Urdu reviewed.
