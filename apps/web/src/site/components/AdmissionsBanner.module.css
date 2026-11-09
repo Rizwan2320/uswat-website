@@ -2,15 +2,8 @@
 .bar {
   display: grid; grid-template-columns: 1.45fr 1fr auto; align-items: center; gap: 0;
   padding: 14px 28px; border-radius: 16px; background: var(--forest); color: var(--ivory);
-  box-shadow: 0 12px 28px rgba(0, 42, 16, 0.24); position: relative; overflow: hidden; isolation: isolate;
+  box-shadow: 0 12px 28px rgba(0, 42, 16, 0.24);
 }
-/* Blurred photo of students on the green, fading in from the left so the text stays crisp. */
-.photo {
-  position: absolute; z-index: -1; inset-block: 0; inset-inline-end: 130px; width: clamp(240px, 22vw, 300px); pointer-events: none;
-  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 45%); mask-image: linear-gradient(to right, transparent 0, #000 45%);
-}
-[dir='rtl'] .photo { -webkit-mask-image: linear-gradient(to left, transparent 0, #000 45%); mask-image: linear-gradient(to left, transparent 0, #000 45%); }
-.photoImg { object-fit: cover; object-position: 50% 14%; filter: blur(2.5px); opacity: 0.6; }
 .zone { display: flex; align-items: center; gap: 14px; padding-inline-end: 22px; }
 .mid { padding-inline: 22px; border-inline-start: 1px solid rgb(252 250 244 / 0.3); }
 .icon { flex: none; font-size: 2rem; color: var(--ivory); }
@@ -19,8 +12,6 @@
 .detail { margin-top: 2px; font-size: 0.82rem; line-height: 1.4; color: rgb(252 250 244 / 0.88); }
 .cta { justify-self: end; padding-inline: 22px; min-height: 40px; font-size: 0.9rem; }
 @media (max-width: 1023px) {
-  .photo { inset-inline-end: 0; width: 55%; }
-  .photoImg { opacity: 0.35; }
   .bar { grid-template-columns: 1fr; gap: 14px; padding: 18px 20px; }
   .zone { padding-inline-end: 0; }
   .mid { padding-inline: 0; border-inline-start: 0; }

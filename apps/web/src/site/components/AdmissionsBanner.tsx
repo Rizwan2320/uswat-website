@@ -1,8 +1,6 @@
-import { images } from '../content/images'
 import { admissions } from '../content/admissions'
 import { getAdmissionsState } from '../lib/admissions'
 import { ArrowRightIcon, GroupIcon, MegaphoneIcon } from './icons'
-import SafeImage from './SafeImage'
 import styles from './AdmissionsBanner.module.css'
 
 /* Three-zone forest bar. Open/closed is decided on the server from the deadline in content/admissions.ts;
@@ -13,10 +11,6 @@ export default function AdmissionsBanner() {
     <section className={styles.wrap} aria-labelledby="admissions-title">
       <div className="container">
         <div className={styles.bar}>
-          {/* Decorative: students from the owner's photo, blurred into the green as in the mockup. */}
-          <div className={styles.photo} aria-hidden="true">
-            <SafeImage src={images.admissionsStudents.src} alt="" fill sizes="(max-width: 1023px) 60vw, 380px" className={styles.photoImg} />
-          </div>
           <div className={styles.zone}>
             <MegaphoneIcon className={styles.icon} />
             <div>
