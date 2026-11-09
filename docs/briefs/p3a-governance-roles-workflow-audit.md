@@ -51,9 +51,20 @@ Not touched: `src/app/(site)`, `src/site`, `src/design`, tokens, branch `p2/land
 7. `contentHash` is computed per save from the content fields in the language being saved. It is used to detect "content changed in this save", not as a cross-language fingerprint (limitation until Urdu content depth).
 8. ADR number 0010, not 0007: v2 reserves 0007 (search), 0008 (localization) and 0009 (import).
 
+## Changes made while building (2026-11-09)
+- Owner office and source are now required to publish (Addendum: someone accountable, and where the facts come from).
+- Scope, contributor-draft-only and the delete rule are policy checks in hooks, not database filters: draft saves never update the published row (P3a-d). Access functions are coarser. See ADR-0010.
+- Unpublish is reviewer-only and detected over REST against the published row; GraphQL is disabled because it cannot signal draft versus unpublish.
+- A non-reviewer cannot lower a verification status either (not only raise it); the system can (watcher marks stale).
+- Governance columns are nullable with database defaults (generated types stay optional); `users.offices` lives in the shared `users_texts` table.
+- Offices are stored trimmed and lower-case (users and records) so a case typo cannot hide a record.
+- Users can read only their own account unless platform admin, site manager or auditor. Known cost: editors cannot pick other authors on Posts.
+- Audit read: platform admin, site manager, auditor.
+- The generated migration's down needed one line changed (`DROP CONSTRAINT IF EXISTS`); see predictions P3a-c.
+
 ## Risks
 - Payload semantics around drafts and versions (which document is `originalDoc`, partial group updates, restore) are assumed from source reading and tested on a real database, not assumed.
-- The migration adds NOT NULL columns with defaults to `pages` and `posts`. Existing rows in the live Neon database (if any) get `governance.status = draft` even if published; public reads use `_status`, so nothing disappears, but republishing them needs the workflow.
+- The migration adds columns with database defaults to `pages` and `posts`. Existing rows in the live Neon database (if any) read as draft and unverified even if published; public reads use `_status`, so nothing disappears, but republishing them needs the workflow (and an owner office and source).
 - The template seed publishes content directly. It will now be refused, which is intended: it is invented demo content. Removing it is a later slice.
 - p2/landing may change the schema too. Two generated migrations on the same base will conflict; whoever merges second regenerates theirs.
 - Preview (`/next/preview`) lets any signed-in user with the preview secret read drafts through the frontend with access bypassed. Known gap, belongs to the preview slice (CMS-11).

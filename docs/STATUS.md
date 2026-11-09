@@ -1,13 +1,14 @@
 # Status
 
-Updated: 2026-11-07 (Sat) PKT
+Updated: 2026-11-09 (Mon) PKT
 
 | Phase | State | Gate |
 | --- | --- | --- |
 | P0 Decide and verify | Spike S-1 done; waiting on user inputs | G0 pending (see below) |
 | P1 Foundation | Code done and checked locally; CI and live URL pending | G1 partly met, see `docs/evidence/G1/g1-report.md` |
 | P2 Design system and shell (plan v2 section 11; the 2026-11-06 handoff mislabelled it "content model") | Not started | G2 |
-| P3 CMS core, P4 content and real data, P5 to P8 | Not started | Addendum edits P3 to P5 (see below) |
+| P3 CMS core | Slice 3a (governance fields, six roles, workflow, VER-01, audit log) built on branch `p3/cms-core`; draft PR, NOT merged (user approves merges) | Slice gate in `docs/briefs/p3a-governance-roles-workflow-audit.md` |
+| P4 content and real data, P5 to P8 | Not started | Addendum edits P3 to P5 (see below) |
 
 ## G0 checklist
 - [x] Spike S-1 run, results in `docs/evidence/G0/spike-report.md`
@@ -35,7 +36,15 @@ Updated: 2026-11-07 (Sat) PKT
 - NOT in the zip: the organized pack the addendum's importer reads (`departments.json`, `faculty.json`, `route_map.csv` with 1,613 rows, etc.) and the 1254x1254 crest. P4 needs them.
 - Decision needed before P4: the addendum puts crawl data in `/scripts/import/data/` of this public repo. That would publish staff emails and phone numbers. Keep data out of the repo, or commit only a scrubbed subset.
 
+## P3 slice 3a (2026-11-09, branch `p3/cms-core`)
+- Done: policy module, governance field group on Pages and Posts, six roles, audit-logs, generated migration `20261109_013938_p3a_governance` (up, down, up proven on a fresh local database), 73 unit and 39 new integration tests, ADR-0010, brief, predictions P3a-a to P3a-e.
+- Merging this branch redeploys the demo and runs the migration on live Neon: user approves first. Existing live rows will read as draft and unverified; the template seed route is now platform-admin only and will be refused by the workflow if it tries to publish.
+- Not run: Playwright admin and e2e flows, Docker path, scheduled publish through the jobs queue, REST versions-list access, browser check of the admin edit form, Vercel preview deploy.
+- Not in this slice: AffiliatedColleges, MeritLists, ContactDirectory, ArticleTags, scheduled publish and expiry (LIF-01 to LIF-04), media rules, accessibility guard, editor dashboard, editor guide.
+- Note: `p2/landing` may also change the schema; whoever merges second regenerates their migration.
+
 ## Next step
+0. Slice 3b: new collections (AffiliatedColleges, MeritLists, ContactDirectory, ArticleTags) using `withGovernance`, then LIF-01 to LIF-04, media rules, editor dashboard.
 1. Optional: narrow `engines.node` to `^24` so Vercel cannot auto-upgrade to 26 again (not done).
 2. P2 (design system and shell): needs the brand assets (crest, confirmed names, address, phone) and a decision on which look wins (mockup palette per plan, or old-site styling).
 3. User: written DCST confirmation, the organized data pack, the crest and photographs.
