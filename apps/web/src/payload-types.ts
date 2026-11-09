@@ -72,6 +72,7 @@ export interface Config {
     media: Media;
     categories: Category;
     users: User;
+    'audit-logs': AuditLog;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -94,6 +95,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -216,6 +218,44 @@ export interface Page {
    */
   generateSlug?: boolean | null;
   slug: string;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * Pinned records are protected from automatic expiry. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -266,6 +306,44 @@ export interface Post {
    */
   generateSlug?: boolean | null;
   slug: string;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * Pinned records are protected from automatic expiry. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -420,6 +498,14 @@ export interface Category {
 export interface User {
   id: number;
   name?: string | null;
+  /**
+   * The first account ever created becomes platform admin.
+   */
+  role?: ('platformAdmin' | 'siteManager' | 'approver' | 'editor' | 'contributor' | 'auditor') | null;
+  /**
+   * Offices this person works for (matched against a record's owner office). Stored lower-case.
+   */
+  offices?: string[] | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -775,6 +861,34 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs".
+ */
+export interface AuditLog {
+  id: number;
+  action: 'create' | 'update' | 'delete' | 'login';
+  collection: string;
+  recordId?: string | null;
+  actorKind: 'user' | 'system' | 'anonymous';
+  actorId?: string | null;
+  actorRole?: string | null;
+  actorEmail?: string | null;
+  transitionFrom?: string | null;
+  transitionTo?: string | null;
+  locale?: string | null;
+  changes?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -984,6 +1098,10 @@ export interface PayloadLockedDocument {
         value: number | User;
       } | null)
     | ({
+        relationTo: 'audit-logs';
+        value: number | AuditLog;
+      } | null)
+    | ({
         relationTo: 'redirects';
         value: number | Redirect;
       } | null)
@@ -1092,6 +1210,25 @@ export interface PagesSelect<T extends boolean = true> {
   publishedAt?: T;
   generateSlug?: T;
   slug?: T;
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -1207,6 +1344,25 @@ export interface PostsSelect<T extends boolean = true> {
       };
   generateSlug?: T;
   slug?: T;
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -1331,6 +1487,8 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  role?: T;
+  offices?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1348,6 +1506,25 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs_select".
+ */
+export interface AuditLogsSelect<T extends boolean = true> {
+  action?: T;
+  collection?: T;
+  recordId?: T;
+  actorKind?: T;
+  actorId?: T;
+  actorRole?: T;
+  actorEmail?: T;
+  transitionFrom?: T;
+  transitionTo?: T;
+  locale?: T;
+  changes?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -7,7 +7,7 @@ Updated: 2026-11-09 (Mon) PKT
 | P0 Decide and verify | Spike S-1 done; waiting on user inputs | G0 pending (see below) |
 | P1 Foundation | Code done and checked locally; CI and live URL pending | G1 partly met, see `docs/evidence/G1/g1-report.md` |
 | P2 Design system and shell (plan v2 section 11; the 2026-11-06 handoff mislabelled it "content model") | Landing approved by the owner and merged to `main` on 2026-11-09 (live demo https://uswat-website.vercel.app). Milestone C (inner-page template kit, Geist removal, RTL pass, `/design`, baselines) in progress; about 60% of P2 done | G2 pending: needs committed baselines, keyboard tests and filed evidence; owner approval of the design recorded 2026-11-09 |
-| P3 CMS core | Assigned to a second agent on a separate branch; lanes and PR checklist in `docs/briefs/P3-coordination.md`; no P3 branch on GitHub yet (checked 2026-11-09) |
+| P3 CMS core | Slice 3a (governance fields, six roles, workflow, VER-01, audit log) reviewed and merged to `main` by fast-forward on 2026-11-09 (PR #1, ca122c8); production deployment READY, `/readyz` ok | Slice gate in `docs/briefs/p3a-governance-roles-workflow-audit.md` |
 | P4 content and real data, P5 to P8 | Not started | Addendum edits P3 to P5 (see below) |
 
 ## G0 checklist
@@ -74,8 +74,22 @@ Updated: 2026-11-09 (Mon) PKT
 - NOT in the zip: the organized pack the addendum's importer reads (`departments.json`, `faculty.json`, `route_map.csv` with 1,613 rows, etc.) and the 1254x1254 crest. P4 needs them.
 - Decision needed before P4: the addendum puts crawl data in `/scripts/import/data/` of this public repo. That would publish staff emails and phone numbers. Keep data out of the repo, or commit only a scrubbed subset.
 
+## P3 slice 3a (2026-11-09, branch `p3/cms-core`)
+- Done: policy module, governance field group on Pages and Posts, six roles, audit-logs, generated migration `20261109_013938_p3a_governance` (up, down, up proven on a fresh local database), 73 unit and 40 new integration tests (CI green on the draft PR, PostgreSQL 17), ADR-0010, brief, predictions P3a-a to P3a-e.
+- Merging this branch redeploys the demo and runs the migration on live Neon: user approves first. Existing live rows will read as draft and unverified; the template seed route is now platform-admin only and will be refused by the workflow if it tries to publish.
+- Not run: Playwright admin and e2e flows, Docker path, scheduled publish through the jobs queue, REST versions-list access, browser check of the admin edit form, Vercel preview deploy.
+- Not in this slice: AffiliatedColleges, MeritLists, ContactDirectory, ArticleTags, scheduled publish and expiry (LIF-01 to LIF-04), media rules, accessibility guard, editor dashboard, editor guide.
+- Main (P2 landing, coordination brief) was merged into this branch on 2026-11-09; P2 changed no collection or migration. If another PR adds a migration first, regenerate this one.
+
+## Main-agent review of PR #1 (2026-11-09)
+- Read policy, access, hooks, audit, users, migration and the brief block. Approved and merged (fast-forward, no squash). Live Neon had 0 users, 0 pages, 0 posts (counts only) and already listed the governance migration, so no lockout or data risk.
+- Follow-ups for the P3 agent (not blocking): Local API unpublish by a user is not detected (REST only); last-admin check is not atomic; add a role backfill or runbook step for databases that already have users; keep system-actor writes out of `src/site`; run the "not run" items (Playwright admin flows, REST versions access) before the P3 gate.
+
 ## Next step
 1. User: review the landing (screenshots or a preview deployment of `p2/landing`), then say go for G2 and the merge to `main` (merging redeploys the demo site).
 2. User: commit the real photographs and a high-resolution crest; confirm the address; get Urdu reviewed.
 3. User: turn Vercel Deployment Protection off before judges; rotate the Neon password; optional: narrow `engines.node` to `^24`.
 4. Then milestone C (apply the design to template routes, remove Geist) and P3 (CMS core). Still needed: written DCST confirmation, the organized data pack, and a decision on keeping crawl data out of the public repo.
+
+P3 agent (slice 3a), own entry:
+- Slice 3b: new collections (AffiliatedColleges, MeritLists, ContactDirectory, ArticleTags) using `withGovernance`, then LIF-01 to LIF-04, media rules, editor dashboard.
