@@ -11,7 +11,7 @@ export function Crest({ size = 44 }: { size?: number }) {
 }
 
 /* The navigation bar shows the crest only (no name, no tagline), as in the design reference. */
-export function Logo({ size = 46 }: { size?: number }) {
+export function Logo({ size = 40 }: { size?: number }) {
   return (
     <Link href="/" aria-label={`${site.name} home`} className={styles.logo}>
       <Crest size={size} />

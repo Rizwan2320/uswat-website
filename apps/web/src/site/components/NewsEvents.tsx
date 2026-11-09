@@ -47,46 +47,48 @@ export default async function NewsEvents() {
             </article>
           ) : null}
 
-          <article className={`pop ${styles.card} ${styles.events}`} aria-labelledby="events-title">
-            <header className={styles.eventsHead}>
-              <span className={`card-icon ${styles.eventsIcon}`}><CalendarIcon /></span>
-              <h3 id="events-title" className={`card-title ${styles.eventsTitle}`}><T k={heading} /></h3>
-            </header>
-            {shown.length === 0 ? (
-              <p className={styles.none}>No upcoming events</p>
-            ) : (
-              <ul className={styles.eventList}>
-                {shown.map((e) => {
-                  const b = dateBlock(e)
-                  const d = itemDate(e)
-                  const body = (
-                    <>
-                      {b ? (
-                        <time className={styles.block} dateTime={b.dateTime}>
-                          <span className={styles.day}>{b.top}</span>
-                          <span className={styles.mon}>{b.bottom}</span>
-                        </time>
-                      ) : null}
-                      <span className={styles.evText}>
-                        <span className={`row-title ${styles.evTitle}`}>{e.title}</span>
-                        {e.venue ? <span className={styles.venue}>{e.venue}</span> : null}
-                        {d ? <span className="visually-hidden">{d.label}</span> : null}
-                      </span>
-                    </>
-                  )
-                  return (
-                    <li key={e.id} className={`row ${styles.ev}`}>
-                      {e.href ? <a className={styles.evLink} href={e.href} rel="noopener noreferrer">{body}</a> : <div className={styles.evLink}>{body}</div>}
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
-            {/* The one "view all" link for the section: sits in the empty space at the foot of the events card. */}
-            <a className={styles.all} href={ALL_NEWS} rel="noopener noreferrer">
-              <T k="View All News & Events" /> <ArrowRightIcon className={`btn-arrow ${styles.allArrow}`} />
-            </a>
-          </article>
+          <div className={styles.eventsCol}>
+            <article className={`pop ${styles.card} ${styles.events}`} aria-labelledby="events-title">
+              <header className={styles.eventsHead}>
+                <span className={`card-icon ${styles.eventsIcon}`}><CalendarIcon /></span>
+                <h3 id="events-title" className={`card-title ${styles.eventsTitle}`}><T k={heading} /></h3>
+              </header>
+              {shown.length === 0 ? (
+                <p className={styles.none}>No upcoming events</p>
+              ) : (
+                <ul className={styles.eventList}>
+                  {shown.map((e) => {
+                    const b = dateBlock(e)
+                    const d = itemDate(e)
+                    const body = (
+                      <>
+                        {b ? (
+                          <time className={styles.block} dateTime={b.dateTime}>
+                            <span className={styles.day}>{b.top}</span>
+                            <span className={styles.mon}>{b.bottom}</span>
+                          </time>
+                        ) : null}
+                        <span className={styles.evText}>
+                          <span className={`row-title ${styles.evTitle}`}>{e.title}</span>
+                          {e.venue ? <span className={styles.venue}>{e.venue}</span> : null}
+                          {d ? <span className="visually-hidden">{d.label}</span> : null}
+                        </span>
+                      </>
+                    )
+                    return (
+                      <li key={e.id} className={`row ${styles.ev}`}>
+                        {e.href ? <a className={styles.evLink} href={e.href} rel="noopener noreferrer">{body}</a> : <div className={styles.evLink}>{body}</div>}
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </article>
+          {/* The one "view all" link for the section: under the events card, in the space the shorter card leaves. */}
+          <a className={styles.all} href={ALL_NEWS} rel="noopener noreferrer">
+            <T k="View All News & Events" /> <ArrowRightIcon className={`btn-arrow ${styles.allArrow}`} />
+          </a>
+          </div>
         </div>
       </div>
     </section>

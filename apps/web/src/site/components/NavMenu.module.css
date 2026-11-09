@@ -3,7 +3,7 @@
 /* The item is NOT positioned: its panel is placed against the floating bar (see the effect in NavMenu.tsx). */
 .item { position: static; }
 .link {
-  position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 6px 9px;
+  position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 4px 9px;
   border: 0; border-radius: 999px; background: transparent; color: var(--forest);
   font: inherit; font-weight: 500; font-size: 0.95rem; letter-spacing: -0.005em; text-decoration: none; cursor: pointer; white-space: nowrap;
   transition: background-color 0.2s ease, color 0.2s ease;
@@ -19,7 +19,7 @@
 
 .sub {
   position: absolute; top: calc(100% + 10px); left: var(--sub-x, 0); z-index: 60;
-  width: min(540px, calc(100vw - 32px)); padding: 10px 10px 10px; border-radius: 20px; background: var(--ivory);
+  width: min(450px, calc(100vw - 32px)); padding: 8px; border-radius: 18px; background: var(--ivory);
   border: 1.5px solid #b4d0a9;
   box-shadow: 0 22px 50px -10px rgb(0 42 16 / 0.28), 0 4px 12px rgb(0 42 16 / 0.08);
   /* Fades in and out instead of snapping; hidden panels are not focusable or announced (visibility). */
@@ -39,17 +39,17 @@
 
 .cols { display: grid; grid-template-columns: 1fr 1fr; }
 .col { display: grid; align-content: start; gap: 2px; padding-inline: 4px; }
-.col + .col { border-inline-start: 1px solid var(--ivory-deep); padding-inline-start: 8px; }
-.col:first-child { padding-inline-end: 8px; }
+.col + .col { border-inline-start: 1px solid var(--ivory-deep); padding-inline-start: 6px; }
+.col:first-child { padding-inline-end: 6px; }
 .col a {
-  display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 6px 10px; border-radius: 12px;
-  color: var(--forest); text-decoration: none; font-size: 0.93rem; font-weight: 500; line-height: 1.25;
+  display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 4px 8px; border-radius: 10px;
+  color: var(--forest); text-decoration: none; font-size: 0.88rem; font-weight: 500; line-height: 1.25;
 }
-.ico { flex: none; display: grid; place-items: center; width: 24px; font-size: 1.4rem; color: var(--forest); }
+.ico { flex: none; display: grid; place-items: center; width: 22px; font-size: 1.25rem; color: var(--forest); }
 .col a:hover, .col a:focus-visible { background: #e8efe1; }
 .all {
-  display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; margin-top: 8px; padding: 8px 14px;
-  border-radius: 12px; background: #e8efe1; color: var(--forest); text-decoration: none; font-size: 0.95rem; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; margin-top: 6px; padding: 6px 14px;
+  border-radius: 10px; background: #e8efe1; color: var(--forest); text-decoration: none; font-size: 0.9rem; font-weight: 600;
 }
 .all:hover, .all:focus-visible { background: #dbe6d1; }
 

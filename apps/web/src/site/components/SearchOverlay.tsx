@@ -36,7 +36,7 @@ export default function SearchOverlay({ triggerClassName }: { triggerClassName?:
             {t('Search')}
           </label>
           <input id="site-search" name="q" type="search" placeholder="Search the university" autoComplete="off" className={styles.input} />
-          <button type="submit" className={`btn btn--maroon ${styles.go}`}>
+          <button type="submit" className={`btn btn--gold ${styles.go}`}>
             <SearchIcon /> <span><T k="Search" /></span>
           </button>
           <button type="button" className={styles.close} aria-label={t('Close')} onClick={() => ref.current?.close()}>
