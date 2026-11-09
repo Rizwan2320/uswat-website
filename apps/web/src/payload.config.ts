@@ -14,6 +14,7 @@ import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { plugins } from './plugins'
 import { governancePlugin } from './governance/plugin'
+import { folderAccessOverride } from './governance/staffAccess'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { env } from './env'
@@ -84,6 +85,7 @@ export default buildConfig({
   // Write paths go through REST and the admin only, where draft versus unpublish is visible to
   // the policy hook (docs/adr/0010). Nothing in the site uses GraphQL.
   graphQL: { disable: true },
+  folders: { collectionOverrides: [folderAccessOverride] },
   secret: env.PAYLOAD_SECRET,
   sharp,
   typescript: {
