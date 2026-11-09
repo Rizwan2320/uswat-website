@@ -16,7 +16,7 @@
   border: 1.5px solid #b4d0a9; border-radius: 999px; background: #fff; color: var(--forest); font: inherit;
 }
 .input:focus, .input:focus-visible { outline: none; border-color: var(--forest); }
-.go { flex: none; min-height: 44px; }
+.go { flex: none; min-height: 40px; }
 .close {
   flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
   border: 0; background: transparent; color: var(--forest); font-size: 1.4rem; cursor: pointer;

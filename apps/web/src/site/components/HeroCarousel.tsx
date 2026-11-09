@@ -14,7 +14,7 @@ const AUTOPLAY_MS = 7000
 const icons = { cap: CapIcon, document: DocumentIcon, book: BookIcon, calendar: CalendarIcon, people: PeopleIcon, badge: BadgeIcon }
 
 /* Hero. Photographs on one side, the static headline (the tagline) and sub line on the other. The photograph and the
-   two buttons change together, one slide every 10 s. Autoplay pauses on hover, on focus inside, when the tab is hidden
+   two buttons change together, one slide every 7 s. Autoplay pauses on keyboard focus inside, when the tab is hidden
    and under prefers-reduced-motion; there is a visible pause/play button, previous/next (the small round buttons from
    the mockup), labelled dots, arrow keys and swipe. Inactive slides are aria-hidden and their buttons are inert. */
 export default function HeroCarousel({ content, slides }: { content: HeroContent; slides: HeroSlide[] }) {
@@ -23,7 +23,6 @@ export default function HeroCarousel({ content, slides }: { content: HeroContent
 
   const [index, setIndex] = useState(0)
   const [playing, setPlaying] = useState(true) // user intent
-  const [hovering, setHovering] = useState(false)
   const [focusIn, setFocusIn] = useState(false)
   const [hidden, setHidden] = useState(false)
   const [reduced, setReduced] = useState(false)
@@ -42,7 +41,7 @@ export default function HeroCarousel({ content, slides }: { content: HeroContent
     }
   }, [])
 
-  const rotating = multi && playing && !reduced && !hovering && !focusIn && !hidden
+  const rotating = multi && playing && !reduced && !focusIn && !hidden
 
   useEffect(() => {
     if (!rotating) return
@@ -50,7 +49,8 @@ export default function HeroCarousel({ content, slides }: { content: HeroContent
     return () => window.clearInterval(id)
   }, [rotating, count, index]) // `index` restarts the timer after a manual change
 
-  const go = useCallback((i: number) => setIndex(((i % count) + count) % count), [count])
+  /* A manual change also clears the keyboard-focus pause, so the slideshow always resumes 7 s after the last click. */
+  const go = useCallback((i: number) => { setFocusIn(false); setIndex(((i % count) + count) % count) }, [count])
 
   const onPointerDown = (e: PointerEvent) => { down.current = e.clientX }
   const onPointerUp = (e: PointerEvent) => {
@@ -64,8 +64,6 @@ export default function HeroCarousel({ content, slides }: { content: HeroContent
 
   return (
     <div
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
       /* Only keyboard focus pauses: a mouse click leaves focus on the button, which would stall autoplay for good. */
       onFocus={(e) => { if (e.target.matches(':focus-visible')) setFocusIn(true) }}
       onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setFocusIn(false) }}

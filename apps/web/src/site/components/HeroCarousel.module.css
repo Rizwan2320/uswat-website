@@ -31,6 +31,7 @@
 
 /* The buttons change with the photograph; the stack is as tall as the tallest pair so nothing jumps. */
 .ctaStack { margin-top: 16px; display: grid; }
+.ctas :global(.btn) { min-height: 38px; padding: 6px 18px; font-size: 0.88rem; }
 .ctas { grid-area: 1 / 1; display: flex; flex-wrap: wrap; gap: 12px; align-content: flex-start; opacity: 0; visibility: hidden; transition: opacity 0.5s ease, visibility 0s linear 0.5s; }
 .ctas[data-active] { opacity: 1; visibility: visible; transition-delay: 0s; }
 
