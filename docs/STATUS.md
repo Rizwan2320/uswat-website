@@ -85,6 +85,10 @@ Updated: 2026-11-09 (Mon) PKT
 - Read policy, access, hooks, audit, users, migration and the brief block. Approved and merged (fast-forward, no squash). Live Neon had 0 users, 0 pages, 0 posts (counts only) and already listed the governance migration, so no lockout or data risk.
 - Follow-ups for the P3 agent (not blocking): Local API unpublish by a user is not detected (REST only); last-admin check is not atomic; add a role backfill or runbook step for databases that already have users; keep system-actor writes out of `src/site`; run the "not run" items (Playwright admin flows, REST versions access) before the P3 gate.
 
+## Milestone C, step 2 (2026-11-09, branch `p2/templates`, not merged)
+- `[slug]`, `posts`, `search` and the 404 now render inside the site shell (header, footer, Inter/Playfair, palette); `(frontend)` root layout, Geist, dark mode, stock header/footer and the header-theme provider are removed. Tailwind stays for the stock blocks, utilities only (`design/cms.css`), mapped to site tokens. ADR-0011 (Proposed), brief, prediction P2-b with actuals, evidence in `docs/evidence/G2/shell-report.md`.
+- Verified locally: unit 94, int 137, e2e 12, axe 0 violations on 24 checks, no overflow. Not run: Vercel preview, real content, native Urdu review, keyboard pass of the drawer, screenshot baselines.
+
 ## Next step
 1. User: review the landing (screenshots or a preview deployment of `p2/landing`), then say go for G2 and the merge to `main` (merging redeploys the demo site).
 2. User: commit the real photographs and a high-resolution crest; confirm the address; get Urdu reviewed.
