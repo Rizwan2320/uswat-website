@@ -36,9 +36,6 @@ button { font: inherit; }
 
 /* Top bar + header stick together, so the tagline is always on screen. */
 .site-head { position: sticky; top: 0; z-index: 50; }
-/* The hero is this much taller than its content needs, so the stats bar sits fully above the gold wave (wave beneath the bar). */
-:root { --stats-lift: 92px; }
-@media (max-width: 767px) { :root { --stats-lift: 158px; } }
 
 /* One container for EVERY section so left/right edges align. */
 .container {
