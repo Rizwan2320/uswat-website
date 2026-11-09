@@ -71,7 +71,10 @@ describe('buildChanges (CMS-05 diff)', () => {
 describe('content hash', () => {
   it('is stable for equal content and sensitive to change', () => {
     const a = hashContent({ title: 'T', body: { b: 1, a: [1, 2] } }, ['title', 'body'])
-    const b = hashContent({ body: { a: [1, 2], b: 1 }, title: 'T', other: 'ignored' }, ['title', 'body'])
+    const b = hashContent({ body: { a: [1, 2], b: 1 }, title: 'T', other: 'ignored' }, [
+      'title',
+      'body',
+    ])
     const c = hashContent({ title: 'T2', body: { b: 1, a: [1, 2] } }, ['title', 'body'])
     expect(a).toBe(b)
     expect(a).not.toBe(c)

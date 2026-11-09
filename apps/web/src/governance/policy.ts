@@ -40,6 +40,8 @@ export type PolicyCode =
   | 'OWNER_REQUIRED'
   | 'SOURCE_REQUIRED'
   | 'UNPUBLISH_FORBIDDEN'
+  | 'NOT_YOUR_DRAFT'
+  | 'DELETE_FORBIDDEN'
 
 export interface Denial {
   ok: false
@@ -57,6 +59,8 @@ export interface RecordState {
   source: string | null
   reviewDueAt: string | null
   pinned: boolean
+  /** Who created the record (contributors may only edit their own drafts). */
+  createdBy: string | number | null
 }
 
 type Scope = Pick<RecordState, 'ownerOffice' | 'risk'>
@@ -262,6 +266,28 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
   const { actor, publishing, prev, next, contentChanged, now } = input
   const notes: string[] = []
 
+  // Scope is judged on the latest saved state of the record (`prev`), not on the published
+  // row: draft saves never touch the published row, so database-level filters see stale data.
+  if (isUser(actor)) {
+    if (
+      (actor.role === 'approver' || actor.role === 'editor') &&
+      !inScope(actor, prev.ownerOffice)
+    ) {
+      return deny('OWNER_OUT_OF_SCOPE', 'This record belongs to another office.')
+    }
+    if (
+      actor.role === 'contributor' &&
+      (prev.createdBy == null ||
+        String(prev.createdBy) !== String(actor.id) ||
+        prev.status !== 'draft')
+    ) {
+      return deny(
+        'NOT_YOUR_DRAFT',
+        'Contributors can only edit drafts they created, until a reviewer takes over.',
+      )
+    }
+  }
+
   const scope: Scope = { ownerOffice: prev.ownerOffice, risk: higherRisk(prev.risk, next.risk) }
   const reviewer = isReviewerFor(actor, scope)
   const reviewerOnPrev = isReviewerFor(actor, { ownerOffice: prev.ownerOffice, risk: prev.risk })
@@ -361,12 +387,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
       }
     }
   } else {
-    if (
-      input.unpublishing &&
-      prev.status === 'published' &&
-      !reviewerOnPrev &&
-      actor.kind !== 'system'
-    ) {
+    if (input.unpublishing && !reviewerOnPrev && actor.kind !== 'system') {
       return deny(
         'UNPUBLISH_FORBIDDEN',
         'Taking published content offline needs a reviewer: an approver of the owning office, a platform admin, or a site manager for records that are not high-impact.',
@@ -415,4 +436,16 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
   const values: SaveValues = { status, verification, risk: next.risk, pinned: next.pinned }
   if (verifiedAt && verification === 'verified') values.verifiedAt = verifiedAt
   return { ok: true, values, notes }
+}
+
+/** Deleting: platform admin always; site manager unless the record is high-impact; the system for jobs. */
+export function checkDelete(actor: Actor, rec: Pick<RecordState, 'risk'>): Denial | null {
+  if (actor.kind === 'system') return null
+  if (!isUser(actor)) return deny('ANONYMOUS', 'You must be signed in to delete content.')
+  if (actor.role === 'platformAdmin') return null
+  if (actor.role === 'siteManager' && rec.risk !== 'high_impact') return null
+  return deny(
+    'DELETE_FORBIDDEN',
+    'Only a platform admin can delete this record (site managers cannot delete high-impact records).',
+  )
 }

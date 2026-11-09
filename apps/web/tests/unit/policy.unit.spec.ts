@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   canRestore,
   canSubmitFor,
+  checkDelete,
   checkTransition,
   evaluateSave,
   inScope,
@@ -10,12 +11,20 @@ import {
   type RecordState,
   type SaveInput,
 } from '@/governance/policy'
-import { actorFromRequest, actorFromUser, type Actor, type WorkflowStatus } from '@/governance/roles'
+import {
+  actorFromRequest,
+  actorFromUser,
+  type Actor,
+  type WorkflowStatus,
+} from '@/governance/roles'
 
 const NOW = '2026-11-09T10:00:00.000Z'
 
-const user = (role: Parameters<typeof actorFromUser>[0]['role'], offices: string[] = [], id = 1): Actor =>
-  actorFromUser({ id, role, offices })
+const user = (
+  role: Parameters<typeof actorFromUser>[0]['role'],
+  offices: string[] = [],
+  id = 1,
+): Actor => actorFromUser({ id, role, offices })
 
 const admin = user('platformAdmin', [], 1)
 const manager = user('siteManager', [], 2)
@@ -39,6 +48,7 @@ const record = (o: Partial<RecordState> = {}): RecordState => ({
   source: 'Registrar circular 12/2026',
   reviewDueAt: null,
   pinned: false,
+  createdBy: 7, // the contributor below
   ...o,
 })
 
@@ -53,7 +63,12 @@ const save = (o: Partial<SaveInput> & Pick<SaveInput, 'actor'>): ReturnType<type
     ...o,
   })
 
-function allowed(actor: Actor, rec: Pick<RecordState, 'ownerOffice' | 'risk'>, from: WorkflowStatus, to: WorkflowStatus): boolean {
+function allowed(
+  actor: Actor,
+  rec: Pick<RecordState, 'ownerOffice' | 'risk'>,
+  from: WorkflowStatus,
+  to: WorkflowStatus,
+): boolean {
   return checkTransition(actor, rec, from, to) === null
 }
 
@@ -70,7 +85,13 @@ describe('actors', () => {
   })
 
   it('ignores malformed offices and normalizes case and spacing', () => {
-    expect(actorFromUser({ id: 1, role: 'editor', offices: ['a', 3, '', null, '  Admissions   Office ', 'A'] })).toMatchObject({
+    expect(
+      actorFromUser({
+        id: 1,
+        role: 'editor',
+        offices: ['a', 3, '', null, '  Admissions   Office ', 'A'],
+      }),
+    ).toMatchObject({
       offices: ['a', 'admissions office'],
     })
   })
@@ -139,7 +160,9 @@ describe('CMS-03 transitions on a standard-risk record', () => {
   for (const [from, to, who] of moves) {
     it(`${from} > ${to} is allowed for exactly the listed actors`, () => {
       for (const actor of everyone) {
-        expect(allowed(actor, standard, from, to), `${JSON.stringify(actor)}`).toBe(who.includes(actor))
+        expect(allowed(actor, standard, from, to), `${JSON.stringify(actor)}`).toBe(
+          who.includes(actor),
+        )
       }
     })
   }
@@ -168,7 +191,15 @@ describe('CMS-03 transitions on a standard-risk record', () => {
 
 describe('creating records', () => {
   const create = (actor: Actor, next: Partial<RecordState> = {}, publishing = false) =>
-    evaluateSave({ operation: 'create', actor, publishing, prev: null, next: record(next), contentChanged: false, now: NOW })
+    evaluateSave({
+      operation: 'create',
+      actor,
+      publishing,
+      prev: null,
+      next: record(next),
+      contentChanged: false,
+      now: NOW,
+    })
 
   it('refuses to create a published record', () => {
     expect(create(admin, {}, true)).toMatchObject({ ok: false, code: 'CREATE_PUBLISHED' })
@@ -234,7 +265,10 @@ describe('VER-01: an unverified record can never be published', () => {
   })
 
   it('also blocks a stale record', () => {
-    expect(publish(admin, { verification: 'stale' })).toMatchObject({ ok: false, code: 'NOT_VERIFIED' })
+    expect(publish(admin, { verification: 'stale' })).toMatchObject({
+      ok: false,
+      code: 'NOT_VERIFIED',
+    })
   })
 
   it('allows publishing a verified, approved record', () => {
@@ -248,7 +282,10 @@ describe('VER-01: an unverified record can never be published', () => {
 
   it('a reviewer can verify and publish in the same save', () => {
     const r = publish(approverIn, { verification: 'unverified' }, { verification: 'verified' })
-    expect(r).toMatchObject({ ok: true, values: { status: 'published', verification: 'verified', verifiedAt: NOW } })
+    expect(r).toMatchObject({
+      ok: true,
+      values: { status: 'published', verification: 'verified', verifiedAt: NOW },
+    })
   })
 
   it('the system cannot verify, so an imported record cannot reach published without a person', () => {
@@ -266,10 +303,18 @@ describe('VER-01: an unverified record can never be published', () => {
   })
 
   it('high-impact records also need a review date', () => {
-    const r = publish(approverIn, { verification: 'verified', risk: 'high_impact', reviewDueAt: null })
+    const r = publish(approverIn, {
+      verification: 'verified',
+      risk: 'high_impact',
+      reviewDueAt: null,
+    })
     expect(r).toMatchObject({ ok: false, code: 'REVIEW_DATE_REQUIRED' })
     expect(
-      publish(approverIn, { verification: 'verified', risk: 'high_impact', reviewDueAt: '2027-01-01T00:00:00.000Z' }),
+      publish(approverIn, {
+        verification: 'verified',
+        risk: 'high_impact',
+        reviewDueAt: '2027-01-01T00:00:00.000Z',
+      }),
     ).toMatchObject({ ok: true })
   })
 
@@ -279,7 +324,10 @@ describe('VER-01: an unverified record can never be published', () => {
       code: 'OWNER_REQUIRED',
     })
     for (const source of [null, '', '   ']) {
-      expect(publish(admin, { verification: 'verified', source })).toMatchObject({ ok: false, code: 'SOURCE_REQUIRED' })
+      expect(publish(admin, { verification: 'verified', source })).toMatchObject({
+        ok: false,
+        code: 'SOURCE_REQUIRED',
+      })
     }
   })
 
@@ -323,9 +371,19 @@ describe('publishing, archiving and editing live content', () => {
   })
 
   it('a reviewer can approve and publish in one save; an editor cannot', () => {
-    const base = { prev: record({ status: 'draft', verification: 'verified' }), next: record({ status: 'approved', verification: 'verified' }), publishing: true }
-    expect(save({ actor: manager, ...base })).toMatchObject({ ok: true, values: { status: 'published' } })
-    expect(save({ actor: editorIn, ...base })).toMatchObject({ ok: false, code: 'TRANSITION_FORBIDDEN' })
+    const base = {
+      prev: record({ status: 'draft', verification: 'verified' }),
+      next: record({ status: 'approved', verification: 'verified' }),
+      publishing: true,
+    }
+    expect(save({ actor: manager, ...base })).toMatchObject({
+      ok: true,
+      values: { status: 'published' },
+    })
+    expect(save({ actor: editorIn, ...base })).toMatchObject({
+      ok: false,
+      code: 'TRANSITION_FORBIDDEN',
+    })
   })
 
   it('re-saving a published record without content change is a no-op for anyone with update access', () => {
@@ -344,7 +402,9 @@ describe('publishing, archiving and editing live content', () => {
       save({ actor, publishing: true, prev: live, next, contentChanged: true })
     expect(edit(editorIn)).toMatchObject({ ok: false, code: 'EDIT_LIVE_NEEDS_REVIEWER' })
     expect(edit(manager)).toMatchObject({ ok: true, values: { status: 'published' } })
-    expect(edit(manager, record({ status: 'published', verification: 'unverified' }))).toMatchObject({
+    expect(
+      edit(manager, record({ status: 'published', verification: 'unverified' })),
+    ).toMatchObject({
       ok: false,
     })
   })
@@ -379,6 +439,68 @@ describe('publishing, archiving and editing live content', () => {
   })
 })
 
+describe('scope on updates is judged on the latest saved state', () => {
+  it("an editor or approver outside the record's office cannot change it", () => {
+    for (const a of [editorOut, approverOut]) {
+      expect(save({ actor: a, prev: record(), next: record() })).toMatchObject({
+        ok: false,
+        code: 'OWNER_OUT_OF_SCOPE',
+      })
+    }
+    expect(save({ actor: editorIn, prev: record(), next: record() })).toMatchObject({ ok: true })
+  })
+
+  it('a record with no owner office is outside every editor and approver', () => {
+    const orphan = record({ ownerOffice: null })
+    expect(save({ actor: editorIn, prev: orphan, next: orphan })).toMatchObject({
+      ok: false,
+      code: 'OWNER_OUT_OF_SCOPE',
+    })
+    expect(save({ actor: manager, prev: orphan, next: orphan })).toMatchObject({ ok: true })
+  })
+
+  it('a contributor edits only their own record, and only while it is a draft', () => {
+    expect(save({ actor: contributor, prev: record(), next: record() })).toMatchObject({ ok: true })
+    expect(
+      save({
+        actor: contributor,
+        prev: record({ createdBy: 99 }),
+        next: record({ createdBy: 99 }),
+      }),
+    ).toMatchObject({
+      ok: false,
+      code: 'NOT_YOUR_DRAFT',
+    })
+    expect(
+      save({ actor: contributor, prev: record({ createdBy: null }), next: record() }),
+    ).toMatchObject({ code: 'NOT_YOUR_DRAFT' })
+    for (const status of ['in_review', 'approved', 'published', 'archived'] as const) {
+      const r = record({ status })
+      expect(save({ actor: contributor, prev: r, next: r }), status).toMatchObject({
+        ok: false,
+        code: 'NOT_YOUR_DRAFT',
+      })
+    }
+  })
+})
+
+describe('deleting', () => {
+  it('platform admin always; site manager unless high-impact; system for jobs; nobody else', () => {
+    expect(checkDelete(admin, { risk: 'high_impact' })).toBeNull()
+    expect(checkDelete(manager, { risk: 'standard' })).toBeNull()
+    expect(checkDelete(manager, { risk: 'high_impact' })).toMatchObject({
+      code: 'DELETE_FORBIDDEN',
+    })
+    expect(checkDelete(system, { risk: 'high_impact' })).toBeNull()
+    for (const a of [approverIn, editorIn, contributor, auditor]) {
+      expect(checkDelete(a, { risk: 'low' }), JSON.stringify(a)).toMatchObject({
+        code: 'DELETE_FORBIDDEN',
+      })
+    }
+    expect(checkDelete(anonymous, { risk: 'low' })).toMatchObject({ code: 'ANONYMOUS' })
+  })
+})
+
 describe('taking published content offline (Unpublish)', () => {
   const live = record({ status: 'published', verification: 'verified' })
   const unpublish = (actor: Actor) =>
@@ -388,13 +510,20 @@ describe('taking published content offline (Unpublish)', () => {
     expect(unpublish(approverIn)).toMatchObject({ ok: true, values: { status: 'draft' } })
     expect(unpublish(manager)).toMatchObject({ ok: true })
     expect(unpublish(system)).toMatchObject({ ok: true })
-    for (const a of [editorIn, contributor, approverOut]) {
-      expect(unpublish(a), JSON.stringify(a)).toMatchObject({ ok: false, code: 'UNPUBLISH_FORBIDDEN' })
-    }
+    expect(unpublish(editorIn)).toMatchObject({ ok: false, code: 'UNPUBLISH_FORBIDDEN' })
+    // Scope is checked first: these never get as far as the unpublish rule.
+    expect(unpublish(contributor)).toMatchObject({ ok: false, code: 'NOT_YOUR_DRAFT' })
+    expect(unpublish(approverOut)).toMatchObject({ ok: false, code: 'OWNER_OUT_OF_SCOPE' })
   })
 
   it('a draft revision saved over live content is not an unpublish', () => {
-    const r = save({ actor: editorIn, prev: live, next: live, unpublishing: false, contentChanged: true })
+    const r = save({
+      actor: editorIn,
+      prev: live,
+      next: live,
+      unpublishing: false,
+      contentChanged: true,
+    })
     expect(r).toMatchObject({ ok: true, values: { status: 'draft' } })
   })
 })
@@ -458,7 +587,9 @@ describe('other guarded fields', () => {
   })
 
   it('anyone can raise the risk class', () => {
-    expect(save({ actor: editorIn, prev: record(), next: record({ risk: 'high_impact' }) })).toMatchObject({
+    expect(
+      save({ actor: editorIn, prev: record(), next: record({ risk: 'high_impact' }) }),
+    ).toMatchObject({
       ok: true,
       values: { risk: 'high_impact' },
     })
@@ -473,7 +604,9 @@ describe('other guarded fields', () => {
   it('scoped roles cannot hand a record to an office they are not in', () => {
     const r = save({ actor: editorIn, prev: record(), next: record({ ownerOffice: 'finance' }) })
     expect(r).toMatchObject({ ok: false, code: 'OWNER_OUT_OF_SCOPE' })
-    expect(save({ actor: manager, prev: record(), next: record({ ownerOffice: 'finance' }) })).toMatchObject({ ok: true })
+    expect(
+      save({ actor: manager, prev: record(), next: record({ ownerOffice: 'finance' }) }),
+    ).toMatchObject({ ok: true })
   })
 
   it('the system may mark content stale; a person who is not a reviewer may not', () => {
