@@ -108,6 +108,12 @@ Updated: 2026-11-09 (Mon) PKT
 - #2 (slice 3b) merged to `main` as 6c4ec0a through integration PR #6 (CI green on the result); production READY, `/readyz` ok. #3 and #4 held with written conditions on PR #3 (hourly cadence, job-runner access, timing-safe compare, runbook note, media update rule). #3's base retargeted to `main`. A new draft PR #5 (slice 3d, post types, base `p3/followups-3d`) and a branch `p3/faculty-portal-spec` (third agent) exist; neither reviewed yet.
 - **Finding:** Vercel previews run `migrate` against the same Neon database as production (ADR-0005). The live database already lists migrations from unmerged branches (`p3c_lifecycle`, `p3d_post_types`) although `main` only has up to `p3b`. Harmless while the database is empty and migrations are additive; it becomes a real risk once content exists, because a rewritten or abandoned migration leaves the live schema different from `main`. Fix before P4 content: a separate Neon branch for previews (set as the Preview-only `DATABASE_URL`), and a rule that a migration is not rewritten after its preview has built. Not done yet; needs the owner's go because it changes Vercel and Neon settings.
 
+## P3 slice 3c (2026-11-09, branch `p3/lifecycle-3c`, stacked on `p3/collections-3b`)
+- Done: lifecycle sweep (archive at expiry, scheduled publish, mark Stale) as a `lifecycleSweep` task, query-time `currentWhere` for current lists and 90-day notice age-out, reviewer queue filter, notification adapter (log line), `expiryRequired` option in the policy; generated migration `20261109_170317_p3c_lifecycle` (up, down, up proven on a copy of the 3b schema and on an empty database); 22 unit and 10 integration tests. Brief: `docs/briefs/p3c-lifecycle.md`.
+- **Nothing runs the sweep by itself yet.** Payload needs an outside caller for `/api/payload-jobs/handle-schedules` and `/api/payload-jobs/run?queue=lifecycle` with `CRON_SECRET`. User decision needed on the caller (GitHub Actions or other) before merge, and `CRON_SECRET` must be set in Vercel.
+- Not run: external scheduler, Playwright, CI for this branch until its PR is opened, any collection using `expiryRequired` (types arrive in a later slice), email notifications.
+- Depends on PR #2 (3b), which depends on PR #1 (3a).
+
 ## Next step
 1. User: review the landing (screenshots or a preview deployment of `p2/landing`), then say go for G2 and the merge to `main` (merging redeploys the demo site).
 2. User: commit the real photographs and a high-resolution crest; confirm the address; get Urdu reviewed.
@@ -115,4 +121,5 @@ Updated: 2026-11-09 (Mon) PKT
 4. Then milestone C (apply the design to template routes, remove Geist) and P3 (CMS core). Still needed: written DCST confirmation, the organized data pack, and a decision on keeping crawl data out of the public repo.
 
 P3 agent (slice 3a), own entry:
-- Slice 3b: new collections (AffiliatedColleges, MeritLists, ContactDirectory, ArticleTags) using `withGovernance`, then LIF-01 to LIF-04, media rules, editor dashboard.
+- Slice 3d (proposed): the five post types (News, Notices, Events, Jobs, Tenders) with expiry rules, then media rules, accessibility guard, editor dashboard and guide, getter switch to CMS reads.
+- Faculty portal: separate future phase (requirements, Odoo ownership and data-protection decisions first); nothing built in the CMS for it.
