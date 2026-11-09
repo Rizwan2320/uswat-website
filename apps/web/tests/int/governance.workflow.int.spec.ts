@@ -98,7 +98,10 @@ async function call(
     }),
     { params: Promise.resolve({ slug: path }) },
   )
-  return { status: res.status, body: (await res.json().catch(() => ({}))) as Record<string, unknown> }
+  return {
+    status: res.status,
+    body: (await res.json().catch(() => ({}))) as Record<string, unknown>,
+  }
 }
 const rest = (user: User, id: number, query: string, body: unknown) =>
   call('PATCH', user, ['pages', String(id)], query, body)

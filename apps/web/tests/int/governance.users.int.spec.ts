@@ -48,6 +48,18 @@ describe('Users, roles and offices', () => {
     expect(out).toMatchObject({ role: 'platformAdmin' })
   })
 
+  it('trusted server code keeps the role it asks for, even on an empty database', async () => {
+    const out = await beforeChange({
+      data: { email: 'svc@example.test', role: 'editor' },
+      operation: 'create',
+      req: { ...fakeReq(0), payloadAPI: 'local' } as PayloadRequest,
+      originalDoc: undefined,
+      collection: Users as never,
+      context: {},
+    } as never)
+    expect(out).toMatchObject({ role: 'editor' })
+  })
+
   it('later sign-ups by anyone but a platform admin are contributors with no offices', async () => {
     const out = await beforeChange({
       data: { email: 'late@example.test', role: 'platformAdmin', offices: ['registrar'] },

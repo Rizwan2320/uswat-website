@@ -93,14 +93,15 @@ export const Users: CollectionConfig = {
           actor.kind === 'system' || (actor.kind === 'user' && actor.role === 'platformAdmin')
 
         if (operation === 'create') {
-          const { totalDocs } = await req.payload.count({
-            collection: 'users',
-            req,
-            overrideAccess: true,
-          })
-          if (totalDocs === 0) {
-            // Bootstrapping: the first account is the platform admin.
-            return { ...data, role: 'platformAdmin' }
+          // Bootstrapping: the first account created by a person (the admin's create-first-user
+          // screen) is the platform admin. Trusted server code keeps the role it asks for.
+          if (actor.kind !== 'system') {
+            const { totalDocs } = await req.payload.count({
+              collection: 'users',
+              req,
+              overrideAccess: true,
+            })
+            if (totalDocs === 0) return { ...data, role: 'platformAdmin' }
           }
           return trusted ? data : { ...data, role: 'contributor', offices: [] }
         }
