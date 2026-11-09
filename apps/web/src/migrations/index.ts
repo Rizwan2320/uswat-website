@@ -1,9 +1,15 @@
 import * as migration_20261106_113628_initial from './20261106_113628_initial';
+import * as migration_20261109_013938_p3a_governance from './20261109_013938_p3a_governance';
 
 export const migrations = [
   {
     up: migration_20261106_113628_initial.up,
     down: migration_20261106_113628_initial.down,
-    name: '20261106_113628_initial'
+    name: '20261106_113628_initial',
+  },
+  {
+    up: migration_20261109_013938_p3a_governance.up,
+    down: migration_20261109_013938_p3a_governance.down,
+    name: '20261109_013938_p3a_governance'
   },
 ];
