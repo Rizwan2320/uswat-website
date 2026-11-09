@@ -38,7 +38,7 @@ button { font: inherit; }
 .site-head { position: sticky; top: 0; z-index: 50; }
 
 /* Hero is this much taller and the stats card sits this much higher, so the card rests on the gold wave line. */
-:root { --stats-lift: 44px; }
+:root { --stats-lift: 34px; }
 
 /* One container for EVERY section so left/right edges align. */
 .container {

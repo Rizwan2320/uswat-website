@@ -4,20 +4,19 @@ section.section { position: relative; isolation: isolate; overflow: hidden; back
 /* Backdrops. The photos are near-white at their fading edges, so multiply makes that white vanish into the ivory. */
 .bg { position: absolute; z-index: 0; pointer-events: none; mix-blend-mode: multiply; }
 .bgImg { object-fit: cover; }
-/* Left slot: the photo with its building on the left, behind the portrait (sides swapped on the owner's request, round 22). Full colour, so it is
-   faded into the ivory on its text side and top instead of being multiplied. */
-.bgLeft { inset-block: 0; inset-inline-start: 0; width: min(46vw, 660px); mix-blend-mode: normal; }
-.bgLeft .bgImg { object-position: 0 100%; }
+/* Left slot: soft green leaves on white. The white multiplies away into the ivory, and the top, bottom and text side are masked, so the photo merges from every side. */
+.bgLeft { inset-block: 0; inset-inline-start: 0; width: min(46vw, 660px); }
+.bgLeft .bgImg { object-position: 0 50%; }
 .bgRight { inset-block: 0; inset-inline-end: -36px; width: min(28vw, 400px); mix-blend-mode: normal; }
 /* The owner's building photo in its true orientation, standing on the section floor like the left photo. */
 .bgRight .bgImg { object-position: 100% 100%; }
 /* Soften the cropped top edge of each photo. */
 .bg { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 22%); mask-image: linear-gradient(to bottom, transparent 0, #000 22%); }
-/* The left photo fades towards the message. */
+/* The leaves fade out on the top, bottom and message sides. */
 .bgLeft {
-  -webkit-mask-image: linear-gradient(to left, transparent 0, rgb(0 0 0 / 0.75) 20%, #000 44%), linear-gradient(to bottom, transparent 0, #000 22%);
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 55%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
   -webkit-mask-composite: source-in;
-  mask-image: linear-gradient(to left, transparent 0, rgb(0 0 0 / 0.75) 20%, #000 44%), linear-gradient(to bottom, transparent 0, #000 22%);
+  mask-image: linear-gradient(to right, #000 0, #000 55%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
   mask-composite: intersect;
 }
 /* The right photo is a full-colour picture (sky and lawn), so it is faded into the ivory on its top, bottom and text side. */
@@ -66,3 +65,5 @@ section.section { position: relative; isolation: isolate; overflow: hidden; back
   .bgRight { width: 100%; height: 50%; inset-block-start: auto; opacity: 0.2; }
   .quote { padding-inline-start: 40px; }
 }
+/* Below about 1100 px the message column runs under the right-hand photo, so the photo is dropped to keep the text readable. */
+@media (max-width: 1100px) { .bgRight { display: none; } }

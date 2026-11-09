@@ -12,6 +12,9 @@ export default async function LeadershipMessage() {
   return (
     <section className={`section ${styles.section} on-light`} aria-labelledby="leadership-title">
       {/* Decorative backdrops: they fade to white and are multiplied into the ivory so no edge shows. */}
+      <div className={`${styles.bg} ${styles.bgLeft}`} aria-hidden="true">
+        <SafeImage src={images.vcBackdropLeft.src} alt="" fill sizes="(max-width: 767px) 80vw, 46vw" className={styles.bgImg} />
+      </div>
       <div className={`${styles.bg} ${styles.bgRight}`} aria-hidden="true">
         <SafeImage src={images.vcBackdropRight.src} alt="" fill sizes="(max-width: 767px) 100vw, 52vw" className={styles.bgImg} />
       </div>
