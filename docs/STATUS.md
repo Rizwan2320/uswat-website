@@ -74,7 +74,7 @@ Updated: 2026-11-09 (Mon) PKT
 - Decision needed before P4: the addendum puts crawl data in `/scripts/import/data/` of this public repo. That would publish staff emails and phone numbers. Keep data out of the repo, or commit only a scrubbed subset.
 
 ## P3 slice 3a (2026-11-09, branch `p3/cms-core`)
-- Done: policy module, governance field group on Pages and Posts, six roles, audit-logs, generated migration `20261109_013938_p3a_governance` (up, down, up proven on a fresh local database), 73 unit and 39 new integration tests, ADR-0010, brief, predictions P3a-a to P3a-e.
+- Done: policy module, governance field group on Pages and Posts, six roles, audit-logs, generated migration `20261109_013938_p3a_governance` (up, down, up proven on a fresh local database), 73 unit and 40 new integration tests (CI green on the draft PR, PostgreSQL 17), ADR-0010, brief, predictions P3a-a to P3a-e.
 - Merging this branch redeploys the demo and runs the migration on live Neon: user approves first. Existing live rows will read as draft and unverified; the template seed route is now platform-admin only and will be refused by the workflow if it tries to publish.
 - Not run: Playwright admin and e2e flows, Docker path, scheduled publish through the jobs queue, REST versions-list access, browser check of the admin edit form, Vercel preview deploy.
 - Not in this slice: AffiliatedColleges, MeritLists, ContactDirectory, ArticleTags, scheduled publish and expiry (LIF-01 to LIF-04), media rules, accessibility guard, editor dashboard, editor guide.

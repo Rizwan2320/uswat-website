@@ -9,7 +9,7 @@
   4. Audit entries are written from collection and global hooks with the request's transaction, in an append-only collection. GraphQL is disabled so the policy can tell an unpublish from a draft save (REST carries `?draft=true`; GraphQL does not).
   5. Governance columns are nullable with database defaults; the hook always fills them. Rows without values read as draft and unverified.
 - Alternatives considered: Payload field-level access for everything (strips values before hooks run, breaks first-user bootstrap, cannot express transitions); a state-machine plugin (a dependency for something 300 lines of tested code does); database triggers for append-only audit (hand-written SQL in migrations, which the project forbids).
-- Evidence: 73 unit tests (policy, audit diff); 39 integration tests on PostgreSQL (role matrix, workflow, VER-01 incl. restore-version, REST unpublish, audit, accounts); predictions P3a-b to P3a-e.
+- Evidence: 73 unit tests (policy, audit diff); 40 integration tests on PostgreSQL (role matrix, workflow, VER-01 incl. restore-version, REST unpublish, audit, accounts); predictions P3a-b to P3a-e.
 - Consequences: Admin shows edit controls to anyone with write rights on any record they can read; refusals arrive on save with a plain message. Audit log is append-only through the application only. Any new write path must run through collection hooks (not raw database access). Users cannot see each other unless admin, site manager or auditor (post author picking by editors is limited until a public author record exists).
 - Cost of reversal: Medium. Policy module is independent; hooks and fields would be removed with a down migration.
 - Reversal trigger: Payload changes where draft saves are stored, or a need for per-field approval.
