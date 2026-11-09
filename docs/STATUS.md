@@ -7,7 +7,7 @@ Updated: 2026-11-09 (Mon) PKT
 | P0 Decide and verify | Spike S-1 done; waiting on user inputs | G0 pending (see below) |
 | P1 Foundation | Code done and checked locally; CI and live URL pending | G1 partly met, see `docs/evidence/G1/g1-report.md` |
 | P2 Design system and shell (plan v2 section 11; the 2026-11-06 handoff mislabelled it "content model") | Landing approved by the owner and merged to `main` on 2026-11-09 (live demo https://uswat-website.vercel.app). Milestone C (inner-page template kit, Geist removal, RTL pass, `/design`, baselines) in progress; about 60% of P2 done | G2 pending: needs committed baselines, keyboard tests and filed evidence; owner approval of the design recorded 2026-11-09 |
-| P3 CMS core | Slice 3a (governance fields, six roles, workflow, VER-01, audit log) built on branch `p3/cms-core`; draft PR, NOT merged (user approves merges) | Slice gate in `docs/briefs/p3a-governance-roles-workflow-audit.md` |
+| P3 CMS core | Slice 3a (governance fields, six roles, workflow, VER-01, audit log) reviewed and merged to `main` by fast-forward on 2026-11-09 (PR #1, ca122c8); production deployment READY, `/readyz` ok | Slice gate in `docs/briefs/p3a-governance-roles-workflow-audit.md` |
 | P4 content and real data, P5 to P8 | Not started | Addendum edits P3 to P5 (see below) |
 
 ## G0 checklist
@@ -79,6 +79,10 @@ Updated: 2026-11-09 (Mon) PKT
 - Not run: Playwright admin and e2e flows, Docker path, scheduled publish through the jobs queue, REST versions-list access, browser check of the admin edit form, Vercel preview deploy.
 - Not in this slice: AffiliatedColleges, MeritLists, ContactDirectory, ArticleTags, scheduled publish and expiry (LIF-01 to LIF-04), media rules, accessibility guard, editor dashboard, editor guide.
 - Main (P2 landing, coordination brief) was merged into this branch on 2026-11-09; P2 changed no collection or migration. If another PR adds a migration first, regenerate this one.
+
+## Main-agent review of PR #1 (2026-11-09)
+- Read policy, access, hooks, audit, users, migration and the brief block. Approved and merged (fast-forward, no squash). Live Neon had 0 users, 0 pages, 0 posts (counts only) and already listed the governance migration, so no lockout or data risk.
+- Follow-ups for the P3 agent (not blocking): Local API unpublish by a user is not detected (REST only); last-admin check is not atomic; add a role backfill or runbook step for databases that already have users; keep system-actor writes out of `src/site`; run the "not run" items (Playwright admin flows, REST versions access) before the P3 gate.
 
 ## Next step
 1. User: review the landing (screenshots or a preview deployment of `p2/landing`), then say go for G2 and the merge to `main` (merging redeploys the demo site).
