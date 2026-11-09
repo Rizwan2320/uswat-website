@@ -4,6 +4,7 @@ import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
+import { AuditLogs } from './collections/AuditLogs'
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
@@ -12,6 +13,7 @@ import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { plugins } from './plugins'
+import { governancePlugin } from './governance/plugin'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { env } from './env'
@@ -75,10 +77,13 @@ export default buildConfig({
     defaultLocale: 'en',
     fallback: true,
   },
-  collections: [Pages, Posts, Media, Categories, Users],
+  collections: [Pages, Posts, Media, Categories, Users, AuditLogs],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
-  plugins,
+  plugins: [...plugins, governancePlugin],
+  // Write paths go through REST and the admin only, where draft versus unpublish is visible to
+  // the policy hook (docs/adr/0010). Nothing in the site uses GraphQL.
+  graphQL: { disable: true },
   secret: env.PAYLOAD_SECRET,
   sharp,
   typescript: {

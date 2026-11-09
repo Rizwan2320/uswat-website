@@ -11,22 +11,19 @@ export const testUser = {
  */
 export async function seedTestUser(): Promise<void> {
   const payload = await getPayload({ config })
+  const data = { ...testUser, role: 'platformAdmin' as const }
 
-  // Delete existing test user if any
-  await payload.delete({
+  // Reuse an existing test user: the last platform admin cannot be deleted.
+  const existing = await payload.find({
     collection: 'users',
-    where: {
-      email: {
-        equals: testUser.email,
-      },
-    },
+    where: { email: { equals: testUser.email } },
+    limit: 1,
   })
-
-  // Create fresh test user
-  await payload.create({
-    collection: 'users',
-    data: testUser,
-  })
+  if (existing.docs[0]) {
+    await payload.update({ collection: 'users', id: existing.docs[0].id, data })
+  } else {
+    await payload.create({ collection: 'users', data })
+  }
 }
 
 /**
@@ -35,12 +32,12 @@ export async function seedTestUser(): Promise<void> {
 export async function cleanupTestUser(): Promise<void> {
   const payload = await getPayload({ config })
 
-  await payload.delete({
-    collection: 'users',
-    where: {
-      email: {
-        equals: testUser.email,
-      },
-    },
-  })
+  try {
+    await payload.delete({
+      collection: 'users',
+      where: { email: { equals: testUser.email } },
+    })
+  } catch {
+    // The last platform admin is protected on purpose; leave the account in a test database.
+  }
 }

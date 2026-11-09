@@ -12,7 +12,8 @@ export async function POST(): Promise<Response> {
   // Authenticate by passing request headers
   const { user } = await payload.auth({ headers: requestHeaders })
 
-  if (!user) {
+  // The seed replaces content with invented demo data, so it is for platform admins only.
+  if (!user || user.role !== 'platformAdmin') {
     return new Response('Action forbidden.', { status: 403 })
   }
 
