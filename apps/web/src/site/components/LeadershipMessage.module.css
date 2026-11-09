@@ -64,6 +64,10 @@ section.section { position: relative; isolation: isolate; overflow: hidden; back
   .bgLeft { width: 80vw; height: 46%; inset-block-end: auto; }
   .bgRight { width: 100%; height: 50%; inset-block-start: auto; opacity: 0.2; }
   .quote { padding-inline-start: 40px; }
+  /* Slimmer name plate on phones. */
+  .ribbon { margin-top: -34px; padding: 10px 44px 9px; }
+  .name { font-size: 1.02rem; line-height: 1.2; }
+  .role { font-size: 0.78rem; line-height: 1.25; }
 }
 /* Below about 1100 px the message column runs under the right-hand photo, so the photo is dropped to keep the text readable. */
 @media (max-width: 1100px) { .bgRight { display: none; } }

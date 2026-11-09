@@ -76,7 +76,7 @@ export default function LeadershipDialog({ name, role, paragraphs, complete, clo
     <>
       <a
         ref={triggerRef}
-        className="btn btn--forest"
+        className={`btn btn--forest ${styles.trigger}`}
         href={sourceHref}
         aria-haspopup="dialog"
         aria-expanded={isOpen}

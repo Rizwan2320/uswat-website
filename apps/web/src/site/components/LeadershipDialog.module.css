@@ -25,14 +25,18 @@
 .close:hover { background: var(--maroon); color: var(--ivory); }
 .close:focus-visible { outline: 3px solid var(--forest); outline-offset: 3px; }
 
-.body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px 24px 22px; font-size: 1rem; line-height: 1.7; color: var(--maroon); }
+/* Smaller than the standard pill button (owner request, round 25). */
+a.trigger { min-height: 34px; padding: 5px 14px; font-size: 0.84rem; gap: 6px; }
+/* The full message is set in the serif face (the site's display face), unlike the sans body copy elsewhere; Urdu keeps its own face. */
+.body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px 24px 22px; font-family: var(--stack-serif); font-size: 1.05rem; line-height: 1.75; color: var(--maroon); }
+[dir='rtl'] .body { font-family: var(--stack-urdu); }
 .body:focus-visible { outline: 3px solid var(--forest); outline-offset: -3px; }
 .body p { margin: 0 0 1em; unicode-bidi: plaintext; }
 .more a { color: var(--maroon); font-weight: 600; text-underline-offset: 3px; }
 .sign { display: grid; gap: 2px; margin: 1.2em 0 0; }
 .sign em { margin-bottom: 4px; }
 .sign strong { font-family: var(--stack-serif); font-size: 1.1rem; color: var(--forest); }
-.sign span { font-size: 0.92rem; color: var(--text); }
+.sign span { font-family: var(--stack-sans); font-size: 0.92rem; color: var(--text); }
 
 @media (max-width: 520px) {
   .window { height: min(72vh, 520px); }
