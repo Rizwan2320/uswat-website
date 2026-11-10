@@ -6,7 +6,7 @@ export type Crumb = { label: string; href?: string }
 /* Breadcrumb trail. The last crumb is the current page (no link, aria-current). `tone="dark"` is for use on the forest page header. */
 export default function Breadcrumbs({ items, tone = 'light', label = 'Breadcrumb' }: { items: Crumb[]; tone?: 'light' | 'dark'; label?: string }) {
   return (
-    <nav aria-label={label} className={`${styles.nav} ${tone === 'dark' ? styles.dark : ''}`}>
+    <nav aria-label={label} className={tone === 'dark' ? styles.dark : undefined}>
       <ol className={styles.list}>
         {items.map((c, i) => {
           const last = i === items.length - 1
