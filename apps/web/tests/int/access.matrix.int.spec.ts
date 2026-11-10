@@ -38,6 +38,12 @@ const COLLECTIONS: Record<string, Rule> = {
   events: governed,
   jobs: governed,
   tenders: governed,
+  faculties: governed,
+  departments: governed,
+  programmes: governed,
+  offices: governed,
+  campuses: governed,
+  people: governed,
   users: { create: ['platformAdmin'], delete: ['platformAdmin'], update: [...ROLES] },
   'audit-logs': {
     read: ['platformAdmin', 'siteManager', 'auditor'],
