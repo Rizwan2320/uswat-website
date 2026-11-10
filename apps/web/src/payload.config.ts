@@ -4,7 +4,11 @@ import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
+import { AffiliatedColleges } from './collections/AffiliatedColleges'
+import { ArticleTags } from './collections/ArticleTags'
 import { AuditLogs } from './collections/AuditLogs'
+import { ContactDirectory } from './collections/ContactDirectory'
+import { MeritLists } from './collections/MeritLists'
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
@@ -14,6 +18,7 @@ import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { plugins } from './plugins'
 import { governancePlugin } from './governance/plugin'
+import { folderAccessOverride } from './governance/staffAccess'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { env } from './env'
@@ -77,13 +82,25 @@ export default buildConfig({
     defaultLocale: 'en',
     fallback: true,
   },
-  collections: [Pages, Posts, Media, Categories, Users, AuditLogs],
+  collections: [
+    Pages,
+    Posts,
+    Media,
+    Categories,
+    Users,
+    AffiliatedColleges,
+    ArticleTags,
+    ContactDirectory,
+    MeritLists,
+    AuditLogs,
+  ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   plugins: [...plugins, governancePlugin],
   // Write paths go through REST and the admin only, where draft versus unpublish is visible to
   // the policy hook (docs/adr/0010). Nothing in the site uses GraphQL.
   graphQL: { disable: true },
+  folders: { collectionOverrides: [folderAccessOverride] },
   secret: env.PAYLOAD_SECRET,
   sharp,
   typescript: {

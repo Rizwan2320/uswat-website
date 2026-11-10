@@ -93,6 +93,21 @@ Updated: 2026-11-09 (Mon) PKT
 - Third agent assigned (brief `docs/briefs/FP-faculty-portal-coordination.md`). Boundary from the owner: the faculty portal is built here, everything else stays in Odoo. Spec: Addendum C (`addendum 3.txt` in the Claude Project; to be copied into `docs/plan/` by that agent). Gate G-FP0 is Thu 12 Nov; the importer and redirect map it depends on are not started, so the likely outcome is spec plus auth spike. ADR numbers for the portal start at 0020 because 0010 and 0011 are taken.
 - Open PRs from the P3 agent, all draft and stacked: #2 (3b, base still `p3/cms-core`, needs retargeting), #3 (3c, adds a GitHub Actions caller every 5 minutes, needs `CRON_SECRET` and `LIFECYCLE_BASE_URL` set by the owner), #4 (follow-ups from the PR #1 review). CI green on all three; not reviewed in depth yet.
 
+## Main-agent review of PRs #2 to #4 (2026-11-10)
+- Reviewed code, migrations, tests and briefs; comments posted on each PR. #2 and #4: approve. #3: approve the code, hold the merge until the owner decides the scheduler cadence (5 minutes would likely keep the free Neon database awake all month; hourly proposed) and the job-runner access is tightened.
+- Not merged: the stack is #2 -> #3 -> #4; merging runs two additive migrations on live Neon. Site-lane note: public detail pages must check status and expiry at query time (archive does not revalidate caches).
+- Not run by me: the PRs' tests (relying on CI green); Playwright admin flows (still "not run" by the P3 agent).
+
+## P3 slice 3b (2026-11-09, branch `p3/collections-3b`, stacked on `p3/cms-core`)
+- Done: role rules for every collection and global (a whole-config matrix test fails on any collection without a stated rule); four governed collections (AffiliatedColleges, ContactDirectory, MeritLists, ArticleTags) with fields from the Addendum mapping table; `tags` on Posts; generated migration `20261109_115039_p3b_governed_collections` (up, down, up proven; 6 generated `DROP CONSTRAINT` lines made `IF EXISTS`); 25 lifecycle tests plus the matrix; CI-like run on an empty database green locally. Brief: `docs/briefs/p3b-collections-and-staff-access.md`.
+- Found: the template let any signed-in user (auditor, contributor) write categories, media, redirects, forms and the header and footer, and let editors read form submissions. Fixed here.
+- Not run: Playwright, CI for this branch until its PR is opened, public templates and revalidation for the new types (P5), importer, search indexing for the new types, scheduled publish and expiry (LIF), media rules, accessibility guard, editor dashboard, getter switch to CMS reads.
+- Depends on PR #1 (3a). Review and merge 3a first; this PR targets the 3a branch.
+
+## PR #2 merged; shared-database finding (2026-11-10)
+- #2 (slice 3b) merged to `main` as 6c4ec0a through integration PR #6 (CI green on the result); production READY, `/readyz` ok. #3 and #4 held with written conditions on PR #3 (hourly cadence, job-runner access, timing-safe compare, runbook note, media update rule). #3's base retargeted to `main`. A new draft PR #5 (slice 3d, post types, base `p3/followups-3d`) and a branch `p3/faculty-portal-spec` (third agent) exist; neither reviewed yet.
+- **Finding:** Vercel previews run `migrate` against the same Neon database as production (ADR-0005). The live database already lists migrations from unmerged branches (`p3c_lifecycle`, `p3d_post_types`) although `main` only has up to `p3b`. Harmless while the database is empty and migrations are additive; it becomes a real risk once content exists, because a rewritten or abandoned migration leaves the live schema different from `main`. Fix before P4 content: a separate Neon branch for previews (set as the Preview-only `DATABASE_URL`), and a rule that a migration is not rewritten after its preview has built. Not done yet; needs the owner's go because it changes Vercel and Neon settings.
+
 ## Next step
 1. User: review the landing (screenshots or a preview deployment of `p2/landing`), then say go for G2 and the merge to `main` (merging redeploys the demo site).
 2. User: commit the real photographs and a high-resolution crest; confirm the address; get Urdu reviewed.
