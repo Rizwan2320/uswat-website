@@ -7,6 +7,12 @@ import { fileURLToPath } from 'url'
 import { AffiliatedColleges } from './collections/AffiliatedColleges'
 import { ArticleTags } from './collections/ArticleTags'
 import { AuditLogs } from './collections/AuditLogs'
+import { Campuses } from './collections/Campuses'
+import { Departments } from './collections/Departments'
+import { FacultyGroups } from './collections/FacultyGroups'
+import { Offices } from './collections/Offices'
+import { People } from './collections/People'
+import { Programmes } from './collections/Programmes'
 import { ContactDirectory } from './collections/ContactDirectory'
 import { Events } from './collections/Events'
 import { Jobs } from './collections/Jobs'
@@ -102,6 +108,12 @@ const built = buildConfig({
     Events,
     Jobs,
     Tenders,
+    FacultyGroups,
+    Departments,
+    Programmes,
+    Offices,
+    Campuses,
+    People,
     AuditLogs,
   ],
   cors: [getServerSideURL()].filter(Boolean),

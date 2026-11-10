@@ -80,6 +80,12 @@ export interface Config {
     events: Event;
     jobs: Job;
     tenders: Tender;
+    faculties: Faculty;
+    departments: Department;
+    programmes: Programme;
+    offices: Office;
+    campuses: Campus;
+    people: Person;
     'audit-logs': AuditLog;
     redirects: Redirect;
     forms: Form;
@@ -111,6 +117,12 @@ export interface Config {
     events: EventsSelect<false> | EventsSelect<true>;
     jobs: JobsSelect<false> | JobsSelect<true>;
     tenders: TendersSelect<false> | TendersSelect<true>;
+    faculties: FacultiesSelect<false> | FacultiesSelect<true>;
+    departments: DepartmentsSelect<false> | DepartmentsSelect<true>;
+    programmes: ProgrammesSelect<false> | ProgrammesSelect<true>;
+    offices: OfficesSelect<false> | OfficesSelect<true>;
+    campuses: CampusesSelect<false> | CampusesSelect<true>;
+    people: PeopleSelect<false> | PeopleSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -1500,6 +1512,453 @@ export interface Tender {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faculties".
+ */
+export interface Faculty {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * The label on the old site menu. Used to match records on re-import.
+   */
+  legacyKey?: string | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "departments".
+ */
+export interface Department {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * The address of the page on the old site. Used to match records on re-import and to redirect.
+   */
+  legacyUrl?: string | null;
+  facultyGroup?: (number | null) | Faculty;
+  summary?: string | null;
+  vision?: string | null;
+  mission?: string | null;
+  head?: (number | null) | Person;
+  /**
+   * PDFs and other files, as links.
+   */
+  documents?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Published office or department addresses.
+   */
+  emails?:
+    | {
+        email: string;
+        id?: string | null;
+      }[]
+    | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "people".
+ */
+export interface Person {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  designation?: string | null;
+  department?: (number | null) | Department;
+  office?: (number | null) | Office;
+  details?: string | null;
+  /**
+   * Shown publicly only when its visibility is Public.
+   */
+  email?: string | null;
+  photo?: (number | null) | Media;
+  cvLink?: string | null;
+  publications?:
+    | {
+        title: string;
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  facultyStatus?: ('current' | 'former' | 'emeritus') | null;
+  /**
+   * Who may see each personal detail. Hidden unless set otherwise.
+   */
+  visibility?: {
+    email?: ('hidden' | 'internal' | 'public') | null;
+    photo?: ('hidden' | 'internal' | 'public') | null;
+  };
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "offices".
+ */
+export interface Office {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * The address of the page on the old site. Used to match records on re-import and to redirect.
+   */
+  legacyUrl?: string | null;
+  /**
+   * For example "Directorates".
+   */
+  group?: string | null;
+  text?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  head?: (number | null) | Person;
+  hours?: string | null;
+  phones?:
+    | {
+        number: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Published office or department addresses.
+   */
+  emails?:
+    | {
+        email: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * PDFs and other files, as links.
+   */
+  documents?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "programmes".
+ */
+export interface Programme {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * The address of the page on the old site. Used to match records on re-import and to redirect.
+   */
+  legacyUrl?: string | null;
+  department?: (number | null) | Department;
+  campus?: (number | null) | Campus;
+  level?: string | null;
+  duration?: string | null;
+  eligibility?: string | null;
+  curriculumUrl?: string | null;
+  feeLink?: string | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "campuses".
+ */
+export interface Campus {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  address?: string | null;
+  /**
+   * A web page or map link.
+   */
+  link?: string | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-logs".
  */
 export interface AuditLog {
@@ -1776,6 +2235,30 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'tenders';
         value: number | Tender;
+      } | null)
+    | ({
+        relationTo: 'faculties';
+        value: number | Faculty;
+      } | null)
+    | ({
+        relationTo: 'departments';
+        value: number | Department;
+      } | null)
+    | ({
+        relationTo: 'programmes';
+        value: number | Programme;
+      } | null)
+    | ({
+        relationTo: 'offices';
+        value: number | Office;
+      } | null)
+    | ({
+        relationTo: 'campuses';
+        value: number | Campus;
+      } | null)
+    | ({
+        relationTo: 'people';
+        value: number | Person;
       } | null)
     | ({
         relationTo: 'audit-logs';
@@ -2502,6 +2985,267 @@ export interface TendersSelect<T extends boolean = true> {
         id?: T;
       };
   tags?: T;
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faculties_select".
+ */
+export interface FacultiesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  legacyKey?: T;
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "departments_select".
+ */
+export interface DepartmentsSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  legacyUrl?: T;
+  facultyGroup?: T;
+  summary?: T;
+  vision?: T;
+  mission?: T;
+  head?: T;
+  documents?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  emails?:
+    | T
+    | {
+        email?: T;
+        id?: T;
+      };
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "programmes_select".
+ */
+export interface ProgrammesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  legacyUrl?: T;
+  department?: T;
+  campus?: T;
+  level?: T;
+  duration?: T;
+  eligibility?: T;
+  curriculumUrl?: T;
+  feeLink?: T;
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "offices_select".
+ */
+export interface OfficesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  legacyUrl?: T;
+  group?: T;
+  text?: T;
+  head?: T;
+  hours?: T;
+  phones?:
+    | T
+    | {
+        number?: T;
+        id?: T;
+      };
+  emails?:
+    | T
+    | {
+        email?: T;
+        id?: T;
+      };
+  documents?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "campuses_select".
+ */
+export interface CampusesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  address?: T;
+  link?: T;
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "people_select".
+ */
+export interface PeopleSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  designation?: T;
+  department?: T;
+  office?: T;
+  details?: T;
+  email?: T;
+  photo?: T;
+  cvLink?: T;
+  publications?:
+    | T
+    | {
+        title?: T;
+        url?: T;
+        id?: T;
+      };
+  facultyStatus?: T;
+  visibility?:
+    | T
+    | {
+        email?: T;
+        photo?: T;
+      };
   governance?:
     | T
     | {
