@@ -1,0 +1,24 @@
+{
+  "note": "Legacy off-palette hex colours recorded when the stray-colour guard was added (2026-11-10). Replace each with a token and delete the entry; never add new ones.",
+  "allowed": {
+    "site/components/Footer.tsx": [
+      "#b3261e",
+      "#cfe0c8",
+      "#e6efe0"
+    ],
+    "site/components/Header.module.css": [
+      "#b4d0a9"
+    ],
+    "site/components/NavMenu.module.css": [
+      "#b4d0a9",
+      "#dbe6d1",
+      "#e8efe1"
+    ],
+    "site/components/SearchOverlay.module.css": [
+      "#b4d0a9"
+    ],
+    "site/components/kit/PageHeader.module.css": [
+      "#0b4a22"
+    ]
+  }
+}
