@@ -8,10 +8,14 @@ import { AffiliatedColleges } from './collections/AffiliatedColleges'
 import { ArticleTags } from './collections/ArticleTags'
 import { AuditLogs } from './collections/AuditLogs'
 import { ContactDirectory } from './collections/ContactDirectory'
+import { Events } from './collections/Events'
+import { Jobs } from './collections/Jobs'
 import { MeritLists } from './collections/MeritLists'
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
+import { Notices } from './collections/Notices'
 import { Pages } from './collections/Pages'
+import { Tenders } from './collections/Tenders'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
@@ -94,6 +98,10 @@ const built = buildConfig({
     ArticleTags,
     ContactDirectory,
     MeritLists,
+    Notices,
+    Events,
+    Jobs,
+    Tenders,
     AuditLogs,
   ],
   cors: [getServerSideURL()].filter(Boolean),

@@ -76,6 +76,10 @@ export interface Config {
     'article-tags': ArticleTag;
     'contact-directory': ContactDirectory;
     'merit-lists': MeritList;
+    notices: Notice;
+    events: Event;
+    jobs: Job;
+    tenders: Tender;
     'audit-logs': AuditLog;
     redirects: Redirect;
     forms: Form;
@@ -103,6 +107,10 @@ export interface Config {
     'article-tags': ArticleTagsSelect<false> | ArticleTagsSelect<true>;
     'contact-directory': ContactDirectorySelect<false> | ContactDirectorySelect<true>;
     'merit-lists': MeritListsSelect<false> | MeritListsSelect<true>;
+    notices: NoticesSelect<false> | NoticesSelect<true>;
+    events: EventsSelect<false> | EventsSelect<true>;
+    jobs: JobsSelect<false> | JobsSelect<true>;
+    tenders: TendersSelect<false> | TendersSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -316,6 +324,7 @@ export interface Post {
         name?: string | null;
       }[]
     | null;
+  bodyStatus?: ('full' | 'stub') | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
@@ -1137,6 +1146,360 @@ export interface MeritList {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notices".
+ */
+export interface Notice {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * The address of the page on the old site. Used to match records on re-import and to redirect.
+   */
+  legacyUrl?: string | null;
+  publishedAt?: string | null;
+  bodyStatus?: ('full' | 'stub') | null;
+  excerpt?: string | null;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  heroImage?: (number | null) | Media;
+  /**
+   * PDFs and other files, as links.
+   */
+  attachments?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  tags?: (number | ArticleTag)[] | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events".
+ */
+export interface Event {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * The address of the page on the old site. Used to match records on re-import and to redirect.
+   */
+  legacyUrl?: string | null;
+  publishedAt?: string | null;
+  bodyStatus?: ('full' | 'stub') | null;
+  excerpt?: string | null;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  heroImage?: (number | null) | Media;
+  /**
+   * PDFs and other files, as links.
+   */
+  attachments?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  tags?: (number | ArticleTag)[] | null;
+  startsAt?: string | null;
+  venue?: string | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "jobs".
+ */
+export interface Job {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * The address of the page on the old site. Used to match records on re-import and to redirect.
+   */
+  legacyUrl?: string | null;
+  publishedAt?: string | null;
+  bodyStatus?: ('full' | 'stub') | null;
+  excerpt?: string | null;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  heroImage?: (number | null) | Media;
+  /**
+   * PDFs and other files, as links.
+   */
+  attachments?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  tags?: (number | ArticleTag)[] | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tenders".
+ */
+export interface Tender {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * The address of the page on the old site. Used to match records on re-import and to redirect.
+   */
+  legacyUrl?: string | null;
+  publishedAt?: string | null;
+  bodyStatus?: ('full' | 'stub') | null;
+  excerpt?: string | null;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  heroImage?: (number | null) | Media;
+  /**
+   * PDFs and other files, as links.
+   */
+  attachments?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  tags?: (number | ArticleTag)[] | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * Where the facts come from: a URL or a named document. Required to publish.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    /**
+     * Required to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    publishAt?: string | null;
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-logs".
  */
 export interface AuditLog {
@@ -1399,6 +1762,22 @@ export interface PayloadLockedDocument {
         value: number | MeritList;
       } | null)
     | ({
+        relationTo: 'notices';
+        value: number | Notice;
+      } | null)
+    | ({
+        relationTo: 'events';
+        value: number | Event;
+      } | null)
+    | ({
+        relationTo: 'jobs';
+        value: number | Job;
+      } | null)
+    | ({
+        relationTo: 'tenders';
+        value: number | Tender;
+      } | null)
+    | ({
         relationTo: 'audit-logs';
         value: number | AuditLog;
       } | null)
@@ -1644,6 +2023,7 @@ export interface PostsSelect<T extends boolean = true> {
         id?: T;
         name?: T;
       };
+  bodyStatus?: T;
   generateSlug?: T;
   slug?: T;
   governance?:
@@ -1940,6 +2320,188 @@ export interface MeritListsSelect<T extends boolean = true> {
         url?: T;
         id?: T;
       };
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notices_select".
+ */
+export interface NoticesSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  legacyUrl?: T;
+  publishedAt?: T;
+  bodyStatus?: T;
+  excerpt?: T;
+  body?: T;
+  heroImage?: T;
+  attachments?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  tags?: T;
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events_select".
+ */
+export interface EventsSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  legacyUrl?: T;
+  publishedAt?: T;
+  bodyStatus?: T;
+  excerpt?: T;
+  body?: T;
+  heroImage?: T;
+  attachments?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  tags?: T;
+  startsAt?: T;
+  venue?: T;
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "jobs_select".
+ */
+export interface JobsSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  legacyUrl?: T;
+  publishedAt?: T;
+  bodyStatus?: T;
+  excerpt?: T;
+  body?: T;
+  heroImage?: T;
+  attachments?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  tags?: T;
+  governance?:
+    | T
+    | {
+        status?: T;
+        ownerOffice?: T;
+        source?: T;
+        verificationStatus?: T;
+        verifiedAt?: T;
+        reviewDueAt?: T;
+        riskClass?: T;
+        publishAt?: T;
+        expireAt?: T;
+        origin?: T;
+        contentHash?: T;
+        sourceContentHash?: T;
+        collectedAt?: T;
+        pinned?: T;
+        createdBy?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tenders_select".
+ */
+export interface TendersSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  legacyUrl?: T;
+  publishedAt?: T;
+  bodyStatus?: T;
+  excerpt?: T;
+  body?: T;
+  heroImage?: T;
+  attachments?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  tags?: T;
   governance?:
     | T
     | {
