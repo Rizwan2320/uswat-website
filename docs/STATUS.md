@@ -104,6 +104,10 @@ Updated: 2026-11-09 (Mon) PKT
 - Not run: Playwright, CI for this branch until its PR is opened, public templates and revalidation for the new types (P5), importer, search indexing for the new types, scheduled publish and expiry (LIF), media rules, accessibility guard, editor dashboard, getter switch to CMS reads.
 - Depends on PR #1 (3a). Review and merge 3a first; this PR targets the 3a branch.
 
+## PR #2 merged; shared-database finding (2026-11-10)
+- #2 (slice 3b) merged to `main` as 6c4ec0a through integration PR #6 (CI green on the result); production READY, `/readyz` ok. #3 and #4 held with written conditions on PR #3 (hourly cadence, job-runner access, timing-safe compare, runbook note, media update rule). #3's base retargeted to `main`. A new draft PR #5 (slice 3d, post types, base `p3/followups-3d`) and a branch `p3/faculty-portal-spec` (third agent) exist; neither reviewed yet.
+- **Finding:** Vercel previews run `migrate` against the same Neon database as production (ADR-0005). The live database already lists migrations from unmerged branches (`p3c_lifecycle`, `p3d_post_types`) although `main` only has up to `p3b`. Harmless while the database is empty and migrations are additive; it becomes a real risk once content exists, because a rewritten or abandoned migration leaves the live schema different from `main`. Fix before P4 content: a separate Neon branch for previews (set as the Preview-only `DATABASE_URL`), and a rule that a migration is not rewritten after its preview has built. Not done yet; needs the owner's go because it changes Vercel and Neon settings.
+
 ## Next step
 1. User: review the landing (screenshots or a preview deployment of `p2/landing`), then say go for G2 and the merge to `main` (merging redeploys the demo site).
 2. User: commit the real photographs and a high-resolution crest; confirm the address; get Urdu reviewed.
