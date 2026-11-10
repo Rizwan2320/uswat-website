@@ -93,6 +93,11 @@ Updated: 2026-11-09 (Mon) PKT
 - Third agent assigned (brief `docs/briefs/FP-faculty-portal-coordination.md`). Boundary from the owner: the faculty portal is built here, everything else stays in Odoo. Spec: Addendum C (`addendum 3.txt` in the Claude Project; to be copied into `docs/plan/` by that agent). Gate G-FP0 is Thu 12 Nov; the importer and redirect map it depends on are not started, so the likely outcome is spec plus auth spike. ADR numbers for the portal start at 0020 because 0010 and 0011 are taken.
 - Open PRs from the P3 agent, all draft and stacked: #2 (3b, base still `p3/cms-core`, needs retargeting), #3 (3c, adds a GitHub Actions caller every 5 minutes, needs `CRON_SECRET` and `LIFECYCLE_BASE_URL` set by the owner), #4 (follow-ups from the PR #1 review). CI green on all three; not reviewed in depth yet.
 
+## Main-agent review of PRs #2 to #4 (2026-11-10)
+- Reviewed code, migrations, tests and briefs; comments posted on each PR. #2 and #4: approve. #3: approve the code, hold the merge until the owner decides the scheduler cadence (5 minutes would likely keep the free Neon database awake all month; hourly proposed) and the job-runner access is tightened.
+- Not merged: the stack is #2 -> #3 -> #4; merging runs two additive migrations on live Neon. Site-lane note: public detail pages must check status and expiry at query time (archive does not revalidate caches).
+- Not run by me: the PRs' tests (relying on CI green); Playwright admin flows (still "not run" by the P3 agent).
+
 ## Next step
 1. User: review the landing (screenshots or a preview deployment of `p2/landing`), then say go for G2 and the merge to `main` (merging redeploys the demo site).
 2. User: commit the real photographs and a high-resolution crest; confirm the address; get Urdu reviewed.
