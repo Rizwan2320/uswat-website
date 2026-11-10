@@ -1,9 +1,10 @@
 import type { TaskConfig } from 'payload'
 
+import { LIFECYCLE_CRON, LIFECYCLE_QUEUE } from './schedule'
 import { runLifecycleSweep } from './sweep'
 
 /**
- * Every five minutes: publish what is scheduled, archive what has expired, mark overdue
+ * Hourly (see schedule.ts): publish what is scheduled, archive what has expired, mark overdue
  * reviews Stale. Payload only queues scheduled tasks when `GET /api/payload-jobs/handle-schedules`
  * is called, and only runs them when `GET /api/payload-jobs/run?queue=lifecycle` is called, both
  * with `Authorization: Bearer $CRON_SECRET` (jobs.access.run in payload.config.ts). Something
@@ -13,7 +14,7 @@ export const lifecycleSweepTask: TaskConfig<'lifecycleSweep'> = {
   slug: 'lifecycleSweep',
   label: 'Lifecycle sweep',
   retries: 1,
-  schedule: [{ cron: '*/5 * * * *', queue: 'lifecycle' }],
+  schedule: [{ cron: LIFECYCLE_CRON, queue: LIFECYCLE_QUEUE }],
   inputSchema: [],
   outputSchema: [{ name: 'report', type: 'json' }],
   handler: async ({ req }) => {
