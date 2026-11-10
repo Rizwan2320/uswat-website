@@ -105,7 +105,7 @@ export default function LeadershipDialog({ name, role, paragraphs, complete, clo
                   </button>
                 </header>
 
-                <div className={styles.body} tabIndex={0} role="region" aria-labelledby={titleId}>
+                <div className={styles.body} tabIndex={0} role="region" aria-labelledby={titleId} lang="en">
                   {paragraphs.map((p) => (
                     <p key={p}>{p}</p>
                   ))}

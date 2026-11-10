@@ -8,3 +8,5 @@
 .button[aria-expanded='true'] .chev { transform: rotate(180deg); }
 .panel { padding: 4px 18px 18px; color: var(--text); line-height: 1.65; border-top: 1px solid var(--ivory-deep); }
 @media (prefers-reduced-motion: reduce) { .chev { transition: none; } }
+/* Right-to-left: an English question keeps its question mark at the end of the question. */
+:global([dir='rtl']) .button > span { unicode-bidi: plaintext; }

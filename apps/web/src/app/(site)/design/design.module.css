@@ -8,5 +8,7 @@
 .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
 .swatch { display: grid; gap: 2px; padding: 10px; background: #fff; border: 1px solid rgb(0 59 23 / 0.07); border-radius: 12px; font-size: 0.85rem; color: var(--text); }
 .swatch strong { color: var(--forest); }
+/* Token names and hex values are Latin: read each as its own left-to-right run so "--gold-light" and "#FFD84D" keep their punctuation in right-to-left. */
+:global([dir='rtl']) .swatch :is(strong, code, span) { unicode-bidi: plaintext; }
 .chip { height: 44px; border-radius: 8px; border: 1px solid rgb(0 59 23 / 0.15); margin-bottom: 4px; }
 @media (max-width: 767px) { .cards { grid-template-columns: 1fr; } }

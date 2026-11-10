@@ -103,7 +103,7 @@ button { font: inherit; }
 /* RTL: numbers and untranslated English must not take the page direction.
    Counters read "200+" not "+200"; each English line keeps its own punctuation and alignment until it is translated. */
 [dir='rtl'] .count { direction: ltr; unicode-bidi: isolate; }
-[dir='rtl'] :is(h1, h2, h3, h4, p, li, figcaption, blockquote, .btn, :is(h1, h2) > span) { unicode-bidi: plaintext; }
+[dir='rtl'] :is(h1, h2, h3, h4, p, li, figcaption, blockquote, .btn) { unicode-bidi: plaintext; }
 
 
 @media print {
