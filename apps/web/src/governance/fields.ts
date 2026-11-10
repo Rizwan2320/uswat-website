@@ -9,7 +9,12 @@
 
 import type { CollectionConfig, Field } from 'payload'
 
-import { governanceBeforeChange, governanceBeforeDelete, type GovernanceOptions } from './hooks'
+import {
+  governanceBeforeChange,
+  governanceBeforeDelete,
+  governanceBeforeOperation,
+  type GovernanceOptions,
+} from './hooks'
 import { notifyNewDraft } from './notify'
 import {
   ORIGINS,
@@ -162,6 +167,7 @@ export function withGovernance<T extends CollectionConfig>(
     fields: [...config.fields, governanceGroup],
     hooks: {
       ...config.hooks,
+      beforeOperation: [governanceBeforeOperation, ...(config.hooks?.beforeOperation ?? [])],
       beforeChange: [
         governanceBeforeChange(contentFields, options),
         ...(config.hooks?.beforeChange ?? []),
