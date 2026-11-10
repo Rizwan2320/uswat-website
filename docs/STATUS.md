@@ -108,11 +108,17 @@ Updated: 2026-11-09 (Mon) PKT
 - #2 (slice 3b) merged to `main` as 6c4ec0a through integration PR #6 (CI green on the result); production READY, `/readyz` ok. #3 and #4 held with written conditions on PR #3 (hourly cadence, job-runner access, timing-safe compare, runbook note, media update rule). #3's base retargeted to `main`. A new draft PR #5 (slice 3d, post types, base `p3/followups-3d`) and a branch `p3/faculty-portal-spec` (third agent) exist; neither reviewed yet.
 - **Finding:** Vercel previews run `migrate` against the same Neon database as production (ADR-0005). The live database already lists migrations from unmerged branches (`p3c_lifecycle`, `p3d_post_types`) although `main` only has up to `p3b`. Harmless while the database is empty and migrations are additive; it becomes a real risk once content exists, because a rewritten or abandoned migration leaves the live schema different from `main`. Fix before P4 content: a separate Neon branch for previews (set as the Preview-only `DATABASE_URL`), and a rule that a migration is not rewritten after its preview has built. Not done yet; needs the owner's go because it changes Vercel and Neon settings.
 
+## P2 close-out for G2 (2026-11-10, branch `p2/g2-closeout`)
+- Done: right-to-left pass (6 faults, 5 root causes, all fixed; prediction P2-c recorded with actuals), screenshot baselines (4 pages x 3 widths x 2 directions, `pnpm test:visual`, stable over two re-runs), drawer keyboard e2e (10 tests, both directions), stray-colour guard (runs in `test:int`, negative-tested), ADR-0008 written, ADR-0011 accepted, ADR-0003 updated (tokens stay in `apps/web`). Evidence: `docs/evidence/G2/rtl-report.md`.
+- Checks on the final build: typecheck clean, lint 0 errors, `test:int` 167 passed, drawer + kit + shell e2e 22 passed, visual 24 passed.
+- Not run: native Urdu review (body text is mostly English), baselines in the CI environment (they depend on machine fonts, so they are outside CI and must be regenerated where they are checked), Vercel preview of this branch, screen-reader testing.
+- G2 still needs from the owner: sign-off on the shell screenshots (`docs/evidence/G2/`), and a native Urdu reviewer.
+
 ## Next step
-1. User: review the landing (screenshots or a preview deployment of `p2/landing`), then say go for G2 and the merge to `main` (merging redeploys the demo site).
-2. User: commit the real photographs and a high-resolution crest; confirm the address; get Urdu reviewed.
-3. User: turn Vercel Deployment Protection off before judges; rotate the Neon password; optional: narrow `engines.node` to `^24`.
-4. Then milestone C (apply the design to template routes, remove Geist) and P3 (CMS core). Still needed: written DCST confirmation, the organized data pack, and a decision on keeping crawl data out of the public repo.
+1. Main agent: merge `p2/g2-closeout` after CI, verify production, then P2 is closed except the owner items above.
+2. Main agent: when the P3 agent's fixes land on PR #3, merge #3 then #4; review PR #5 (slice 3d) and `p3/faculty-portal-spec`.
+3. Owner decisions waiting: (a) seed clearly labelled "Sample" news items and one page into the demo database so `/posts` and the templates show real layouts live; (b) go to create a separate Neon branch for previews (finding above); (c) written DCST confirmation, real address, deadline and stats values; (d) turn Vercel Deployment Protection off before judges; rotate the Neon password.
+4. Then P4 (content), with the Urdu text supplied and reviewed.
 
 P3 agent (slice 3a), own entry:
 - Slice 3b: new collections (AffiliatedColleges, MeritLists, ContactDirectory, ArticleTags) using `withGovernance`, then LIF-01 to LIF-04, media rules, editor dashboard.
