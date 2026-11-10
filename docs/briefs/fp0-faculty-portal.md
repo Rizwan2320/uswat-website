@@ -49,8 +49,12 @@ S-2 is evidence, not product tests. If the slice goes ahead, the Addendum C jour
 ## Gate (this brief)
 G-FP0 note exists in `docs/evidence/FP0/` with each S-2 criterion marked pass, fail or workaround and a go or no-go recommendation. Anything not run says "not run" and why.
 
-## Questions for the owner (short, with a recommendation)
-1. Approve the ADR renumbering in finding 1? Recommended: yes.
-2. Who owns the portal schema and migrations: the P3 agent, or this branch behind a separate identity schema? Recommended: this branch owns `identity.*` in a separate PostgreSQL schema, applied by its own reviewed migration, the P3 agent keeps everything in `public`.
-3. Separate Vercel project for the portal origin on the demo, or path-only with a documented gap? Recommended: path-only for the competition, separate origin in the production runbook.
-4. Addendum C open questions Q1 to Q5 (Odoo Faculty module, Microsoft 365 or Google Workspace, authoritative HR source, promotion criteria, written approval): are any answered yet?
+## Decisions (owner delegated authority on 2026-11-10: "decide yourself")
+1. **Separate phase, separate deployment, same repository** (ADR-0011, Proposed). Identity is its own realm; no portal account can hold a CMS role. The second Vercel project is created only after G-FP0 passes, never before, because a git-linked project builds on every push and the existing project's build runs migrations (ADR-0005).
+2. **ADR renumbering approved.** Addendum C 0010 to 0014 become 0011 to 0015.
+3. **Schema ownership.** This branch owns a separate PostgreSQL schema `identity`, applied by one reviewed migration. The P3 agent keeps `public`. This still has to be told to the main and P3 agents (they own the lane table); until they acknowledge in `docs/briefs/P3-coordination.md`, no migration is written.
+4. **Demo origin.** Separate Vercel project at G-FP0 if it passes; path-only on the existing host is the fallback and its gap must be written into the submission pack.
+5. Addendum C open questions Q1 to Q5 are still unanswered; none block S-2.
+
+## Questions that remain for the owner
+Only inputs only the owner has: written DCST approval for the portal and for consenting faculty in the demo (Q5), and whether the university has Microsoft 365 or Google Workspace (Q2).

@@ -92,3 +92,9 @@ Updated: 2026-11-09 (Mon) PKT
 
 P3 agent (slice 3a), own entry:
 - Slice 3b: new collections (AffiliatedColleges, MeritLists, ContactDirectory, ArticleTags) using `withGovernance`, then LIF-01 to LIF-04, media rules, editor dashboard.
+
+## FP faculty portal (2026-11-10, branch `p3/faculty-portal-spec`, own section)
+- Source: project doc `addendum 3.txt` (Addendum C, faculty portal). Brief: `docs/briefs/fp0-faculty-portal.md`. Predictions FP0-a to FP0-c written before any run.
+- Decision (owner delegated authority, 2026-11-10): the portal is its own phase FP below the Must list, a separate identity realm, in the same repository, on a separate Vercel project created only after gate G-FP0 (Thu 12 Nov). ADR-0011 Proposed. Addendum C ADR numbers shift by one (0010 is taken).
+- Not done: spike S-2, any code, any migration, any Vercel or Neon change. Nothing was created in Vercel or Neon.
+- Needs the main and P3 agents: acknowledge the `identity` schema ownership in `docs/briefs/P3-coordination.md` before a migration is written.
