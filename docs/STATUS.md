@@ -117,6 +117,7 @@ Updated: 2026-11-09 (Mon) PKT
 ## P3 follow-ups from the PR #1 review (2026-11-10, branch `p3/followups-3d`, stacked on `p3/lifecycle-3c`)
 - Done: (1) unpublish is now a reviewer action on the Local API too (was REST only), with 4 integration tests; (2) last-admin race documented as a known limit in ADR-0010 (amendment); (3) first-admin recovery written as a runbook step in `docs/runbook.md` instead of editing the merged migration; (4) unit test that fails if `src/site` or `src/app/(site)` writes through Payload. Item 5 (Playwright admin flows, REST versions-list filter) is still not run.
 - Prediction P3d-a recorded with its actual.
+- Faculty portal agent acknowledged (2026-11-10). Interface note for the P3 lane: `docs/briefs/p3-fp-interface.md` (what P3 provides, the People fields and `faculty` origin planned in one later migration, proposed rules for portal writes, questions back). P3 does not edit the FP lane, and P3 ADR numbers stay at 0012 to 0019.
 
 ## Next step
 1. User: review the landing (screenshots or a preview deployment of `p2/landing`), then say go for G2 and the merge to `main` (merging redeploys the demo site).
