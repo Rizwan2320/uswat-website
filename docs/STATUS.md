@@ -114,6 +114,10 @@ Updated: 2026-11-09 (Mon) PKT
 - Not run: the workflow on GitHub and the endpoints on a deployment (script checked against a local fake server only), Playwright, any collection using `expiryRequired` (types arrive in a later slice), email notifications.
 - Review changes applied (2026-11-10): hourly cadence as one setting with a test, job runner limited to platform admin and site manager with a constant-time bearer check, media update limited to reviewers, merit-list comment fixed. Rebased on `main` after #2 merged.
 
+## P3 follow-ups from the PR #1 review (2026-11-10, branch `p3/followups-3d`, stacked on `p3/lifecycle-3c`)
+- Done: (1) unpublish is now a reviewer action on the Local API too (was REST only), with 4 integration tests; (2) last-admin race documented as a known limit in ADR-0010 (amendment); (3) first-admin recovery written as a runbook step in `docs/runbook.md` instead of editing the merged migration; (4) unit test that fails if `src/site` or `src/app/(site)` writes through Payload. Item 5 (Playwright admin flows, REST versions-list filter) is still not run.
+- Prediction P3d-a recorded with its actual.
+
 ## Next step
 1. User: review the landing (screenshots or a preview deployment of `p2/landing`), then say go for G2 and the merge to `main` (merging redeploys the demo site).
 2. User: commit the real photographs and a high-resolution crest; confirm the address; get Urdu reviewed.
