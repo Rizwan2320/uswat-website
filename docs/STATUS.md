@@ -84,6 +84,10 @@ Updated: 2026-11-09 (Mon) PKT
 - Read policy, access, hooks, audit, users, migration and the brief block. Approved and merged (fast-forward, no squash). Live Neon had 0 users, 0 pages, 0 posts (counts only) and already listed the governance migration, so no lockout or data risk.
 - Follow-ups for the P3 agent (not blocking): Local API unpublish by a user is not detected (REST only); last-admin check is not atomic; add a role backfill or runbook step for databases that already have users; keep system-actor writes out of `src/site`; run the "not run" items (Playwright admin flows, REST versions access) before the P3 gate.
 
+## Faculty portal lane (2026-11-10)
+- Third agent assigned (brief `docs/briefs/FP-faculty-portal-coordination.md`). Boundary from the owner: the faculty portal is built here, everything else stays in Odoo. Spec: Addendum C (`addendum 3.txt` in the Claude Project; to be copied into `docs/plan/` by that agent). Gate G-FP0 is Thu 12 Nov; the importer and redirect map it depends on are not started, so the likely outcome is spec plus auth spike. ADR numbers for the portal start at 0020 because 0010 and 0011 are taken.
+- Open PRs from the P3 agent, all draft and stacked: #2 (3b, base still `p3/cms-core`, needs retargeting), #3 (3c, adds a GitHub Actions caller every 5 minutes, needs `CRON_SECRET` and `LIFECYCLE_BASE_URL` set by the owner), #4 (follow-ups from the PR #1 review). CI green on all three; not reviewed in depth yet.
+
 ## Next step
 1. User: review the landing (screenshots or a preview deployment of `p2/landing`), then say go for G2 and the merge to `main` (merging redeploys the demo site).
 2. User: commit the real photographs and a high-resolution crest; confirm the address; get Urdu reviewed.
