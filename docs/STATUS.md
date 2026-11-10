@@ -110,9 +110,9 @@ Updated: 2026-11-09 (Mon) PKT
 
 ## P3 slice 3c (2026-11-09, branch `p3/lifecycle-3c`, stacked on `p3/collections-3b`)
 - Done: lifecycle sweep (archive at expiry, scheduled publish, mark Stale) as a `lifecycleSweep` task, query-time `currentWhere` for current lists and 90-day notice age-out, reviewer queue filter, notification adapter (log line), `expiryRequired` option in the policy; generated migration `20261109_170317_p3c_lifecycle` (up, down, up proven on a copy of the 3b schema and on an empty database); 22 unit and 10 integration tests. Brief: `docs/briefs/p3c-lifecycle.md`.
-- **Scheduler: GitHub Actions** (user decision 2026-11-10), `.github/workflows/lifecycle-sweep.yml`, every 5 minutes. **User to set before it does anything:** repository secret `CRON_SECRET` equal to the Vercel one, repository variable `LIFECYCLE_BASE_URL`, and `CRON_SECRET` in Vercel (production and preview). Until then it skips with a notice. Starts running only after the merge to `main`.
+- **Scheduler: GitHub Actions** (user decision 2026-11-10), `.github/workflows/lifecycle-sweep.yml`, **hourly** (one setting, `LIFECYCLE_CRON`; changed from 5 minutes after the review). **User to set before it does anything:** repository secret `CRON_SECRET` equal to the Vercel one, repository variable `LIFECYCLE_BASE_URL`, and `CRON_SECRET` in Vercel (production and preview). Until then it skips with a notice. Starts running only after the merge to `main`.
 - Not run: the workflow on GitHub and the endpoints on a deployment (script checked against a local fake server only), Playwright, any collection using `expiryRequired` (types arrive in a later slice), email notifications.
-- Depends on PR #2 (3b), which depends on PR #1 (3a).
+- Review changes applied (2026-11-10): hourly cadence as one setting with a test, job runner limited to platform admin and site manager with a constant-time bearer check, media update limited to reviewers, merit-list comment fixed. Rebased on `main` after #2 merged.
 
 ## Next step
 1. User: review the landing (screenshots or a preview deployment of `p2/landing`), then say go for G2 and the merge to `main` (merging redeploys the demo site).
