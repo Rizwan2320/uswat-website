@@ -137,6 +137,17 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
                 hasMany: true,
                 relationTo: 'categories',
               },
+              {
+                name: 'tags',
+                type: 'relationship',
+                admin: {
+                  position: 'sidebar',
+                  description:
+                    'Secondary topics. The first category is the main type; other old categories become tags.',
+                },
+                hasMany: true,
+                relationTo: 'article-tags',
+              },
             ],
             label: 'Meta',
           },
@@ -240,5 +251,15 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
     },
   },
   // Fields whose change counts as a content edit (governance/hooks.ts).
-  ['title', 'heroImage', 'content', 'relatedPosts', 'categories', 'meta', 'authors', 'slug'],
+  [
+    'title',
+    'heroImage',
+    'content',
+    'relatedPosts',
+    'categories',
+    'tags',
+    'meta',
+    'authors',
+    'slug',
+  ],
 )
