@@ -17,6 +17,7 @@ import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { plugins } from './plugins'
+import { canRunJobs } from './governance/jobAccess'
 import { lifecycleSweepTask } from './governance/jobs'
 import { governancePlugin } from './governance/plugin'
 import { folderAccessOverride, GLOBAL_ACCESS } from './governance/staffAccess'
@@ -109,19 +110,7 @@ const built = buildConfig({
   },
   jobs: {
     access: {
-      run: ({ req }: { req: PayloadRequest }): boolean => {
-        // Allow logged in users to execute this endpoint (default)
-        if (req.user) return true
-
-        const secret = env.CRON_SECRET
-        if (!secret) return false
-
-        // If there is no logged in user, then check
-        // for the Vercel Cron secret to be present as an
-        // Authorization header:
-        const authHeader = req.headers.get('authorization')
-        return authHeader === `Bearer ${secret}`
-      },
+      run: ({ req }: { req: PayloadRequest }): boolean => canRunJobs(req, env.CRON_SECRET),
     },
     tasks: [lifecycleSweepTask],
   },

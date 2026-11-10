@@ -255,3 +255,34 @@ describe('the scheduled task', () => {
     expect(failed.totalDocs).toBe(0)
   })
 })
+
+describe('who can start the job runner (config wiring)', () => {
+  const run = (user: User | null, authorization?: string) =>
+    payload.config.jobs.access!.run!({
+      req: {
+        user,
+        payloadAPI: 'REST',
+        headers: new Headers(authorization ? { authorization } : {}),
+      } as never,
+    }) as boolean
+
+  it('refuses contributor, editor, approver and auditor, allows admin, site manager and the bearer', async () => {
+    const [contributor, auditor, siteManager, admin] = await Promise.all([
+      makeUser(payload, 'contributor', ['Registrar']),
+      makeUser(payload, 'auditor', ['Registrar']),
+      makeUser(payload, 'siteManager', ['Registrar']),
+      makeUser(payload, 'platformAdmin', ['Registrar']),
+    ])
+    for (const u of [contributor, editor, approver, auditor])
+      expect(run(u), String(u.role)).toBe(false)
+    expect(run(siteManager)).toBe(true)
+    expect(run(admin)).toBe(true)
+
+    const secret = process.env.CRON_SECRET
+    if (secret) {
+      expect(run(null, `Bearer ${secret}`)).toBe(true)
+      expect(run(null, 'Bearer wrong')).toBe(false)
+    }
+    expect(run(null)).toBe(false)
+  })
+})
