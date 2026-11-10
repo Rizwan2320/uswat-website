@@ -30,6 +30,13 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: /visual\.e2e\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], channel: 'chromium' },
+    },
+    {
+      // Screenshot baselines: `pnpm test:visual`. Kept out of the default run because baselines depend on the machine's fonts.
+      name: 'visual',
+      testMatch: /visual\.e2e\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], channel: 'chromium' },
     },
   ],
