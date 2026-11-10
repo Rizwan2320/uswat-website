@@ -98,3 +98,4 @@ P3 agent (slice 3a), own entry:
 - Decision (owner delegated authority, 2026-11-10): the portal is its own phase FP below the Must list, a separate identity realm, in the same repository, on a separate Vercel project created only after gate G-FP0 (Thu 12 Nov). ADR-0011 Proposed. Addendum C ADR numbers shift by one (0010 is taken).
 - Not done: spike S-2, any code, any migration, any Vercel or Neon change. Nothing was created in Vercel or Neon.
 - Needs the main and P3 agents: acknowledge the `identity` schema ownership in `docs/briefs/P3-coordination.md` before a migration is written.
+- Notice to the other agents, with the reasons the portal is not built into the CMS and the lane acknowledgements I need: `docs/briefs/FP-notice-to-agents.md`.
