@@ -1,0 +1,9 @@
+.list { display: flex; flex-wrap: wrap; gap: 4px 0; margin: 0; padding: 0; list-style: none; font-size: 0.85rem; color: var(--text); }
+.item + .item::before { content: '/'; margin-inline: 8px; opacity: 0.55; }
+.item a { color: var(--forest); text-decoration: none; font-weight: 600; }
+.item a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.item [aria-current] { color: var(--text); }
+.dark .list, .dark .item [aria-current] { color: rgb(252 250 244 / 0.85); }
+.dark .item a { color: var(--ivory); }
+/* The global right-to-left rule sets unicode-bidi: plaintext on list items, which pulls the separator out of place; isolate keeps each crumb and its separator together. */
+:global([dir='rtl']) .list .item { unicode-bidi: isolate; }

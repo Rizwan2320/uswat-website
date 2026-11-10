@@ -7,10 +7,17 @@ const config = {
           css: [
             {
               '--tw-prose-body': 'var(--text)',
-              '--tw-prose-headings': 'var(--text)',
+              '--tw-prose-headings': 'var(--forest)',
+              '--tw-prose-links': 'var(--maroon)',
+              '--tw-prose-bullets': 'var(--forest-soft)',
+              '--tw-prose-counters': 'var(--forest-soft)',
               h1: {
-                fontWeight: 'normal',
+                fontWeight: '600',
                 marginBottom: '0.25em',
+              },
+              'h1, h2, h3, h4': {
+                fontFamily: 'var(--stack-serif)',
+                fontWeight: '600',
               },
             },
           ],
