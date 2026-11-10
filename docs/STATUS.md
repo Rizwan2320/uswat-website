@@ -85,9 +85,13 @@ Updated: 2026-11-09 (Mon) PKT
 - Read policy, access, hooks, audit, users, migration and the brief block. Approved and merged (fast-forward, no squash). Live Neon had 0 users, 0 pages, 0 posts (counts only) and already listed the governance migration, so no lockout or data risk.
 - Follow-ups for the P3 agent (not blocking): Local API unpublish by a user is not detected (REST only); last-admin check is not atomic; add a role backfill or runbook step for databases that already have users; keep system-actor writes out of `src/site`; run the "not run" items (Playwright admin flows, REST versions access) before the P3 gate.
 
-## Milestone C, step 2 (2026-11-09, branch `p2/templates`, not merged)
+## Milestone C, steps 1 and 2 (2026-11-09, branch `p2/templates`, merged to `main` 2026-11-10 on the owner's go after DCST liked the landing page)
 - `[slug]`, `posts`, `search` and the 404 now render inside the site shell (header, footer, Inter/Playfair, palette); `(frontend)` root layout, Geist, dark mode, stock header/footer and the header-theme provider are removed. Tailwind stays for the stock blocks, utilities only (`design/cms.css`), mapped to site tokens. ADR-0011 (Proposed), brief, prediction P2-b with actuals, evidence in `docs/evidence/G2/shell-report.md`.
 - Verified locally: unit 94, int 137, e2e 12, axe 0 violations on 24 checks, no overflow. Not run: Vercel preview, real content, native Urdu review, keyboard pass of the drawer, screenshot baselines.
+
+## Faculty portal lane (2026-11-10)
+- Third agent assigned (brief `docs/briefs/FP-faculty-portal-coordination.md`). Boundary from the owner: the faculty portal is built here, everything else stays in Odoo. Spec: Addendum C (`addendum 3.txt` in the Claude Project; to be copied into `docs/plan/` by that agent). Gate G-FP0 is Thu 12 Nov; the importer and redirect map it depends on are not started, so the likely outcome is spec plus auth spike. ADR numbers for the portal start at 0020 because 0010 and 0011 are taken.
+- Open PRs from the P3 agent, all draft and stacked: #2 (3b, base still `p3/cms-core`, needs retargeting), #3 (3c, adds a GitHub Actions caller every 5 minutes, needs `CRON_SECRET` and `LIFECYCLE_BASE_URL` set by the owner), #4 (follow-ups from the PR #1 review). CI green on all three; not reviewed in depth yet.
 
 ## Next step
 1. User: review the landing (screenshots or a preview deployment of `p2/landing`), then say go for G2 and the merge to `main` (merging redeploys the demo site).
