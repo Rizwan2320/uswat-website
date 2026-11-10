@@ -14,6 +14,7 @@ type Who = Role | 'anonymous'
 const ALL: Who[] = [...ROLES, 'anonymous']
 const STAFF: Who[] = ROLES.filter((r) => r !== 'auditor')
 const ADMINS: Who[] = ['platformAdmin', 'siteManager']
+const REVIEWERS: Who[] = ['platformAdmin', 'siteManager', 'approver']
 
 interface Rule {
   read?: Who[]
@@ -41,7 +42,7 @@ const COLLECTIONS: Record<string, Rule> = {
     delete: NOBODY,
   },
   categories: { read: ALL, ...adminsWrite },
-  media: { read: ALL, create: STAFF, update: STAFF, delete: ADMINS },
+  media: { read: ALL, create: STAFF, update: REVIEWERS, delete: ADMINS },
   redirects: adminsWrite,
   forms: adminsWrite,
   'form-submissions': {
@@ -50,7 +51,7 @@ const COLLECTIONS: Record<string, Rule> = {
     update: NOBODY,
     delete: ['platformAdmin'],
   },
-  'payload-folders': { create: STAFF, update: STAFF, delete: ADMINS }, // media folders
+  'payload-folders': { create: STAFF, update: REVIEWERS, delete: ADMINS }, // media folders
   search: { create: NOBODY, update: NOBODY, delete: NOBODY },
 }
 const GLOBALS: Record<string, Rule> = {

@@ -12,7 +12,7 @@ import { withGovernance } from '../governance/fields'
 /**
  * Merit lists. The Addendum files these inside AdmissionsCycles; that collection does not exist
  * yet (P4), so the cycle and the programme are plain text for now and become relationships by a
- * later migration. Merit lists are admission outcomes: raise the risk class to High-impact.
+ * later migration. Merit lists are admission outcomes, but the risk class defaults to Standard (the code sets no default); the importer or the approver raises it to High-impact per list.
  */
 export const MeritLists: CollectionConfig = withGovernance(
   {
