@@ -103,8 +103,10 @@ P3 agent (slice 3a), own entry:
 - Slice 3b: new collections (AffiliatedColleges, MeritLists, ContactDirectory, ArticleTags) using `withGovernance`, then LIF-01 to LIF-04, media rules, editor dashboard.
 
 ## FP faculty portal (2026-11-10, branch `p3/faculty-portal-spec`, own section)
-- Source: project doc `addendum 3.txt` (Addendum C, faculty portal). Brief: `docs/briefs/fp0-faculty-portal.md`. Predictions FP0-a to FP0-c written before any run.
-- Decision (owner delegated authority, 2026-11-10): the portal is its own phase FP below the Must list, a separate identity realm, in the same repository, on a separate Vercel project created only after gate G-FP0 (Thu 12 Nov). ADR-0011 Proposed. Addendum C ADR numbers shift by one (0010 is taken).
-- Not done: spike S-2, any code, any migration, any Vercel or Neon change. Nothing was created in Vercel or Neon.
-- Needs the main and P3 agents: acknowledge the `identity` schema ownership in `docs/briefs/P3-coordination.md` before a migration is written.
-- Notice to the other agents, with the reasons the portal is not built into the CMS and the lane acknowledgements I need: `docs/briefs/FP-notice-to-agents.md`.
+- Source: project doc `addendum 3.txt` (Addendum C, faculty portal). Brief: `docs/briefs/fp0-faculty-portal.md`. Predictions FP0-a to FP0-d written before any run.
+- Direction: the portal is its own phase FP below the Must list, a separate identity realm, in the same repository, with its own deployment proposed only after gate G-FP0 (Thu 12 Nov). ADR-0020 Proposed. Portal ADRs are 0020 to 0024 (main agent's numbering; Addendum C's 0010 to 0014 map to them in order).
+- Acknowledged: main agent (`docs/briefs/FP-faculty-portal-coordination.md`, on `main`) and P3 agent (`docs/briefs/p3-fp-interface.md`, on PR #4 branch `p3/followups-3d`, not yet on `main`). Lane: `src/modules/identity/**`, `src/modules/portal/**`, `src/app/(portal)/**` are FP; `public` schema and migrations stay P3. FP replies to the P3 questions are in the brief.
+- Creating the second Vercel project, its env vars and any DNS change are the owner's decisions (main agent's FP brief rule 7). FP proposes at G-FP0 and waits for the owner's go.
+- Not done: spike S-2, any code, any migration, any Vercel or Neon change. Nothing was created in Vercel or Neon. No identity migration is written until the main agent agrees how it is applied and rolled back (brief section "Identity schema application").
+- Also owed: copy Addendum C verbatim into `docs/plan/` (main agent's request). Not done yet.
+- Notice to the other agents and the reasons the portal is not built into the CMS: `docs/briefs/FP-notice-to-agents.md`.

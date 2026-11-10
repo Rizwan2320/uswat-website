@@ -1,7 +1,7 @@
-# ADR-0011: Faculty portal is its own phase and its own deployment, in the same repository
+# ADR-0020: Faculty portal is its own phase and its own deployment, in the same repository
 
 Status: Proposed (decided by the delegated owner authority on 2026-11-10; becomes Accepted at gate G-FP0)
-Numbering: this is Addendum C's "ADR-0010" (faculty portal inside the monolith, separate origin, own identity realm). Renumbered because 0010 is taken by `0010-governance-policy-in-hooks.md`. Addendum C's 0011 to 0014 become 0012 to 0015.
+Numbering: this is Addendum C's "ADR-0010" (faculty portal inside the monolith, separate origin, own identity realm). The main agent assigned the portal ADRs 0020 to 0024 (`docs/briefs/FP-faculty-portal-coordination.md`) because 0010 and 0011 are taken. Mapping: Addendum C 0010 = 0020, 0011 (mandatory MFA, passkey first) = 0021, 0012 (Odoo and HR systems of record) = 0022, 0013 (auth library from S-2) = 0023, 0014 (RP ID `portal.uswat.edu.pk`) = 0024. Say "Addendum C ADR-0010" in prose when you mean the spec's number.
 
 ## Context
 Addendum C (2026-11-09) adds a faculty portal with mandatory two-factor sign-in. It says the portal is a separate origin with its own identity tables, inside the monolith. The CMS has about ten trusted staff on the Payload admin. The portal would have hundreds of faculty and can change what the university says publicly about named people. The deadline is 17 Nov and the portal is gated at G-FP0 (Thu 12 Nov), below the Must list.
@@ -11,7 +11,7 @@ The existing Vercel project `uswat-website` is git-linked to `main`, runs migrat
 1. **Separate phase.** The portal is phase FP, scheduled after the Must list. It is not a P3 slice and it does not change the CMS gates.
 2. **Separate from the CMS in identity.** Portal accounts live in their own realm (`modules/identity`, not Payload `users`). No portal account can hold a CMS role.
 3. **Same repository.** One codebase and type system, new modules `modules/identity` and `modules/portal`, same design tokens, content reached only through the content service and Payload hooks.
-4. **Separate deployment on its own origin, created only after G-FP0 passes.** A second Vercel project from the same repo, with its own host, cookie scope and CSP. Nothing is created before the gate, because a git-linked second project would build on every push.
+4. **Separate deployment on its own origin, proposed only after G-FP0 passes.** A second Vercel project from the same repo, with its own host, cookie scope and CSP. Nothing is created before the gate, because a git-linked second project would build on every push. Creating it, setting its environment variables and any DNS change are the owner's decisions (main agent's FP brief, rule 7): the FP agent proposes the settings and waits for the owner's explicit go.
 5. **Separate database objects.** Identity tables in their own PostgreSQL schema `identity`, created by one reviewed migration owned by the FP branch. The public CMS schema stays under the P3 lane. The portal project gets its own connection string and its own database role without rights on CMS content tables, except through the content service.
 6. **If G-FP0 fails**, nothing is deployed. The portal ships in the submission pack as the specification plus the S-2 spike report.
 
@@ -36,7 +36,7 @@ Low before G-FP0 (nothing built). After: merging back to one deployment is a con
 A second Vercel project cannot be created or exceeds free limits; or the university supplies an identity provider that makes a separate realm unnecessary.
 
 ## Owner
-Project owner (delegated decision recorded 2026-11-10); FP branch implements.
+Project owner (the separate-deployment direction was delegated to the FP agent on 2026-11-10; creating the project stays with the owner); FP branch implements.
 
 ## Review date
 Thu 12 Nov 2026, at G-FP0.
