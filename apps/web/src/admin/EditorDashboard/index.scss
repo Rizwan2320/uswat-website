@@ -1,0 +1,43 @@
+.editor-dashboard {
+  margin-bottom: calc(var(--base) * 1.5);
+
+  &__grid {
+    display: grid;
+    gap: var(--base);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  &__card {
+    background: var(--theme-elevation-50);
+    border: 1px solid var(--theme-elevation-150);
+    border-radius: 8px;
+    padding: var(--base);
+
+    h3 {
+      margin: 0 0 calc(var(--base) / 4);
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1.2em;
+    }
+  }
+
+  &__count {
+    background: var(--theme-elevation-150);
+    border-radius: 999px;
+    font-size: 0.8em;
+    margin-left: 0.4em;
+    padding: 0 0.6em;
+  }
+
+  &__help,
+  &__meta,
+  &__empty {
+    color: var(--theme-elevation-600);
+  }
+
+  &__warn {
+    color: var(--theme-error-600);
+  }
+}
