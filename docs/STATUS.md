@@ -240,6 +240,12 @@ Updated: 2026-11-09 (Mon) PKT
 - Checked on the top of the stack on a fresh database: typecheck, lint (0 errors), 344 tests (28 files), `next build`. Not run: Playwright, the first GitHub sweep run.
 - Waiting for the user's force-push approval, then #5 is retargeted to `main`.
 
+## P3 slice 3h (2026-11-11, branch `p3/seo-3h`, stacked on `p3/dashboard-3g`)
+- Done: SEO group on Notices, Events, Jobs and Tenders; search and redirects extended to them; archived items now leave search (found by test); pages sitemap tested; generated migration `p3h_seo_search_redirects` (columns only; up, down, up proven). Brief: `docs/briefs/p3h-seo-search-redirects.md`. Predictions P3h-a to P3h-d with actuals.
+- Handover to the main agent: routes for `/notices`, `/events`, `/jobs`, `/tenders` before a redirect to them lands; existing content needs a search re-index.
+- Not built or not run: form spam control and office mailbox routing (no email adapter), HTTP search query, redirect hop, Playwright.
+- Still to do in P3: preview, plain-language label audit, Playwright admin flows, REST versions-list test; then the getter switch (main agent's seam).
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
