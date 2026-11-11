@@ -155,9 +155,14 @@ Updated: 2026-11-09 (Mon) PKT
 - Not run: the e2e and visual suites against this commit (CI does not run them).
 - Next: #7 (slice 3e) must be retargeted to `main` and rebased by the P3 agent, then reviewed by me, then #11 and #13 in order; `p3/faculty-portal-spec` (#14) and `fp/identity-controls` (#16, stacked on it) need review before anything else from the portal lane merges.
 
+## PR #14 merged, PR #16 reviewed (2026-11-11, main agent)
+- #14 (faculty portal spec, spike S-2 evidence, route map) is on `main` as `ebf21d9` through integration PR #17; CI green on that exact result. `scripts/import/data/route_map.csv` (1,613 rows) is now in the repo after two scans (the portal agent's, and mine with a looser pattern: 0 emails, 0 phone numbers, only dates and notice numbers in slugs). Still open: 5 rows without a target (410 or redirect to parent), and 99 slugs that start with a title (public notice, job and news slugs; a human read is still needed).
+- #16 (identity module and three controls, off by default) reviewed in full, comment on the PR: R1 change before merge (non-plain paths must be forbidden, compare case-insensitively, add tests), R2 question (does `two-factor/enable` still write library backup codes?). Not merged. Retarget to `main` is also needed. Not run: install-script audit of the new dependency tree; a browser test of a forged UV=0 assertion on this branch.
+- Next for me: load `route_map.csv` into the Redirects collection and add the one-hop 301/410 test (MIG-02), once the owner confirms the P3 agent owns the importer. Then #7 after the P3 agent rebases it.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
-2. Main agent: #5 is merged; review #7 once retargeted and rebased, then #11, #13, #14 and #16.
+2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
 3. Owner decisions waiting: (a) seed clearly labelled "Sample" news items and one page into the demo database so `/posts` and the templates show real layouts live; (b) go to create a separate Neon branch for previews (finding above); (c) written DCST confirmation, real address, deadline and stats values; (d) turn Vercel Deployment Protection off before judges; rotate the Neon password.
 4. Then P4 (content), with the Urdu text supplied and reviewed.
 
