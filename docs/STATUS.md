@@ -149,9 +149,15 @@ Updated: 2026-11-09 (Mon) PKT
 - Open, not caused by this change: with a fresh local database `admin.e2e.spec.ts` ("can navigate to list view", URL now carries `?depth=1&limit=10`) and `frontend.e2e.spec.ts` ("can load homepage", still expects the template title) fail, and the `news` visual baselines fail because the database has no posts. CI does not run e2e or visual, so main stays green. The two template tests need updating; the news baselines need sample posts seeded first.
 - Not checked: desktop menu drop-downs position with a physical `left` (`--sub-x`, `--notch-x`); needs a right-to-left look at 1280 px and wider.
 
+## PR #5 merged (2026-11-11, main agent)
+- Slice 3d (Notices, Events, Jobs, Tenders) is on `main` at `355d36b`, fast-forwarded after the P3 agent rebased it onto `main` and added R1 (link addresses validated on save with `isSafeHref`, also on `attachments[].url`, MeritLists `documents[].url` and AffiliatedColleges `link`) and R2 (`Events.startsAt` required). CI was green on that exact commit.
+- Checked locally on the same commit: typecheck, lint (0 errors, 26 warnings), 23 integration files pass, the p3d migration applies, and `payload migrate:create` reports "No schema changes detected" (so `startsAt` required needs no migration, as the P3 agent said). The p3d migration file is unchanged from the version the preview builds already applied.
+- Not run: the e2e and visual suites against this commit (CI does not run them).
+- Next: #7 (slice 3e) must be retargeted to `main` and rebased by the P3 agent, then reviewed by me, then #11 and #13 in order; `p3/faculty-portal-spec` (#14) and `fp/identity-controls` (#16, stacked on it) need review before anything else from the portal lane merges.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
-2. Main agent: review PR #5 (slice 3d, its migration is already on the live database), then #7 and #11, and `p3/faculty-portal-spec`.
+2. Main agent: #5 is merged; review #7 once retargeted and rebased, then #11, #13, #14 and #16.
 3. Owner decisions waiting: (a) seed clearly labelled "Sample" news items and one page into the demo database so `/posts` and the templates show real layouts live; (b) go to create a separate Neon branch for previews (finding above); (c) written DCST confirmation, real address, deadline and stats values; (d) turn Vercel Deployment Protection off before judges; rotate the Neon password.
 4. Then P4 (content), with the Urdu text supplied and reviewed.
 
