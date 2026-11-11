@@ -29,7 +29,7 @@ In: `better-auth`, `@better-auth/passkey`, `pg`, `@types/pg` (about 556 added lo
 Out (what it lets us not write or carry): (1) our own WebAuthn registration and assertion verification and its CBOR and attestation handling; (2) our own session, password-hash and rate-limit plumbing. A third candidate is a second WebAuthn library, which we never add. I have not measured the lines these would have cost, so this is a justification, not a count.
 
 ## Consequences
-Three controls are ours to write and test. Supply chain: exact pins, the release-age policy stays on, and the lockfile diff is reviewed. Session token is stored raw in the library's table (the spec's data model says `idHash`); the signed cookie value means a database leak alone should not forge a session (inferred from lengths, not decoded). Idle timeout (SES-04) is not native and still has to be built. Not tested: Node 24, a Vercel deploy, behind a proxy, OIDC federation.
+Three controls are ours to write and test. Supply chain: exact pins, the release-age policy stays on, and the lockfile diff is reviewed. Session token is stored raw in the library's table (the spec's data model says `idHash`); the signed cookie value means a database leak alone should not forge a session (inferred from lengths, not decoded). Idle timeout (SES-04) is not native and still has to be built. Standalone suite also passed on Node 24.22.2 (same 19 pass, 1 fail). Not tested: the in-app run on Node 24, a Vercel deploy, behind a proxy, OIDC federation.
 
 ## Cost of reversal
 Medium after users enrol: passkey records live in the library's `passkey` table, so changing library means a data migration or re-enrolment. Low before.

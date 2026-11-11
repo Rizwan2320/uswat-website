@@ -29,10 +29,10 @@ The owner says the university uses **both Microsoft 365 and Google Workspace** (
 
 **What ships on no-go:** Addendum C (specification and threat model), the brief, ADR-0020, ADR-0023 (Proposed), `docs/evidence/FP0/` (spike report, six result files, scripts, identity SQL) and the predictions. Nothing is deployed and nothing was created in Vercel or Neon.
 
-**If go:** order of work is (1) enrolment gate, TOTP guard and recovery-code decision with tests first; (2) the identity SQL migration as agreed with the main agent; (3) the P3 agent's later People migration (`claimedBy`, `faculty` origin, `onBehalfOf`); (4) propose the second Vercel project's settings and wait for the owner's go; (5) re-run the suite on Node 24 before anything is called done.
+**If go:** order of work is (1) enrolment gate, TOTP guard and recovery-code decision with tests first; (2) the identity SQL migration as agreed with the main agent; (3) the P3 agent's later People migration (`claimedBy`, `faculty` origin, `onBehalfOf`); (4) propose the second Vercel project's settings and wait for the owner's go; (5) re-run the in-app suite on Node 24 before anything is called done.
 
 ## Still needed from the owner
 Go or no-go; written DCST approval (Q5); Q1 (what the Odoo Faculty module does), Q3 (who is authoritative for designation and department), Q4 (promotion criteria in writing); whether either tenant enforces MFA.
 
 ## Not run
-OIDC federation, idle timeout, step-up, delegation, abuse alerts, breached-password check, Node 24, a Vercel deploy, anything on Neon, a Payload custom-strategy alternative, real devices, a re-read of the Must list on Thursday.
+OIDC federation, idle timeout, step-up, delegation, abuse alerts, breached-password check, the in-app run on Node 24 (standalone on Node 24 passed the same), a Vercel deploy, anything on Neon, a Payload custom-strategy alternative, real devices, a re-read of the Must list on Thursday.
