@@ -46,4 +46,22 @@ test.describe('Kit on /design', () => {
     await expect(nav.locator('[aria-current="page"]')).toHaveText('4')
     await expect(nav.getByRole('link', { name: 'Next' })).toBeVisible()
   })
+
+  test('blockquote keeps its padding on the same side as its rule when the prose is right-to-left', async ({ page }) => {
+    // Prose is dir="auto", so Urdu body text flips the block on its own. Set the direction on the quote
+    // directly to prove the rule and the padding move together.
+    await page.goto(url)
+    const quote = page.locator('blockquote').first()
+    for (const dir of ['ltr', 'rtl'] as const) {
+      const s = await quote.evaluate((el, d) => {
+        el.setAttribute('dir', d)
+        const c = getComputedStyle(el)
+        return { pl: c.paddingLeft, pr: c.paddingRight, bl: c.borderLeftWidth, br: c.borderRightWidth }
+      }, dir)
+      const [ruleSide, padSide, otherPad] = dir === 'rtl' ? [s.br, s.pr, s.pl] : [s.bl, s.pl, s.pr]
+      expect(ruleSide, `rule side in ${dir}`).toBe('3px')
+      expect(padSide, `padding beside the rule in ${dir}`).toBe('18px')
+      expect(otherPad, `opposite padding in ${dir}`).toBe('0px')
+    }
+  })
 })

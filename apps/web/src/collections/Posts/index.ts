@@ -233,6 +233,17 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
           },
         ],
       },
+      {
+        name: 'bodyStatus',
+        label: 'Body',
+        type: 'select',
+        defaultValue: 'full',
+        options: [
+          { label: 'Full text', value: 'full' },
+          { label: 'Stub (text not collected yet)', value: 'stub' },
+        ],
+        admin: { position: 'sidebar' },
+      },
       slugField(),
     ],
     hooks: {
@@ -261,5 +272,6 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
     'meta',
     'authors',
     'slug',
+    'bodyStatus',
   ],
 )

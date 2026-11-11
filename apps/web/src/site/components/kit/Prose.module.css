@@ -10,7 +10,7 @@
 .prose ul { list-style: disc; }
 .prose ol { list-style: decimal; }
 .prose li + li { margin-top: 0.35em; }
-.prose blockquote { margin-inline: 0; padding: 4px 0 4px 18px; border-inline-start: 3px solid var(--maroon); font-family: var(--stack-serif); font-size: 1.15rem; color: var(--forest); }
+.prose blockquote { margin-inline: 0; padding-block: 4px; padding-inline: 18px 0; border-inline-start: 3px solid var(--maroon); font-family: var(--stack-serif); font-size: 1.15rem; color: var(--forest); }
 .prose img { max-width: 100%; height: auto; border-radius: 14px; }
 .prose table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
 .prose th, .prose td { padding: 10px 12px; text-align: start; border-bottom: 1px solid var(--ivory-deep); }
