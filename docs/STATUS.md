@@ -139,6 +139,12 @@ Updated: 2026-11-09 (Mon) PKT
 - **P4 is behind the plan.** G4 as written (Thu 12 Nov) will not be met: the organized pack (`departments.json`, `faculty.json`, ...) is not in the repo or the zip, and the importer has no owner until the decision above is confirmed. Re-baseline when the pack arrives.
 - **G-FP0:** I accept the FP agent's recommendation. On Thu 12 Nov it is reported honestly as spec plus spike S-2 and the answers to Q1 to Q5, with importer, redirects and templates not green; the extra scope remains the owner's approval.
 
+## Live Urdu check and blockquote fix (2026-11-11, branch `fix/prose-blockquote-rtl`)
+- Checked what production serves (home, `/design` and the three stylesheets, fetched through the Vercel fetch tool): the plaintext rule no longer matches heading spans, the footer phone note is wrapped in `<bdi>`, Prose carries `dir="auto"`, the leadership body no longer forces the Urdu typeface, and the accordion and swatch rules are present. Not run: how the live Urdu pages actually render (the shell cannot reach the site and browser control is not on the free plan). Not verifiable from outside: `lang="en"` on the leadership window body, because the window is not in the server-rendered HTML.
+- Found and fixed: `.prose blockquote` used a physical `padding-left`, so Urdu prose (which `dir="auto"` flips to right-to-left) put the rule on the right and the padding on the left. The leadership window head had the same pattern. Both now use logical padding. New test in `kit.e2e.spec.ts` sets `dir` on the quote and checks rule and padding stay on the same side; it fails on the old CSS and passes on the fix.
+- Open, not caused by this change: with a fresh local database `admin.e2e.spec.ts` ("can navigate to list view", URL now carries `?depth=1&limit=10`) and `frontend.e2e.spec.ts` ("can load homepage", still expects the template title) fail, and the `news` visual baselines fail because the database has no posts. CI does not run e2e or visual, so main stays green. The two template tests need updating; the news baselines need sample posts seeded first.
+- Not checked: desktop menu drop-downs position with a physical `left` (`--sub-x`, `--notch-x`); needs a right-to-left look at 1280 px and wider.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: review PR #5 (slice 3d, its migration is already on the live database), then #7 and #11, and `p3/faculty-portal-spec`.

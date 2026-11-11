@@ -14,7 +14,7 @@
 }
 .head {
   flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 12px 14px 10px 22px; border-bottom: 1px solid rgb(122 31 38 / 0.2);
+  padding-block: 12px 10px; padding-inline: 22px 14px; border-bottom: 1px solid rgb(122 31 38 / 0.2);
 }
 .title { margin: 0; font-family: var(--stack-serif); font-weight: 600; font-size: clamp(1.15rem, 2.6vw, 1.45rem); line-height: 1.2; color: var(--forest); }
 .close {
@@ -40,7 +40,7 @@ a.trigger { min-height: 34px; padding: 5px 14px; font-size: 0.84rem; gap: 6px; }
 
 @media (max-width: 520px) {
   .window { height: min(72vh, 520px); }
-  .head { padding: 10px 10px 8px 16px; }
+  .head { padding-block: 10px 8px; padding-inline: 16px 10px; }
   .body { padding: 14px 16px 20px; font-size: 0.98rem; }
 }
 @media (prefers-reduced-motion: reduce) { .window[open] { animation: none; } }
