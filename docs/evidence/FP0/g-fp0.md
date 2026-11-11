@@ -1,5 +1,7 @@
 # G-FP0 note (DRAFT, prepared Wed 11 Nov for the Thursday 12 Nov gate)
 
+Main agent, 2026-11-11 (relayed by the owner): the no-go recommendation below is accepted. Thursday's report is the specification plus spike S-2 plus open questions Q1 to Q5, with the importer, redirects and templates stated as not green. The owner's supplied `route_map.csv` is in the repo after a privacy scan (`docs/evidence/FP0/route-map-scan.md`); it is the importer's input, not a built redirect.
+
 Gate definition: Addendum C section 10. The slice starts only if three things are true. This draft marks each, with what I saw and what I did not. The final go or no-go is the owner's; the Must-list line must be re-checked on Thursday before the note is final.
 
 ## The three gate conditions
