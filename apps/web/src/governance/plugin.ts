@@ -1,6 +1,12 @@
 import type { Config, Plugin } from 'payload'
 
-import { AUDIT_EXCLUDED, auditAfterChange, auditAfterDelete, auditGlobalAfterChange } from './audit'
+import {
+  AUDIT_EXCLUDED,
+  AUDIT_EXCLUDED_GLOBALS,
+  auditAfterChange,
+  auditAfterDelete,
+  auditGlobalAfterChange,
+} from './audit'
 import { COLLECTION_ACCESS, GLOBAL_ACCESS } from './staffAccess'
 
 /**
@@ -26,6 +32,7 @@ export const governancePlugin: Plugin = (config: Config): Config => ({
   globals: (config.globals ?? []).map((original) => {
     const rule = GLOBAL_ACCESS[original.slug]
     const global = rule ? { ...original, access: { ...original.access, ...rule } } : original
+    if (AUDIT_EXCLUDED_GLOBALS.has(global.slug)) return global
     return {
       ...global,
       hooks: {

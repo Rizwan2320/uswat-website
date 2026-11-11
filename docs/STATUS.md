@@ -114,6 +114,12 @@ Updated: 2026-11-09 (Mon) PKT
 - Not run: native Urdu review (body text is mostly English), baselines in the CI environment (they depend on machine fonts, so they are outside CI and must be regenerated where they are checked), Vercel preview of this branch, screen-reader testing.
 - G2 still needs from the owner: sign-off on the shell screenshots (`docs/evidence/G2/`), and a native Urdu reviewer.
 
+## P3 slice 3c (2026-11-09, branch `p3/lifecycle-3c`, stacked on `p3/collections-3b`)
+- Done: lifecycle sweep (archive at expiry, scheduled publish, mark Stale) as a `lifecycleSweep` task, query-time `currentWhere` for current lists and 90-day notice age-out, reviewer queue filter, notification adapter (log line), `expiryRequired` option in the policy; generated migration `20261109_170317_p3c_lifecycle` (up, down, up proven on a copy of the 3b schema and on an empty database); 22 unit and 10 integration tests. Brief: `docs/briefs/p3c-lifecycle.md`.
+- **Scheduler: GitHub Actions** (user decision 2026-11-10), `.github/workflows/lifecycle-sweep.yml`, **hourly** (one setting, `LIFECYCLE_CRON`; changed from 5 minutes after the review). **User to set before it does anything:** repository secret `CRON_SECRET` equal to the Vercel one, repository variable `LIFECYCLE_BASE_URL`, and `CRON_SECRET` in Vercel (production and preview). Until then it skips with a notice. Starts running only after the merge to `main`.
+- Not run: the workflow on GitHub and the endpoints on a deployment (script checked against a local fake server only), Playwright, any collection using `expiryRequired` (types arrive in a later slice), email notifications.
+- Review changes applied (2026-11-10): hourly cadence as one setting with a test, job runner limited to platform admin and site manager with a constant-time bearer check, media update limited to reviewers, merit-list comment fixed. Rebased on `main` after #2 merged.
+
 ## Next step
 1. Main agent: merge `p2/g2-closeout` after CI, verify production, then P2 is closed except the owner items above.
 2. Main agent: when the P3 agent's fixes land on PR #3, merge #3 then #4; review PR #5 (slice 3d) and `p3/faculty-portal-spec`.
@@ -121,4 +127,5 @@ Updated: 2026-11-09 (Mon) PKT
 4. Then P4 (content), with the Urdu text supplied and reviewed.
 
 P3 agent (slice 3a), own entry:
-- Slice 3b: new collections (AffiliatedColleges, MeritLists, ContactDirectory, ArticleTags) using `withGovernance`, then LIF-01 to LIF-04, media rules, editor dashboard.
+- Slice 3d (proposed): the five post types (News, Notices, Events, Jobs, Tenders) with expiry rules, then media rules, accessibility guard, editor dashboard and guide, getter switch to CMS reads.
+- Faculty portal: separate future phase (requirements, Odoo ownership and data-protection decisions first); nothing built in the CMS for it.

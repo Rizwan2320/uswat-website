@@ -122,10 +122,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: 'en' | 'ur';
   widgets: {
@@ -134,6 +136,7 @@ export interface Config {
   user: User;
   jobs: {
     tasks: {
+      lifecycleSweep: TaskLifecycleSweep;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -259,7 +262,7 @@ export interface Page {
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * Pinned records are protected from automatic expiry. Reviewers only.
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -351,7 +354,7 @@ export interface Post {
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * Pinned records are protected from automatic expiry. Reviewers only.
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -557,7 +560,7 @@ export interface ArticleTag {
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * Pinned records are protected from automatic expiry. Reviewers only.
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -994,7 +997,7 @@ export interface AffiliatedCollege {
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * Pinned records are protected from automatic expiry. Reviewers only.
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1055,7 +1058,7 @@ export interface ContactDirectory {
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * Pinned records are protected from automatic expiry. Reviewers only.
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1123,7 +1126,7 @@ export interface MeritList {
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * Pinned records are protected from automatic expiry. Reviewers only.
+     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1303,7 +1306,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'schedulePublish';
+        taskSlug: 'inline' | 'lifecycleSweep' | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -1336,10 +1339,19 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'schedulePublish') | null;
+  taskSlug?: ('inline' | 'lifecycleSweep' | 'schedulePublish') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2198,6 +2210,7 @@ export interface PayloadJobsSelect<T extends boolean = true> {
   queue?: T;
   waitUntil?: T;
   processing?: T;
+  meta?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2305,6 +2318,24 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats".
+ */
+export interface PayloadJobsStat {
+  id: number;
+  stats?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -2351,6 +2382,16 @@ export interface FooterSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats_select".
+ */
+export interface PayloadJobsStatsSelect<T extends boolean = true> {
+  stats?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "collections_widget".
  */
 export interface CollectionsWidget {
@@ -2358,6 +2399,24 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskLifecycleSweep".
+ */
+export interface TaskLifecycleSweep {
+  input?: unknown;
+  output: {
+    report?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
