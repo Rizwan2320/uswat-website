@@ -42,6 +42,7 @@ export type PolicyCode =
   | 'UNPUBLISH_FORBIDDEN'
   | 'NOT_YOUR_DRAFT'
   | 'DELETE_FORBIDDEN'
+  | 'EXPIRY_REQUIRED'
 
 export interface Denial {
   ok: false
@@ -58,6 +59,8 @@ export interface RecordState {
   /** Where the facts come from (a URL or a named document). Required to publish. */
   source: string | null
   reviewDueAt: string | null
+  /** When the record leaves current lists. Some types must have one (LIF-04). */
+  expireAt: string | null
   pinned: boolean
   /** Who created the record (contributors may only edit their own drafts). */
   createdBy: string | number | null
@@ -189,6 +192,11 @@ export interface SaveInput {
    * as opposed to saving a draft revision over it. Needs a reviewer.
    */
   unpublishing?: boolean
+  /**
+   * Jobs, tenders, events and admissions must carry an expiry (LIF-04). Judged once the record
+   * leaves Draft: a draft may be saved without one, submitting or publishing may not.
+   */
+  expiryRequired?: boolean
   /** ISO time, injected so tests are deterministic. */
   now: string
 }
@@ -207,6 +215,23 @@ export type SaveOutcome = { ok: true; values: SaveValues; notes: string[] } | De
 const higherRisk = (a: RiskClass, b: RiskClass): RiskClass => (RISK_RANK[a] >= RISK_RANK[b] ? a : b)
 
 export function evaluateSave(input: SaveInput): SaveOutcome {
+  const outcome = evaluateCore(input)
+  if (
+    outcome.ok &&
+    input.expiryRequired &&
+    outcome.values.status !== 'draft' &&
+    !input.next.expireAt
+  ) {
+    return deny(
+      'EXPIRY_REQUIRED',
+      'This type of record needs an expiry date (expireAt) before it can be submitted, approved or published.',
+      400,
+    )
+  }
+  return outcome
+}
+
+function evaluateCore(input: SaveInput): SaveOutcome {
   const { actor } = input
   if (actor.kind === 'anonymous') {
     return deny('ANONYMOUS', 'You must be signed in to change content.')

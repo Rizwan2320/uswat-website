@@ -1,6 +1,6 @@
 # ADR-0011 CMS-rendered routes join the site shell; Tailwind kept as utilities only
 
-- Status: Proposed (P2 milestone C, branch `p2/templates`; not merged)
+- Status: Accepted 2026-11-10 (merged to main with `p2/templates` on the owner's go; verified live)
 - Context: Two root layouts exist. `(site)` is the redesigned shell (own tokens, Playfair/Inter/Noto Nastaliq, CSS Modules). `(frontend)` is the stock Payload template (Geist, dark mode, Tailwind with preflight, shadcn-style blocks, its own header and footer). Pages from the CMS render in the second one, so a visitor going from `/` to `/posts` sees a different site. P4 will pour real content through exactly these routes.
 - Decision:
   1. Move `[slug]`, `posts` and `search` into `(site)/(cms)/` and delete the `(frontend)` root layout. Route handlers (`healthz`, `readyz`, sitemaps, `next/*`) stay where they are; they have no layout.

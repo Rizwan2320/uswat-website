@@ -1,4 +1,5 @@
 import { Button, type ButtonProps } from '@/components/ui/button'
+import { safeHref } from '@/utilities/safeHref'
 import { cn } from '@/utilities/ui'
 import Link from 'next/link'
 import React from 'react'
@@ -33,12 +34,13 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
     url,
   } = props
 
+  // A reference is built from a slug; a custom address is typed by an editor, so it is checked before it reaches href.
   const href =
     type === 'reference' && typeof reference?.value === 'object' && reference.value.slug
       ? `${reference?.relationTo !== 'pages' ? `/${reference?.relationTo}` : ''}/${
           reference.value.slug
         }`
-      : url
+      : safeHref(url)
 
   if (!href) return null
 

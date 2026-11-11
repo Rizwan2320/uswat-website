@@ -1,0 +1,47 @@
+# Calls the CMS every hour so scheduled publish, expiry and stale marking happen on time.
+# Payload only queues a scheduled task when handle-schedules is called and only runs it when
+# run is called; both need the CRON_SECRET bearer token (see docs/briefs/p3c-lifecycle.md).
+#
+# One-time setup (repository settings, not in code):
+#   Secret   CRON_SECRET                       same value as CRON_SECRET in Vercel
+#   Variable LIFECYCLE_BASE_URL                the deployed site, for example https://example.vercel.app (no trailing slash)
+#   Secret   VERCEL_AUTOMATION_BYPASS_SECRET   optional, only while Vercel Deployment Protection is on
+# Scheduled workflows run from the default branch, so this starts working after it is merged.
+# GitHub disables scheduled workflows after 60 days without repository activity (see docs/runbook.md).
+name: lifecycle-sweep
+
+on:
+  schedule:
+    - cron: '17 * * * *' # must equal LIFECYCLE_CRON in apps/web/src/governance/schedule.ts (a test checks)
+  workflow_dispatch:
+
+concurrency:
+  group: lifecycle-sweep
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      BASE_URL: ${{ vars.LIFECYCLE_BASE_URL }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - name: Queue and run the lifecycle sweep
+        run: |
+          set -euo pipefail
+          if [ -z "$BASE_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "::notice::LIFECYCLE_BASE_URL or CRON_SECRET is not set; skipping (nothing is scheduled until both exist)."
+            exit 0
+          fi
+          call() {
+            curl --fail-with-body --silent --show-error --max-time 120 \
+              -H "Authorization: Bearer ${CRON_SECRET}" \
+              ${BYPASS:+-H "x-vercel-protection-bypass: ${BYPASS}"} \
+              "${BASE_URL}$1"
+          }
+          echo "handle-schedules:"; call "/api/payload-jobs/handle-schedules"; echo
+          echo "run:"; call "/api/payload-jobs/run?queue=lifecycle"; echo

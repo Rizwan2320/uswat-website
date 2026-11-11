@@ -9,7 +9,13 @@
 
 import type { CollectionConfig, Field } from 'payload'
 
-import { governanceBeforeChange, governanceBeforeDelete } from './hooks'
+import {
+  governanceBeforeChange,
+  governanceBeforeDelete,
+  governanceBeforeOperation,
+  type GovernanceOptions,
+} from './hooks'
+import { notifyNewDraft } from './notify'
 import {
   ORIGINS,
   RISK_CLASSES,
@@ -125,7 +131,10 @@ export const governanceFields: Field[] = [
     name: 'pinned',
     type: 'checkbox',
     defaultValue: false,
-    admin: { description: 'Pinned records are protected from automatic expiry. Reviewers only.' },
+    admin: {
+      description:
+        'A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.',
+    },
   },
   {
     name: 'createdBy',
@@ -151,13 +160,19 @@ export const governanceGroup: Field = {
 export function withGovernance<T extends CollectionConfig>(
   config: T,
   contentFields: readonly string[],
+  options: GovernanceOptions = {},
 ): T {
   return {
     ...config,
     fields: [...config.fields, governanceGroup],
     hooks: {
       ...config.hooks,
-      beforeChange: [governanceBeforeChange(contentFields), ...(config.hooks?.beforeChange ?? [])],
+      beforeOperation: [governanceBeforeOperation, ...(config.hooks?.beforeOperation ?? [])],
+      beforeChange: [
+        governanceBeforeChange(contentFields, options),
+        ...(config.hooks?.beforeChange ?? []),
+      ],
+      afterChange: [...(config.hooks?.afterChange ?? []), notifyNewDraft],
       beforeDelete: [governanceBeforeDelete, ...(config.hooks?.beforeDelete ?? [])],
     },
   }

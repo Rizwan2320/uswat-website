@@ -7,7 +7,12 @@
  * `evaluateSave`, and either throws a public error or writes the corrected values back.
  */
 
-import { APIError, type CollectionBeforeChangeHook, type CollectionBeforeDeleteHook } from 'payload'
+import {
+  APIError,
+  type CollectionBeforeChangeHook,
+  type CollectionBeforeDeleteHook,
+  type CollectionBeforeOperationHook,
+} from 'payload'
 
 import { hashContent, stableStringify } from './hash'
 import { checkDelete, evaluateSave, type RecordState } from './policy'
@@ -53,6 +58,7 @@ export function toRecordState(gov: Gov | null | undefined): RecordState {
     ownerOffice: normalizeOffice(g.ownerOffice) || null,
     source: text(g.source),
     reviewDueAt: text(g.reviewDueAt),
+    expireAt: text(g.expireAt),
     pinned: g.pinned === true,
     createdBy: idOf(g.createdBy),
   }
@@ -79,8 +85,33 @@ export function contentChanged(
   )
 }
 
+export interface GovernanceOptions {
+  /** Jobs, tenders, events and admissions cycles (LIF-04). */
+  expiryRequired?: boolean
+}
+
+const SAVE_MODE = 'governanceSaveMode'
+
+/**
+ * Remember whether this update asked for a draft revision. Payload turns a draft save of live
+ * content into `_status: 'draft'` before `beforeChange`, which looks the same as unpublishing, and
+ * only the operation arguments (`draft`, `autosave`) tell them apart. Both REST and the Local API
+ * pass through here, so unpublish is judged the same way on both.
+ */
+export const governanceBeforeOperation: CollectionBeforeOperationHook = ({
+  args,
+  operation,
+  req,
+}) => {
+  if (operation === 'update') {
+    const a = args as { draft?: boolean; autosave?: boolean }
+    req.context[SAVE_MODE] = a.draft || a.autosave ? 'draft' : 'live'
+  }
+  return args
+}
+
 export const governanceBeforeChange =
-  (contentFields: readonly string[]): CollectionBeforeChangeHook =>
+  (contentFields: readonly string[], options: GovernanceOptions = {}): CollectionBeforeChangeHook =>
   async ({ data, originalDoc, operation, req, collection }) => {
     if (operation !== 'create' && operation !== 'update') return data
 
@@ -93,11 +124,12 @@ export const governanceBeforeChange =
     // Unpublish: the request writes the live document as a draft. `originalDoc` is the latest
     // draft version when one is pending, so the live state is read from the published row.
     let unpublishing = false
+    const mode = req.context?.[SAVE_MODE]
+    const savingDraft = mode ? mode === 'draft' : isDraftRequest(req)
     if (
       operation === 'update' &&
       data._status === 'draft' &&
-      req.payloadAPI === 'REST' &&
-      !isDraftRequest(req) &&
+      !savingDraft &&
       originalDoc?.id != null
     ) {
       const live = (await req.payload.findByID({
@@ -116,6 +148,7 @@ export const governanceBeforeChange =
       actor,
       publishing,
       unpublishing,
+      expiryRequired: options.expiryRequired,
       prev: operation === 'update' ? toRecordState(prevGov) : null,
       next: toRecordState(merged),
       contentChanged:

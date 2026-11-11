@@ -103,3 +103,6 @@ export function actorFromRequest(req: { user?: UserLike | null; payloadAPI?: str
   if (req.user) return actorFromUser(req.user)
   return req.payloadAPI === 'local' ? { kind: 'system' } : { kind: 'anonymous' }
 }
+
+/** Importers, jobs and other trusted server code. */
+export const SYSTEM_ACTOR: Actor = { kind: 'system' }

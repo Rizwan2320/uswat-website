@@ -9,3 +9,4 @@
 - Reversal trigger: maintenance exceeds one engineer-day a month.
 - Owner: user / Claude. Review date: end of P2.
 - Prediction: P2-a (Urdu layout fixes) in `docs/predictions.md`.
+- Update 2026-11-10 (end of P2): the tokens did not become a separate `packages/tokens` package. They live in `apps/web/src/design/tokens.css` (consumed by `site.css` and mapped for Tailwind in `cms.css`; ADR-0011). Reason: one app consumes them and a package boundary would add a build step for no second consumer. The faculty portal (FP lane, own root layout) is the first possible second consumer; if it needs them, extract then. A test (`tests/unit/stray-colours.unit.spec.ts`) now fails the build on any hex colour that is not a token, white or black.

@@ -29,7 +29,7 @@
 a.trigger { min-height: 34px; padding: 5px 14px; font-size: 0.84rem; gap: 6px; }
 /* The full message is set in the serif face (the site's display face), unlike the sans body copy elsewhere; Urdu keeps its own face. */
 .body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px 24px 22px; font-family: var(--stack-serif); font-size: 1.05rem; line-height: 1.75; color: var(--maroon); }
-[dir='rtl'] .body { font-family: var(--stack-urdu); }
+/* The message itself is English until a reviewed Urdu text exists, so it keeps the serif face in RTL (Urdu strings carry their own lang and typeface). */
 .body:focus-visible { outline: 3px solid var(--forest); outline-offset: -3px; }
 .body p { margin: 0 0 1em; unicode-bidi: plaintext; }
 .more a { color: var(--maroon); font-weight: 600; text-underline-offset: 3px; }

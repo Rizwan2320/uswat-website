@@ -33,7 +33,7 @@ export default async function Footer() {
           </p>
           <address className={styles.address}>
             <p><PinIcon /> <span>{site.address.footerLine}{site.address.sample ? <span className="sample-tag">Sample</span> : null}</span></p>
-            <p><PhoneIcon /> <a href={`tel:${site.phone.tel}`}>{site.phone.display}</a> <small>({site.phone.note})</small></p>
+            <p><PhoneIcon /> <a href={`tel:${site.phone.tel}`}>{site.phone.display}</a> <small><bdi>({site.phone.note})</bdi></small></p>
             <p><MailIcon /> <a href={`mailto:${site.email.address}`}>{site.email.address}</a></p>
           </address>
         </div>
