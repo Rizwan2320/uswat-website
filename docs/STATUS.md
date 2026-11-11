@@ -130,6 +130,7 @@ Updated: 2026-11-09 (Mon) PKT
 - Production READY on `dcf00bf`, `/readyz` ok. The owner has set `CRON_SECRET` and `LIFECYCLE_BASE_URL`, so the hourly sweep calls production from now on (first run at 17 past the hour; check the Actions tab).
 - CI caught a flaky test helper on the merged result: `uniq()` could repeat across parallel workers (same millisecond), giving "email must be unique". Fixed in `tests/helpers/governance.ts` with a random suffix; diagnosed from the log, not reproduced locally.
 - Not run: the sweep workflow on GitHub (first scheduled run pending), the anonymous refusal on the live job endpoint (the fetch tool could not make that call; covered by unit and integration tests), Playwright admin flows.
+- Reviewed #5 (3d): approve after R1 (validate link addresses on save, reusing `isSafeHref`) and R2 (`startsAt` required), once rebased; News decision accepted (`posts` is News). Site-side guard merged: `utilities/safeHref.ts`, used by `CMSLink`. ADR-0008 corrected (CMS locales already exist in config).
 - Open: stack #5 (3d) -> #7 (3e) -> #11 (3f); #5's base must move to `main` and the stack be rebased. Review of #5 next. Three finished integration branches (`merge/p3b-into-main`, `merge/p3c-into-main`, `merge/p3-followups-into-main`) could not be deleted through the proxy; delete them on GitHub.
 
 ## Next step
