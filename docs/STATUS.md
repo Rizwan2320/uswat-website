@@ -224,6 +224,10 @@ Updated: 2026-11-09 (Mon) PKT
 - Applied now, without waiting for the rest of the P3 stack: only `src/governance/preview.ts`, its integration test (`tests/int/preview.int.spec.ts`) and the patch (kept at `docs/handover/p3l-preview-read.patch`) from PR #32. Authored by the P3 agent; when PR #32 is rebased onto `main` these files will already be there, so they should drop them from that PR. New source guard `tests/unit/preview-guard.unit.spec.ts` fails if a public page reads with an override tied to draft mode.
 - Prediction M-1 has the actuals. Not run: an HTTP probe on a deployment of `main`.
 - Still open from #32 (their list, not changed here): the preview link carries `PREVIEW_SECRET` in its address (rotate it if it was ever shared); no preview for notices, events, jobs and tenders until those pages exist (agent 4).
+## P3 slice 3f (2026-11-11, branch `p3/media-a11y-3f`, stacked on `p3/org-3e`)
+- Done: Media rules (alt required from a person, rights status reviewer-only, sha256 duplicate refusal, JPEG/PNG/WebP/AVIF only, 8 MB proposed limit); publish guard on every governed collection (image alt, image rights, skipped heading, bare link text; also stops a scheduled publish); generated migration `20261111_014816_p3f_media_rules` (up, down, up proven; no `DROP CONSTRAINT` fix needed); 23 unit and 15 integration tests. Brief: `docs/briefs/p3f-media-accessibility.md`. Predictions P3f-a to P3f-d with actuals.
+- Decisions for the owner: `permission_pending` may publish (mark is a template concern); existing media become rights `unknown` on migration; the 8 MB limit is a proposal.
+- Not run: HTTP upload and Payload's global `upload.limits`, Playwright, Lexical JSON produced by the admin editor, re-check of pages when an image's alt or rights change later.
 
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
