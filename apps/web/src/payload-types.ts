@@ -1278,7 +1278,7 @@ export interface Event {
       }[]
     | null;
   tags?: (number | ArticleTag)[] | null;
-  startsAt?: string | null;
+  startsAt: string;
   venue?: string | null;
   governance?: {
     /**

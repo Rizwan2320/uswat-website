@@ -14,6 +14,7 @@ export const Events = postType({
       name: 'startsAt',
       label: 'Starts',
       type: 'date',
+      required: true,
       admin: { date: { pickerAppearance: 'dayAndTime' } },
     },
     { name: 'venue', type: 'text', localized: true },
