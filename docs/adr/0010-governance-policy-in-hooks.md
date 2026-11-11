@@ -16,3 +16,10 @@
 - Owner: Lead
 - Review date: at the P3 gate
 - Prediction: see `docs/predictions.md` P3a-d (written before the tests): partly wrong on where draft data lives.
+
+## Amendment 2026-11-10 (slice 3d, after the main agent's review of PR #1)
+- **Unpublish on every path.** Decision 4 said unpublish could only be told from a draft save over REST. That was wrong for the Local API: an editor calling `payload.update({ data: { _status: 'draft' } })` took live content offline (P3d-a). A `beforeOperation` hook now records `draft` and `autosave` from the operation arguments, which REST and the Local API both pass, and `beforeChange` uses that. GraphQL stays disabled. Tests: `governance.unpublish.int.spec.ts`.
+- **Known limit: last-admin check is not atomic.** `otherAdmins()` counts, then the update runs. Two admins demoting each other in the same instant could both pass and leave none. Accepted for now (two to five admins, changes rare, recoverable with the runbook step in `docs/runbook.md`); a lock is the fix if the number of admins grows.
+- **Rule for the site lane.** Server code with no user is treated as the trusted system (it bypasses the role rules). `src/site` and `src/app/(site)` may only read through the getters. A unit test (`siteLane.unit.spec.ts`) fails if they call a Payload write or touch `payload.db`.
+- **Do not rename the `dbName` options.** `affiliated-colleges` and `contact-directory` set `dbName` (`colleges`, `contacts`) because Payload builds database identifiers from the collection slug and field names, and PostgreSQL cuts identifiers at 63 characters. Their generated enum names (for example the version table's governance verification-status enum) went past that limit and migration generation failed; the shorter names fixed it. Renaming them back, or adding a collection with a long slug, brings the failure back, and renaming a table later is a data migration. Slugs of up to 12 characters are safe; check the generated names before going longer.
+

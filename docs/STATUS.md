@@ -120,6 +120,11 @@ Updated: 2026-11-09 (Mon) PKT
 - Not run: the workflow on GitHub and the endpoints on a deployment (script checked against a local fake server only), Playwright, any collection using `expiryRequired` (types arrive in a later slice), email notifications.
 - Review changes applied (2026-11-10): hourly cadence as one setting with a test, job runner limited to platform admin and site manager with a constant-time bearer check, media update limited to reviewers, merit-list comment fixed. Rebased on `main` after #2 merged.
 
+## P3 follow-ups from the PR #1 review (2026-11-10, branch `p3/followups-3d`, stacked on `p3/lifecycle-3c`)
+- Done: (1) unpublish is now a reviewer action on the Local API too (was REST only), with 4 integration tests; (2) last-admin race documented as a known limit in ADR-0010 (amendment); (3) first-admin recovery written as a runbook step in `docs/runbook.md` instead of editing the merged migration; (4) unit test that fails if `src/site` or `src/app/(site)` writes through Payload. Item 5 (Playwright admin flows, REST versions-list filter) is still not run.
+- Prediction P3d-a recorded with its actual.
+- Faculty portal agent acknowledged (2026-11-10). Interface note for the P3 lane: `docs/briefs/p3-fp-interface.md` (what P3 provides, the People fields and `faculty` origin planned in one later migration, proposed rules for portal writes, questions back). P3 does not edit the FP lane, and P3 ADR numbers stay at 0012 to 0019.
+
 ## Next step
 1. Main agent: merge `p2/g2-closeout` after CI, verify production, then P2 is closed except the owner items above.
 2. Main agent: when the P3 agent's fixes land on PR #3, merge #3 then #4; review PR #5 (slice 3d) and `p3/faculty-portal-spec`.
