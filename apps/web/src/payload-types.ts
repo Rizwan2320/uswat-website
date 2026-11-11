@@ -1225,6 +1225,23 @@ export interface Notice {
       }[]
     | null;
   tags?: (number | ArticleTag)[] | null;
+  /**
+   * How this appears in search results and when shared. Leave blank to use the title and excerpt.
+   */
+  meta?: {
+    /**
+     * Up to 70 characters.
+     */
+    title?: string | null;
+    /**
+     * One or two sentences, up to 170 characters.
+     */
+    description?: string | null;
+    /**
+     * Shown when the page is shared. Needs alt text and recorded rights, like any image.
+     */
+    image?: (number | null) | Media;
+  };
   governance?: {
     /**
      * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
@@ -1313,6 +1330,23 @@ export interface Event {
       }[]
     | null;
   tags?: (number | ArticleTag)[] | null;
+  /**
+   * How this appears in search results and when shared. Leave blank to use the title and excerpt.
+   */
+  meta?: {
+    /**
+     * Up to 70 characters.
+     */
+    title?: string | null;
+    /**
+     * One or two sentences, up to 170 characters.
+     */
+    description?: string | null;
+    /**
+     * Shown when the page is shared. Needs alt text and recorded rights, like any image.
+     */
+    image?: (number | null) | Media;
+  };
   startsAt: string;
   venue?: string | null;
   governance?: {
@@ -1403,6 +1437,23 @@ export interface Job {
       }[]
     | null;
   tags?: (number | ArticleTag)[] | null;
+  /**
+   * How this appears in search results and when shared. Leave blank to use the title and excerpt.
+   */
+  meta?: {
+    /**
+     * Up to 70 characters.
+     */
+    title?: string | null;
+    /**
+     * One or two sentences, up to 170 characters.
+     */
+    description?: string | null;
+    /**
+     * Shown when the page is shared. Needs alt text and recorded rights, like any image.
+     */
+    image?: (number | null) | Media;
+  };
   governance?: {
     /**
      * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
@@ -1491,6 +1542,23 @@ export interface Tender {
       }[]
     | null;
   tags?: (number | ArticleTag)[] | null;
+  /**
+   * How this appears in search results and when shared. Leave blank to use the title and excerpt.
+   */
+  meta?: {
+    /**
+     * Up to 70 characters.
+     */
+    title?: string | null;
+    /**
+     * One or two sentences, up to 170 characters.
+     */
+    description?: string | null;
+    /**
+     * Shown when the page is shared. Needs alt text and recorded rights, like any image.
+     */
+    image?: (number | null) | Media;
+  };
   governance?: {
     /**
      * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
@@ -2028,6 +2096,22 @@ export interface Redirect {
       | ({
           relationTo: 'posts';
           value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'notices';
+          value: number | Notice;
+        } | null)
+      | ({
+          relationTo: 'events';
+          value: number | Event;
+        } | null)
+      | ({
+          relationTo: 'jobs';
+          value: number | Job;
+        } | null)
+      | ({
+          relationTo: 'tenders';
+          value: number | Tender;
         } | null);
     url?: string | null;
   };
@@ -2061,10 +2145,31 @@ export interface Search {
   id: number;
   title?: string | null;
   priority?: number | null;
-  doc: {
-    relationTo: 'posts';
-    value: number | Post;
-  };
+  doc:
+    | {
+        relationTo: 'pages';
+        value: number | Page;
+      }
+    | {
+        relationTo: 'posts';
+        value: number | Post;
+      }
+    | {
+        relationTo: 'notices';
+        value: number | Notice;
+      }
+    | {
+        relationTo: 'events';
+        value: number | Event;
+      }
+    | {
+        relationTo: 'jobs';
+        value: number | Job;
+      }
+    | {
+        relationTo: 'tenders';
+        value: number | Tender;
+      };
   slug?: string | null;
   meta?: {
     title?: string | null;
@@ -2876,6 +2981,13 @@ export interface NoticesSelect<T extends boolean = true> {
         id?: T;
       };
   tags?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
   governance?:
     | T
     | {
@@ -2921,6 +3033,13 @@ export interface EventsSelect<T extends boolean = true> {
         id?: T;
       };
   tags?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
   startsAt?: T;
   venue?: T;
   governance?:
@@ -2968,6 +3087,13 @@ export interface JobsSelect<T extends boolean = true> {
         id?: T;
       };
   tags?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
   governance?:
     | T
     | {
@@ -3013,6 +3139,13 @@ export interface TendersSelect<T extends boolean = true> {
         id?: T;
       };
   tags?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
   governance?:
     | T
     | {

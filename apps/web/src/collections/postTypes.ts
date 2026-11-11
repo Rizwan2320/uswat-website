@@ -42,6 +42,7 @@ const COMMON_CONTENT = [
   'heroImage',
   'attachments',
   'tags',
+  'meta',
 ]
 
 export function postType(opts: PostTypeOptions): CollectionConfig {
@@ -113,6 +114,40 @@ export function postType(opts: PostTypeOptions): CollectionConfig {
           ],
         },
         { name: 'tags', type: 'relationship', relationTo: 'article-tags', hasMany: true },
+        {
+          name: 'meta',
+          label: 'Search and sharing',
+          type: 'group',
+          admin: {
+            description:
+              'How this appears in search results and when shared. Leave blank to use the title and excerpt.',
+          },
+          fields: [
+            {
+              name: 'title',
+              type: 'text',
+              localized: true,
+              maxLength: 70,
+              admin: { description: 'Up to 70 characters.' },
+            },
+            {
+              name: 'description',
+              type: 'textarea',
+              localized: true,
+              maxLength: 170,
+              admin: { description: 'One or two sentences, up to 170 characters.' },
+            },
+            {
+              name: 'image',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                description:
+                  'Shown when the page is shared. Needs alt text and recorded rights, like any image.',
+              },
+            },
+          ],
+        },
         ...(opts.extraFields ?? []),
       ],
     },

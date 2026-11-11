@@ -23,9 +23,15 @@ const generateURL: GenerateURL<Post | Page> = ({ doc }) => {
   return doc?.slug ? `${url}/${doc.slug}` : url
 }
 
+/** Public content that can be a redirect target. */
+export const REDIRECT_TARGETS = ['pages', 'posts', 'notices', 'events', 'jobs', 'tenders']
+/** Public content that appears in site search (FR-09). People and offices are left out until P5 decides. */
+export const SEARCH_COLLECTIONS = ['pages', 'posts', 'notices', 'events', 'jobs', 'tenders']
+
 export const plugins: Plugin[] = [
   redirectsPlugin({
-    collections: ['pages', 'posts'],
+    // Every public content type that can be the target of an old address (MIG-02).
+    collections: REDIRECT_TARGETS,
     overrides: {
       // @ts-expect-error - This is a valid override, mapped fields don't resolve to the same type
       fields: ({ defaultFields }) => {
@@ -81,7 +87,8 @@ export const plugins: Plugin[] = [
     },
   }),
   searchPlugin({
-    collections: ['posts'],
+    // Drafts are not synced and unpublishing deletes the entry (plugin defaults, tested).
+    collections: SEARCH_COLLECTIONS,
     beforeSync: beforeSyncWithSearch,
     searchOverrides: {
       fields: ({ defaultFields }) => {
