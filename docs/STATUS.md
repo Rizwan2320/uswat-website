@@ -229,6 +229,11 @@ Updated: 2026-11-09 (Mon) PKT
 - Decisions for the owner: `permission_pending` may publish (mark is a template concern); existing media become rights `unknown` on migration; the 8 MB limit is a proposal.
 - Not run: HTTP upload and Payload's global `upload.limits`, Playwright, Lexical JSON produced by the admin editor, re-check of pages when an image's alt or rights change later.
 
+## P3 slice 3g (2026-11-11, branch `p3/dashboard-3g`, stacked on `p3/media-a11y-3f`)
+- Done: editor dashboard on the admin home page (my drafts, waiting for review, expiring soon, needs a fresh check, images without alt text), loaded with the signed-in user's own access; draft editor guide `docs/editor-guide.md`; template Seed welcome removed; import map regenerated. 7 unit and 8 integration tests; also checked once in a real browser. Brief: `docs/briefs/p3g-dashboard.md`. Predictions P3g-a to P3g-d with actuals.
+- Not run: Neon wake-up timing, mobile layout, CMS-15 usability test with real staff (the guide is untested by real editors), Urdu admin.
+- Still to do in P3: SEO and redirects and form-builder checks, preview, plain-language label audit on every field, Playwright admin flows, REST versions-list test, then the getter switch to CMS reads (main agent's seam).
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
