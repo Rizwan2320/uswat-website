@@ -4,7 +4,8 @@ import config from '../../src/payload.config'
 import type { Page, User } from '../../src/payload-types'
 import type { Role } from '../../src/governance/roles'
 
-export const run = Date.now().toString(36)
+// Spec files run in parallel workers against one database; a timestamp alone can repeat when two files load in the same millisecond, so add randomness.
+export const run = Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
 export const PASSWORD = 'correct-horse-battery-staple'
 
 let counter = 0
