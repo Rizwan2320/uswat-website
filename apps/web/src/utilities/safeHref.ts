@@ -10,7 +10,6 @@ export function isSafeHref(value: string | null | undefined): boolean {
   if (typeof value !== 'string') return false
   const v = value.trim()
   if (!v) return false
-  // eslint-disable-next-line no-control-regex
   if (/[\u0000-\u001f\u007f]/.test(v)) return false // browsers drop tabs and newlines inside a scheme: refuse them outright
   if (v.startsWith('#')) return true
   if (v.startsWith('/')) return !v.startsWith('//') && !v.startsWith('/\\')
