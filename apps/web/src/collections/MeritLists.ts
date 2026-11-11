@@ -7,7 +7,7 @@ import {
   governedReadVersions,
   governedUpdate,
 } from '../governance/access'
-import { withGovernance } from '../governance/fields'
+import { safeHrefValidate, withGovernance } from '../governance/fields'
 
 /**
  * Merit lists. The Addendum files these inside AdmissionsCycles; that collection does not exist
@@ -56,7 +56,7 @@ export const MeritLists: CollectionConfig = withGovernance(
         admin: { description: 'The PDF lists, as links.' },
         fields: [
           { name: 'label', type: 'text', required: true, localized: true },
-          { name: 'url', type: 'text', required: true },
+          { name: 'url', type: 'text', required: true, validate: safeHrefValidate },
         ],
       },
     ],

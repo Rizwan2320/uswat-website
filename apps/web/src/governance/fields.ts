@@ -7,7 +7,10 @@
  * the admin; the `beforeChange` hook (hooks.ts) is what actually enforces them.
  */
 
-import type { CollectionConfig, Field } from 'payload'
+import type { CollectionConfig, Field, TextFieldSingleValidation } from 'payload'
+import { text } from 'payload/shared'
+
+import { isSafeHref } from '../utilities/safeHref'
 
 import {
   governanceBeforeChange,
@@ -24,6 +27,20 @@ import {
   WORKFLOW_LABELS,
   WORKFLOW_STATUSES,
 } from './roles'
+
+/**
+ * Validator for a link typed into the CMS: it keeps the field's normal rules (required, length)
+ * and then accepts only what `isSafeHref` accepts. The site applies the same function where it
+ * renders the value, so the two guards cannot drift (main agent review of PR #5, R1).
+ */
+export const safeHrefValidate: TextFieldSingleValidation = (value, options) => {
+  const base = text(value, options)
+  if (base !== true) return base
+  if (value == null || value === '') return true
+  return isSafeHref(value)
+    ? true
+    : 'Use a web address (https://...), an email (mailto:...), a phone (tel:...) or a path on this site (/...).'
+}
 
 const options = <T extends string>(values: readonly T[], labels?: Record<T, string>) =>
   values.map((value) => ({ value, label: labels?.[value] ?? value }))

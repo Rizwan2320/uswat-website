@@ -10,7 +10,7 @@ import {
   governedReadVersions,
   governedUpdate,
 } from '../governance/access'
-import { withGovernance } from '../governance/fields'
+import { safeHrefValidate, withGovernance } from '../governance/fields'
 
 /**
  * The announcement-style post types: Notices, Events, Jobs, Tenders (Addendum 7.2, 8). News is the
@@ -109,7 +109,7 @@ export function postType(opts: PostTypeOptions): CollectionConfig {
           admin: { description: 'PDFs and other files, as links.' },
           fields: [
             { name: 'label', type: 'text', required: true, localized: true },
-            { name: 'url', type: 'text', required: true },
+            { name: 'url', type: 'text', required: true, validate: safeHrefValidate },
           ],
         },
         { name: 'tags', type: 'relationship', relationTo: 'article-tags', hasMany: true },

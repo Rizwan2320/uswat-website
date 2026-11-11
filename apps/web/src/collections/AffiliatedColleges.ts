@@ -7,7 +7,7 @@ import {
   governedReadVersions,
   governedUpdate,
 } from '../governance/access'
-import { withGovernance } from '../governance/fields'
+import { safeHrefValidate, withGovernance } from '../governance/fields'
 
 /** Fields follow the Addendum field-mapping table (section 8); nothing else is invented. */
 export const AffiliatedColleges: CollectionConfig = withGovernance(
@@ -59,7 +59,12 @@ export const AffiliatedColleges: CollectionConfig = withGovernance(
         fields: [{ name: 'name', type: 'text', required: true, localized: true }],
       },
       { name: 'address', type: 'textarea', localized: true },
-      { name: 'link', type: 'text', admin: { description: 'The college website (full URL).' } },
+      {
+        name: 'link',
+        type: 'text',
+        validate: safeHrefValidate,
+        admin: { description: 'The college website (full URL).' },
+      },
     ],
   },
   ['name', 'sector', 'number', 'affiliationYear', 'programmes', 'address', 'link'],
