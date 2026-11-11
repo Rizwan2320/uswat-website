@@ -1,0 +1,142 @@
+[
+  {
+    "id": "A1 AUTH-03 14-char password rejected",
+    "ok": true,
+    "note": "{\"message\":\"Password too short\",\"code\":\"PASSWORD_TOO_SHORT\",\"status\":400,\"statusText\":\"BAD_REQUEST\"}"
+  },
+  {
+    "id": "A2 AUTH-03 long passphrase accepted (no composition rules)",
+    "ok": true,
+    "note": "{\"user\":true}"
+  },
+  {
+    "id": "B1 AUTH-01 session granted straight after sign-up with password only",
+    "ok": "INFO",
+    "note": "YES: library issues a full session with no second factor (needs our enrolment gate)"
+  },
+  {
+    "id": "B2 AUTH-01 password-only sign-in works when 2FA not enrolled",
+    "ok": "INFO",
+    "note": "YES: password-only login path exists until we block it"
+  },
+  {
+    "id": "C1 passkey registration (UV=1 authenticator)",
+    "ok": true,
+    "note": "{\"data\":{\"name\":\"virtual device\",\"publicKey\":\"pAEBAycgBiFYIPiDnvQl77XmPb9pAUssGj2+HAAJJ0nO5SD1eM6t1fv/\",\"userId\":\"cMwGZ8SLi3tFQt0RNPk84Mmb0uK7ReRT\",\"credentialID\":\"NGj8ci6viT8vttAKwL42XUzMZp255yQWG1JbZKXFgRE\",\"counter\":1"
+  },
+  {
+    "id": "C2 passkey sign-in (UV=1)",
+    "ok": true,
+    "note": "\"session ok\""
+  },
+  {
+    "id": "D1 FPR-01 assertion with UV=0 rejected [mode=required]",
+    "ok": true,
+    "note": "UV=0 assertion rejected; {\"message\":\"Authentication failed\",\"code\":\"AUTHENTICATION_FAILED\",\"status\":400,\"statusText\":\"BAD_REQUEST\"}"
+  },
+  {
+    "id": "D2 info: rewritten options + verified authenticator [mode=required]",
+    "ok": "INFO",
+    "note": "session refused; {\"message\":\"Authentication failed\",\"code\":\"AUTHENTICATION_FAILED\",\"status\":400,\"statusText\":\"BAD_REQUEST\"}"
+  },
+  {
+    "id": "D3 control: no rewrite, verified authenticator, still signs in after the failed attempts",
+    "ok": true,
+    "note": "\"session ok\""
+  },
+  {
+    "id": "G1 cookie __Host-portal.better-auth-passkey",
+    "ok": "INFO",
+    "note": "secure=true httpOnly=true sameSite=Lax path=/ domain=localhost"
+  },
+  {
+    "id": "G1 cookie __Host-portal.session_token",
+    "ok": "INFO",
+    "note": "secure=true httpOnly=true sameSite=Lax path=/ domain=localhost"
+  },
+  {
+    "id": "G2 raw Set-Cookie (session)",
+    "ok": "INFO",
+    "note": "__Host-portal.session_token=<value>; Max-Age=43200; Path=/; HttpOnly; Secure; SameSite=Lax"
+  },
+  {
+    "id": "G3 SES-01 session stored server-side in PostgreSQL",
+    "ok": true,
+    "note": "token column length 32, stored as raw value (not a hash)"
+  },
+  {
+    "id": "G4 cookie value is the DB token plus a signature (a DB leak alone is not enough to forge it)",
+    "ok": "INFO",
+    "note": "cookie value length 77 vs token length 32"
+  },
+  {
+    "id": "G5 FPR-07 revoked session is dead on the very next request",
+    "ok": true,
+    "note": "no session on next request"
+  },
+  {
+    "id": "H1 SES-06 cross-origin sign-in POST refused",
+    "ok": true,
+    "note": "status 403"
+  },
+  {
+    "id": "I1 AUTH-10 unknown email and wrong password look the same",
+    "ok": true,
+    "note": "unknown: 401 {\"message\":\"Invalid email or password\",\"code\":\"INVALID_EMAIL_OR_PASSWORD\"} | wrong pw: 401 {\"message\":\"Invalid email or password\",\"code\":\"INVALID_EMAIL_OR_PASSWORD\"}"
+  },
+  {
+    "id": "E1 TOTP enrolment returns a secret URI",
+    "ok": true,
+    "note": "otpauth://totp/FP0%20in-app%20spike:b1794305384830%40example.test?secret=<hidden>&issuer=FP0+in-app+spike&digits=6&period=30"
+  },
+  {
+    "id": "F1 AUTH-05 ten recovery codes issued",
+    "ok": true,
+    "note": "count=10"
+  },
+  {
+    "id": "E2 TOTP code verifies and enrols",
+    "ok": true,
+    "note": "\"ok\""
+  },
+  {
+    "id": "E3 AUTH-04 TOTP secret not stored in plain base32",
+    "ok": true,
+    "note": "stored value looks encrypted/opaque (len 144)"
+  },
+  {
+    "id": "F2 AUTH-05 recovery codes stored hashed (not recoverable plaintext)",
+    "ok": "INFO",
+    "note": "plaintext code found in stored column: false; stored format starts \"ea4b78b6b416709711…\" (library default is reversible encryption, not a hash)"
+  },
+  {
+    "id": "E4 sign-in with 2FA enrolled returns a second-factor challenge, no session yet",
+    "ok": true,
+    "note": "{\"twoFactorRedirect\":true,\"twoFactorMethods\":[\"totp\"]}"
+  },
+  {
+    "id": "E5 AUTH-04/PJ2 replayed TOTP code (same 30 s step) rejected",
+    "ok": false,
+    "note": "REPLAY ACCEPTED"
+  },
+  {
+    "id": "F3 recovery code signs in",
+    "ok": true,
+    "note": "\"ok\""
+  },
+  {
+    "id": "F4 AUTH-05 recovery code is single-use",
+    "ok": true,
+    "note": "{\"message\":\"Invalid backup code\",\"code\":\"INVALID_BACKUP_CODE\",\"status\":401,\"statusText\":\"UNAUTHORIZED\"}"
+  },
+  {
+    "id": "F5 AUTH-05 regenerating invalidates the old set",
+    "ok": true,
+    "note": "new set 10; old code after regenerate: rejected"
+  },
+  {
+    "id": "J1 the six identity tables live in schema identity and none of those names exist in public",
+    "ok": true,
+    "note": "identity: account, passkey, session, twoFactor, user, verification; public tables in this database: 113; stray: none"
+  }
+]
