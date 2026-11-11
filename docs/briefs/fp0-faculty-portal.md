@@ -75,4 +75,4 @@ Also agreed in principle with the P3 proposal: one content-service write functio
 - **Tested (prediction FP0-d, 2026-11-10):** Payload's `migrate:create`, `migrate`, `migrate:down` and `migrate:fresh` ignore a second schema in the same database and leave it intact. Caveat: they never recreate it, so a dev reset and CI must also run the identity SQL (`docs/evidence/FP0/identity-up.sql`). Evidence: `docs/evidence/FP0/spike-report.md`.
 
 ## Questions that remain for the owner
-Only inputs only the owner has: written DCST approval for the portal and for consenting faculty in the demo (Q5), and whether the university has Microsoft 365 or Google Workspace (Q2).
+Only inputs only the owner has: written DCST approval for the portal and for consenting faculty in the demo (Q5), and whether either tenant enforces MFA. Q2 answered 2026-11-11 by the owner: the university uses both Microsoft 365 and Google Workspace (statement, no document seen).
