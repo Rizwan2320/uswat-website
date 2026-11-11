@@ -246,6 +246,10 @@ Updated: 2026-11-09 (Mon) PKT
 - Not built or not run: form spam control and office mailbox routing (no email adapter), HTTP search query, redirect hop, Playwright.
 - Still to do in P3: preview, plain-language label audit, Playwright admin flows, REST versions-list test; then the getter switch (main agent's seam).
 
+## P3 slice 3i (2026-11-11, branch `p3/rest-access-3i`, stacked on `p3/seo-3h`)
+- Done: the reviewer's open follow-up, REST versions and drafts access by role (anonymous, other-office editor, office editor, contributor, auditor, site manager, platform admin), 11 integration tests on real route handlers and JWTs; mutation check fails 3 tests. No code change was needed: the rules already held. Predictions P3i-a and P3i-b with actuals.
+- Still not run: Playwright admin flows, browser check of the admin edit form, preview, plain-language label audit.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
