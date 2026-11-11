@@ -36,7 +36,6 @@ describe('classifyPath', () => {
     [`${AUTH_BASE}/passkey/generate-authenticate-options`, 'public'],
     [`${AUTH_BASE}/passkey/verify-authentication`, 'public'],
     [`${AUTH_BASE}/two-factor/verify-totp`, 'public'],
-    [`${AUTH_BASE}/two-factor/verify-backup-code`, 'public'],
     ['/portal/enrol', 'enrolment'],
     [`${AUTH_BASE}/passkey/generate-register-options`, 'enrolment'],
     [`${AUTH_BASE}/passkey/verify-registration`, 'enrolment'],
@@ -51,6 +50,9 @@ describe('classifyPath', () => {
     [`${AUTH_BASE}/two-factor/send-otp`, 'forbidden'],
     [`${AUTH_BASE}/two-factor/verify-otp`, 'forbidden'],
     [`${AUTH_BASE}/sign-up/email`, 'forbidden'],
+    // The library's own backup codes are stored reversibly; ours replace them (AUTH-05).
+    [`${AUTH_BASE}/two-factor/verify-backup-code`, 'forbidden'],
+    [`${AUTH_BASE}/two-factor/generate-backup-codes`, 'forbidden'],
   ])('%s is %s', (path, expected) => {
     expect(classifyPath(path)).toBe(expected)
   })

@@ -35,7 +35,6 @@ const PUBLIC = new Set<string>([
   `${AUTH_BASE}/passkey/verify-authentication`,
   // Mid sign-in, before a session exists. The library checks its own signed two-factor cookie.
   `${AUTH_BASE}/two-factor/verify-totp`,
-  `${AUTH_BASE}/two-factor/verify-backup-code`,
 ])
 
 const ENROLMENT = new Set<string>([
@@ -53,6 +52,10 @@ const FORBIDDEN = new Set<string>([
   `${AUTH_BASE}/two-factor/send-otp`,
   `${AUTH_BASE}/two-factor/verify-otp`,
   `${AUTH_BASE}/sign-up/email`,
+  // The library's own backup codes are stored reversibly (spike S-2 finding F). Recovery codes are
+  // issued and checked by ./recoveryCodes instead, so the library's endpoints are closed.
+  `${AUTH_BASE}/two-factor/verify-backup-code`,
+  `${AUTH_BASE}/two-factor/generate-backup-codes`,
 ])
 
 /** Anything that is not a plain, normalised path is treated as the strictest reachable class. */
