@@ -234,6 +234,12 @@ Updated: 2026-11-09 (Mon) PKT
 - Not run: Neon wake-up timing, mobile layout, CMS-15 usability test with real staff (the guide is untested by real editors), Urdu admin.
 - Still to do in P3: SEO and redirects and form-builder checks, preview, plain-language label audit on every field, Playwright admin flows, REST versions-list test, then the getter switch to CMS reads (main agent's seam).
 
+## P3 stack after the main agent's review (2026-11-11)
+- #3 and #4 are merged. Stack rebased onto `main` (`c43b0a3`) in order: #5 `p3/post-types-3d`, #7 `p3/org-3e`, #11 `p3/media-a11y-3f`, #13 `p3/dashboard-3g`. Append-only conflicts in STATUS and predictions kept on both sides. The `p3d_post_types` migration file is unchanged since its preview ran.
+- #5 review R1 done: one `safeHrefValidate` (reuses `isSafeHref` from `utilities/safeHref`) on `attachments[].url`, `MeritLists documents[].url` and `AffiliatedColleges.link` (the third is my addition: same risk). R2 done: `Events.startsAt` required. No schema change (P3d-e). Payload checks validators at publish, not on draft save, so tests assert the refusal at publish.
+- Checked on the top of the stack on a fresh database: typecheck, lint (0 errors), 344 tests (28 files), `next build`. Not run: Playwright, the first GitHub sweep run.
+- Waiting for the user's force-push approval, then #5 is retargeted to `main`.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
