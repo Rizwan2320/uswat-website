@@ -6,7 +6,8 @@ import pg from 'pg'
 
 const PORT = Number(process.env.PORT), MODE = process.env.UV_MODE
 const ORIGIN = `http://localhost:${PORT}`
-const db = new pg.Client({ connectionString: 'postgres://postgres@127.0.0.1:5544/fp0', options: '-c search_path=identity' })
+const AUTH_BASE = process.env.AUTH_BASE || '/api/auth', PAGE = process.env.PAGE || '/', DB_NAME = process.env.DB_NAME || 'fp0'
+const db = new pg.Client({ connectionString: 'postgres://postgres@127.0.0.1:5544/' + DB_NAME, options: '-c search_path=identity' })
 await db.connect()
 const results = []
 const rec = (id, ok, note) => { results.push({ id, ok, note }); console.log(`${ok === true ? 'PASS' : ok === false ? 'FAIL' : 'INFO'} ${id}: ${note}`) }
@@ -22,10 +23,10 @@ const page = await ctx.newPage()
 const cdp = await ctx.newCDPSession(page)
 await cdp.send('WebAuthn.enable')
 const { authenticatorId } = await cdp.send('WebAuthn.addVirtualAuthenticator', { options: { protocol: 'ctap2', transport: 'internal', hasResidentKey: true, hasUserVerification: true, isUserVerified: true, automaticPresenceSimulation: true } })
-await page.goto(ORIGIN + '/')
+await page.goto(ORIGIN + PAGE)
 const call = (expr, arg) => page.evaluate(`(async()=>{ try { const r = await (${expr}); return { data: r?.data ?? null, error: r?.error ?? null } } catch(e){ return { thrown: String(e).slice(0,200) } } })()`)
 const setCookies = []
-page.on('response', async (r) => { if (r.url().includes('/api/auth/')) { const h = await r.headersArray().catch(() => []); for (const x of h) if (x.name.toLowerCase() === 'set-cookie') setCookies.push({ url: r.url().replace(ORIGIN, ''), v: x.value }) } })
+page.on('response', async (r) => { if (r.url().includes(AUTH_BASE + '/')) { const h = await r.headersArray().catch(() => []); for (const x of h) if (x.name.toLowerCase() === 'set-cookie') setCookies.push({ url: r.url().replace(ORIGIN, ''), v: x.value }) } })
 
 const stamp = Date.now()
 const u1 = { email: `a${stamp}@example.test`, name: 'Sample One', password: 'correct horse battery staple 1' }
@@ -55,7 +56,7 @@ rec('C2 passkey sign-in (UV=1)', !!sess.data?.session, short(r.error || r.thrown
 
 // D. UV=0 assertion: rewrite the options to "discouraged" so the authenticator produces UV=0
 await cdp.send('WebAuthn.setUserVerified', { authenticatorId, isUserVerified: false })
-await page.route('**/api/auth/passkey/generate-authenticate-options*', async (route) => {
+await page.route('**' + AUTH_BASE + '/passkey/generate-authenticate-options*', async (route) => {
   const resp = await route.fetch(); const j = await resp.json(); j.userVerification = 'discouraged'
   await route.fulfill({ response: resp, json: j })
 })
@@ -73,7 +74,7 @@ const rewriteWithUv1 = async () => { // does the "discouraged" rewrite on its ow
   rec(`D2 info: rewritten options + verified authenticator [mode=${MODE}]`, 'INFO', `session ${ss.data?.session ? 'granted' : 'refused'}; ${short(rr.error || rr.thrown || '')}`)
 }
 await rewriteWithUv1()
-await page.unroute('**/api/auth/passkey/generate-authenticate-options*')
+await page.unroute('**' + AUTH_BASE + '/passkey/generate-authenticate-options*')
 await call(`authClient.signOut()`)
 r = await call(`authClient.signIn.passkey()`)
 sess = await call(`authClient.getSession()`)
@@ -99,12 +100,12 @@ const after = await call(`authClient.getSession()`)
 rec('G5 FPR-07 revoked session is dead on the very next request', !after.data?.session, after.data?.session ? 'still valid' : 'no session on next request')
 
 // H. origin/CSRF check
-const bad = await fetch(ORIGIN + '/api/auth/sign-in/email', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'http://evil.example' }, body: JSON.stringify({ email: u1.email, password: u1.password }) })
+const bad = await fetch(ORIGIN + AUTH_BASE + '/sign-in/email', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'http://evil.example' }, body: JSON.stringify({ email: u1.email, password: u1.password }) })
 rec('H1 SES-06 cross-origin sign-in POST refused', bad.status === 403, 'status ' + bad.status)
 
 // I. AUTH-10: do responses reveal whether an email exists?
-const a = await fetch(ORIGIN + '/api/auth/sign-in/email', { method: 'POST', headers: { 'content-type': 'application/json', origin: ORIGIN }, body: JSON.stringify({ email: 'nobody' + stamp + '@example.test', password: 'x'.repeat(16) }) })
-const b = await fetch(ORIGIN + '/api/auth/sign-in/email', { method: 'POST', headers: { 'content-type': 'application/json', origin: ORIGIN }, body: JSON.stringify({ email: u1.email, password: 'x'.repeat(16) }) })
+const a = await fetch(ORIGIN + AUTH_BASE + '/sign-in/email', { method: 'POST', headers: { 'content-type': 'application/json', origin: ORIGIN }, body: JSON.stringify({ email: 'nobody' + stamp + '@example.test', password: 'x'.repeat(16) }) })
+const b = await fetch(ORIGIN + AUTH_BASE + '/sign-in/email', { method: 'POST', headers: { 'content-type': 'application/json', origin: ORIGIN }, body: JSON.stringify({ email: u1.email, password: 'x'.repeat(16) }) })
 const [at, bt] = [await a.text(), await b.text()]
 rec('I1 AUTH-10 unknown email and wrong password look the same', a.status === b.status && at === bt, `unknown: ${a.status} ${at.slice(0, 90)} | wrong pw: ${b.status} ${bt.slice(0, 90)}`)
 
@@ -148,7 +149,10 @@ rec('F5 AUTH-05 regenerating invalidates the old set', !!regen.data?.backupCodes
 
 // J. where did the tables go?
 const t = await db.query(`select table_schema, table_name from information_schema.tables where table_schema in ('identity','public') order by 1,2`)
-rec('J1 identity tables live only in schema identity', t.rows.every(x => x.table_schema === 'identity') && t.rows.length >= 6, t.rows.map(x => x.table_schema + '.' + x.table_name).join(', '))
+const names = ['user','session','account','verification','passkey','twoFactor']
+const inIdentity = t.rows.filter(x => x.table_schema === 'identity').map(x => x.table_name)
+const strayInPublic = t.rows.filter(x => x.table_schema === 'public' && names.includes(x.table_name)).map(x => x.table_name)
+rec('J1 the six identity tables live in schema identity and none of those names exist in public', names.every(n => inIdentity.includes(n)) && strayInPublic.length === 0, `identity: ${inIdentity.sort().join(', ')}; public tables in this database: ${t.rows.filter(x => x.table_schema === 'public').length}; stray: ${strayInPublic.join(',') || 'none'}`)
 
-fs.writeFileSync(`out/results-${MODE}.json`, JSON.stringify(results, null, 2))
+fs.writeFileSync(`out/results-${process.env.TAG || MODE}.json`, JSON.stringify(results, null, 2))
 await browser.close(); await db.end()

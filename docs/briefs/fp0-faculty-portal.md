@@ -72,7 +72,7 @@ Also agreed in principle with the P3 proposal: one content-service write functio
 - **Where it runs:** locally and in CI against a throwaway PostgreSQL. On Neon only from the portal deployment's own build step or by the owner, never from this sandbox (which cannot reach Neon, see P1-d) and never from the existing project's build, which would run the CMS migration step (ADR-0005).
 - **Rollback:** the `down` drops the `identity` schema objects it created and nothing else; proven up, down, up on a fresh database with an identical schema dump, as for P3a. One migration per PR holds.
 - **Database role:** the portal gets its own connection string and role with rights on `identity` and `portal` only, plus access to CMS content through the content service, not through table grants.
-- **Unknown, to be tested (prediction FP0-d):** whether Payload's `migrate:create` and `migrate` ignore a second schema in the same database.
+- **Tested (prediction FP0-d, 2026-11-10):** Payload's `migrate:create`, `migrate`, `migrate:down` and `migrate:fresh` ignore a second schema in the same database and leave it intact. Caveat: they never recreate it, so a dev reset and CI must also run the identity SQL (`docs/evidence/FP0/identity-up.sql`). Evidence: `docs/evidence/FP0/spike-report.md`.
 
 ## Questions that remain for the owner
 Only inputs only the owner has: written DCST approval for the portal and for consenting faculty in the demo (Q5), and whether the university has Microsoft 365 or Google Workspace (Q2).
