@@ -125,9 +125,16 @@ Updated: 2026-11-09 (Mon) PKT
 - Prediction P3d-a recorded with its actual.
 - Faculty portal agent acknowledged (2026-11-10). Interface note for the P3 lane: `docs/briefs/p3-fp-interface.md` (what P3 provides, the People fields and `faculty` origin planned in one later migration, proposed rules for portal writes, questions back). P3 does not edit the FP lane, and P3 ADR numbers stay at 0012 to 0019.
 
+## PR #3 and #4 merged (2026-11-11)
+- #3 (slice 3c) merged as `dcf00bf` through integration PR #9; #4 (follow-ups) merged through integration PR #10; both ran CI on the exact merged result. The P3 agent's fixes were checked in the code: one hourly cadence setting (`LIFECYCLE_CRON`, tied to the workflow by a test), `jobs.access.run` limited to platform admin and site manager, constant-time secret compare, media updates limited to approver and above, runbook note on the 60-day rule.
+- Production READY on `dcf00bf`, `/readyz` ok. The owner has set `CRON_SECRET` and `LIFECYCLE_BASE_URL`, so the hourly sweep calls production from now on (first run at 17 past the hour; check the Actions tab).
+- CI caught a flaky test helper on the merged result: `uniq()` could repeat across parallel workers (same millisecond), giving "email must be unique". Fixed in `tests/helpers/governance.ts` with a random suffix; diagnosed from the log, not reproduced locally.
+- Not run: the sweep workflow on GitHub (first scheduled run pending), the anonymous refusal on the live job endpoint (the fetch tool could not make that call; covered by unit and integration tests), Playwright admin flows.
+- Open: stack #5 (3d) -> #7 (3e) -> #11 (3f); #5's base must move to `main` and the stack be rebased. Review of #5 next. Two finished integration branches (`merge/p3b-into-main`, `merge/p3c-into-main`, `merge/p3-followups-into-main`) could not be deleted through the proxy; delete them on GitHub.
+
 ## Next step
-1. Main agent: merge `p2/g2-closeout` after CI, verify production, then P2 is closed except the owner items above.
-2. Main agent: when the P3 agent's fixes land on PR #3, merge #3 then #4; review PR #5 (slice 3d) and `p3/faculty-portal-spec`.
+1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
+2. Main agent: review PR #5 (slice 3d, its migration is already on the live database), then #7 and #11, and `p3/faculty-portal-spec`.
 3. Owner decisions waiting: (a) seed clearly labelled "Sample" news items and one page into the demo database so `/posts` and the templates show real layouts live; (b) go to create a separate Neon branch for previews (finding above); (c) written DCST confirmation, real address, deadline and stats values; (d) turn Vercel Deployment Protection off before judges; rotate the Neon password.
 4. Then P4 (content), with the Urdu text supplied and reviewed.
 
