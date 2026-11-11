@@ -18,6 +18,7 @@ import {
   governanceBeforeOperation,
   type GovernanceOptions,
 } from './hooks'
+import { publishGuard } from './mediaGuard'
 import { notifyNewDraft } from './notify'
 import {
   ORIGINS,
@@ -187,6 +188,7 @@ export function withGovernance<T extends CollectionConfig>(
       beforeOperation: [governanceBeforeOperation, ...(config.hooks?.beforeOperation ?? [])],
       beforeChange: [
         governanceBeforeChange(contentFields, options),
+        publishGuard,
         ...(config.hooks?.beforeChange ?? []),
       ],
       afterChange: [...(config.hooks?.afterChange ?? []), notifyNewDraft],

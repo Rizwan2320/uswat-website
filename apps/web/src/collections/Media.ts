@@ -10,6 +10,12 @@ import { fileURLToPath } from 'url'
 
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
+import { mediaBeforeChange } from '../governance/mediaGuard'
+import {
+  MEDIA_MIME_TYPES,
+  RIGHTS_LABELS,
+  RIGHTS_STATUSES,
+} from '../governance/mediaRules'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -23,11 +29,51 @@ export const Media: CollectionConfig = {
     read: anyone,
     update: authenticated,
   },
+  hooks: { beforeChange: [mediaBeforeChange] },
   fields: [
     {
       name: 'alt',
       type: 'text',
-      //required: true,
+      admin: {
+        description:
+          'Describe what the image shows, for people who cannot see it. Required when a person uploads. Images brought in by the importer start empty and appear in the needs-alt list.',
+      },
+    },
+    {
+      name: 'credit',
+      type: 'text',
+      admin: { description: 'Photographer or source line shown with the image.' },
+    },
+    {
+      name: 'rightsStatus',
+      label: 'Rights',
+      type: 'select',
+      defaultValue: 'unknown',
+      index: true,
+      options: RIGHTS_STATUSES.map((value) => ({ value, label: RIGHTS_LABELS[value] })),
+      admin: {
+        description:
+          'An image with unknown rights cannot appear on a published page. Only an approver or administrator can change this.',
+      },
+    },
+    {
+      name: 'sourceUrl',
+      label: 'Source URL',
+      type: 'text',
+      admin: { description: 'Where the file came from (a URL or a named document).' },
+    },
+    {
+      name: 'sourcePage',
+      label: 'Source page',
+      type: 'text',
+      admin: { description: 'The page the image was found on, if it was imported.' },
+    },
+    {
+      name: 'sha256',
+      label: 'SHA-256',
+      type: 'text',
+      unique: true,
+      admin: { readOnly: true, description: 'Set from the file. Used to stop duplicate uploads.' },
     },
     {
       name: 'caption',
@@ -43,6 +89,7 @@ export const Media: CollectionConfig = {
     // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
     staticDir: path.resolve(dirname, '../../public/media'),
     adminThumbnail: 'thumbnail',
+    mimeTypes: [...MEDIA_MIME_TYPES],
     focalPoint: true,
     imageSizes: [
       {

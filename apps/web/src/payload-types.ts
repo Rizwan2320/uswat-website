@@ -390,7 +390,30 @@ export interface Post {
  */
 export interface Media {
   id: number;
+  /**
+   * Describe what the image shows, for people who cannot see it. Required when a person uploads. Images brought in by the importer start empty and appear in the needs-alt list.
+   */
   alt?: string | null;
+  /**
+   * Photographer or source line shown with the image.
+   */
+  credit?: string | null;
+  /**
+   * An image with unknown rights cannot appear on a published page. Only an approver or administrator can change this.
+   */
+  rightsStatus?: ('owned' | 'permission_granted' | 'permission_pending' | 'licensed' | 'unknown') | null;
+  /**
+   * Where the file came from (a URL or a named document).
+   */
+  sourceUrl?: string | null;
+  /**
+   * The page the image was found on, if it was imported.
+   */
+  sourcePage?: string | null;
+  /**
+   * Set from the file. Used to stop duplicate uploads.
+   */
+  sha256?: string | null;
   caption?: {
     root: {
       type: string;
@@ -2538,6 +2561,11 @@ export interface PostsSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  credit?: T;
+  rightsStatus?: T;
+  sourceUrl?: T;
+  sourcePage?: T;
+  sha256?: T;
   caption?: T;
   folder?: T;
   updatedAt?: T;
