@@ -41,20 +41,26 @@ export function generateRecoveryCodes(): { codes: string[]; records: RecoveryRec
   return { codes, records }
 }
 
-export type ConsumeResult =
-  | { ok: true; records: RecoveryRecord[]; remaining: number }
-  | { ok: false }
-
-/** Returns new records on success and never mutates the input. Checks every record, so timing does not show which one matched. */
-export function verifyAndConsume(records: RecoveryRecord[], input: string, now: number): ConsumeResult {
+/** Index of the unused record matching the input, or -1. Checks every record, so timing does not show which one matched. */
+export function matchRecoveryCode(records: RecoveryRecord[], input: string): number {
   const code = normaliseRecoveryCode(input)
-  if (code.length !== CODE_LENGTH) return { ok: false }
+  if (code.length !== CODE_LENGTH) return -1
   let matched = -1
   records.forEach((r, i) => {
     const a = Buffer.from(hashCode(r.salt, code), 'hex')
     const b = Buffer.from(r.hash, 'hex')
     if (a.length === b.length && timingSafeEqual(a, b) && r.usedAt === null && matched === -1) matched = i
   })
+  return matched
+}
+
+export type ConsumeResult =
+  | { ok: true; records: RecoveryRecord[]; remaining: number }
+  | { ok: false }
+
+/** Returns new records on success and never mutates the input. */
+export function verifyAndConsume(records: RecoveryRecord[], input: string, now: number): ConsumeResult {
+  const matched = matchRecoveryCode(records, input)
   if (matched === -1) return { ok: false }
   const next = records.map((r, i) => (i === matched ? { ...r, usedAt: now } : r))
   return { ok: true, records: next, remaining: next.filter((r) => r.usedAt === null).length }

@@ -36,6 +36,9 @@ describe('classifyPath', () => {
     [`${AUTH_BASE}/passkey/generate-authenticate-options`, 'public'],
     [`${AUTH_BASE}/passkey/verify-authentication`, 'public'],
     [`${AUTH_BASE}/two-factor/verify-totp`, 'public'],
+    [`${AUTH_BASE}/recovery/sign-in`, 'public'],
+    // Issuing codes needs a strong session and a registered factor: no allow-list entry, so class 'portal'.
+    [`${AUTH_BASE}/recovery/issue`, 'portal'],
     ['/portal/enrol', 'enrolment'],
     [`${AUTH_BASE}/passkey/generate-register-options`, 'enrolment'],
     [`${AUTH_BASE}/passkey/verify-registration`, 'enrolment'],

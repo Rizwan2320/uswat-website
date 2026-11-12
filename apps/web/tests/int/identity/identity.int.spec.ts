@@ -12,6 +12,7 @@ import { totpAt } from '../../helpers/totp'
 import { readPortalConfig } from '@/modules/identity/config'
 import { createPortalAuth, type PortalAuth } from '@/modules/identity/auth'
 import { createPgAssuranceStore } from '@/modules/identity/assuranceStore'
+import { createPgRecoveryStore } from '@/modules/identity/recoveryStore'
 import { closeIdentityPool, getIdentityPool } from '@/modules/identity/db'
 import { loadFactors } from '@/modules/identity/factors'
 import { createAuthHandlers, type AuthLike } from '@/modules/identity/handlers'
@@ -53,7 +54,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -253,5 +254,137 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
     const add = await call(jar, 'POST', '/two-factor/enable', { password: PASSWORD })
     expect(add.status).toBe(403)
     expect(await add.json()).toMatchObject({ redirectTo: '/portal/sign-in' })
+  })
+  // --- FP-3: recovery codes issued and accepted (AUTH-05, PJ3) ---------------------------------
+
+  async function makeEnrolledUser(label: string) {
+    const addr = `${label}-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.test`
+    await auth.api.signUpEmail({ body: { email: addr, password: PASSWORD, name: 'Sample Recovery' } })
+    const jar = new Jar()
+    await call(jar, 'POST', '/sign-in/email', { email: addr, password: PASSWORD })
+    const enable = await call(jar, 'POST', '/two-factor/enable', { password: PASSWORD })
+    const totpSecret = new URL(((await enable.json()) as { totpURI: string }).totpURI).searchParams.get('secret') ?? ''
+    const confirm = await call(jar, 'POST', '/two-factor/verify-totp', { code: totpAt(totpSecret, Date.now()) })
+    expect(confirm.status).toBe(200)
+    return { addr, jar }
+  }
+  const issue = async (jar: Jar) => {
+    const res = await call(jar, 'POST', '/recovery/issue', {})
+    return { res, codes: res.status === 200 ? ((await res.json()) as { codes: string[] }).codes : [] }
+  }
+  const recoverySignIn = (jar: Jar, addr: string, code: string, password = PASSWORD) =>
+    call(jar, 'POST', '/recovery/sign-in', { email: addr, password, code })
+  async function sql<T extends Record<string, unknown>>(text: string, params: unknown[] = []) {
+    const c = new pg.Client({ connectionString: DB })
+    await c.connect()
+    try {
+      return (await c.query<T>(text, params)).rows
+    } finally {
+      await c.end()
+    }
+  }
+
+  it('AUTH-05: issuing needs a session made with a second factor; it returns ten codes once and stores hashes only', async () => {
+    const weakUser = `weak-${Date.now()}@example.test`
+    await auth.api.signUpEmail({ body: { email: weakUser, password: PASSWORD, name: 'Sample Weak' } })
+    const weakJar = new Jar()
+    await call(weakJar, 'POST', '/sign-in/email', { email: weakUser, password: PASSWORD })
+    expect((await call(weakJar, 'POST', '/recovery/issue', {})).status).toBe(403)
+
+    const { addr, jar } = await makeEnrolledUser('issue')
+    const { res, codes } = await issue(jar)
+    expect(res.status).toBe(200)
+    expect(res.headers.get('cache-control')).toBe('no-store')
+    expect(codes).toHaveLength(10)
+    for (const c of codes) expect(c).toMatch(/^[A-HJ-NP-Z2-9]{5}-[A-HJ-NP-Z2-9]{5}$/)
+    const rows = await sql<{ salt: string; hash: string; usedAt: Date | null }>(
+      `select r."salt", r."hash", r."usedAt" from identity.recovery_code r join identity."user" u on u."id" = r."userId" where u."email" = $1`,
+      [addr],
+    )
+    expect(rows).toHaveLength(10)
+    const dump = JSON.stringify(rows)
+    for (const c of codes) expect(dump).not.toContain(c.replace('-', ''))
+    for (const r of rows) expect(r.hash).toMatch(/^[0-9a-f]{64}$/)
+  })
+
+  it('PJ3: lost device, recovery code, new session; every old session is dead; the code works once; regenerating invalidates the rest', async () => {
+    const { addr, jar: oldJar } = await makeEnrolledUser('pj3')
+    const { codes } = await issue(oldJar)
+    expect((await call(oldJar, 'GET', '/get-session')).status).toBe(200)
+
+    const fresh = new Jar()
+    const ok = await recoverySignIn(fresh, addr, codes[0]!)
+    expect(ok.status).toBe(200)
+    expect(fresh.header()).toContain('__Host-portal.session_token')
+    expect(await ok.json()).toMatchObject({ remaining: 9 })
+
+    expect((await call(oldJar, 'GET', '/get-session')).status).toBe(401)
+    expect((await call(fresh, 'GET', '/get-session')).status).toBe(200)
+    // The new session was made with a recovery code, so it counts as strong: the portal is open to it.
+    expect((await call(fresh, 'GET', '/passkey/list-user-passkeys')).status).toBe(200)
+
+    expect((await recoverySignIn(new Jar(), addr, codes[0]!)).status).toBe(401)
+
+    const regenerated = await issue(fresh)
+    expect(regenerated.codes).toHaveLength(10)
+    expect((await recoverySignIn(new Jar(), addr, codes[1]!)).status).toBe(401)
+    expect((await recoverySignIn(new Jar(), addr, regenerated.codes[0]!)).status).toBe(200)
+  })
+
+  it('AUTH-10: an unknown email, a wrong password and a wrong code are refused identically', async () => {
+    const { addr, jar } = await makeEnrolledUser('uniform')
+    const { codes } = await issue(jar)
+    const bodies: string[] = []
+    for (const [email, password, code] of [
+      [`nobody-${Date.now()}@example.test`, PASSWORD, codes[0]!],
+      [addr, 'a different long password 2', codes[0]!],
+      [addr, PASSWORD, 'AAAAA-AAAAA'],
+    ] as const) {
+      const res = await recoverySignIn(new Jar(), email, code, password)
+      expect(res.status).toBe(401)
+      bodies.push(await res.text())
+    }
+    expect(new Set(bodies).size).toBe(1)
+  })
+
+  it('a right code with a wrong password is refused and the code is not spent', async () => {
+    const { addr, jar } = await makeEnrolledUser('wrongpw')
+    const { codes } = await issue(jar)
+    expect((await recoverySignIn(new Jar(), addr, codes[0]!, 'a different long password 2')).status).toBe(401)
+    const left = await sql<{ n: string }>(
+      `select count(*)::text as n from identity.recovery_code r join identity."user" u on u."id" = r."userId" where u."email" = $1 and r."usedAt" is null`,
+      [addr],
+    )
+    expect(left[0]!.n).toBe('10')
+    expect((await recoverySignIn(new Jar(), addr, codes[0]!)).status).toBe(200)
+  })
+
+  it('locks the account after five wrong codes: even a right code is refused, with the same answer', async () => {
+    const { addr, jar } = await makeEnrolledUser('lock')
+    const { codes } = await issue(jar)
+    for (let i = 0; i < 5; i++) expect((await recoverySignIn(new Jar(), addr, 'AAAAA-AAAAA')).status).toBe(401)
+    const locked = await recoverySignIn(new Jar(), addr, codes[0]!)
+    expect(locked.status).toBe(401)
+    const rows = await sql<{ failures: number }>(
+      `select a."failures" from identity.recovery_attempt a join identity."user" u on u."id" = a."userId" where u."email" = $1`,
+      [addr],
+    )
+    expect(rows[0]!.failures).toBeGreaterThanOrEqual(5)
+  })
+  it('two simultaneous sign-ins with the same code: exactly one succeeds', async () => {
+    const { addr, jar } = await makeEnrolledUser('race')
+    const { codes } = await issue(jar)
+    const results = await Promise.all([0, 1, 2].map(() => recoverySignIn(new Jar(), addr, codes[0]!)))
+    expect(results.map((r) => r.status).sort()).toEqual([200, 401, 401])
+  })
+  it('the store spends a code in one conditional statement: five simultaneous spends, exactly one wins', async () => {
+    const { addr, jar } = await makeEnrolledUser('spend')
+    await issue(jar)
+    const pool = getIdentityPool(readPortalConfig(env).enabled ? (env.PORTAL_DATABASE_URL as string) : '')
+    const store = createPgRecoveryStore(pool)
+    const [u] = await sql<{ id: string }>(`select "id" from identity."user" where "email" = $1`, [addr])
+    const rows = await store.list(u!.id)
+    const wins = await Promise.all(Array.from({ length: 5 }, () => store.consume(rows[0]!.id, Date.now())))
+    expect(wins.filter(Boolean)).toHaveLength(1)
   })
 })

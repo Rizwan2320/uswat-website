@@ -39,6 +39,8 @@ const PUBLIC = new Set<string>([
   `${AUTH_BASE}/passkey/verify-authentication`,
   // Mid sign-in, before a session exists. The library checks its own signed two-factor cookie.
   `${AUTH_BASE}/two-factor/verify-totp`,
+  // Lost device: password and recovery code in one call; it checks both itself (./recoveryPlugin).
+  `${AUTH_BASE}/recovery/sign-in`,
 ])
 
 const ENROLMENT = new Set<string>([
