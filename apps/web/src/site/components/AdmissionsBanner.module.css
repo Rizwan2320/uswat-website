@@ -2,7 +2,7 @@
 .bar {
   display: grid; grid-template-columns: 1.45fr 1fr auto; align-items: center; gap: 0;
   padding: 14px 28px; border-radius: 16px; background: var(--forest); color: var(--ivory);
-  box-shadow: 0 12px 28px rgba(0, 42, 16, 0.24);
+  box-shadow: 0 12px 28px rgb(var(--shadow-rgb) / 0.24);
 }
 .zone { display: flex; align-items: center; gap: 14px; padding-inline-end: 22px; }
 .mid { padding-inline: 22px; border-inline-start: 1px solid rgb(252 250 244 / 0.3); }
