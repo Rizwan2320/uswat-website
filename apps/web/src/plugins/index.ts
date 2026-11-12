@@ -7,6 +7,7 @@ import { Plugin } from 'payload'
 import { revalidateRedirects } from '@/hooks/revalidateRedirects'
 import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
+import { hiddenFromEditors } from '@/governance/adminMenu'
 import { searchFields } from '@/search/fieldOverrides'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
 
@@ -33,6 +34,7 @@ export const plugins: Plugin[] = [
     // Every public content type that can be the target of an old address (MIG-02).
     collections: REDIRECT_TARGETS,
     overrides: {
+      admin: { hidden: hiddenFromEditors },
       // @ts-expect-error - This is a valid override, mapped fields don't resolve to the same type
       fields: ({ defaultFields }) => {
         return defaultFields.map((field) => {
@@ -71,7 +73,9 @@ export const plugins: Plugin[] = [
     fields: {
       payment: false,
     },
+    formSubmissionOverrides: { admin: { hidden: hiddenFromEditors } },
     formOverrides: {
+      admin: { hidden: hiddenFromEditors },
       fields: ({ defaultFields }) => {
         return defaultFields.map((field) => {
           if ('name' in field && field.name === 'confirmationMessage') {
@@ -98,6 +102,7 @@ export const plugins: Plugin[] = [
     collections: SEARCH_COLLECTIONS,
     beforeSync: beforeSyncWithSearch,
     searchOverrides: {
+      admin: { hidden: hiddenFromEditors },
       fields: ({ defaultFields }) => {
         return [...defaultFields, ...searchFields]
       },

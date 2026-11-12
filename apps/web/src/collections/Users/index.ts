@@ -2,6 +2,7 @@ import { APIError, type CollectionConfig, type PayloadRequest } from 'payload'
 
 import { auditAfterLogin } from '../../governance/audit'
 import { isPlatformAdmin } from '../../governance/access'
+import { hiddenFromEditors } from '../../governance/adminMenu'
 import { actorFromRequest, normalizeOffice, ROLE_LABELS, ROLES } from '../../governance/roles'
 
 const lastAdminError = () =>
@@ -54,6 +55,8 @@ export const Users: CollectionConfig = {
     defaultColumns: ['name', 'email', 'role'],
     useAsTitle: 'name',
     group: 'Administration',
+    // Everyone can still reach their own account from the avatar at the top right.
+    hidden: hiddenFromEditors,
   },
   auth: true,
   fields: [
