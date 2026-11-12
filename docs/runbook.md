@@ -28,7 +28,7 @@ Called **hourly** by `.github/workflows/lifecycle-sweep.yml` (it calls `handle-s
 
 ## Admin flow tests in a browser (editor and approver)
 
-`apps/web/tests/e2e/editor-flows.e2e.spec.ts` drives the real admin for the CMS-15 tasks. It is not part of CI yet. To run it against a local database:
+`apps/web/tests/e2e/editor-flows.e2e.spec.ts` and `role-views.e2e.spec.ts` drive the real admin for the CMS-15 tasks and for what each role sees. They run in CI as the separate `admin-e2e` workflow (`.github/workflows/admin-e2e.yml`), and by hand as below. To run it against a local database:
 
 1. Start PostgreSQL, run `pnpm payload migrate`, then `pnpm build` and `pnpm exec next start -p 3000` with `DATABASE_URL` set.
 2. `pnpm payload run tests/e2e/support/setup.ts` (creates an editor, an approver, an admin and one live page; writes `/tmp/uswat-e2e/fixtures.json`).
