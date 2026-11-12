@@ -215,6 +215,12 @@ Updated: 2026-11-09 (Mon) PKT
   2. Someone who knows the password can lock the account's recovery for 15 minutes by guessing codes wrongly five times.
   3. A wrong password skips the code lookup, so the failure kinds may differ slightly in timing. Not measured (listed as not run in the PR).
 
+## Draft leak on public pages fixed (2026-11-12, branch `fix/draft-leak`, main agent)
+- Found by the P3 agent in PR #32 (their prediction P3l-a and P3l-b, probed with real requests): the public page routes `(site)/(cms)/[slug]` and `posts/[slug]` read with `overrideAccess: draft`, so anyone holding the draft-mode cookie, including a person who had since logged out, saw the newest draft of any page, and a Finance editor could see a Registrar draft. Those two files are in the main agent's lane, so the fix was handed over as a patch.
+- Applied now, without waiting for the rest of the P3 stack: only `src/governance/preview.ts`, its integration test (`tests/int/preview.int.spec.ts`) and the patch (kept at `docs/handover/p3l-preview-read.patch`) from PR #32. Authored by the P3 agent; when PR #32 is rebased onto `main` these files will already be there, so they should drop them from that PR. New source guard `tests/unit/preview-guard.unit.spec.ts` fails if a public page reads with an override tied to draft mode.
+- Prediction M-1 has the actuals. Not run: an HTTP probe on a deployment of `main`.
+- Still open from #32 (their list, not changed here): the preview link carries `PREVIEW_SECRET` in its address (rotate it if it was ever shared); no preview for notices, events, jobs and tenders until those pages exist (agent 4).
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
