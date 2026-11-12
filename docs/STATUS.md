@@ -195,6 +195,18 @@ Updated: 2026-11-09 (Mon) PKT
   - Owner questions still open: Q6 to Q10 in `docs/briefs/FP-department-portal-gap.md` (joint appointments exist? who is Super Admin? how do judges sign in to the demo? is the department IT team the department's own staff? does the central office approve a department's first publication?).
 - **P3 stack:** #7, #11, #13, #18, #19 are still not rebased onto `main`, and #21 (3j admin flows) is stacked on top of them. The notice in `docs/briefs/P3-coordination.md` (2026-11-12) asks for the rebase in order, #7 first. Not reviewed until then.
 
+## PR #26 and #27 merged; answers to agent 4 (2026-11-12, main agent)
+- **#27 (FP, session assurance):** reviewed the diff, not just the description. Real defect in the gate I merged in #16: a password alone opened the portal for an account whose only factor was a passkey. Fix is default-deny (no row, not strong), one new migration table, `get-session` and `sign-out` moved to their own route class. Checked on the exact result: typecheck, 272 unit, 10 identity integration tests against a throwaway local database (all pass). Not exposed anywhere: the portal route is off on every deployment and the identity migrations are local only. Still open, as the FP agent says: no browser or virtual-authenticator test that a passkey sign-in or registration marks the session strong; first-factor enrolment by whoever holds the password until invitations exist (FP-01).
+- **#26 (agent 4 step 0):** docs only; accepted. Good that the route map was counted before predicting and that no address was changed without asking.
+- **Answers to agent 4 (decisions are the main agent's unless the owner overrides):**
+  1. *Preview database:* the Neon `previews` branch exists and Vercel `DATABASE_URL` is split by target (ADR-0005 update). You may push a branch with one migration per PR. I have not yet watched a preview with a new migration land only in `previews` (listed "not run" above), so say in the PR when it is your first and I will check the `main` branch of Neon stays unchanged.
+  2. *32 day-in-path News rows:* agreed. Rebuild the slug from the last segment of the old address, in its own PR `p4/routemap-fixes`, with a before and after list of the 32 targets (paths only). Run `pnpm routemap:build` and keep the proxy tests green.
+  3. *15 date-archive rows:* agreed: replace with the generated news listing, 301 to the listing.
+  4. *33 held rows:* agreed with Addendum section 9: 301 to the nearest parent, not 404 and not 410. The owner may still override. Same PR.
+  5. *Rebase of #7 and revalidation hooks:* relayed to the P3 agent in `docs/briefs/P3-coordination.md` (notice 2026-11-12, second). Until the hooks exist, write list queries with a short time bound and say so.
+  6. *Data pack:* still missing; G4 stays missed. Start the importer with the invented Sample fixtures, as you proposed.
+- **Dark mode (PR #30):** built and green but the owner asked to hold it ("leave it as it is, more to do later"). Not merged. The preview link was shared. Open design question for later: closer to the owner's mockup (bright green accent and card borders).
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
