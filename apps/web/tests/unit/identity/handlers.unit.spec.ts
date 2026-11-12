@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { AUTH_BASE, type FactorState } from '@/modules/identity/gate'
 import { createAuthHandlers, type AuthLike } from '@/modules/identity/handlers'
+import { createMemoryThrottleStore, createSignInThrottle } from '@/modules/identity/signInThrottle'
 
 const env = {
   PORTAL_ENABLED: 'true',
@@ -13,7 +14,7 @@ const noFactor: FactorState = { passkeys: 0, totpVerified: false, recoveryCodesR
 const withPasskey: FactorState = { passkeys: 1, totpVerified: false, recoveryCodesRemaining: 10 }
 
 function setup(opts: { env?: Record<string, string | undefined>; session?: boolean; factors?: FactorState | 'throw'; strong?: boolean | 'throw'; createdMsAgo?: number; updatedMsAgo?: number } = {}) {
-  const libHandler = vi.fn(async () => new Response('library', { status: 200 }))
+  const libHandler = vi.fn(async (_req: Request) => new Response('library', { status: 200 }))
   const getSession = vi.fn(async () => (opts.session ? { user: { id: 'u1' }, session: { id: 's1', createdAt: new Date(Date.now() - (opts.createdMsAgo ?? 60_000)), updatedAt: new Date(Date.now() - (opts.updatedMsAgo ?? 1_000)) } } : null))
   const auth: AuthLike = { handler: libHandler, api: { getSession } }
   const getAuth = vi.fn(() => auth)
@@ -27,8 +28,10 @@ function setup(opts: { env?: Record<string, string | undefined>; session?: boole
   })
   const endSession = vi.fn(async () => {})
   const touchSession = vi.fn(async () => {})
-  const h = createAuthHandlers({ env: opts.env ?? env, getAuth, loadFactors, isStrongSession, endSession, touchSession })
-  return { h, libHandler, getSession, getAuth, loadFactors, isStrongSession, endSession, touchSession }
+  const store = createMemoryThrottleStore()
+  const signInThrottle = createSignInThrottle({ store })
+  const h = createAuthHandlers({ env: opts.env ?? env, getAuth, loadFactors, isStrongSession, endSession, touchSession, signInThrottle })
+  return { h, libHandler, getSession, getAuth, loadFactors, isStrongSession, endSession, touchSession, signInThrottle, store }
 }
 const req = (path: string, method = 'GET') => new Request(`https://portal.uswat.edu.pk${path}`, { method })
 
@@ -204,5 +207,99 @@ describe('portal auth route handlers', () => {
     const s = setup({ session: true, updatedMsAgo: 31 * 60_000 })
     expect((await s.h.POST(req(`${AUTH_BASE}/sign-in/email`, 'POST'))).status).toBe(200)
     expect(s.endSession).not.toHaveBeenCalled()
+  })
+
+  // --- FP-5: progressive delay on password sign-in (ABU-01) ---
+  const signIn = (email: string, ip = '203.0.113.7') =>
+    new Request(`https://portal.uswat.edu.pk${AUTH_BASE}/sign-in/email`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-real-ip': ip },
+      body: JSON.stringify({ email, password: 'whatever password' }),
+    })
+
+  it('ABU-01: counts library 401s, then answers 429 with Retry-After and does not call the library during the wait', async () => {
+    const s = setup()
+    s.libHandler.mockImplementation(async () => new Response('{}', { status: 401 }))
+    for (let i = 0; i < 4; i++) expect((await s.h.POST(signIn('a@example.test'))).status).toBe(401)
+    const calls = s.libHandler.mock.calls.length
+    const res = await s.h.POST(signIn('a@example.test'))
+    expect(res.status).toBe(429)
+    expect(Number(res.headers.get('retry-after'))).toBeGreaterThanOrEqual(1)
+    expect(res.headers.get('cache-control')).toBe('no-store')
+    expect(s.libHandler.mock.calls.length).toBe(calls)
+  })
+
+  it('ABU-01: a right password during the wait is refused too, and a success afterwards clears the account', async () => {
+    const s = setup()
+    s.libHandler.mockImplementation(async () => new Response('{}', { status: 401 }))
+    for (let i = 0; i < 4; i++) await s.h.POST(signIn('a@example.test'))
+    s.libHandler.mockImplementation(async () => new Response('{}', { status: 200 }))
+    expect((await s.h.POST(signIn('a@example.test'))).status).toBe(429)
+    await new Promise((r) => setTimeout(r, 1_050))
+    expect((await s.h.POST(signIn('a@example.test'))).status).toBe(200)
+    s.libHandler.mockImplementation(async () => new Response('{}', { status: 401 }))
+    for (let i = 0; i < 3; i++) expect((await s.h.POST(signIn('a@example.test'))).status).toBe(401)
+  })
+
+  it('ABU-01: the 429 is the same for an unknown email as for a real one', async () => {
+    const s = setup()
+    s.libHandler.mockImplementation(async () => new Response('{}', { status: 401 }))
+    for (let i = 0; i < 4; i++) await s.h.POST(signIn('nobody@example.test'))
+    const res = await s.h.POST(signIn('nobody@example.test'))
+    expect(res.status).toBe(429)
+    expect(await res.json()).toEqual({ error: 'too many attempts, wait and try again' })
+  })
+
+  it('ABU-01: other statuses from the library (429 from its own limiter, 400, 500) are not counted as failed passwords', async () => {
+    const s = setup()
+    for (const status of [429, 400, 500]) {
+      s.libHandler.mockImplementation(async () => new Response('{}', { status }))
+      for (let i = 0; i < 6; i++) await s.h.POST(signIn(`s${status}@example.test`))
+      s.libHandler.mockImplementation(async () => new Response('{}', { status: 200 }))
+      expect((await s.h.POST(signIn(`s${status}@example.test`))).status, String(status)).toBe(200)
+    }
+  })
+
+  it('ABU-01: only password sign-in is throttled: passkey sign-in and recovery paths are untouched', async () => {
+    const s = setup()
+    s.libHandler.mockImplementation(async () => new Response('{}', { status: 401 }))
+    for (let i = 0; i < 8; i++) await s.h.POST(signIn('a@example.test'))
+    for (const p of ['/passkey/generate-authenticate-options', '/passkey/verify-authentication', '/recovery/sign-in']) {
+      const res = await s.h.POST(new Request(`https://portal.uswat.edu.pk${AUTH_BASE}${p}`, { method: 'POST', headers: { 'x-real-ip': '203.0.113.7' }, body: '{}' }))
+      expect(res.status, p).not.toBe(429)
+    }
+  })
+
+  it('ABU-01: a body that is not JSON is passed to the library and counts only against the address', async () => {
+    const s = setup()
+    s.libHandler.mockImplementation(async () => new Response('{}', { status: 401 }))
+    const res = await s.h.POST(new Request(`https://portal.uswat.edu.pk${AUTH_BASE}/sign-in/email`, { method: 'POST', headers: { 'x-real-ip': '198.51.100.4' }, body: 'not json' }))
+    expect(res.status).toBe(401)
+    expect(s.libHandler).toHaveBeenCalledTimes(1)
+  })
+
+  it('ABU-01: the library still receives the original body (the request was cloned, not consumed)', async () => {
+    const s = setup()
+    let seen = ''
+    s.libHandler.mockImplementation(async (r: Request) => {
+      seen = await r.text()
+      return new Response('{}', { status: 200 })
+    })
+    await s.h.POST(signIn('a@example.test'))
+    expect(JSON.parse(seen)).toMatchObject({ email: 'a@example.test' })
+  })
+
+  it('ABU-01: when the counters cannot be read the request is refused, not waved through', async () => {
+    const s = setup()
+    vi.spyOn(s.store, 'get').mockRejectedValue(new Error('db down'))
+    expect((await s.h.POST(signIn('a@example.test'))).status).toBe(503)
+    expect(s.libHandler).not.toHaveBeenCalled()
+  })
+
+  it('ABU-01: when recording a failure fails, the sign-in answer is still the library answer', async () => {
+    const s = setup()
+    s.libHandler.mockImplementation(async () => new Response('{}', { status: 401 }))
+    vi.spyOn(s.store, 'recordFailure').mockRejectedValue(new Error('db down'))
+    expect((await s.h.POST(signIn('a@example.test'))).status).toBe(401)
   })
 })

@@ -14,6 +14,8 @@ import { createPortalAuth, type PortalAuth } from '@/modules/identity/auth'
 import { createPgAssuranceStore } from '@/modules/identity/assuranceStore'
 import { createPgRecoveryStore } from '@/modules/identity/recoveryStore'
 import { createPgSessionStore } from '@/modules/identity/sessionStore'
+import { createSignInThrottle } from '@/modules/identity/signInThrottle'
+import { createPgThrottleStore } from '@/modules/identity/signInThrottleStore'
 import { closeIdentityPool, getIdentityPool } from '@/modules/identity/db'
 import { loadFactors } from '@/modules/identity/factors'
 import { createAuthHandlers, type AuthLike } from '@/modules/identity/handlers'
@@ -55,7 +57,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -100,6 +102,7 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
       isStrongSession: (id) => createPgAssuranceStore(pool).isStrong(id),
       endSession: (id) => createPgSessionStore(pool).end(id),
       touchSession: (id, now) => createPgSessionStore(pool).touch(id, now),
+      signInThrottle: createSignInThrottle({ store: createPgThrottleStore(pool) }),
     })
     email = `sample-${Date.now()}@example.test`
     const created = await auth.api.signUpEmail({ body: { email, password: PASSWORD, name: 'Sample Faculty' } })
@@ -110,7 +113,10 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
     await closeIdentityPool()
   })
 
+  let jarSeq = 0
   class Jar {
+    /** Each jar is its own client address, so one test's failures never count against another's (ABU-01). */
+    readonly ip = `198.18.${Math.floor(++jarSeq / 250)}.${(jarSeq % 250) + 1}`
     private c = new Map<string, string>()
     header() {
       return [...this.c].map(([k, v]) => `${k}=${v}`).join('; ')
@@ -131,7 +137,7 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
     const res = await h[method](
       new Request(`${BASE}${path}`, {
         method,
-        headers: { 'content-type': 'application/json', origin: ORIGIN, cookie: jar.header() },
+        headers: { 'content-type': 'application/json', origin: ORIGIN, cookie: jar.header(), 'x-real-ip': jar.ip },
         body: body === undefined ? undefined : JSON.stringify(body),
       }),
     )
@@ -459,5 +465,66 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
     const old = (await sessionRow(addr))!
     await store.touch(old.id, Date.now())
     expect((await sessionRow(addr))!.updatedAt.getTime()).toBeGreaterThan(old.updatedAt.getTime())
+  })
+  // --- FP-5: progressive delay on password sign-in (ABU-01) ------------------------------------
+
+  it('ABU-01: four wrong passwords, then even the right password waits; after the wait it works and the account is cleared', async () => {
+    const { addr } = await makeEnrolledUser('delay')
+    const jar = new Jar()
+    for (let i = 0; i < 4; i++) expect((await call(jar, 'POST', '/sign-in/email', { email: addr, password: 'wrong password number ' + i })).status).toBe(401)
+    const blocked = await call(jar, 'POST', '/sign-in/email', { email: addr, password: PASSWORD })
+    expect(blocked.status).toBe(429)
+    expect(blocked.headers.get('retry-after')).toBe('1')
+    // A different address is held by the account counter too.
+    expect((await call(new Jar(), 'POST', '/sign-in/email', { email: addr, password: PASSWORD })).status).toBe(429)
+    await new Promise((r) => setTimeout(r, 1_100))
+    expect((await call(jar, 'POST', '/sign-in/email', { email: addr, password: PASSWORD })).status).toBe(200)
+    // cleared: three more failures are free again
+    for (let i = 0; i < 3; i++) expect((await call(jar, 'POST', '/sign-in/email', { email: addr, password: 'wrong again ' + i })).status).toBe(401)
+  })
+
+  it('ABU-01: no permanent lockout: the wait is bounded and passkey and recovery paths are not held by it', async () => {
+    const { addr, jar: strongJar } = await makeEnrolledUser('nolock')
+    const { codes } = await issue(strongJar)
+    const attacker = new Jar()
+    for (let i = 0; i < 6; i++) await call(attacker, 'POST', '/sign-in/email', { email: addr, password: 'guess number ' + i })
+    expect((await call(attacker, 'POST', '/sign-in/email', { email: addr, password: PASSWORD })).status).toBe(429)
+    // The account's owner can still get in with a recovery code from another address.
+    expect((await recoverySignIn(new Jar(), addr, codes[0]!)).status).toBe(200)
+    const rows = await sql<{ failures: number; lastFailureAt: Date }>(`select "failures", "lastFailureAt" from identity.signin_failure where "failures" >= 6 order by "lastFailureAt" desc limit 1`)
+    expect(rows[0]!.failures).toBeGreaterThanOrEqual(6)
+  })
+
+  it('ABU-01: the tables hold hashes only, never an email or an address', async () => {
+    const jar = new Jar()
+    const target = `hashcheck-${Date.now()}@example.test`
+    await call(jar, 'POST', '/sign-in/email', { email: target, password: 'a wrong password here' })
+    const rows = await sql<{ key: string }>(`select "key" from identity.signin_failure`)
+    expect(rows.length).toBeGreaterThan(0)
+    for (const r of rows) {
+      expect(r.key).toMatch(/^[ai]:[0-9a-f]{64}$/)
+      expect(r.key).not.toContain(target)
+      expect(r.key).not.toContain(jar.ip)
+    }
+  })
+
+  it('ABU-01: the store counts simultaneous failures: twenty at once leave a count of twenty', async () => {
+    const pool = getIdentityPool(env.PORTAL_DATABASE_URL as string)
+    const store = createPgThrottleStore(pool)
+    const key = `i:${'f'.repeat(64)}`
+    await store.reset(key)
+    await Promise.all(Array.from({ length: 20 }, () => store.recordFailure(key, Date.now())))
+    expect((await store.get(key))!.failures).toBe(20)
+  })
+
+  it('ABU-01: the store starts a new count when the last failure is older than an hour', async () => {
+    const pool = getIdentityPool(env.PORTAL_DATABASE_URL as string)
+    const store = createPgThrottleStore(pool)
+    const key = `i:${'e'.repeat(64)}`
+    await store.reset(key)
+    await store.recordFailure(key, Date.now() - 2 * 3_600_000)
+    await store.recordFailure(key, Date.now() - 2 * 3_600_000)
+    await store.recordFailure(key, Date.now())
+    expect((await store.get(key))!.failures).toBe(1)
   })
 })
