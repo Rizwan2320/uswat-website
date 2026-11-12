@@ -243,6 +243,9 @@ export interface Page {
     image?: (number | null) | Media;
     description?: string | null;
   };
+  /**
+   * The date printed on the page. It does not publish it; use "Go live on" under Ownership and approval for that.
+   */
   publishedAt?: string | null;
   /**
    * Leave ticked and the address follows the title. Untick it to type your own.
@@ -323,6 +326,9 @@ export interface Post {
     };
     [k: string]: unknown;
   };
+  /**
+   * Other posts readers may want next.
+   */
   relatedPosts?: (number | Post)[] | null;
   categories?: (number | Category)[] | null;
   /**
@@ -337,6 +343,9 @@ export interface Post {
     image?: (number | null) | Media;
     description?: string | null;
   };
+  /**
+   * The date printed on the post. It does not publish it; use "Go live on" under Ownership and approval for that.
+   */
   publishedAt?: string | null;
   authors?: (number | User)[] | null;
   populatedAuthors?:
