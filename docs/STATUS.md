@@ -256,6 +256,12 @@ Updated: 2026-11-09 (Mon) PKT
 - Known UX items for the usability test: Publish button visible to editors; lower-case office names.
 - Not run: e2e in CI, Urdu admin, mobile, CMS-15 with real staff, a scheduled item actually publishing.
 
+## P3 slice 3k (2026-11-12, branch `p3/labels-3k`, stacked on `p3/admin-flows-3j`)
+- Done: plain-language labels across all collections, a guard test, hidden internal fields, menu groups, link-safety validator on the remaining document and publication links, SEO title generator fixed. No migration. Brief: `docs/briefs/p3k-plain-language-labels.md`. Predictions P3k-a to c recorded with actuals.
+- Slip: a repo-wide formatter touched about 80 out-of-lane files; all restored before commit.
+- Not run: Urdu admin wording, real editors (CMS-15), message audit.
+- Handover to main agent: public site titles still say "Payload Website Template".
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
