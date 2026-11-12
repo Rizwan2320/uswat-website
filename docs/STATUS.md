@@ -172,6 +172,12 @@ Updated: 2026-11-09 (Mon) PKT
 - Interpretation to confirm: MIG-02 says "100% of old URLs return 301 or an explicit 410". 66 rows keep the same address and are served in place, so they are neither; that is intended.
 - Open P3 stack as of this entry: #7, #11, #13 still stacked on their old bases, and new #18 (SEO, 3h) and #19 (REST access, 3i) are stacked behind them; #16 is retargeted to `main` but the head is unchanged since my review (R1 and R2 open).
 
+## Agent 4 and navigation decision (2026-11-12, owner and main agent)
+- **Owner decision:** the navigation bar, top bar and footer keep pointing at the official website for now. Pages on this site are reachable by address only; a menu item switches to an internal page only when the owner says so for that section.
+- **Agent 4 (phases P4 and P5):** owner agreed to start a fourth agent for content import and the public site; the main agent reviews and merges, the owner and the main agent take the major decisions. Brief: `docs/briefs/p4p5-agent4.md`. Lanes: agent 4 owns the importer, seeds, public page routes, public read queries, `src/site/components/templates/**`, the route map and its generated JSON, and the swap of the `content.ts` getters for CMS reads (taken from the P3 agent's earlier assignment). The P3 agent keeps the collections, governance and migrations; the main agent keeps tokens, the shell, the kit, `next.config.ts` and `src/proxy.ts`. ADR numbers for agent 4: 0009 and 0013 to 0019.
+- **Before agent 4 pushes anything that changes data:** the separate Neon branch for previews needs the owner's go (ADR-0005 risk); the P3 stack (#7 first) needs rebasing and merging; the organized data pack is still missing, so the importer starts against invented fixtures.
+- **Open for the owner:** the 33 "hold as draft" rows whose old address redirects to a path that will answer 404.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
