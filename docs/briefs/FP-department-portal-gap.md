@@ -2,6 +2,33 @@
 
 Date 2026-11-12. From the FP agent. Source compared: the owner's attachment `University_Of_Swat_Department_Portal_Requirements.html` (called "the requirements doc" below) against Addendum C (`docs/plan/Swat_Plan_v2_Addendum_C_Faculty_Portal.md`), plan v2, the 6 Nov addendum and the code on `main` (051a9cc and later). Addendum C stays the main document. Nothing here edits it: section 6 lists proposed edits for the owner to approve. Nothing is built from this brief.
 
+## 0. Clarified intent (owner, 2026-11-12)
+The point of the requirements doc is that **every department runs its own web presence**: the **head of department (HOD)** controls it, the **department's IT team** does the day-to-day editing, and it covers both **faculty-related content** and **departmental activity** (events, news, notices, programmes, labs). The demo should show this. This is mostly CMS work, not portal work.
+
+| Person | Role in our system | Scope |
+| --- | --- | --- |
+| HOD | CMS **Approver** ("head of an office") with `offices` = the department | Approves and publishes the department's records; confirms faculty claims (Addendum C 5.6); approves low-risk profile changes |
+| Department IT team | CMS **Editor** or **Contributor** with `offices` = the department | Drafts and edits the department's records; Contributors draft only |
+| Faculty member | Portal account | Own profile, own publications, delegation |
+| Central web office | CMS **Site Manager** | University-wide pages, templates, design guardrails |
+
+**Already in the code on `main`:** those roles; office scoping (a record has an owner office, a user has offices); the draft, review, approved, published workflow in which a reviewer is an approver of the record's owner office; "nothing unverified is shown as official" (VER-01); high-impact records need an approver or admin; an audit log.
+
+**Missing for "full control" (ranked, none built):**
+| # | Gap | Proposal | Lane |
+| --- | --- | --- | --- |
+| D1 | **The HOD cannot manage their own team.** Today only the platform admin changes a user's role or offices, so every change to a department's IT team goes through the IT Directorate | Scoped user administration: an Approver may add or remove Editors and Contributors **for their own office only**, can never grant Approver or any other office, every change audited | P3 agent (Users, policy); main agent to decide |
+| D2 | **No Department record owns its page yet.** The Departments and People collections are not on `main` | Departments collection with owner office, head (HOD), faculty group and section settings (D3) | P3 agent |
+| D3 | **Section control.** "Show what they want" has no mechanism | The department chooses which sections appear (about, programmes, faculty, labs and facilities, events, news, alumni, gallery, achievements, contact) and their order, inside the template: hidden sections are not rendered; name and contact are mandatory and fixed; the design stays the central office's | main agent (T3) with P3 |
+| D4 | **Department workspace.** The editor sees all records | Lists and a dashboard pre-filtered to the user's office: drafts, in review, stale facts, pending faculty claims | P3 agent, CMS admin |
+| D5 | Faculty-related control | Already specified: HOD confirms claims, approves low-risk edits; designation and department come from a Verifier, not the HOD (FP-03) | FP agent, later |
+
+**What the HOD does not control, to say plainly in the demo:** designation and promotion fields (Verifier, FP-03); other departments; university-wide pages; the template's design.
+
+**Demo script (Sample accounts only):** (1) the IT team editor drafts a news item and an event for their department; (2) the HOD reviews and publishes; (3) the same editor tries a record of another department and is refused (403); (4) the HOD adds a new editor for their own department without the IT Directorate (needs D1); (5) the HOD switches a section off and the public page changes (needs D3). Steps 1 to 3 are possible with the roles and policy on `main` once Departments exist; 4 and 5 are not.
+
+**New questions for the owner:** Q9: is the department IT team formally the department's own staff, or central IT Directorate staff posted there? Q10: does the central office approve a department's first publication, or may the HOD publish immediately?
+
 ## 1. The main finding: the requirements doc describes two products
 | Requirements doc | What it is in our architecture |
 | --- | --- |
