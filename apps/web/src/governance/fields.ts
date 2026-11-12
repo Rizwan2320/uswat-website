@@ -71,6 +71,13 @@ export const governanceFields: Field[] = [
     label: 'Owner office',
     type: 'text',
     index: true,
+    // New records start with the person's first office. Without this the admin's first automatic
+    // draft save has no office and an editor is refused before typing anything (found in a real
+    // browser; the create page came up blank). A person with several offices can change it.
+    defaultValue: ({ user }) => {
+      const offices = (user as { offices?: unknown } | null)?.offices
+      return Array.isArray(offices) && typeof offices[0] === 'string' ? offices[0] : undefined
+    },
     admin: {
       description:
         'The office accountable for this record (for example "Registrar"). Required to publish.',
