@@ -19,7 +19,7 @@ html { scroll-behavior: smooth; }
 body { overflow-x: clip; }
 body {
   margin: 0;
-  background: var(--ivory);
+  background: var(--surface);
   color: var(--text);
   font-family: var(--stack-sans);
   line-height: 1.6;
@@ -51,17 +51,17 @@ button { font: inherit; }
 
 .section-title {
   display: flex; align-items: center; justify-content: center; gap: 20px;
-  font-family: var(--stack-serif); color: var(--forest);
+  font-family: var(--stack-serif); color: var(--ink);
   font-size: clamp(1.5rem, 2.6vw, 2rem); text-align: center; margin: 0 0 20px;
   font-weight: 600;
 }
 .section-title::before, .section-title::after { content: ''; height: 2px; flex: 1 1 40px; max-width: 160px; }
-.section-title::before { background: linear-gradient(to right, transparent, var(--maroon)); }
-.section-title::after { background: linear-gradient(to left, transparent, var(--maroon)); }
+.section-title::before { background: linear-gradient(to right, transparent, var(--mark)); }
+.section-title::after { background: linear-gradient(to left, transparent, var(--mark)); }
 
 .skip-link {
   position: absolute; inset-inline-start: 8px; top: -64px; z-index: 1000;
-  background: var(--maroon); color: var(--ivory); padding: 10px 16px; border-radius: 8px; font-weight: 600;
+  background: var(--cta); color: var(--on-cta); padding: 10px 16px; border-radius: 8px; font-weight: 600;
 }
 .skip-link:focus { top: 8px; }
 
@@ -72,7 +72,7 @@ button { font: inherit; }
 
 :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 /* On ivory the gold ring is low-contrast, so use forest there (3:1 required for focus indicators). */
-.on-light :focus-visible { outline-color: var(--forest); }
+.on-light :focus-visible { outline-color: var(--ink); }
 
 /* Pill buttons: gold fill, forest fill, outline on dark. */
 .btn {
@@ -85,16 +85,16 @@ button { font: inherit; }
 .btn--gold { background: var(--gold); color: var(--forest); }
 .btn--gold:hover { background: var(--gold-light); }
 /* Maroon fill for CTAs on light (ivory) surfaces; gold fill stays for CTAs on dark green. */
-.btn--maroon { background: var(--maroon); color: var(--ivory); }
-.btn--maroon:hover { background: var(--maroon-deep); }
-.btn--forest { background: var(--forest); color: var(--ivory); }
-.btn--forest:hover { background: var(--forest-soft); }
+.btn--maroon { background: var(--cta); color: var(--on-cta); }
+.btn--maroon:hover { background: var(--cta-hover); }
+.btn--forest { background: var(--sel); color: var(--on-sel); }
+.btn--forest:hover { background: var(--sel-hover); }
 .btn--outline-light { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .85); }
 .btn--outline-light:hover { background: rgba(255, 255, 255, .12); }
-.btn--outline-dark { background: transparent; color: var(--forest); border-color: var(--forest); }
-.btn--outline-dark:hover { background: var(--forest); color: var(--ivory); }
+.btn--outline-dark { background: transparent; color: var(--ink); border-color: var(--ink); }
+.btn--outline-dark:hover { background: var(--sel); color: var(--on-sel); }
 @media (hover: hover) and (pointer: fine) {
-  .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0, 42, 16, .22); }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgb(var(--shadow-rgb) / .22); }
   .btn:hover .btn-arrow { transform: translateX(4px); }
   [dir='rtl'] .btn:hover .btn-arrow { transform: translateX(-4px) scaleX(-1); }
 }
@@ -123,10 +123,10 @@ button { font: inherit; }
 .pop {
   position: relative;
   isolation: isolate;
-  background: var(--ivory);
+  background: var(--surface-card);
   border-radius: var(--radius);
-  border: 1px solid var(--ivory-deep);
-  box-shadow: 0 6px 18px rgba(0, 59, 23, .08);
+  border: 1px solid var(--hairline);
+  box-shadow: 0 6px 18px rgb(var(--line-rgb) / .08);
   transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease;
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -135,7 +135,7 @@ button { font: inherit; }
 /* Gold ring via pseudo-element so layout never shifts */
 .pop::before {
   content: ""; position: absolute; inset: 0; border-radius: inherit;
-  border: 2px solid var(--maroon); opacity: 0;
+  border: 2px solid var(--mark); opacity: 0;
   transition: opacity .22s ease; pointer-events: none; z-index: 2;
 }
 
@@ -144,7 +144,7 @@ button { font: inherit; }
   content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 1;
   /* The sweep moves the gradient (background-position) instead of translating the box, so it never extends past the
      card: nothing for the page to scroll to, in LTR or RTL. */
-  background: linear-gradient(115deg, transparent 35%, rgba(122, 31, 38, .07) 50%, transparent 65%) no-repeat;
+  background: linear-gradient(115deg, transparent 35%, rgb(var(--mark-rgb) / .07) 50%, transparent 65%) no-repeat;
   background-size: 300% 100%; background-position: 100% 0; opacity: 0;
 }
 
@@ -162,8 +162,8 @@ button { font: inherit; }
     transform: translateY(-8px) scale(1.03) translateZ(0);
     z-index: 5;
     box-shadow:
-      0 0 20px rgba(122, 31, 38, .20),
-      0 16px 36px rgba(0, 59, 23, .16);
+      0 0 20px rgb(var(--mark-rgb) / .20),
+      0 16px 36px rgb(var(--line-rgb) / .16);
     transition-duration: .32s;
     will-change: transform;
   }
@@ -171,20 +171,20 @@ button { font: inherit; }
   .pop:hover::after  { animation: pop-shine .6s ease forwards; }
   .pop:hover .card-icon {
     transform: scale(1.08);
-    box-shadow: 0 0 0 4px rgba(122, 31, 38, .30);
+    box-shadow: 0 0 0 4px rgb(var(--mark-rgb) / .30);
   }
   .pop:hover .card-arrow { transform: translateX(6px); }
   [dir="rtl"] .pop:hover .card-arrow { transform: translateX(-6px) scaleX(-1); }
-  .pop:hover .card-title { color: var(--forest-soft); }
+  .pop:hover .card-title { color: var(--ink-hover); }
   .pop:hover .media img  { transform: scale(1.06); }
 
   /* Row hover inside Notices / Jobs / Tenders */
   .pop .row { transition: background-color .2s ease, transform .2s ease; border-radius: 8px; }
-  .pop .row:hover { background: rgba(122, 31, 38, .07); }
+  .pop .row:hover { background: rgb(var(--mark-rgb) / .07); }
   .pop .row:hover .row-title { transform: translateX(4px); }
   [dir="rtl"] .pop .row:hover .row-title { transform: translateX(-4px); }
   .pop .row .dot { transition: transform .2s ease, background-color .2s ease; }
-  .pop .row:hover .dot { transform: scale(1.5); background: var(--maroon); }
+  .pop .row:hover .dot { transform: scale(1.5); background: var(--mark); }
   .row-title { display: inline-block; transition: transform .2s ease; }
 }
 
@@ -196,17 +196,17 @@ button { font: inherit; }
     transform: translateY(-8px) scale(1.03) translateZ(0);
     z-index: 5;
     box-shadow:
-      0 0 20px rgba(122, 31, 38, .20),
-      0 16px 36px rgba(0, 59, 23, .16);
+      0 0 20px rgb(var(--mark-rgb) / .20),
+      0 16px 36px rgb(var(--line-rgb) / .16);
   }
-  .pop:has(:focus-visible) .card-icon  { transform: scale(1.08); box-shadow: 0 0 0 4px rgba(122, 31, 38, .30); }
+  .pop:has(:focus-visible) .card-icon  { transform: scale(1.08); box-shadow: 0 0 0 4px rgb(var(--mark-rgb) / .30); }
   .pop:has(:focus-visible) .card-arrow { transform: translateX(6px); }
   [dir="rtl"] .pop:has(:focus-visible) .card-arrow { transform: translateX(-6px) scaleX(-1); }
 }
 
 /* Touch: quick press instead of a sticky hover */
 @media (hover: none) {
-  .pop:active { transform: scale(.98); box-shadow: 0 0 14px rgba(122,31,38,.20); }
+  .pop:active { transform: scale(.98); box-shadow: 0 0 14px rgb(var(--mark-rgb) / .20); }
 }
 
 @keyframes pop-shine {
@@ -224,7 +224,7 @@ button { font: inherit; }
   .pop, .pop * { transition: none !important; animation: none !important; }
   .pop:hover, .pop:focus-within { transform: none !important; }
   .pop:hover::before, .pop:focus-within::before { opacity: 1; }
-  .pop:hover { box-shadow: 0 0 14px rgba(122,31,38,.18); }
+  .pop:hover { box-shadow: 0 0 14px rgb(var(--mark-rgb) / .18); }
 }
 
 /* ===== count-up.css (skill snippet) ===== */

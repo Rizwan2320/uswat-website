@@ -17,7 +17,7 @@ export default async function Footer() {
   return (
     <footer className={styles.footer}>
       <svg className={styles.wave} viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-        <path d="M0 0h1440v22C1200 62 960 58 720 34S240 8 0 38Z" fill="var(--ivory)" />
+        <path d="M0 0h1440v22C1200 62 960 58 720 34S240 8 0 38Z" fill="var(--surface)" />
       </svg>
       <Trees className={styles.treesL} />
       <Trees className={styles.treesR} />

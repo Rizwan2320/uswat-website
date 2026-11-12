@@ -1,14 +1,14 @@
 .page { display: grid; gap: 40px; padding-block: 36px 56px; }
-.card { padding: 20px 22px; background: #fff; border: 1px solid rgb(0 59 23 / 0.07); border-radius: var(--radius); color: var(--text); box-shadow: 0 12px 16px -10px rgb(0 42 16 / 0.28), 0 3px 6px rgb(0 42 16 / 0.06); }
-.card h3 { margin: 0 0 6px; font-family: var(--stack-serif); color: var(--forest); }
+.card { padding: 20px 22px; background: var(--surface-raised); border: 1px solid rgb(var(--line-rgb) / 0.07); border-radius: var(--radius); color: var(--text); box-shadow: 0 12px 16px -10px rgb(var(--shadow-rgb) / 0.28), 0 3px 6px rgb(var(--shadow-rgb) / 0.06); }
+.card h3 { margin: 0 0 6px; font-family: var(--stack-serif); color: var(--ink); }
 .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap); padding-block: 16px; }
 .row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .onDark { display: inline-flex; padding: 10px 14px; border-radius: 999px; background: var(--forest); }
-.display { margin: 0 0 8px; font-family: var(--stack-serif); font-weight: 600; font-size: 1.8rem; line-height: 1.2; color: var(--forest); }
+.display { margin: 0 0 8px; font-family: var(--stack-serif); font-weight: 600; font-size: 1.8rem; line-height: 1.2; color: var(--ink); }
 .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
-.swatch { display: grid; gap: 2px; padding: 10px; background: #fff; border: 1px solid rgb(0 59 23 / 0.07); border-radius: 12px; font-size: 0.85rem; color: var(--text); }
-.swatch strong { color: var(--forest); }
+.swatch { display: grid; gap: 2px; padding: 10px; background: var(--surface-raised); border: 1px solid rgb(var(--line-rgb) / 0.07); border-radius: 12px; font-size: 0.85rem; color: var(--text); }
+.swatch strong { color: var(--ink); }
 /* Token names and hex values are Latin: read each as its own left-to-right run so "--gold-light" and "#FFD84D" keep their punctuation in right-to-left. */
 :global([dir='rtl']) .swatch :is(strong, code, span) { unicode-bidi: plaintext; }
-.chip { height: 44px; border-radius: 8px; border: 1px solid rgb(0 59 23 / 0.15); margin-bottom: 4px; }
+.chip { height: 44px; border-radius: 8px; border: 1px solid rgb(var(--line-rgb) / 0.15); margin-bottom: 4px; }
 @media (max-width: 767px) { .cards { grid-template-columns: 1fr; } }

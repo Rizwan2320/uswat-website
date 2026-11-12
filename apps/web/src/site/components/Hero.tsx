@@ -10,7 +10,7 @@ export default async function Hero() {
       <HeroCarousel content={content} slides={slides} />
       <svg className={styles.wave} viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true" focusable="false">
         <path d="M0 52C220 8 470 8 720 38s520 40 720-6V90H0Z" fill="var(--gold)" />
-        <path d="M0 66C240 26 480 28 720 54s500 30 720-8V90H0Z" fill="var(--ivory)" />
+        <path d="M0 66C240 26 480 28 720 54s500 30 720-8V90H0Z" fill="var(--surface)" />
       </svg>
     </section>
   )

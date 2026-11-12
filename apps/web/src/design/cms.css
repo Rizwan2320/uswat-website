@@ -46,25 +46,25 @@
 
 /* The stock colour names, pointed at the site tokens. */
 :root {
-  --background: var(--ivory);
-  --foreground: var(--forest);
-  --card: #fff;
-  --card-foreground: var(--forest);
-  --popover: #fff;
-  --popover-foreground: var(--forest);
-  --primary: var(--forest);
-  --primary-foreground: var(--ivory);
-  --secondary: var(--ivory-deep);
-  --secondary-foreground: var(--forest);
-  --muted: var(--ivory-deep);
-  --muted-foreground: rgb(0 59 23 / 0.78);
-  --accent: var(--ivory-deep);
-  --accent-foreground: var(--forest);
-  --destructive: var(--maroon);
-  --destructive-foreground: var(--ivory);
-  --border: rgb(0 59 23 / 0.16);
-  --input: rgb(0 59 23 / 0.3);
-  --ring: var(--forest-soft);
+  --background: var(--surface);
+  --foreground: var(--ink);
+  --card: var(--surface-raised);
+  --card-foreground: var(--ink);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--ink);
+  --primary: var(--sel);
+  --primary-foreground: var(--on-sel);
+  --secondary: var(--surface-alt);
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface-alt);
+  --muted-foreground: rgb(var(--line-rgb) / 0.78);
+  --accent: var(--surface-alt);
+  --accent-foreground: var(--ink);
+  --destructive: var(--cta);
+  --destructive-foreground: var(--on-cta);
+  --border: rgb(var(--line-rgb) / 0.16);
+  --input: rgb(var(--line-rgb) / 0.3);
+  --ring: var(--ink-hover);
   --radius: 0.75rem;
   --success: oklch(78% 0.08 200deg);
   --warning: oklch(89% 0.1 75deg);

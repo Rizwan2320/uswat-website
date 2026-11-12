@@ -1,17 +1,17 @@
 .prose { max-width: 70ch; color: var(--text); font-size: 1.02rem; line-height: 1.75; }
 .prose > * + * { margin-top: 1em; }
-.prose h2, .prose h3, .prose h4 { font-family: var(--stack-serif); color: var(--forest); line-height: 1.2; font-weight: 600; margin-top: 1.6em; }
+.prose h2, .prose h3, .prose h4 { font-family: var(--stack-serif); color: var(--ink); line-height: 1.2; font-weight: 600; margin-top: 1.6em; }
 .prose h2 { font-size: 1.6rem; }
 .prose h3 { font-size: 1.3rem; }
 .prose h4 { font-size: 1.1rem; }
-.prose a { color: var(--forest); font-weight: 600; text-underline-offset: 3px; }
-.prose a:hover { color: var(--maroon); }
+.prose a { color: var(--ink); font-weight: 600; text-underline-offset: 3px; }
+.prose a:hover { color: var(--mark); }
 .prose ul, .prose ol { padding-inline-start: 1.4em; }
 .prose ul { list-style: disc; }
 .prose ol { list-style: decimal; }
 .prose li + li { margin-top: 0.35em; }
-.prose blockquote { margin-inline: 0; padding-block: 4px; padding-inline: 18px 0; border-inline-start: 3px solid var(--maroon); font-family: var(--stack-serif); font-size: 1.15rem; color: var(--forest); }
+.prose blockquote { margin-inline: 0; padding-block: 4px; padding-inline: 18px 0; border-inline-start: 3px solid var(--mark); font-family: var(--stack-serif); font-size: 1.15rem; color: var(--ink); }
 .prose img { max-width: 100%; height: auto; border-radius: 14px; }
 .prose table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-.prose th, .prose td { padding: 10px 12px; text-align: start; border-bottom: 1px solid var(--ivory-deep); }
-.prose th { color: var(--forest); font-weight: 700; background: var(--ivory); }
+.prose th, .prose td { padding: 10px 12px; text-align: start; border-bottom: 1px solid var(--hairline); }
+.prose th { color: var(--ink); font-weight: 700; background: var(--surface); }

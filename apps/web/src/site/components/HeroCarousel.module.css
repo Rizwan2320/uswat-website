@@ -17,7 +17,7 @@
 .photo[data-active] { opacity: 1; }
 .img { object-fit: cover; object-position: 50% 35%; }
 /* Soft green wash over the photos so the white wave and the stats card sit on a calm base. */
-.shade { position: absolute; z-index: -1; inset: 0; background: linear-gradient(to bottom, rgb(0 42 16 / 0.12), rgb(0 42 16 / 0.35)); pointer-events: none; }
+.shade { position: absolute; z-index: -1; inset: 0; background: linear-gradient(to bottom, rgb(var(--shadow-rgb) / 0.12), rgb(var(--shadow-rgb) / 0.35)); pointer-events: none; }
 
 .grid { display: grid; grid-template-columns: minmax(0, 560px) 1fr; align-items: center; }
 .text { display: grid; align-content: center; }
@@ -54,7 +54,7 @@
 @media (max-width: 899px) {
   /* Narrow screens: the photograph sits behind the text under a strong green wash so the words stay readable. */
   .photos { width: 100%; -webkit-mask-image: none; mask-image: none; }
-  .shade { background: rgb(0 42 16 / 0.8); }
+  .shade { background: rgb(var(--shadow-rgb) / 0.8); }
   .grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {

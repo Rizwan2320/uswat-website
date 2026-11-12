@@ -1,7 +1,7 @@
 /* The Vice Chancellor's full message: a fixed-size floating window. Not modal: no backdrop, no blur, page stays usable.
    Message text is maroon (9.8:1 on ivory); the title stays forest. The long text scrolls inside the body. */
 .window {
-  position: fixed; inset: 0; margin: auto; z-index: 1000; padding: 0; border: 0; background: transparent; color: var(--maroon);
+  position: fixed; inset: 0; margin: auto; z-index: 1000; padding: 0; border: 0; background: transparent; color: var(--mark);
   width: min(92vw, 640px); height: min(76vh, 470px); max-width: none; max-height: none; overflow: visible;
 }
 .window[open] { display: block; animation: rise 0.2s ease-out; }
@@ -9,33 +9,33 @@
 
 .panel {
   display: flex; flex-direction: column; height: 100%; overflow: hidden;
-  background: var(--ivory); border-radius: 18px; border: 1px solid rgb(122 31 38 / 0.35); border-top: 5px solid var(--maroon);
+  background: var(--surface); border-radius: 18px; border: 1px solid rgb(var(--mark-rgb) / 0.35); border-top: 5px solid var(--mark);
   box-shadow: 0 14px 40px rgb(0 20 8 / 0.3), 0 2px 8px rgb(0 20 8 / 0.18);
 }
 .head {
   flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding-block: 12px 10px; padding-inline: 22px 14px; border-bottom: 1px solid rgb(122 31 38 / 0.2);
+  padding-block: 12px 10px; padding-inline: 22px 14px; border-bottom: 1px solid rgb(var(--mark-rgb) / 0.2);
 }
-.title { margin: 0; font-family: var(--stack-serif); font-weight: 600; font-size: clamp(1.15rem, 2.6vw, 1.45rem); line-height: 1.2; color: var(--forest); }
+.title { margin: 0; font-family: var(--stack-serif); font-weight: 600; font-size: clamp(1.15rem, 2.6vw, 1.45rem); line-height: 1.2; color: var(--ink); }
 .close {
   flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
-  background: transparent; color: var(--maroon); border: 2px solid var(--maroon);
+  background: transparent; color: var(--mark); border: 2px solid var(--mark);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
-.close:hover { background: var(--maroon); color: var(--ivory); }
-.close:focus-visible { outline: 3px solid var(--forest); outline-offset: 3px; }
+.close:hover { background: var(--cta); color: var(--on-cta); }
+.close:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 
 /* Smaller than the standard pill button (owner request, round 25). */
 a.trigger { min-height: 34px; padding: 5px 14px; font-size: 0.84rem; gap: 6px; }
 /* The full message is set in the serif face (the site's display face), unlike the sans body copy elsewhere; Urdu keeps its own face. */
-.body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px 24px 22px; font-family: var(--stack-serif); font-size: 1.05rem; line-height: 1.75; color: var(--maroon); }
+.body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px 24px 22px; font-family: var(--stack-serif); font-size: 1.05rem; line-height: 1.75; color: var(--mark); }
 /* The message itself is English until a reviewed Urdu text exists, so it keeps the serif face in RTL (Urdu strings carry their own lang and typeface). */
-.body:focus-visible { outline: 3px solid var(--forest); outline-offset: -3px; }
+.body:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
 .body p { margin: 0 0 1em; unicode-bidi: plaintext; }
-.more a { color: var(--maroon); font-weight: 600; text-underline-offset: 3px; }
+.more a { color: var(--mark); font-weight: 600; text-underline-offset: 3px; }
 .sign { display: grid; gap: 2px; margin: 1.2em 0 0; }
 .sign em { margin-bottom: 4px; }
-.sign strong { font-family: var(--stack-serif); font-size: 1.1rem; color: var(--forest); }
+.sign strong { font-family: var(--stack-serif); font-size: 1.1rem; color: var(--ink); }
 .sign span { font-family: var(--stack-sans); font-size: 0.92rem; color: var(--text); }
 
 @media (max-width: 520px) {

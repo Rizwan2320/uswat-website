@@ -195,6 +195,14 @@ Updated: 2026-11-09 (Mon) PKT
   - Owner questions still open: Q6 to Q10 in `docs/briefs/FP-department-portal-gap.md` (joint appointments exist? who is Super Admin? how do judges sign in to the demo? is the department IT team the department's own staff? does the central office approve a department's first publication?).
 - **P3 stack:** #7, #11, #13, #18, #19 are still not rebased onto `main`, and #21 (3j admin flows) is stacked on top of them. The notice in `docs/briefs/P3-coordination.md` (2026-11-12) asks for the rebase in order, #7 first. Not reviewed until then.
 
+## Dark mode (2026-11-12, branch `feat/dark-mode`, main agent, owner request)
+- Brief `docs/briefs/dark-mode.md`; prediction D1 with actuals in `docs/predictions.md`; rules for writers of CSS in `docs/design-notes.md`.
+- Built: role tokens in `tokens.css` (light values are the brand colours), a dark palette written twice (manual choice and system setting, a test compares them), about 70 hard-coded colours moved onto tokens, `cms.css` stock names pointed at the role tokens, a top-bar toggle (system by default, choice kept in `localStorage` key `uswat-theme`, label translated), an inline pre-paint script, a dark treatment for the two leadership photos. Navigation links untouched.
+- Checked: light mode pixel-identical (12 baselines pass; the other 12 are byte-identical to unmodified main's output); dark contrast pairs asserted in `tokens.contrast.unit.spec.ts` (mutation checked); 8 toggle e2e tests (system setting, persistence, keyboard, blocked storage, RTL, no flash with app scripts blocked); 5 dark baselines; typecheck, lint (0 errors), build, `test:int` 424 passed.
+- Not run: screen-reader testing of the toggle; Safari and Firefox; dark Urdu on a real device; the dark baselines in CI (CI does not run visual tests); live deployment check after merge.
+- Found, not caused by this work: the `news` and `not-found` light baselines (12) fail on unmodified main; the search box border in light mode is about 1.6:1 (WCAG asks 3:1 for control boundaries).
+- Limits to know: the Payload admin panel and the faculty portal stay light; the footer map picture stays light; the language choice is still memory-only while the theme choice is stored (the only thing the site stores).
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.

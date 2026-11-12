@@ -2,6 +2,7 @@ import { site } from '../content/site'
 import { LanguageToggle, T } from './I18n'
 import { PinIcon } from './icons'
 import SearchOverlay from './SearchOverlay'
+import ThemeToggle from './ThemeToggle'
 import styles from './TopBar.module.css'
 
 /* Darkest green utility bar. Sticks with the header (see .site-head) so the "Established in 2010" line is always visible.
@@ -27,6 +28,7 @@ export default function TopBar() {
           </a>
           <span aria-hidden="true" className={styles.sep}>|</span>
           <LanguageToggle className={styles.lang} />
+          <ThemeToggle className={styles.search} iconClassName={{ sun: styles.sun, moon: styles.moon }} />
           <SearchOverlay triggerClassName={styles.search} />
         </nav>
       </div>

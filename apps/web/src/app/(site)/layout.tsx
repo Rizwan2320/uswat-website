@@ -37,13 +37,18 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
+/* Runs before first paint: marks JS as running, and re-applies the visitor's saved light or dark choice (if any) so the page
+   never flashes the wrong theme. With no saved choice the CSS follows the system setting on its own. */
+const THEME_SCRIPT =
+  "var d=document.documentElement;d.setAttribute('data-js','');try{var t=localStorage.getItem('uswat-theme');if(t==='light'||t==='dark')d.setAttribute('data-theme',t)}catch(e){}"
+
 /* Root layout of the redesigned pages. `data-js` is set before first paint so CSS can tell "JS is running" (used by the
    counters); `suppressHydrationWarning` covers that attribute and the lang/dir the language toggle changes. */
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.setAttribute('data-js','')" }} />
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
       </head>

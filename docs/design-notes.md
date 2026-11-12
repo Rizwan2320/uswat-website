@@ -37,3 +37,12 @@ Approved by the owner on 2026-11-09 as the design going forward ("unless DCST as
 ## Content rules on screen
 - No invented facts. Anything unverified carries a visible **Sample** label or is left out.
 - Tagline everywhere: "Aspiring for Quality Education with Relevance".
+
+## Dark theme (2026-11-12)
+Brief: `docs/briefs/dark-mode.md`. Rules for anyone writing CSS for the site:
+- Use the role tokens in `tokens.css`, not the brand colours, for page surfaces, text, lines and accents: `--surface`, `--surface-alt`, `--surface-raised`, `--surface-card`, `--ink`, `--ink-hover`, `--text`, `--mark` (dates, rules, quote marks; maroon in light, gold in dark), `--cta` (the main button), `--sel` (selected tab, current page), `--fill` (icon circles, badges), `--hairline`, `--line-green`, `--line-input`, `--tint`, and `rgb(var(--line-rgb) / a)` and `rgb(var(--shadow-rgb) / a)` for tinted borders and shadows.
+- Brand bands (top bar, hero, page header, footer, admissions banner, the VC name plate) keep `--forest*`, `--ivory` and `--gold` in both themes.
+- Maroon never appears on a dark surface. If you need a coloured accent on dark, use `--mark`.
+- A page-specific dark override is written twice, once under `:root[data-theme='dark']` and once inside `@media (prefers-color-scheme: dark)` with `:root:not([data-theme='light'])`. See `LeadershipMessage.module.css`.
+- The CMS stock colour names in `cms.css` (`--background`, `--primary`, ...) point at the role tokens, so CMS pages follow the theme.
+- Known gap, not caused by dark mode: in light mode the search box border (`--line-input`, #b4d0a9) is about 1.6:1 against white, below the 3:1 WCAG 2.2 asks for on control boundaries. Dark mode meets 3:1 and the test asserts it.

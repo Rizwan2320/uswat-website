@@ -37,6 +37,8 @@ export const ChevronRightIcon = (p: IconProps) => <Svg {...p}><path d="m9 6 6 6-
 export const DoubleChevronLeftIcon = (p: IconProps) => <Svg {...p}><path d="m12 6-6 6 6 6M18 6l-6 6 6 6" /></Svg>
 export const DoubleChevronRightIcon = (p: IconProps) => <Svg {...p}><path d="m6 6 6 6-6 6M12 6l6 6-6 6" /></Svg>
 export const ArrowRightIcon = (p: IconProps) => <Svg {...p}><path d="M5 12h14M13 6l6 6-6 6" /></Svg>
+export const MoonIcon = (p: IconProps) => <Svg {...p}><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z" /></Svg>
+export const SunIcon = (p: IconProps) => <Svg {...p}><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6" /></Svg>
 export const MenuIcon = (p: IconProps) => <Svg {...p}><path d="M4 7h16M4 12h16M4 17h16" /></Svg>
 export const CloseIcon = (p: IconProps) => <Svg {...p}><path d="M6 6l12 12M18 6 6 18" /></Svg>
 export const PauseIcon = (p: IconProps) => <Svg {...p}><path d="M9 6v12M15 6v12" /></Svg>
