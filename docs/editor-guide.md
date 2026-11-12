@@ -58,9 +58,12 @@ The message names the problem. The common ones:
 | Image has no recorded rights status | Ask an approver to record the rights. |
 | Heading jumps from level 2 to level 4 | Use the next level down (2, then 3). The page title is level 1, so start at 2. |
 | A link reads "click here" | Say where the link goes, for example "Read the fee schedule". |
-| Not verified, or needs an approver | Only an approver can verify and publish. High-impact items (fees, admissions, deadlines, legal notices) also need a review date. |
+| Fact-check is not Verified | Only an approver can verify it (with its source) and publish it. |
+| Fill in "Check again by" | High impact items (fees, admissions, deadlines, legal notices) need a re-check date before they can be published. |
+| Fill in Owner office / "Source of the facts" | These two boxes in **Ownership and approval** are needed before publishing. |
+| Needs a "Take down on" date | Notices and similar items must say when they stop being shown. |
 
-The blue **Publish changes** button is visible to editors too, but only an approver's press will work; yours will be refused with one of the messages above. You can always save a draft, even with these problems. They only stop **publishing**.
+The blue **Publish changes** button is visible to editors too, but only an approver's press will work; yours will be refused with one of the messages above. Your work always saves as a draft, even with these problems. They only stop **publishing**.
 
 ## What is recorded
 

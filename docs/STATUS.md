@@ -271,6 +271,10 @@ Updated: 2026-11-09 (Mon) PKT
 - Browser pass as all seven roles. Fixed: settings areas hidden from editing roles' menus, untitled drafts named on the dashboard, plain "not allowed" message. Access was already correct (matrix test). 10 new browser tests, 9 new integration tests. Brief: `docs/briefs/p3m-role-browser-pass.md`.
 - Not run: site manager invite and role-change flow in a browser, Urdu, mobile, CMS-15.
 
+## P3 slice 3n (2026-11-12, branch `p3/messages-3n`, stacked on `p3/role-browser-3m`)
+- Refusal messages rewritten in the words on the screen; codes unchanged; guard test; editor guide table updated. Brief: `docs/briefs/p3n-plain-messages.md`.
+- Not run: real editors, Urdu.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
