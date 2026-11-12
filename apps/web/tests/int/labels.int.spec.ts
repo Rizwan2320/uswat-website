@@ -5,6 +5,7 @@
  * repeats a sibling's label, or has a select option shown as a raw code like "in_review".
  */
 import type { Field, Payload } from 'payload'
+import { toWords } from 'payload'
 import { beforeAll, describe, expect, it } from 'vitest'
 
 import { getTestPayload } from '../helpers/governance'
@@ -78,6 +79,10 @@ function collect(fields: Field[], where: string, out: Row[], problems: string[])
       // Deliberately unlabelled (a rich-text body inside a block): its parent is labelled.
     } else if (typeof raw !== 'string') {
       problems.push(`${path}: no written label`)
+    } else if (/[A-Z]/.test(name) && raw === toWords(name)) {
+      // Payload fills in a label from the field name when none is written ("publishedAt" becomes
+      // "Published At"), so a many-word name with that exact label was never written by a person.
+      problems.push(`${path}: label "${raw}" was made from the field name, not written`)
     } else {
       if (JARGON.test(raw)) problems.push(`${path}: label "${raw}" uses a developer word`)
       const key = raw.trim().toLowerCase()

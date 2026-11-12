@@ -116,8 +116,10 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
             fields: [
               {
                 name: 'relatedPosts',
+                label: 'Related posts',
                 type: 'relationship',
                 admin: {
+                  description: 'Other posts readers may want next.',
                   position: 'sidebar',
                 },
                 filterOptions: ({ id }) => {
@@ -182,8 +184,11 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
       },
       {
         name: 'publishedAt',
+        label: 'Date shown to readers',
         type: 'date',
         admin: {
+          description:
+            'The date printed on the post. It does not publish it; use "Go live on" under Ownership and approval for that.',
           date: {
             pickerAppearance: 'dayAndTime',
           },

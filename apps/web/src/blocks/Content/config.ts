@@ -50,6 +50,7 @@ const columnFields: Field[] = [
   },
   {
     name: 'enableLink',
+    label: 'Add a link',
     type: 'checkbox',
   },
   link({

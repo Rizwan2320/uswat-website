@@ -120,8 +120,11 @@ export const Pages: CollectionConfig<'pages'> = withGovernance(
       },
       {
         name: 'publishedAt',
+        label: 'Date shown to readers',
         type: 'date',
         admin: {
+          description:
+            'The date printed on the page. It does not publish it; use "Go live on" under Ownership and approval for that.',
           position: 'sidebar',
         },
       },
