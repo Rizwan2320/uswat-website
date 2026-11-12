@@ -183,6 +183,18 @@ Updated: 2026-11-09 (Mon) PKT
 - Found while doing it: production had already received three migrations from unmerged PRs (`p3e`, `p3f`, `p3h`). Left as is; they are recorded as applied.
 - Verified: the preview build of the PR for this change (#23) went READY on the new variable, its `/readyz` returns ok, and the `previews` branch's commit counter rose by 4 across one query of mine and three probes of the preview (consistent with the preview reading that branch; not a marker-row proof). Not run: a preview that adds a new migration, to show it lands only in `previews`.
 
+## PR #16 and #22 merged; department portal gap analysis answered (2026-11-12, main agent)
+- **#16 (identity module)** is on `main` (merge `3dda5f2`, via integration PR #24, CI green on that exact result). R1 and R2 were fixed on the branch. R2 turned out to be real: with the library's default the enable step wrote and returned ten reversible backup codes whose endpoints are closed; the amount is now 0 with an integration test and a mutation check. Checked on the merged result: typecheck, lint 0 errors, unit 18 files, int 30 files (identity int 9 tests run against a local database; they are skipped in CI), build, `pnpm install --frozen-lockfile` passes pnpm's supply-chain policy, and with no portal variables the sign-in route and the encoded and upper-case spellings of a closed endpoint return 404. Not run: a browser test of a forged UV=0 assertion, Node 24 in-app, anything on Vercel or Neon (no portal variable is set anywhere).
+- **#22 (department portal gap analysis)** is merged as docs only. Main agent decisions on it (the owner may override):
+  1. Role mapping accepted: HOD is a CMS Approver with `offices` = the department; the department IT team is Editor or Contributor with the same `offices`; central web office is Site Manager. No admin panels are built in the portal realm.
+  2. **D1 (HOD manages their own team): recommended yes, P3 lane,** with the stated limits: an Approver may add or remove Editors and Contributors for their own office only, can never grant Approver or any other office, and every change is audited. It is an access-policy change, so it comes with the role-matrix tests.
+  3. **D3 (department chooses its sections): recommended yes, as part of the department template (T3),** inside fixed design and mandatory name and contact. Owned by agent 4 once Departments exist.
+  4. **`affiliations[]`, cross-department counting, university roll-up, department lifecycle, faculty-drafted events (A2 to A5, A7): not now.** Do not add `affiliations[]` to People yet; keep one home department. Revisit after the demo; the faculty portal's own gate G-FP0 is unaffected.
+  5. A1 (one scope rule) and A6 (faculty dashboard) are small; fold into Addendum C when the owner approves edits.
+  6. The reviewer queue lives in the CMS (reviewers are CMS accounts with their own second factor); the portal only creates drafts.
+  - Owner questions still open: Q6 to Q10 in `docs/briefs/FP-department-portal-gap.md` (joint appointments exist? who is Super Admin? how do judges sign in to the demo? is the department IT team the department's own staff? does the central office approve a department's first publication?).
+- **P3 stack:** #7, #11, #13, #18, #19 are still not rebased onto `main`, and #21 (3j admin flows) is stacked on top of them. The notice in `docs/briefs/P3-coordination.md` (2026-11-12) asks for the rebase in order, #7 first. Not reviewed until then.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
