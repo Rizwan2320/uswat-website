@@ -267,6 +267,10 @@ Updated: 2026-11-09 (Mon) PKT
 - Guard test now catches labels made from field names; four fixed.
 - Not run: browser leak probe after the patch lands, Urdu, mobile. No previews for notices, events, jobs, tenders (no public routes).
 
+## P3 slice 3m (2026-11-12, branch `p3/role-browser-3m`, stacked on `p3/preview-3l`)
+- Browser pass as all seven roles. Fixed: settings areas hidden from editing roles' menus, untitled drafts named on the dashboard, plain "not allowed" message. Access was already correct (matrix test). 10 new browser tests, 9 new integration tests. Brief: `docs/briefs/p3m-role-browser-pass.md`.
+- Not run: site manager invite and role-change flow in a browser, Urdu, mobile, CMS-15.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
