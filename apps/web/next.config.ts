@@ -64,6 +64,8 @@ const nextConfig: NextConfig = {
     return webpackConfig
   },
   reactStrictMode: true,
+  // src/proxy.ts handles trailing slashes so an old address ending in "/" is one redirect, not two (ADR-0012).
+  skipTrailingSlashRedirect: true,
   redirects,
   // pnpm keeps real packages in the workspace root's node_modules, so resolution must start there.
   outputFileTracingRoot: path.resolve(dirname, '../..'),
