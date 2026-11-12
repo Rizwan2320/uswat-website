@@ -238,20 +238,23 @@ export interface Page {
   meta?: {
     title?: string | null;
     /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     * Shown when the page is shared. JPEG, PNG, WebP or AVIF, up to 8 MB. Like any image it needs alt text and a recorded permission to use.
      */
     image?: (number | null) | Media;
     description?: string | null;
   };
   publishedAt?: string | null;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * Leave ticked and the address follows the title. Untick it to type your own.
    */
   generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
   slug: string;
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -259,30 +262,36 @@ export interface Page {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -323,7 +332,7 @@ export interface Post {
   meta?: {
     title?: string | null;
     /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     * Shown when the page is shared. JPEG, PNG, WebP or AVIF, up to 8 MB. Like any image it needs alt text and a recorded permission to use.
      */
     image?: (number | null) | Media;
     description?: string | null;
@@ -338,13 +347,16 @@ export interface Post {
     | null;
   bodyStatus?: ('full' | 'stub') | null;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * Leave ticked and the address follows the title. Untick it to type your own.
    */
   generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
   slug: string;
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -352,30 +364,36 @@ export interface Post {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -411,7 +429,7 @@ export interface Media {
    */
   sourcePage?: string | null;
   /**
-   * Set from the file. Used to stop duplicate uploads.
+   * Made automatically from the file. It stops the same picture being uploaded twice.
    */
   sha256?: string | null;
   caption?: {
@@ -534,9 +552,12 @@ export interface Category {
   id: number;
   title: string;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * Leave ticked and the address follows the title. Untick it to type your own.
    */
   generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
   slug: string;
   parent?: (number | null) | Category;
   breadcrumbs?:
@@ -558,9 +579,12 @@ export interface ArticleTag {
   id: number;
   name: string;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * Leave ticked and the address follows the title. Untick it to type your own.
    */
   generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
   slug: string;
   /**
    * Other words people search for (for example "CS" for Computer Science).
@@ -573,7 +597,7 @@ export interface ArticleTag {
     | null;
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -581,30 +605,36 @@ export interface ArticleTag {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1010,7 +1040,7 @@ export interface AffiliatedCollege {
   link?: string | null;
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -1018,30 +1048,36 @@ export interface AffiliatedCollege {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1071,7 +1107,7 @@ export interface ContactDirectory {
   hours?: string | null;
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -1079,30 +1115,36 @@ export interface ContactDirectory {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1132,14 +1174,20 @@ export interface MeritList {
    */
   documents?:
     | {
+        /**
+         * Say what the file is, for example "BS Computer Science, Fall 2026 (PDF)".
+         */
         label: string;
+        /**
+         * Where the PDF is, starting with https://
+         */
         url: string;
         id?: string | null;
       }[]
     | null;
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -1147,30 +1195,36 @@ export interface MeritList {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1185,18 +1239,30 @@ export interface MeritList {
  */
 export interface Notice {
   id: number;
+  /**
+   * The headline readers see.
+   */
   title: string;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * Leave ticked and the address follows the title. Untick it to type your own.
    */
   generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
   slug: string;
   /**
    * The address of the page on the old site. Used to match records on re-import and to redirect.
    */
   legacyUrl?: string | null;
+  /**
+   * The date printed on the item. It does not publish it; use "Go live on" under Ownership and approval for that.
+   */
   publishedAt?: string | null;
   bodyStatus?: ('full' | 'stub') | null;
+  /**
+   * One or two sentences shown in lists.
+   */
   excerpt?: string | null;
   body?: {
     root: {
@@ -1213,13 +1279,22 @@ export interface Notice {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * The large picture at the top. It needs alt text in the media library.
+   */
   heroImage?: (number | null) | Media;
   /**
-   * PDFs and other files, as links.
+   * PDFs and other files, added as links.
    */
   attachments?:
     | {
+        /**
+         * Say what the file is, for example "Fee schedule 2026 (PDF)".
+         */
         label: string;
+        /**
+         * Where the file is, starting with https://
+         */
         url: string;
         id?: string | null;
       }[]
@@ -1244,7 +1319,7 @@ export interface Notice {
   };
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -1252,30 +1327,36 @@ export interface Notice {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1290,18 +1371,30 @@ export interface Notice {
  */
 export interface Event {
   id: number;
+  /**
+   * The headline readers see.
+   */
   title: string;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * Leave ticked and the address follows the title. Untick it to type your own.
    */
   generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
   slug: string;
   /**
    * The address of the page on the old site. Used to match records on re-import and to redirect.
    */
   legacyUrl?: string | null;
+  /**
+   * The date printed on the item. It does not publish it; use "Go live on" under Ownership and approval for that.
+   */
   publishedAt?: string | null;
   bodyStatus?: ('full' | 'stub') | null;
+  /**
+   * One or two sentences shown in lists.
+   */
   excerpt?: string | null;
   body?: {
     root: {
@@ -1318,13 +1411,22 @@ export interface Event {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * The large picture at the top. It needs alt text in the media library.
+   */
   heroImage?: (number | null) | Media;
   /**
-   * PDFs and other files, as links.
+   * PDFs and other files, added as links.
    */
   attachments?:
     | {
+        /**
+         * Say what the file is, for example "Fee schedule 2026 (PDF)".
+         */
         label: string;
+        /**
+         * Where the file is, starting with https://
+         */
         url: string;
         id?: string | null;
       }[]
@@ -1351,7 +1453,7 @@ export interface Event {
   venue?: string | null;
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -1359,30 +1461,36 @@ export interface Event {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1397,18 +1505,30 @@ export interface Event {
  */
 export interface Job {
   id: number;
+  /**
+   * The headline readers see.
+   */
   title: string;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * Leave ticked and the address follows the title. Untick it to type your own.
    */
   generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
   slug: string;
   /**
    * The address of the page on the old site. Used to match records on re-import and to redirect.
    */
   legacyUrl?: string | null;
+  /**
+   * The date printed on the item. It does not publish it; use "Go live on" under Ownership and approval for that.
+   */
   publishedAt?: string | null;
   bodyStatus?: ('full' | 'stub') | null;
+  /**
+   * One or two sentences shown in lists.
+   */
   excerpt?: string | null;
   body?: {
     root: {
@@ -1425,13 +1545,22 @@ export interface Job {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * The large picture at the top. It needs alt text in the media library.
+   */
   heroImage?: (number | null) | Media;
   /**
-   * PDFs and other files, as links.
+   * PDFs and other files, added as links.
    */
   attachments?:
     | {
+        /**
+         * Say what the file is, for example "Fee schedule 2026 (PDF)".
+         */
         label: string;
+        /**
+         * Where the file is, starting with https://
+         */
         url: string;
         id?: string | null;
       }[]
@@ -1456,7 +1585,7 @@ export interface Job {
   };
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -1464,30 +1593,36 @@ export interface Job {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1502,18 +1637,30 @@ export interface Job {
  */
 export interface Tender {
   id: number;
+  /**
+   * The headline readers see.
+   */
   title: string;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * Leave ticked and the address follows the title. Untick it to type your own.
    */
   generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
   slug: string;
   /**
    * The address of the page on the old site. Used to match records on re-import and to redirect.
    */
   legacyUrl?: string | null;
+  /**
+   * The date printed on the item. It does not publish it; use "Go live on" under Ownership and approval for that.
+   */
   publishedAt?: string | null;
   bodyStatus?: ('full' | 'stub') | null;
+  /**
+   * One or two sentences shown in lists.
+   */
   excerpt?: string | null;
   body?: {
     root: {
@@ -1530,13 +1677,22 @@ export interface Tender {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * The large picture at the top. It needs alt text in the media library.
+   */
   heroImage?: (number | null) | Media;
   /**
-   * PDFs and other files, as links.
+   * PDFs and other files, added as links.
    */
   attachments?:
     | {
+        /**
+         * Say what the file is, for example "Fee schedule 2026 (PDF)".
+         */
         label: string;
+        /**
+         * Where the file is, starting with https://
+         */
         url: string;
         id?: string | null;
       }[]
@@ -1561,7 +1717,7 @@ export interface Tender {
   };
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -1569,30 +1725,36 @@ export interface Tender {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1609,9 +1771,12 @@ export interface Faculty {
   id: number;
   name: string;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * Leave ticked and the address follows the title. Untick it to type your own.
    */
   generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
   slug: string;
   /**
    * The label on the old site menu. Used to match records on re-import.
@@ -1619,7 +1784,7 @@ export interface Faculty {
   legacyKey?: string | null;
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -1627,30 +1792,36 @@ export interface Faculty {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1667,9 +1838,12 @@ export interface Department {
   id: number;
   name: string;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * Leave ticked and the address follows the title. Untick it to type your own.
    */
   generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
   slug: string;
   /**
    * The address of the page on the old site. Used to match records on re-import and to redirect.
@@ -1685,7 +1859,13 @@ export interface Department {
    */
   documents?:
     | {
+        /**
+         * Say what the file is, for example "Prospectus 2026 (PDF)".
+         */
         label: string;
+        /**
+         * Where the file is, starting with https://
+         */
         url: string;
         id?: string | null;
       }[]
@@ -1701,7 +1881,7 @@ export interface Department {
     | null;
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -1709,30 +1889,36 @@ export interface Department {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1749,9 +1935,12 @@ export interface Person {
   id: number;
   name: string;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * Leave ticked and the address follows the title. Untick it to type your own.
    */
   generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
   slug: string;
   designation?: string | null;
   department?: (number | null) | Department;
@@ -1780,7 +1969,7 @@ export interface Person {
   };
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -1788,30 +1977,36 @@ export interface Person {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1828,9 +2023,12 @@ export interface Office {
   id: number;
   name: string;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * Leave ticked and the address follows the title. Untick it to type your own.
    */
   generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
   slug: string;
   /**
    * The address of the page on the old site. Used to match records on re-import and to redirect.
@@ -1877,14 +2075,20 @@ export interface Office {
    */
   documents?:
     | {
+        /**
+         * Say what the file is, for example "Prospectus 2026 (PDF)".
+         */
         label: string;
+        /**
+         * Where the file is, starting with https://
+         */
         url: string;
         id?: string | null;
       }[]
     | null;
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -1892,30 +2096,36 @@ export interface Office {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1932,9 +2142,12 @@ export interface Programme {
   id: number;
   name: string;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * Leave ticked and the address follows the title. Untick it to type your own.
    */
   generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
   slug: string;
   /**
    * The address of the page on the old site. Used to match records on re-import and to redirect.
@@ -1949,7 +2162,7 @@ export interface Programme {
   feeLink?: string | null;
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -1957,30 +2170,36 @@ export interface Programme {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
@@ -1997,9 +2216,12 @@ export interface Campus {
   id: number;
   name: string;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * Leave ticked and the address follows the title. Untick it to type your own.
    */
   generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
   slug: string;
   address?: string | null;
   /**
@@ -2008,7 +2230,7 @@ export interface Campus {
   link?: string | null;
   governance?: {
     /**
-     * Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
@@ -2016,30 +2238,36 @@ export interface Campus {
      */
     ownerOffice?: string | null;
     /**
-     * Where the facts come from: a URL or a named document. Required to publish.
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
      */
     source?: string | null;
     /**
-     * Only a reviewer can mark a record verified. Unverified records cannot be published.
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
     /**
-     * Required to publish a high-impact record.
+     * The date someone should re-check this. Needed to publish a high-impact record.
      */
     reviewDueAt?: string | null;
     /**
-     * High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
      */
     riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
     publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
     expireAt?: string | null;
     origin?: ('editor' | 'importer' | 'watcher') | null;
     contentHash?: string | null;
     sourceContentHash?: string | null;
     collectedAt?: string | null;
     /**
-     * A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
      */
     pinned?: boolean | null;
     createdBy?: (number | null) | User;
