@@ -11,6 +11,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { totpAt } from '../../helpers/totp'
 import { readPortalConfig } from '@/modules/identity/config'
 import { createPortalAuth, type PortalAuth } from '@/modules/identity/auth'
+import { createPgAssuranceStore } from '@/modules/identity/assuranceStore'
 import { closeIdentityPool, getIdentityPool } from '@/modules/identity/db'
 import { loadFactors } from '@/modules/identity/factors'
 import { createAuthHandlers, type AuthLike } from '@/modules/identity/handlers'
@@ -52,7 +53,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -94,6 +95,7 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
       env,
       getAuth: () => auth as unknown as AuthLike,
       loadFactors: (id) => loadFactors(pool, id),
+      isStrongSession: (id) => createPgAssuranceStore(pool).isStrong(id),
     })
     email = `sample-${Date.now()}@example.test`
     const created = await auth.api.signUpEmail({ body: { email, password: PASSWORD, name: 'Sample Faculty' } })
@@ -230,5 +232,26 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
     await c.query(`delete from identity.session where "userId" = $1`, [userId])
     await c.end()
     expect((await call(jar, 'GET', '/get-session')).status).toBe(401)
+  })
+  it('AUTH-01: a user whose only factor is a passkey cannot reach the portal with a password alone', async () => {
+    const other = `passkey-only-${Date.now()}@example.test`
+    const made = await auth.api.signUpEmail({ body: { email: other, password: PASSWORD, name: 'Sample Passkey Only' } })
+    const c = new pg.Client({ connectionString: DB })
+    await c.connect()
+    // A registered passkey as the library would store it. The credential is a placeholder: no assertion is made with it.
+    await c.query(
+      `insert into identity.passkey ("id","name","publicKey","userId","credentialID","counter","deviceType","backedUp") values ($1,'Sample','AAAA',$2,$1,0,'multiDevice',false)`,
+      [`pk-${Date.now()}`, made.user.id],
+    )
+    await c.end()
+    const jar = new Jar()
+    const res = await call(jar, 'POST', '/sign-in/email', { email: other, password: PASSWORD })
+    const protectedCall = await call(jar, 'GET', '/passkey/list-user-passkeys')
+    // Either the sign-in itself is refused, or the session is refused at a protected endpoint.
+    expect(res.status === 200 ? protectedCall.status : res.status).toBe(403)
+    // It may not add a second authenticator either: that needs a session made with the first.
+    const add = await call(jar, 'POST', '/two-factor/enable', { password: PASSWORD })
+    expect(add.status).toBe(403)
+    expect(await add.json()).toMatchObject({ redirectTo: '/portal/sign-in' })
   })
 })

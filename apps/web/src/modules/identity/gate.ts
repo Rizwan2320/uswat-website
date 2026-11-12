@@ -22,7 +22,11 @@ export type FactorState = {
   recoveryCodesRemaining: number
 }
 
-export type RouteClass = 'public' | 'enrolment' | 'signout' | 'portal' | 'forbidden'
+/**
+ * 'session' is the user's own session (read it, end it): any session may do that.
+ * 'enrolment' adds or changes a factor.
+ */
+export type RouteClass = 'public' | 'enrolment' | 'session' | 'portal' | 'forbidden'
 
 export function hasSecondFactor(f: FactorState): boolean {
   return f.passkeys > 0 || f.totpVerified
@@ -42,10 +46,9 @@ const ENROLMENT = new Set<string>([
   `${AUTH_BASE}/passkey/generate-register-options`,
   `${AUTH_BASE}/passkey/verify-registration`,
   `${AUTH_BASE}/two-factor/enable`,
-  `${AUTH_BASE}/get-session`,
 ])
 
-const SIGNOUT = new Set<string>([`${AUTH_BASE}/sign-out`])
+const OWN_SESSION = new Set<string>([`${AUTH_BASE}/get-session`, `${AUTH_BASE}/sign-out`])
 
 /** Never reachable: no email or SMS factor (Addendum C section 5.1), no self-registration (5.6). */
 const FORBIDDEN = new Set<string>([
@@ -80,12 +83,19 @@ export function classifyPath(pathname: string): RouteClass {
   // widened into a public or enrolment path, it falls to 'portal' (session and second factor).
   if (PUBLIC.has(p)) return 'public'
   if (ENROLMENT.has(p)) return 'enrolment'
-  if (SIGNOUT.has(p)) return 'signout'
+  if (OWN_SESSION.has(p)) return 'session'
   return 'portal'
 }
 
 export type GateInput = {
   hasSession: boolean
+  /**
+   * Whether the session was made with a second factor (a passkey sign-in, or a completed
+   * TOTP or recovery step) or upgraded by enrolling the first factor. A password-only
+   * session is not strong, however many factors the account has registered: the password
+   * alone must never be enough (AUTH-01). Unknown means not strong.
+   */
+  sessionStrong: boolean
   /** null means the factor state could not be read: fail closed. */
   factors: FactorState | null
   pathname: string
@@ -95,19 +105,38 @@ export type GateDecision =
   | { allow: true }
   | { allow: false; status: 401 | 403 | 404; redirectTo?: string; reason: string }
 
-export function decide({ hasSession, factors, pathname }: GateInput): GateDecision {
+export function decide({ hasSession, sessionStrong, factors, pathname }: GateInput): GateDecision {
   const cls = classifyPath(pathname)
   if (cls === 'forbidden') return { allow: false, status: 404, reason: 'endpoint not offered' }
   if (cls === 'public') return { allow: true }
   if (!hasSession) {
     return { allow: false, status: 401, redirectTo: `${PORTAL_BASE}/sign-in`, reason: 'no session' }
   }
-  if (cls === 'signout' || cls === 'enrolment') return { allow: true }
-  if (factors && hasSecondFactor(factors)) return { allow: true }
-  return {
+  if (cls === 'session') return { allow: true }
+
+  const registered = factors !== null && hasSecondFactor(factors)
+  const signInAgain: GateDecision = {
     allow: false,
     status: 403,
-    redirectTo: `${PORTAL_BASE}/enrol`,
-    reason: factors ? 'second factor not enrolled' : 'factor state unavailable',
+    redirectTo: `${PORTAL_BASE}/sign-in`,
+    reason: 'this session was not made with a second factor',
   }
+
+  if (cls === 'enrolment') {
+    if (sessionStrong) return { allow: true }
+    // A password-only session may enrol the FIRST factor and nothing more: adding a factor to an
+    // account that already has one needs a session made with it (Addendum C 5.6).
+    if (factors !== null && !registered) return { allow: true }
+    return signInAgain
+  }
+
+  // cls === 'portal'
+  if (registered && sessionStrong) return { allow: true }
+  if (factors !== null && !registered) {
+    return { allow: false, status: 403, redirectTo: `${PORTAL_BASE}/enrol`, reason: 'second factor not enrolled' }
+  }
+  if (factors === null) {
+    return { allow: false, status: 403, redirectTo: `${PORTAL_BASE}/enrol`, reason: 'factor state unavailable' }
+  }
+  return signInAgain
 }

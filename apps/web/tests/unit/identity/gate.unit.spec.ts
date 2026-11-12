@@ -40,8 +40,8 @@ describe('classifyPath', () => {
     [`${AUTH_BASE}/passkey/generate-register-options`, 'enrolment'],
     [`${AUTH_BASE}/passkey/verify-registration`, 'enrolment'],
     [`${AUTH_BASE}/two-factor/enable`, 'enrolment'],
-    [`${AUTH_BASE}/get-session`, 'enrolment'],
-    [`${AUTH_BASE}/sign-out`, 'signout'],
+    [`${AUTH_BASE}/get-session`, 'session'],
+    [`${AUTH_BASE}/sign-out`, 'session'],
     ['/portal', 'portal'],
     ['/portal/profile', 'portal'],
     [`${AUTH_BASE}/passkey/delete-passkey`, 'portal'],
@@ -110,22 +110,22 @@ describe('decide (FPR-01: no password-only path to a portal page)', () => {
   const ok = { allow: true }
 
   it('lets anyone reach public routes', () => {
-    expect(decide({ hasSession: false, factors: null, pathname: '/portal/sign-in' })).toEqual(ok)
-    expect(decide({ hasSession: true, factors: none, pathname: '/portal/sign-in' })).toEqual(ok)
+    expect(decide({ sessionStrong: true, hasSession: false, factors: null, pathname: '/portal/sign-in' })).toEqual(ok)
+    expect(decide({ sessionStrong: true, hasSession: true, factors: none, pathname: '/portal/sign-in' })).toEqual(ok)
   })
 
   it('refuses everything else without a session', () => {
     for (const p of ['/portal', '/portal/profile', `${AUTH_BASE}/passkey/list-user-passkeys`, `${AUTH_BASE}/sign-out`]) {
-      expect(decide({ hasSession: false, factors: null, pathname: p })).toMatchObject({ allow: false, status: 401 })
+      expect(decide({ sessionStrong: true, hasSession: false, factors: null, pathname: p })).toMatchObject({ allow: false, status: 401 })
     }
   })
 
   it('confines a session with no second factor to enrolment and sign-out', () => {
-    expect(decide({ hasSession: true, factors: none, pathname: '/portal/enrol' })).toEqual(ok)
-    expect(decide({ hasSession: true, factors: none, pathname: `${AUTH_BASE}/two-factor/enable` })).toEqual(ok)
-    expect(decide({ hasSession: true, factors: none, pathname: `${AUTH_BASE}/sign-out` })).toEqual(ok)
+    expect(decide({ sessionStrong: true, hasSession: true, factors: none, pathname: '/portal/enrol' })).toEqual(ok)
+    expect(decide({ sessionStrong: true, hasSession: true, factors: none, pathname: `${AUTH_BASE}/two-factor/enable` })).toEqual(ok)
+    expect(decide({ sessionStrong: true, hasSession: true, factors: none, pathname: `${AUTH_BASE}/sign-out` })).toEqual(ok)
     for (const p of ['/portal', '/portal/profile', `${AUTH_BASE}/passkey/list-user-passkeys`, `${AUTH_BASE}/passkey/delete-passkey`]) {
-      expect(decide({ hasSession: true, factors: none, pathname: p })).toMatchObject({
+      expect(decide({ sessionStrong: true, hasSession: true, factors: none, pathname: p })).toMatchObject({
         allow: false,
         status: 403,
         redirectTo: '/portal/enrol',
@@ -134,7 +134,7 @@ describe('decide (FPR-01: no password-only path to a portal page)', () => {
   })
 
   it('treats recovery codes alone as no second factor', () => {
-    expect(decide({ hasSession: true, factors: recoveryOnly, pathname: '/portal/profile' })).toMatchObject({
+    expect(decide({ sessionStrong: true, hasSession: true, factors: recoveryOnly, pathname: '/portal/profile' })).toMatchObject({
       allow: false,
       status: 403,
     })
@@ -142,13 +142,13 @@ describe('decide (FPR-01: no password-only path to a portal page)', () => {
 
   it('opens the portal once a passkey or verified TOTP exists', () => {
     for (const f of [passkey, totp]) {
-      expect(decide({ hasSession: true, factors: f, pathname: '/portal/profile' })).toEqual(ok)
-      expect(decide({ hasSession: true, factors: f, pathname: `${AUTH_BASE}/passkey/list-user-passkeys` })).toEqual(ok)
+      expect(decide({ sessionStrong: true, hasSession: true, factors: f, pathname: '/portal/profile' })).toEqual(ok)
+      expect(decide({ sessionStrong: true, hasSession: true, factors: f, pathname: `${AUTH_BASE}/passkey/list-user-passkeys` })).toEqual(ok)
     }
   })
 
   it('refuses a session whose factor state could not be read (fail closed)', () => {
-    expect(decide({ hasSession: true, factors: null, pathname: '/portal/profile' })).toMatchObject({
+    expect(decide({ sessionStrong: true, hasSession: true, factors: null, pathname: '/portal/profile' })).toMatchObject({
       allow: false,
       status: 403,
     })
@@ -156,7 +156,7 @@ describe('decide (FPR-01: no password-only path to a portal page)', () => {
 
   it('has no self-registration: sign-up is not offered, signed in or not (Addendum C 5.6)', () => {
     for (const hasSession of [true, false]) {
-      expect(decide({ hasSession, factors: passkey, pathname: `${AUTH_BASE}/sign-up/email` })).toMatchObject({
+      expect(decide({ sessionStrong: true, hasSession, factors: passkey, pathname: `${AUTH_BASE}/sign-up/email` })).toMatchObject({
         allow: false,
         status: 404,
       })
@@ -167,10 +167,10 @@ describe('decide (FPR-01: no password-only path to a portal page)', () => {
     for (const f of [null, none, passkey, totp]) {
       for (const hasSession of [true, false]) {
         expect(
-          decide({ hasSession, factors: f, pathname: `${AUTH_BASE}/two-factor/send-otp` }),
+          decide({ sessionStrong: true, hasSession, factors: f, pathname: `${AUTH_BASE}/two-factor/send-otp` }),
         ).toMatchObject({ allow: false, status: 404 })
         expect(
-          decide({ hasSession, factors: f, pathname: `${AUTH_BASE}/two-factor/verify-otp` }),
+          decide({ sessionStrong: true, hasSession, factors: f, pathname: `${AUTH_BASE}/two-factor/verify-otp` }),
         ).toMatchObject({ allow: false, status: 404 })
       }
     }
@@ -179,8 +179,71 @@ describe('decide (FPR-01: no password-only path to a portal page)', () => {
   it('is deterministic over every combination (table check: no state allows a portal path without a second factor)', () => {
     const states: (FactorState | null)[] = [null, none, recoveryOnly, passkey, totp]
     for (const f of states) {
-      const d = decide({ hasSession: true, factors: f, pathname: '/portal/profile' })
+      const d = decide({ sessionStrong: true, hasSession: true, factors: f, pathname: '/portal/profile' })
       expect(d.allow).toBe(f !== null && hasSecondFactor(f))
+    }
+  })
+})
+
+describe('decide: how the session was made (AUTH-01, FP-2: a password alone is never enough)', () => {
+  const weak = (factors: FactorState | null, pathname: string) =>
+    decide({ hasSession: true, sessionStrong: false, factors, pathname })
+  const strong = (factors: FactorState | null, pathname: string) =>
+    decide({ hasSession: true, sessionStrong: true, factors, pathname })
+  const PROTECTED = ['/portal/profile', `${AUTH_BASE}/passkey/list-user-passkeys`, `${AUTH_BASE}/two-factor/disable`]
+
+  it('refuses a protected path to a password-only session even when a passkey or TOTP is registered', () => {
+    for (const f of [passkey, totp]) {
+      for (const p of PROTECTED) {
+        expect(weak(f, p), p).toMatchObject({ allow: false, status: 403, redirectTo: '/portal/sign-in' })
+      }
+    }
+  })
+
+  it('refuses a protected path to a password-only session with no factor at all, towards enrolment', () => {
+    for (const p of PROTECTED) expect(weak(none, p)).toMatchObject({ allow: false, status: 403, redirectTo: '/portal/enrol' })
+  })
+
+  it('lets a password-only session enrol its FIRST factor, and no other', () => {
+    for (const p of ['/portal/enrol', `${AUTH_BASE}/passkey/generate-register-options`, `${AUTH_BASE}/passkey/verify-registration`, `${AUTH_BASE}/two-factor/enable`]) {
+      expect(weak(none, p), p).toEqual({ allow: true })
+      expect(weak(recoveryOnly, p), p).toEqual({ allow: true })
+    }
+  })
+
+  it('refuses a password-only session the enrolment endpoints once a factor exists (adding a factor needs the existing one)', () => {
+    for (const f of [passkey, totp]) {
+      for (const p of ['/portal/enrol', `${AUTH_BASE}/passkey/generate-register-options`, `${AUTH_BASE}/passkey/verify-registration`, `${AUTH_BASE}/two-factor/enable`]) {
+        expect(weak(f, p), p).toMatchObject({ allow: false, status: 403, redirectTo: '/portal/sign-in' })
+      }
+    }
+  })
+
+  it('refuses enrolment to a password-only session whose factor state is unknown (fail closed)', () => {
+    expect(weak(null, `${AUTH_BASE}/two-factor/enable`)).toMatchObject({ allow: false, status: 403 })
+  })
+
+  it('lets a session made with a second factor enrol further factors and reach protected paths', () => {
+    for (const p of [`${AUTH_BASE}/two-factor/enable`, `${AUTH_BASE}/passkey/verify-registration`]) {
+      expect(strong(passkey, p)).toEqual({ allow: true })
+    }
+    for (const p of PROTECTED) expect(strong(passkey, p)).toEqual({ allow: true })
+  })
+
+  it('any session may read itself and sign out', () => {
+    for (const f of [null, none, passkey]) {
+      for (const p of [`${AUTH_BASE}/get-session`, `${AUTH_BASE}/sign-out`]) {
+        expect(weak(f, p)).toEqual({ allow: true })
+      }
+    }
+  })
+
+  it('table: a protected path is allowed only when the session is strong AND a factor is registered', () => {
+    for (const sessionStrong of [true, false]) {
+      for (const f of [null, none, recoveryOnly, passkey, totp]) {
+        const d = decide({ hasSession: true, sessionStrong, factors: f, pathname: '/portal/profile' })
+        expect(d.allow).toBe(sessionStrong && f !== null && hasSecondFactor(f))
+      }
     }
   })
 })

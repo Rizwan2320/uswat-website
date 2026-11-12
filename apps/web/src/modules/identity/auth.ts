@@ -6,6 +6,7 @@
  * - cookie `__Host-portal.session_token`: useSecureCookies false plus secure:true, because
  *   useSecureCookies:true forces a `__Secure-` prefix and the name becomes `__Secure-__Host-...`;
  * - library session cookie cache left off, so revocation is immediate (SES-05);
+ * - a session counts as made with a second factor only if ./sessionAssurancePlugin marked it (AUTH-01);
  * - no SMS or email second factor: those endpoints are closed in ./gate.ts.
  */
 import { passkey } from '@better-auth/passkey'
@@ -14,7 +15,9 @@ import { twoFactor } from 'better-auth/plugins'
 
 import { getIdentityPool } from './db'
 import type { PortalConfig } from './config'
+import { createPgAssuranceStore } from './assuranceStore'
 import { createPgReplayStore } from './replayStore'
+import { sessionAssurancePlugin } from './sessionAssurancePlugin'
 import { totpReplayPlugin } from './totpReplayPlugin'
 
 type EnabledConfig = Extract<PortalConfig, { enabled: true }>
@@ -46,6 +49,7 @@ export function createPortalAuth(config: EnabledConfig) {
         backupCodeOptions: { amount: 0 },
       }),
       totpReplayPlugin(createPgReplayStore(pool)),
+      sessionAssurancePlugin(createPgAssuranceStore(pool)),
     ],
   })
 }

@@ -12,17 +12,21 @@ const env = {
 const noFactor: FactorState = { passkeys: 0, totpVerified: false, recoveryCodesRemaining: 0 }
 const withPasskey: FactorState = { passkeys: 1, totpVerified: false, recoveryCodesRemaining: 10 }
 
-function setup(opts: { env?: Record<string, string | undefined>; session?: boolean; factors?: FactorState | 'throw' } = {}) {
+function setup(opts: { env?: Record<string, string | undefined>; session?: boolean; factors?: FactorState | 'throw'; strong?: boolean | 'throw' } = {}) {
   const libHandler = vi.fn(async () => new Response('library', { status: 200 }))
-  const getSession = vi.fn(async () => (opts.session ? { user: { id: 'u1' } } : null))
+  const getSession = vi.fn(async () => (opts.session ? { user: { id: 'u1' }, session: { id: 's1' } } : null))
   const auth: AuthLike = { handler: libHandler, api: { getSession } }
   const getAuth = vi.fn(() => auth)
   const loadFactors = vi.fn(async () => {
     if (opts.factors === 'throw') throw new Error('db down')
     return opts.factors ?? noFactor
   })
-  const h = createAuthHandlers({ env: opts.env ?? env, getAuth, loadFactors })
-  return { h, libHandler, getSession, getAuth, loadFactors }
+  const isStrongSession = vi.fn(async () => {
+    if (opts.strong === 'throw') throw new Error('db down')
+    return opts.strong ?? true
+  })
+  const h = createAuthHandlers({ env: opts.env ?? env, getAuth, loadFactors, isStrongSession })
+  return { h, libHandler, getSession, getAuth, loadFactors, isStrongSession }
 }
 const req = (path: string, method = 'GET') => new Request(`https://portal.uswat.edu.pk${path}`, { method })
 
@@ -115,5 +119,35 @@ describe('portal auth route handlers', () => {
     const res = await s.h.GET(req(`${AUTH_BASE}/passkey/list-user-passkeys`))
     expect(res.headers.get('cache-control')).toBe('no-store')
     expect(JSON.stringify(await res.json())).not.toContain('db down')
+  })
+
+  it('FP-2: refuses a password-only session at a protected path even when a passkey is registered', async () => {
+    const s = setup({ session: true, factors: withPasskey, strong: false })
+    const res = await s.h.GET(req(`${AUTH_BASE}/passkey/list-user-passkeys`))
+    expect(res.status).toBe(403)
+    expect(await res.json()).toMatchObject({ redirectTo: '/portal/sign-in' })
+    expect(s.libHandler).not.toHaveBeenCalled()
+    expect(s.isStrongSession).toHaveBeenCalledWith('s1')
+  })
+
+  it('FP-2: refuses enrolment to a password-only session once a factor exists, and allows the first factor', async () => {
+    const withFactor = setup({ session: true, factors: withPasskey, strong: false })
+    expect((await withFactor.h.POST(req(`${AUTH_BASE}/two-factor/enable`, 'POST'))).status).toBe(403)
+    expect(withFactor.libHandler).not.toHaveBeenCalled()
+    const first = setup({ session: true, factors: noFactor, strong: false })
+    expect((await first.h.POST(req(`${AUTH_BASE}/two-factor/enable`, 'POST'))).status).toBe(200)
+  })
+
+  it('FP-2: fails closed when the session strength cannot be read', async () => {
+    const s = setup({ session: true, factors: withPasskey, strong: 'throw' })
+    expect((await s.h.GET(req(`${AUTH_BASE}/passkey/list-user-passkeys`))).status).toBe(403)
+    expect(s.libHandler).not.toHaveBeenCalled()
+  })
+
+  it('FP-2: reading the session and signing out need no factor lookup', async () => {
+    const s = setup({ session: true, factors: 'throw', strong: false })
+    expect((await s.h.GET(req(`${AUTH_BASE}/get-session`))).status).toBe(200)
+    expect((await s.h.POST(req(`${AUTH_BASE}/sign-out`, 'POST'))).status).toBe(200)
+    expect(s.loadFactors).not.toHaveBeenCalled()
   })
 })
