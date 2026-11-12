@@ -65,3 +65,7 @@ The blue **Publish changes** button is visible to editors too, but only an appro
 ## What is recorded
 
 Every create, change, publish and delete is written to the audit log with who did it and when. Nobody can switch that off, including administrators.
+
+## Preview a page before it goes live
+
+On a page or post, two buttons sit beside **Publish changes**: the **eye** (Live Preview, shows the page next to the form and updates as you type) and the **arrow** (opens the draft in a new tab). You see the newest draft only for pages your office owns, or that you created. For another office's page you see the page as the public sees it. Close the preview tab when you finish on a shared computer. Notices, events, jobs and tenders cannot be previewed yet.

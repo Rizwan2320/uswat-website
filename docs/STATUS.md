@@ -262,6 +262,11 @@ Updated: 2026-11-09 (Mon) PKT
 - Not run: Urdu admin wording, real editors (CMS-15), message audit.
 - Handover to main agent: public site titles still say "Payload Website Template".
 
+## P3 slice 3l (2026-11-12, branch `p3/preview-3l`, stacked on `p3/labels-3k`)
+- Found by real requests: preview leaked drafts to another office and to a logged-out browser (template code in `(site)` reads drafts with `overrideAccess: draft`). Added `governance/preview.ts` (`findForPreview`), 10 tests, a handover patch `docs/handover/p3l-preview-read.patch`. **The leak stays open on `main` until the main agent applies the patch to `[slug]/page.tsx` and `posts/[slug]/page.tsx`.**
+- Guard test now catches labels made from field names; four fixed.
+- Not run: browser leak probe after the patch lands, Urdu, mobile. No previews for notices, events, jobs, tenders (no public routes).
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
