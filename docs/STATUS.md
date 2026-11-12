@@ -181,7 +181,7 @@ Updated: 2026-11-09 (Mon) PKT
 ## Preview database separated (2026-11-12, main agent, owner approved)
 - Created Neon branch `previews` (br-weathered-king-az41wy5v) from `main` in project `uswat-website`. In Vercel, `DATABASE_URL` is split: Production keeps the `main` branch; Preview uses `previews`. Details and caveats in the ADR-0005 update. Agents may now push branches that carry a migration, still one migration per PR.
 - Found while doing it: production had already received three migrations from unmerged PRs (`p3e`, `p3f`, `p3h`). Left as is; they are recorded as applied.
-- Verified: see the PR for this change (preview build result). Not run: a preview that adds a new migration, to show it lands only in `previews`.
+- Verified: the preview build of the PR for this change (#23) went READY on the new variable, its `/readyz` returns ok, and the `previews` branch's commit counter rose by 4 across one query of mine and three probes of the preview (consistent with the preview reading that branch; not a marker-row proof). Not run: a preview that adds a new migration, to show it lands only in `previews`.
 
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
