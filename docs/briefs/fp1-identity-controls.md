@@ -31,3 +31,6 @@ Not touched: `src/collections/**`, `src/migrations/**`, `src/governance/**`, `sr
 
 ## Gate (this brief)
 `pnpm typecheck`, `pnpm lint`, `pnpm test:unit` green; the integration cases above pass locally; each result is in `docs/evidence/FP1/` with what was not run. Predictions FP1-a and onward in `docs/predictions.md` before each run.
+
+## Routes added (for the route map)
+`/portal-api/auth/[...all]` (GET and POST), file `apps/web/src/app/(portal)/portal-api/auth/[...all]/route.ts`. Dynamic, never cached, answers 404 with `cache-control: no-store` unless the owner sets `PORTAL_ENABLED=true`, `PORTAL_ORIGIN`, `PORTAL_DATABASE_URL` and `PORTAL_AUTH_SECRET` on the portal's own project. No portal page routes exist yet. Not a public route; it is not in the sitemap and not part of the route_map.csv redirect set.
