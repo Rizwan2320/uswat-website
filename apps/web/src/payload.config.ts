@@ -85,6 +85,17 @@ const built = buildConfig({
   }),
   // Locales are fixed before any data exists. Adding or renaming them later forces
   // risky column moves (see docs/evidence/G0/spike-report.md item 6).
+  i18n: {
+    translations: {
+      en: {
+        error: {
+          // Payload's own text says "you must be logged in" even to a signed-in auditor who may only read.
+          unauthorized:
+            'Not allowed. You are signed out, or your role does not let you do this. Sign in again, or ask the site manager if you think it should.',
+        },
+      },
+    },
+  },
   localization: {
     locales: [
       { label: 'English', code: 'en' },

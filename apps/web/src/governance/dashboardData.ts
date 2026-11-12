@@ -81,7 +81,10 @@ export async function loadDashboard(
               collectionLabel: labelOf(c),
               id: doc.id,
               title:
-                (titleField && textOf(doc[titleField])) || textOf(doc.filename) || `#${doc.id}`,
+                (titleField && textOf(doc[titleField])) ||
+                textOf(doc.filename) ||
+                // Opening a create form saves an empty draft straight away, so these exist.
+                `Untitled (started ${String(doc.updatedAt ?? '').slice(0, 10)}, #${doc.id})`,
               updatedAt: textOf(doc.updatedAt),
               href: `${adminRoute}/collections/${c.slug}/${doc.id}`,
             }
