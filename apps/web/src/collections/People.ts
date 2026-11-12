@@ -1,5 +1,6 @@
-import { slugField } from 'payload'
+import { plainSlugField } from '@/fields/plainSlug'
 
+import { safeHrefValidate } from '../governance/fields'
 import { visibleWhenPublic } from '../governance/privacy'
 import { governedCollection } from './governedCollection'
 
@@ -27,7 +28,7 @@ export const People = governedCollection({
   defaultColumns: ['name', 'designation', 'department', 'facultyStatus', 'updatedAt'],
   fields: [
     { name: 'name', type: 'text', required: true, localized: true },
-    slugField({ useAsSlug: 'name', position: undefined }),
+    plainSlugField({ useAsSlug: 'name', position: undefined }),
     { name: 'designation', type: 'text', localized: true },
     { name: 'department', type: 'relationship', relationTo: 'departments' },
     { name: 'office', type: 'relationship', relationTo: 'offices' },
@@ -44,13 +45,13 @@ export const People = governedCollection({
       relationTo: 'media',
       access: { read: visibleWhenPublic('photo') },
     },
-    { name: 'cvLink', label: 'CV link', type: 'text' },
+    { name: 'cvLink', label: 'CV link', type: 'text', validate: safeHrefValidate },
     {
       name: 'publications',
       type: 'array',
       fields: [
-        { name: 'title', type: 'text', required: true },
-        { name: 'url', type: 'text' },
+        { name: 'title', label: 'Title of the publication', type: 'text', required: true },
+        { name: 'url', label: 'Web address', type: 'text', validate: safeHrefValidate },
       ],
     },
     {

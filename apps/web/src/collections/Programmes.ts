@@ -1,4 +1,4 @@
-import { slugField } from 'payload'
+import { plainSlugField } from '@/fields/plainSlug'
 
 import { governedCollection, legacyUrlField } from './governedCollection'
 
@@ -15,7 +15,7 @@ export const Programmes = governedCollection({
   defaultColumns: ['name', 'department', 'campus', 'updatedAt'],
   fields: [
     { name: 'name', type: 'text', required: true, localized: true },
-    slugField({ useAsSlug: 'name', position: undefined }),
+    plainSlugField({ useAsSlug: 'name', position: undefined }),
     legacyUrlField,
     { name: 'department', type: 'relationship', relationTo: 'departments' },
     { name: 'campus', type: 'relationship', relationTo: 'campuses' },

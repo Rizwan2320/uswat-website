@@ -1,5 +1,5 @@
 import type { CollectionConfig, Field } from 'payload'
-import { slugField } from 'payload'
+import { plainSlugField } from '@/fields/plainSlug'
 
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 
@@ -64,11 +64,18 @@ export function postType(opts: PostTypeOptions): CollectionConfig {
       },
       versions: { drafts: { autosave: { interval: 1000 } }, maxPerDoc: 25 },
       fields: [
-        { name: 'title', type: 'text', required: true, localized: true },
-        slugField(),
+        {
+          name: 'title',
+          label: 'Title',
+          type: 'text',
+          required: true,
+          localized: true,
+          admin: { description: 'The headline readers see.' },
+        },
+        plainSlugField(),
         {
           name: 'legacyUrl',
-          label: 'Old page URL',
+          label: 'Address on the old site',
           type: 'text',
           index: true,
           admin: {
@@ -78,10 +85,15 @@ export function postType(opts: PostTypeOptions): CollectionConfig {
         },
         {
           name: 'publishedAt',
-          label: 'Publish date',
+          label: 'Date shown to readers',
           type: 'date',
           index: true,
-          admin: { date: { pickerAppearance: 'dayAndTime' }, position: 'sidebar' },
+          admin: {
+            date: { pickerAppearance: 'dayAndTime' },
+            position: 'sidebar',
+            description:
+              'The date printed on the item. It does not publish it; use "Go live on" under Ownership and approval for that.',
+          },
           hooks: {
             beforeChange: [
               // A published record always has a date: current lists and the 90-day age-out use it.
@@ -92,25 +104,61 @@ export function postType(opts: PostTypeOptions): CollectionConfig {
         },
         {
           name: 'bodyStatus',
-          label: 'Body',
+          label: 'Text status',
           type: 'select',
           defaultValue: 'full',
           options: [
             { label: 'Full text', value: 'full' },
-            { label: 'Stub (text not collected yet)', value: 'stub' },
+            { label: 'Placeholder (text still to be added)', value: 'stub' },
           ],
           admin: { position: 'sidebar' },
         },
-        { name: 'excerpt', type: 'textarea', localized: true },
-        { name: 'body', type: 'richText', localized: true, editor: lexicalEditor() },
-        { name: 'heroImage', type: 'upload', relationTo: 'media' },
+        {
+          name: 'excerpt',
+          label: 'Short summary',
+          type: 'textarea',
+          localized: true,
+          admin: { description: 'One or two sentences shown in lists.' },
+        },
+        {
+          name: 'body',
+          label: 'Main text',
+          type: 'richText',
+          localized: true,
+          editor: lexicalEditor(),
+        },
+        {
+          name: 'heroImage',
+          label: 'Main image',
+          type: 'upload',
+          relationTo: 'media',
+          admin: {
+            description: 'The large picture at the top. It needs alt text in the media library.',
+          },
+        },
         {
           name: 'attachments',
           type: 'array',
-          admin: { description: 'PDFs and other files, as links.' },
+          admin: { description: 'PDFs and other files, added as links.' },
           fields: [
-            { name: 'label', type: 'text', required: true, localized: true },
-            { name: 'url', type: 'text', required: true, validate: safeHrefValidate },
+            {
+              name: 'label',
+              label: 'Link text',
+              type: 'text',
+              required: true,
+              localized: true,
+              admin: {
+                description: 'Say what the file is, for example "Fee schedule 2026 (PDF)".',
+              },
+            },
+            {
+              name: 'url',
+              label: 'Web address',
+              type: 'text',
+              required: true,
+              validate: safeHrefValidate,
+              admin: { description: 'Where the file is, starting with https://' },
+            },
           ],
         },
         { name: 'tags', type: 'relationship', relationTo: 'article-tags', hasMany: true },

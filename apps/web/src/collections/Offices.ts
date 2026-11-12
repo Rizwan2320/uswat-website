@@ -1,5 +1,5 @@
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { slugField } from 'payload'
+import { plainSlugField } from '@/fields/plainSlug'
 
 import {
   documentsField,
@@ -21,7 +21,7 @@ export const Offices = governedCollection({
   defaultColumns: ['name', 'group', 'updatedAt'],
   fields: [
     { name: 'name', type: 'text', required: true, localized: true },
-    slugField({ useAsSlug: 'name', position: undefined }),
+    plainSlugField({ useAsSlug: 'name', position: undefined }),
     legacyUrlField,
     { name: 'group', type: 'text', admin: { description: 'For example "Directorates".' } },
     { name: 'text', type: 'richText', localized: true, editor: lexicalEditor() },

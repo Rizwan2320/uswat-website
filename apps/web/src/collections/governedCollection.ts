@@ -7,7 +7,7 @@ import {
   governedReadVersions,
   governedUpdate,
 } from '../governance/access'
-import { withGovernance } from '../governance/fields'
+import { safeHrefValidate, withGovernance } from '../governance/fields'
 
 export interface GovernedCollectionOptions {
   slug: string
@@ -51,7 +51,7 @@ export function governedCollection(o: GovernedCollectionOptions): CollectionConf
 
 export const legacyUrlField: Field = {
   name: 'legacyUrl',
-  label: 'Old page URL',
+  label: 'Address on the old site',
   type: 'text',
   index: true,
   admin: {
@@ -65,8 +65,22 @@ export const documentsField: Field = {
   type: 'array',
   admin: { description: 'PDFs and other files, as links.' },
   fields: [
-    { name: 'label', type: 'text', required: true, localized: true },
-    { name: 'url', type: 'text', required: true },
+    {
+      name: 'label',
+      label: 'Link text',
+      type: 'text',
+      required: true,
+      localized: true,
+      admin: { description: 'Say what the file is, for example "Prospectus 2026 (PDF)".' },
+    },
+    {
+      name: 'url',
+      label: 'Web address',
+      type: 'text',
+      required: true,
+      validate: safeHrefValidate,
+      admin: { description: 'Where the file is, starting with https://' },
+    },
   ],
 }
 

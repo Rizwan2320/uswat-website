@@ -11,11 +11,7 @@ import { fileURLToPath } from 'url'
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 import { mediaBeforeChange } from '../governance/mediaGuard'
-import {
-  MEDIA_MIME_TYPES,
-  RIGHTS_LABELS,
-  RIGHTS_STATUSES,
-} from '../governance/mediaRules'
+import { MEDIA_MIME_TYPES, RIGHTS_LABELS, RIGHTS_STATUSES } from '../governance/mediaRules'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -33,6 +29,7 @@ export const Media: CollectionConfig = {
   fields: [
     {
       name: 'alt',
+      label: 'Alt text (describes the picture)',
       type: 'text',
       admin: {
         description:
@@ -41,12 +38,13 @@ export const Media: CollectionConfig = {
     },
     {
       name: 'credit',
+      label: 'Photo credit',
       type: 'text',
       admin: { description: 'Photographer or source line shown with the image.' },
     },
     {
       name: 'rightsStatus',
-      label: 'Rights',
+      label: 'Permission to use',
       type: 'select',
       defaultValue: 'unknown',
       index: true,
@@ -58,22 +56,26 @@ export const Media: CollectionConfig = {
     },
     {
       name: 'sourceUrl',
-      label: 'Source URL',
+      label: 'Where the file came from (web address)',
       type: 'text',
       admin: { description: 'Where the file came from (a URL or a named document).' },
     },
     {
       name: 'sourcePage',
-      label: 'Source page',
+      label: 'Page it was found on',
       type: 'text',
       admin: { description: 'The page the image was found on, if it was imported.' },
     },
     {
       name: 'sha256',
-      label: 'SHA-256',
+      label: 'File fingerprint',
       type: 'text',
       unique: true,
-      admin: { readOnly: true, description: 'Set from the file. Used to stop duplicate uploads.' },
+      admin: {
+        readOnly: true,
+        description:
+          'Made automatically from the file. It stops the same picture being uploaded twice.',
+      },
     },
     {
       name: 'caption',
@@ -85,6 +87,7 @@ export const Media: CollectionConfig = {
       }),
     },
   ],
+  admin: { group: 'Content' },
   upload: {
     // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
     staticDir: path.resolve(dirname, '../../public/media'),

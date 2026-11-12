@@ -35,7 +35,7 @@ export const MeritLists: CollectionConfig = withGovernance(
       { name: 'title', type: 'text', required: true, localized: true },
       {
         name: 'legacyUrl',
-        label: 'Old page URL',
+        label: 'Address on the old site',
         type: 'text',
         index: true,
         admin: {
@@ -55,8 +55,25 @@ export const MeritLists: CollectionConfig = withGovernance(
         type: 'array',
         admin: { description: 'The PDF lists, as links.' },
         fields: [
-          { name: 'label', type: 'text', required: true, localized: true },
-          { name: 'url', type: 'text', required: true, validate: safeHrefValidate },
+          {
+            name: 'label',
+            label: 'Link text',
+            type: 'text',
+            required: true,
+            localized: true,
+            admin: {
+              description:
+                'Say what the file is, for example "BS Computer Science, Fall 2026 (PDF)".',
+            },
+          },
+          {
+            name: 'url',
+            label: 'Web address',
+            type: 'text',
+            required: true,
+            validate: safeHrefValidate,
+            admin: { description: 'Where the PDF is, starting with https://' },
+          },
         ],
       },
     ],

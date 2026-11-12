@@ -14,7 +14,7 @@ import { Page, Post } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
 
 const generateTitle: GenerateTitle<Post | Page> = ({ doc }) => {
-  return doc?.title ? `${doc.title} | Payload Website Template` : 'Payload Website Template'
+  return doc?.title ? `${doc.title} | University of Swat` : 'University of Swat'
 }
 
 const generateURL: GenerateURL<Post | Page> = ({ doc }) => {
@@ -59,6 +59,13 @@ export const plugins: Plugin[] = [
   seoPlugin({
     generateTitle,
     generateURL,
+    // Plain wording for the picture shown when a page is shared.
+    fields: ({ defaultFields }) =>
+      defaultFields.map((field) =>
+        'name' in field && field.name === 'image'
+          ? { ...field, label: 'Picture when shared' }
+          : field,
+      ),
   }),
   formBuilderPlugin({
     fields: {
