@@ -275,6 +275,10 @@ Updated: 2026-11-09 (Mon) PKT
 - Refusal messages rewritten in the words on the screen; codes unchanged; guard test; editor guide table updated. Brief: `docs/briefs/p3n-plain-messages.md`.
 - Not run: real editors, Urdu.
 
+## P3 slice 3o (2026-11-12, branch `p3/admin-e2e-ci-3o`, stacked on `p3/messages-3n`)
+- New workflow `.github/workflows/admin-e2e.yml` runs the 14 browser tests on pull requests that touch `apps/web`. First run green. `ci.yml` untouched. Brief: `docs/briefs/p3o-admin-e2e-ci.md`.
+- Decision for the user: make `admin-e2e` a required check in branch protection if wanted (not done).
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
