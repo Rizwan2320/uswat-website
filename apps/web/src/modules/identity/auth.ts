@@ -33,7 +33,9 @@ export function createPortalAuth(config: EnabledConfig) {
     secret: config.secret,
     database: pool,
     emailAndPassword: { enabled: true, minPasswordLength: 15, maxPasswordLength: 128, autoSignIn: true },
-    session: { expiresIn: 60 * 60 * 12 },
+    // The library keeps its own 12 h expiry as a backstop. Idle and absolute limits are enforced in
+    // ./handlers (SES-04), and its refresh is off so nothing extends a session behind our back.
+    session: { expiresIn: 60 * 60 * 12, disableSessionRefresh: true },
     advanced: {
       useSecureCookies: false,
       cookiePrefix: '__Host-portal',

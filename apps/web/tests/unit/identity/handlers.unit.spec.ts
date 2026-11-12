@@ -12,9 +12,9 @@ const env = {
 const noFactor: FactorState = { passkeys: 0, totpVerified: false, recoveryCodesRemaining: 0 }
 const withPasskey: FactorState = { passkeys: 1, totpVerified: false, recoveryCodesRemaining: 10 }
 
-function setup(opts: { env?: Record<string, string | undefined>; session?: boolean; factors?: FactorState | 'throw'; strong?: boolean | 'throw' } = {}) {
+function setup(opts: { env?: Record<string, string | undefined>; session?: boolean; factors?: FactorState | 'throw'; strong?: boolean | 'throw'; createdMsAgo?: number; updatedMsAgo?: number } = {}) {
   const libHandler = vi.fn(async () => new Response('library', { status: 200 }))
-  const getSession = vi.fn(async () => (opts.session ? { user: { id: 'u1' }, session: { id: 's1' } } : null))
+  const getSession = vi.fn(async () => (opts.session ? { user: { id: 'u1' }, session: { id: 's1', createdAt: new Date(Date.now() - (opts.createdMsAgo ?? 60_000)), updatedAt: new Date(Date.now() - (opts.updatedMsAgo ?? 1_000)) } } : null))
   const auth: AuthLike = { handler: libHandler, api: { getSession } }
   const getAuth = vi.fn(() => auth)
   const loadFactors = vi.fn(async () => {
@@ -25,8 +25,10 @@ function setup(opts: { env?: Record<string, string | undefined>; session?: boole
     if (opts.strong === 'throw') throw new Error('db down')
     return opts.strong ?? true
   })
-  const h = createAuthHandlers({ env: opts.env ?? env, getAuth, loadFactors, isStrongSession })
-  return { h, libHandler, getSession, getAuth, loadFactors, isStrongSession }
+  const endSession = vi.fn(async () => {})
+  const touchSession = vi.fn(async () => {})
+  const h = createAuthHandlers({ env: opts.env ?? env, getAuth, loadFactors, isStrongSession, endSession, touchSession })
+  return { h, libHandler, getSession, getAuth, loadFactors, isStrongSession, endSession, touchSession }
 }
 const req = (path: string, method = 'GET') => new Request(`https://portal.uswat.edu.pk${path}`, { method })
 
@@ -149,5 +151,58 @@ describe('portal auth route handlers', () => {
     expect((await s.h.GET(req(`${AUTH_BASE}/get-session`))).status).toBe(200)
     expect((await s.h.POST(req(`${AUTH_BASE}/sign-out`, 'POST'))).status).toBe(200)
     expect(s.loadFactors).not.toHaveBeenCalled()
+  })
+
+  it('SES-04: a session idle for over 30 minutes is ended and refused, and the library is not called', async () => {
+    const s = setup({ session: true, factors: withPasskey, updatedMsAgo: 31 * 60_000 })
+    const res = await s.h.GET(req(`${AUTH_BASE}/passkey/list-user-passkeys`))
+    expect(res.status).toBe(401)
+    expect(await res.json()).toMatchObject({ redirectTo: '/portal/sign-in' })
+    expect(s.endSession).toHaveBeenCalledWith('s1')
+    expect(s.libHandler).not.toHaveBeenCalled()
+  })
+
+  it('SES-04: a session older than 12 hours is ended however recently it was used', async () => {
+    const s = setup({ session: true, factors: withPasskey, createdMsAgo: 12 * 3_600_000 + 60_000, updatedMsAgo: 1_000 })
+    expect((await s.h.GET(req(`${AUTH_BASE}/passkey/list-user-passkeys`))).status).toBe(401)
+    expect(s.endSession).toHaveBeenCalledWith('s1')
+  })
+
+  it('SES-04: an expired session is refused on every path that needs a session, including get-session and sign-out', async () => {
+    for (const p of ['get-session', 'sign-out', 'two-factor/enable']) {
+      const s = setup({ session: true, factors: noFactor, updatedMsAgo: 31 * 60_000 })
+      expect((await s.h.POST(req(`${AUTH_BASE}/${p}`, 'POST'))).status, p).toBe(401)
+      expect(s.libHandler).not.toHaveBeenCalled()
+    }
+  })
+
+  it('SES-04: the session is read without refresh, so our own lookup cannot reset the idle clock', async () => {
+    const s = setup({ session: true, factors: withPasskey })
+    await s.h.GET(req(`${AUTH_BASE}/passkey/list-user-passkeys`))
+    expect(s.getSession).toHaveBeenCalledWith(expect.objectContaining({ query: { disableRefresh: true } }))
+  })
+
+  it('SES-04: an active session is touched and the request goes through', async () => {
+    const s = setup({ session: true, factors: withPasskey, updatedMsAgo: 5 * 60_000 })
+    expect((await s.h.GET(req(`${AUTH_BASE}/passkey/list-user-passkeys`))).status).toBe(200)
+    expect(s.touchSession).toHaveBeenCalledWith('s1', expect.any(Number))
+  })
+
+  it('SES-04: a failing touch does not fail the request', async () => {
+    const s = setup({ session: true, factors: withPasskey, updatedMsAgo: 5 * 60_000 })
+    s.touchSession.mockRejectedValueOnce(new Error('db down'))
+    expect((await s.h.GET(req(`${AUTH_BASE}/passkey/list-user-passkeys`))).status).toBe(200)
+  })
+
+  it('SES-04: a failing endSession still refuses the request', async () => {
+    const s = setup({ session: true, factors: withPasskey, updatedMsAgo: 31 * 60_000 })
+    s.endSession.mockRejectedValueOnce(new Error('db down'))
+    expect((await s.h.GET(req(`${AUTH_BASE}/passkey/list-user-passkeys`))).status).toBe(401)
+  })
+
+  it('SES-04: public paths do not read the session at all', async () => {
+    const s = setup({ session: true, updatedMsAgo: 31 * 60_000 })
+    expect((await s.h.POST(req(`${AUTH_BASE}/sign-in/email`, 'POST'))).status).toBe(200)
+    expect(s.endSession).not.toHaveBeenCalled()
   })
 })

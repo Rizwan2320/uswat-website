@@ -6,10 +6,19 @@
  */
 import { readPortalConfig } from './config'
 import { decide, classifyPath, type FactorState } from './gate'
+import { evaluateSession, shouldTouch } from './sessionLifetime'
 
 export type AuthLike = {
   handler: (req: Request) => Promise<Response>
-  api: { getSession: (opts: { headers: Headers }) => Promise<{ user: { id: string }; session: { id: string } } | null> }
+  api: {
+    getSession: (opts: {
+      headers: Headers
+      query?: { disableRefresh?: boolean }
+    }) => Promise<{
+      user: { id: string }
+      session: { id: string; createdAt?: Date | string | number; updatedAt?: Date | string | number }
+    } | null>
+  }
 }
 
 export type HandlerDeps = {
@@ -18,6 +27,10 @@ export type HandlerDeps = {
   loadFactors: (userId: string) => Promise<FactorState>
   /** Whether this session was made with a second factor. Throwing counts as not strong. */
   isStrongSession: (sessionId: string) => Promise<boolean>
+  /** Deletes the session row (idle timeout or absolute lifetime reached). */
+  endSession: (sessionId: string) => Promise<void>
+  /** Records activity; the store writes at most once a minute. Errors are ignored by the caller. */
+  touchSession: (sessionId: string, now: number) => Promise<void>
 }
 
 function refusal(status: number, error: string, redirectTo?: string): Response {
@@ -39,9 +52,20 @@ export function createAuthHandlers(deps: HandlerDeps) {
     let sessionId: string | null = null
     if (cls !== 'public' && cls !== 'forbidden') {
       try {
-        const session = await deps.getAuth().api.getSession({ headers: req.headers })
+        // No refresh: our own lookup must not reset the idle clock; activity is recorded below.
+        const session = await deps.getAuth().api.getSession({ headers: req.headers, query: { disableRefresh: true } })
         userId = session?.user.id ?? null
         sessionId = session?.session.id ?? null
+        if (session) {
+          const now = Date.now()
+          const verdict = evaluateSession({ createdAt: session.session.createdAt, updatedAt: session.session.updatedAt, now })
+          if (verdict !== 'ok') {
+            await deps.endSession(session.session.id).catch(() => {})
+            return refusal(401, 'session expired', '/portal/sign-in')
+          }
+          const updated = new Date(session.session.updatedAt as Date | string | number)
+          if (shouldTouch(updated, now)) await deps.touchSession(session.session.id, now).catch(() => {})
+        }
       } catch {
         userId = null
         sessionId = null

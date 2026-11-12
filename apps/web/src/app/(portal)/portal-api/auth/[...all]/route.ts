@@ -6,6 +6,7 @@ import { readPortalConfig } from '@/modules/identity/config'
 import { createPortalAuth, type PortalAuth } from '@/modules/identity/auth'
 import { createPgAssuranceStore } from '@/modules/identity/assuranceStore'
 import { getIdentityPool } from '@/modules/identity/db'
+import { createPgSessionStore } from '@/modules/identity/sessionStore'
 import { loadFactors } from '@/modules/identity/factors'
 import { createAuthHandlers, type AuthLike } from '@/modules/identity/handlers'
 
@@ -32,5 +33,15 @@ export const { GET, POST } = createAuthHandlers({
     const config = readPortalConfig(process.env)
     if (!config.enabled) throw new Error('portal disabled')
     return createPgAssuranceStore(getIdentityPool(config.databaseUrl)).isStrong(sessionId)
+  },
+  endSession: (sessionId) => {
+    const config = readPortalConfig(process.env)
+    if (!config.enabled) throw new Error('portal disabled')
+    return createPgSessionStore(getIdentityPool(config.databaseUrl)).end(sessionId)
+  },
+  touchSession: (sessionId, now) => {
+    const config = readPortalConfig(process.env)
+    if (!config.enabled) throw new Error('portal disabled')
+    return createPgSessionStore(getIdentityPool(config.databaseUrl)).touch(sessionId, now)
   },
 })

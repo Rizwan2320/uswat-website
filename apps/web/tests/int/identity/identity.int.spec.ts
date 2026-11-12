@@ -13,6 +13,7 @@ import { readPortalConfig } from '@/modules/identity/config'
 import { createPortalAuth, type PortalAuth } from '@/modules/identity/auth'
 import { createPgAssuranceStore } from '@/modules/identity/assuranceStore'
 import { createPgRecoveryStore } from '@/modules/identity/recoveryStore'
+import { createPgSessionStore } from '@/modules/identity/sessionStore'
 import { closeIdentityPool, getIdentityPool } from '@/modules/identity/db'
 import { loadFactors } from '@/modules/identity/factors'
 import { createAuthHandlers, type AuthLike } from '@/modules/identity/handlers'
@@ -97,6 +98,8 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
       getAuth: () => auth as unknown as AuthLike,
       loadFactors: (id) => loadFactors(pool, id),
       isStrongSession: (id) => createPgAssuranceStore(pool).isStrong(id),
+      endSession: (id) => createPgSessionStore(pool).end(id),
+      touchSession: (id, now) => createPgSessionStore(pool).touch(id, now),
     })
     email = `sample-${Date.now()}@example.test`
     const created = await auth.api.signUpEmail({ body: { email, password: PASSWORD, name: 'Sample Faculty' } })
@@ -386,5 +389,75 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
     const rows = await store.list(u!.id)
     const wins = await Promise.all(Array.from({ length: 5 }, () => store.consume(rows[0]!.id, Date.now())))
     expect(wins.filter(Boolean)).toHaveLength(1)
+  })
+  // --- FP-4: idle timeout and absolute lifetime (SES-04) ---------------------------------------
+
+  async function sessionRow(addr: string) {
+    const rows = await sql<{ id: string; updatedAt: Date; createdAt: Date; expiresAt: Date }>(
+      `select s."id", s."updatedAt", s."createdAt", s."expiresAt" from identity.session s join identity."user" u on u."id" = s."userId" where u."email" = $1 order by s."createdAt" desc limit 1`,
+      [addr],
+    )
+    return rows[0]
+  }
+  async function sessionExists(id: string) {
+    return (await sql(`select 1 from identity.session where "id" = $1`, [id])).length === 1
+  }
+  async function age(addr: string, field: 'updatedAt' | 'createdAt', seconds: number) {
+    await sql(
+      `update identity.session set "${field}" = now() - ($2 || ' seconds')::interval where "id" = (select s."id" from identity.session s join identity."user" u on u."id" = s."userId" where u."email" = $1 order by s."createdAt" desc limit 1)`,
+      [addr, String(seconds)],
+    )
+  }
+
+  it('SES-04: a session idle for 31 minutes is refused and its row is deleted', async () => {
+    const { addr, jar } = await makeEnrolledUser('idle')
+    expect((await call(jar, 'GET', '/passkey/list-user-passkeys')).status).toBe(200)
+    const id = (await sessionRow(addr))!.id
+    await age(addr, 'updatedAt', 31 * 60)
+    const res = await call(jar, 'GET', '/passkey/list-user-passkeys')
+    expect(res.status).toBe(401)
+    expect(await sessionExists(id)).toBe(false)
+    expect((await call(jar, 'GET', '/get-session')).status).toBe(401)
+  })
+
+  it('SES-04: a session created 12 hours and a minute ago is refused however recently it was used', async () => {
+    const { addr, jar } = await makeEnrolledUser('absolute')
+    const id = (await sessionRow(addr))!.id
+    await age(addr, 'createdAt', 12 * 3600 + 60)
+    expect((await call(jar, 'GET', '/passkey/list-user-passkeys')).status).toBe(401)
+    expect(await sessionExists(id)).toBe(false)
+  })
+
+  it('SES-04: use keeps a session alive: activity is recorded and the library does not extend the expiry', async () => {
+    const { addr, jar } = await makeEnrolledUser('alive')
+    await age(addr, 'updatedAt', 5 * 60)
+    const before = (await sessionRow(addr))!
+    expect((await call(jar, 'GET', '/passkey/list-user-passkeys')).status).toBe(200)
+    expect((await call(jar, 'GET', '/get-session')).status).toBe(200)
+    const after = (await sessionRow(addr))!
+    expect(Date.now() - after.updatedAt.getTime()).toBeLessThan(10_000)
+    expect(after.expiresAt.getTime()).toBe(before.expiresAt.getTime())
+  })
+
+  it('SES-04: activity is written at most once a minute', async () => {
+    const { addr, jar } = await makeEnrolledUser('throttle')
+    await age(addr, 'updatedAt', 10)
+    const before = (await sessionRow(addr))!
+    expect((await call(jar, 'GET', '/passkey/list-user-passkeys')).status).toBe(200)
+    const after = (await sessionRow(addr))!
+    expect(after.updatedAt.getTime()).toBe(before.updatedAt.getTime())
+  })
+  it('the session store itself refuses to write activity more than once a minute', async () => {
+    const { addr } = await makeEnrolledUser('storethrottle')
+    const pool = getIdentityPool(env.PORTAL_DATABASE_URL as string)
+    const store = createPgSessionStore(pool)
+    await age(addr, 'updatedAt', 10)
+    const before = (await sessionRow(addr))!
+    await store.touch(before.id, Date.now())
+    expect((await sessionRow(addr))!.updatedAt.getTime()).toBe(before.updatedAt.getTime())
+    await age(addr, 'updatedAt', 120)
+    const old = (await sessionRow(addr))!
+    await store.touch(old.id, Date.now())
+    expect((await sessionRow(addr))!.updatedAt.getTime()).toBeGreaterThan(old.updatedAt.getTime())
   })
 })
