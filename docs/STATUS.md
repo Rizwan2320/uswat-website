@@ -207,6 +207,14 @@ Updated: 2026-11-09 (Mon) PKT
   6. *Data pack:* still missing; G4 stays missed. Start the importer with the invented Sample fixtures, as you proposed.
 - **Dark mode (PR #30):** built and green but the owner asked to hold it ("leave it as it is, more to do later"). Not merged. The preview link was shared. Open design question for later: closer to the owner's mockup (bright green accent and card borders).
 
+## PR #29 merged (2026-11-12, main agent)
+- Recovery codes issued and accepted (PJ3). I read `recoveryPlugin.ts`, `recoveryService.ts` and `recoveryStore.ts`, the part the FP agent asked me to look at hardest. Checked on the exact result: typecheck, 284 unit, 17 identity integration tests against a throwaway local database (all pass). Portal stays off everywhere; identity migrations are local only.
+- Read and found sound: one generic 401 for every failure kind; the code is spent by one conditional update; all older sessions are deleted before the new one is created; the new session is created with the library's own calls and marked strong; lockout is one SQL statement and refuses even a correct code while locked.
+- Three things to know, none blocking while the portal is off (for the FP agent and the owner):
+  1. Wrong-password attempts at `/recovery/sign-in` are not counted against the account (only a correct password with a wrong code is). The only brake on password guessing there is the per-IP rule (10 a minute), whose behaviour behind Vercel's proxy and across serverless instances is not run. Guessing still needs the recovery code as well, so it is not a way in, but it is a free password oracle-free guess channel; consider counting those failures too before the portal is switched on.
+  2. Someone who knows the password can lock the account's recovery for 15 minutes by guessing codes wrongly five times.
+  3. A wrong password skips the code lookup, so the failure kinds may differ slightly in timing. Not measured (listed as not run in the PR).
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
