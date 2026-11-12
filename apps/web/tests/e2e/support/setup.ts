@@ -8,11 +8,16 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { as, getTestPayload, makeUser, PASSWORD, pageData, uniq } from '../../helpers/governance'
 
 const payload = await getTestPayload()
-const [editor, approver, admin] = await Promise.all([
-  makeUser(payload, 'editor', ['Registrar']),
-  makeUser(payload, 'approver', ['Registrar']),
-  makeUser(payload, 'platformAdmin'),
-])
+const [editor, approver, admin, contributor, auditor, siteManager, financeEditor] =
+  await Promise.all([
+    makeUser(payload, 'editor', ['Registrar']),
+    makeUser(payload, 'approver', ['Registrar']),
+    makeUser(payload, 'platformAdmin'),
+    makeUser(payload, 'contributor', ['Registrar']),
+    makeUser(payload, 'auditor'),
+    makeUser(payload, 'siteManager'),
+    makeUser(payload, 'editor', ['Finance']),
+  ])
 
 const title = uniq('e2e-page')
 const page = await payload.create({
@@ -40,6 +45,14 @@ await payload.update({
   ...as(approver),
 })
 
+// A Registrar notice that only exists as a draft, for the role checks.
+const notice = await payload.create({
+  collection: 'notices',
+  draft: true,
+  data: { title: uniq('e2e-notice'), governance: { ownerOffice: 'Registrar' } } as never,
+  ...as(editor),
+})
+
 mkdirSync('/tmp/uswat-e2e', { recursive: true })
 writeFileSync(
   '/tmp/uswat-e2e/fixtures.json',
@@ -49,6 +62,11 @@ writeFileSync(
     approver: approver.email,
     admin: admin.email,
     page: { id: page.id, title },
+    notice: { id: notice.id, title: notice.title },
+    contributor: contributor.email,
+    auditor: auditor.email,
+    siteManager: siteManager.email,
+    financeEditor: financeEditor.email,
   }),
 )
 process.exit(0)
