@@ -58,23 +58,26 @@ const FORBIDDEN = new Set<string>([
   `${AUTH_BASE}/two-factor/generate-backup-codes`,
 ])
 
-/** Anything that is not a plain, normalised path is treated as the strictest reachable class. */
+/**
+ * A plain path is already in the form the allow-lists use: absolute, no encoding, no traversal,
+ * no doubled slash, no backslash, no control characters. Anything else is refused outright
+ * (class 'forbidden'): whether the library would decode or normalise it is not something this
+ * gate relies on.
+ */
 function isPlain(path: string): boolean {
-  return (
-    path.startsWith('/') &&
-    !path.includes('//') &&
-    !path.includes('..') &&
-    !path.includes('%') &&
-    !path.includes('\\') &&
-    !path.includes('\0')
-  )
+  if (!path.startsWith('/')) return false
+  if (path.includes('//') || path.includes('%') || path.includes('\\')) return false
+  if (/[\u0000-\u001f\u007f]/.test(path)) return false
+  return !path.split('/').some((seg) => seg === '.' || seg === '..')
 }
 
 export function classifyPath(pathname: string): RouteClass {
-  if (!isPlain(pathname)) return 'portal'
-  // Exact matches only: '/portal/sign-in-admin' must not ride on '/portal/sign-in'.
+  if (!isPlain(pathname)) return 'forbidden'
   const p = pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname
-  if (FORBIDDEN.has(p)) return 'forbidden'
+  // Closed endpoints are matched without regard to case, so no spelling of them gets through.
+  if (FORBIDDEN.has(p.toLowerCase())) return 'forbidden'
+  // Allow-list entries are matched exactly, case included: a differently cased spelling is not
+  // widened into a public or enrolment path, it falls to 'portal' (session and second factor).
   if (PUBLIC.has(p)) return 'public'
   if (ENROLMENT.has(p)) return 'enrolment'
   if (SIGNOUT.has(p)) return 'signout'

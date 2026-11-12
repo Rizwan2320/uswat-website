@@ -55,6 +55,22 @@ describe('portal auth route handlers', () => {
     expect(s.libHandler).not.toHaveBeenCalled()
   })
 
+  it('answers 404 for encoded, upper-case or traversal spellings of closed endpoints and never calls the library', async () => {
+    const s = setup({ session: true, factors: withPasskey })
+    for (const p of [
+      'two-factor/generate-backup%2Dcodes',
+      'TWO-FACTOR/SEND-OTP',
+      'two-factor/../two-factor/verify-otp',
+      'Sign-Up/Email',
+      'two-factor%2Fverify-backup-code',
+    ]) {
+      const res = await s.h.POST(req(`${AUTH_BASE}/${p}`, 'POST'))
+      expect(res.status, p).toBe(404)
+    }
+    expect(s.libHandler).not.toHaveBeenCalled()
+    expect(s.getSession).not.toHaveBeenCalled()
+  })
+
   it('answers 401 without a session on a protected path', async () => {
     const s = setup({ session: false })
     const res = await s.h.GET(req(`${AUTH_BASE}/passkey/list-user-passkeys`))

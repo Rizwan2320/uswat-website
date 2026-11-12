@@ -4,6 +4,7 @@
  * Skipped unless IDENTITY_TEST_DATABASE_URL points at a throwaway database, because the first
  * test drops and recreates the `identity` schema in it.
  */
+import { symmetricDecrypt } from 'better-auth/crypto'
 import pg from 'pg'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
@@ -170,9 +171,19 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
     await passwordSignIn(factorJar)
     const enable = await call(factorJar, 'POST', '/two-factor/enable', { password: PASSWORD })
     expect(enable.status).toBe(200)
-    const body = (await enable.json()) as { totpURI: string }
+    const body = (await enable.json()) as { totpURI: string; backupCodes: string[] }
     secret = new URL(body.totpURI).searchParams.get('secret') ?? ''
     expect(secret).not.toBe('')
+
+    // R2 (PR #16 review): the library's own backup codes are reversible, so none may be issued or kept.
+    expect(body.backupCodes).toEqual([])
+    const c = new pg.Client({ connectionString: DB })
+    await c.connect()
+    const stored = await c.query<{ backupCodes: string }>(`select "backupCodes" from identity."twoFactor" where "userId" = $1`, [userId])
+    await c.end()
+    expect(stored.rows).toHaveLength(1)
+    const plain = await symmetricDecrypt({ key: env.PORTAL_AUTH_SECRET, data: stored.rows[0]!.backupCodes })
+    expect(JSON.parse(plain)).toEqual([])
     const confirm = await call(factorJar, 'POST', '/two-factor/verify-totp', { code: totpAt(secret, Date.now() - 30_000) })
     expect(confirm.status).toBe(200)
     expect((await call(factorJar, 'GET', '/passkey/list-user-passkeys')).status).toBe(200)

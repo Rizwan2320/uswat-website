@@ -57,10 +57,47 @@ describe('classifyPath', () => {
     expect(classifyPath(path)).toBe(expected)
   })
 
-  it('treats a path traversal or doubled slash as the default class, not as public', () => {
-    expect(classifyPath('/portal/sign-in/../profile')).toBe('portal')
-    expect(classifyPath(`${AUTH_BASE}//sign-in/email`)).toBe('portal')
-    expect(classifyPath('/portal/sign-in%2f..%2fprofile')).toBe('portal')
+  it('refuses any path that is not plain: encoded, traversal, doubled slash, backslash, NUL', () => {
+    for (const p of [
+      '/portal/sign-in/../profile',
+      `${AUTH_BASE}//sign-in/email`,
+      '/portal/sign-in%2f..%2fprofile',
+      `${AUTH_BASE}/sign-in/email%00`,
+      `${AUTH_BASE}\\sign-in\\email`,
+      `${AUTH_BASE}/sign-in/email\0`,
+    ]) {
+      expect(classifyPath(p), p).toBe('forbidden')
+    }
+  })
+
+  const FORBIDDEN_ENDPOINTS = [
+    'two-factor/send-otp',
+    'two-factor/verify-otp',
+    'sign-up/email',
+    'two-factor/verify-backup-code',
+    'two-factor/generate-backup-codes',
+  ]
+
+  it.each(FORBIDDEN_ENDPOINTS)('%s stays forbidden in every spelling (encoded, upper case, mixed case, trailing slash)', (ep) => {
+    const plain = `${AUTH_BASE}/${ep}`
+    const spellings = [
+      plain,
+      `${plain}/`,
+      plain.toUpperCase(),
+      plain.replace(/(^|[-/])([a-z])/g, (_m, a: string, b: string) => a + b.toUpperCase()),
+      plain.replace('-', '%2D'),
+      plain.replace('/two-factor/', '/two-factor%2F'),
+      plain.replace('portal-api', 'Portal-Api'),
+      `${AUTH_BASE}/./${ep}`,
+      `${AUTH_BASE}//${ep}`,
+    ]
+    for (const sp of spellings) expect(classifyPath(sp), sp).toBe('forbidden')
+  })
+
+  it('does not widen an allow-list entry by case: a differently cased public path needs a session and a factor', () => {
+    expect(classifyPath('/Portal/Sign-In')).toBe('portal')
+    expect(classifyPath(`${AUTH_BASE}/Sign-In/Email`)).toBe('portal')
+    expect(classifyPath(`${AUTH_BASE}/GET-SESSION`)).toBe('portal')
   })
 
   it('does not let a longer name ride on a public prefix', () => {

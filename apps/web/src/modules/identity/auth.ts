@@ -43,7 +43,7 @@ export function createPortalAuth(config: EnabledConfig) {
       twoFactor({
         issuer: 'University of Swat',
         totpOptions: { digits: 6, period: 30 },
-        backupCodeOptions: { amount: 10 },
+        backupCodeOptions: { amount: 0 },
       }),
       totpReplayPlugin(createPgReplayStore(pool)),
     ],
