@@ -178,6 +178,11 @@ Updated: 2026-11-09 (Mon) PKT
 - **Before agent 4 pushes anything that changes data:** the separate Neon branch for previews needs the owner's go (ADR-0005 risk); the P3 stack (#7 first) needs rebasing and merging; the organized data pack is still missing, so the importer starts against invented fixtures.
 - **Open for the owner:** the 33 "hold as draft" rows whose old address redirects to a path that will answer 404.
 
+## Preview database separated (2026-11-12, main agent, owner approved)
+- Created Neon branch `previews` (br-weathered-king-az41wy5v) from `main` in project `uswat-website`. In Vercel, `DATABASE_URL` is split: Production keeps the `main` branch; Preview uses `previews`. Details and caveats in the ADR-0005 update. Agents may now push branches that carry a migration, still one migration per PR.
+- Found while doing it: production had already received three migrations from unmerged PRs (`p3e`, `p3f`, `p3h`). Left as is; they are recorded as applied.
+- Verified: see the PR for this change (preview build result). Not run: a preview that adds a new migration, to show it lands only in `previews`.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.

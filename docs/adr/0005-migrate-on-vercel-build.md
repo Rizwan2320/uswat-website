@@ -11,3 +11,12 @@
 - Owner: Lead
 - Review date: At P8 or when the real hosting decision is made.
 - Prediction: P1-e
+
+## Update 2026-11-12: previews have their own Neon branch
+- Why: the shared database was already affected. On 2026-11-12 the production database listed migrations `p3e_organisation`, `p3f_media_rules` and `p3h_seo_search_redirects`, all applied by preview builds of branches that had not merged. Production tables therefore ran ahead of `main`.
+- What changed: Neon project `uswat-website` has a branch `previews` (copied from `main` at 2026-11-12 02:13 UTC, so it carries the same three migrations). In Vercel, `DATABASE_URL` is now two variables: the original, set to Production only, points at the `main` branch; a second, set to Preview only, points at the `previews` branch. Both are the pooled host; `vercel-build.sh` still rewrites it to the direct host for migrations. Neither value is in the repository.
+- Consequence: a preview build migrates and serves only the `previews` branch. Production changes only when `main` deploys. The `previews` branch is shared by all preview deployments, so two previews of different branches still share it; the rule of one migration per PR, never edited after a preview built it, still applies.
+- Not changed: the production database keeps the three extra migrations. They are recorded as applied, so when their PRs merge Payload skips them. Do not rewrite those migration files.
+- Reset: `previews` can be reset from `main` in the Neon console or with the Neon tools when it drifts too far (this discards what previews wrote, which is the point). Do that only after the main agent has confirmed no open preview needs the data.
+- Compute: Neon does not let this account change the suspend interval, so the `previews` compute follows the project default.
+- Credentials: a Neon branch inherits the parent's roles, so `previews` uses the same role and password as `main`. Rotating the Neon password (an open owner item) must be followed by updating both Vercel variables.
