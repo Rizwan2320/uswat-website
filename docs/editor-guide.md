@@ -28,10 +28,10 @@ After you sign in, the first page shows what needs you. Click any title to open 
 ### 1. Write a notice
 1. Open **Notices**, then **Create new**.
 2. Fill in the title and the text. Open the **Governance** panel on the right and fill in **Owner office** (your office) and **Source** (the document or web page the facts come from). Both are needed before publishing.
-3. Press **Save draft**. Nothing is public yet.
+3. Your work **saves by itself** about a second after you stop typing (the page shows when it last saved). There is no Save button for notices and pages. Nothing is public yet.
 
 ### 2. Edit an existing page
-Open **Pages**, pick the page, change it, and press **Save draft**. The public page does not change until an approver publishes your edit. You can restore an older version from the **Versions** tab.
+Open **Pages**, pick the page and change it; it saves by itself as a draft. The public page does not change until an approver publishes your edit. You can restore an older version from the **Versions** tab.
 
 ### 3. Add an image
 1. In a page or notice, choose an image, or open **Media** and upload one (JPEG, PNG, WebP or AVIF, up to 8 MB).
@@ -46,7 +46,7 @@ Open **Pages**, pick the page, change it, and press **Save draft**. The public p
 4. Jobs, tenders and events cannot leave Draft without an **Expire at**.
 
 ### 5. Send for review
-In the **Governance** panel change **Workflow status** from **Draft** to **In review**, and save. It appears in your approver's **Waiting for review** list. If an approver sends it back, it returns to **Draft** with your changes kept.
+In the **Governance** panel change **Workflow status** from **Draft** to **In review**. It saves by itself. It appears in your approver's **Waiting for review** list. If an approver sends it back, it returns to **Draft** with your changes kept.
 
 ## If the system will not let you publish
 
@@ -60,7 +60,7 @@ The message names the problem. The common ones:
 | A link reads "click here" | Say where the link goes, for example "Read the fee schedule". |
 | Not verified, or needs an approver | Only an approver can verify and publish. High-impact items (fees, admissions, deadlines, legal notices) also need a review date. |
 
-You can always save a draft, even with these problems. They only stop **publishing**.
+The blue **Publish changes** button is visible to editors too, but only an approver's press will work; yours will be refused with one of the messages above. You can always save a draft, even with these problems. They only stop **publishing**.
 
 ## What is recorded
 

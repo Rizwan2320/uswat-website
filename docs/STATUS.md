@@ -250,6 +250,12 @@ Updated: 2026-11-09 (Mon) PKT
 - Done: the reviewer's open follow-up, REST versions and drafts access by role (anonymous, other-office editor, office editor, contributor, auditor, site manager, platform admin), 11 integration tests on real route handlers and JWTs; mutation check fails 3 tests. No code change was needed: the rules already held. Predictions P3i-a and P3i-b with actuals.
 - Still not run: Playwright admin flows, browser check of the admin edit form, preview, plain-language label audit.
 
+## P3 slice 3j (2026-11-12, branch `p3/admin-flows-3j`, stacked on `p3/rest-access-3i`)
+- **Bug found in a real browser and fixed:** an editor or approver could not open a create page (blank; first autosave refused with `OWNER_OUT_OF_SCOPE`). `Owner office` now defaults to the person's first office. Only a platform admin had ever been tried in the browser.
+- Done: 4 Playwright admin flows (notice to review to publish, image upload with required alt, edit live page, schedule); editor guide corrected for autosave; runbook steps. Brief: `docs/briefs/p3j-admin-flows.md`.
+- Known UX items for the usability test: Publish button visible to editors; lower-case office names.
+- Not run: e2e in CI, Urdu admin, mobile, CMS-15 with real staff, a scheduled item actually publishing.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
