@@ -39,6 +39,7 @@ export const ur: Record<string, string> = {
   Subscribe: 'سبسکرائب',
   'UNIVERSITY OF SWAT': 'جامعہ سوات',
   'Skip to content': 'مواد پر جائیں',
+  'Dark mode': 'ڈارک موڈ',
   Menu: 'مینو',
   Close: 'بند کریں',
   Announcements: 'اعلانات',

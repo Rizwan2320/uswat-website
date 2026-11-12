@@ -13,6 +13,13 @@
   display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 50%;
   background: transparent; color: inherit; font-size: 1.1rem; cursor: pointer;
 }
+.sun { display: none; }
+:root[data-theme='dark'] .sun { display: block; }
+:root[data-theme='dark'] .moon { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .sun { display: block; }
+  :root:not([data-theme='light']) .moon { display: none; }
+}
 .search:hover { background: rgb(252 250 244 / 0.14); }
 /* The tagline never gets cut off: the place name gives way first, then the whole left side moves into the logo block. */
 @media (max-width: 1099px) { .place, .divider { display: none; } }

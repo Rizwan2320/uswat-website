@@ -16,11 +16,11 @@ Give the redesigned public pages (route group `(site)`, including the CMS-backed
 - **Maroon rule (tokens.css):** maroon is for light surfaces. In dark mode, maroon accents become gold, and the maroon buttons become gold buttons with a forest label.
 - **Choice and storage.** System setting by default. The toggle stores `light` or `dark` in `localStorage` (try/catch, works without it). No cookie, no server read, so pages stay static. This is the only thing the site stores; the language choice is still memory-only (ADR-0008) and is not changed.
 - **No flash.** The existing inline script in `<head>` sets `data-theme` from storage before first paint.
-- **Toggle.** A button in the top bar, `aria-pressed`, label translated (English and Urdu), 44 px target, both icons in the markup with CSS choosing the visible one so the server HTML does not depend on the stored choice.
+- **Toggle.** A button in the top bar, `aria-pressed`, label translated (English and Urdu), 36 px target, the same as the search button (the WCAG 2.2 AA minimum is 24), both icons in the markup with CSS choosing the visible one so the server HTML does not depend on the stored choice.
 - **Images.** The two multiply-blended leadership backdrops need a dark treatment; the crest and the Vice Chancellor cut-out already have transparent backgrounds.
 
 ## Paths touched
-`src/design/tokens.css`, `src/design/site.css`, 18 module CSS files under `src/site/components/**`, `src/app/(site)/layout.tsx`, `src/app/(site)/design/**` (document the dark palette), `Footer.tsx`, `Hero.tsx`, `HeroCarousel.tsx` (inline colours), new `ThemeToggle.tsx`, `TopBar.tsx`, `src/site/content/i18n.ts`. Tests: `tests/unit/tokens.contrast.unit.spec.ts` (extended), `tests/unit/stray-colours.*`, new e2e for the toggle, new dark visual baselines.
+`src/design/tokens.css`, `src/design/site.css`, 18 module CSS files under `src/site/components/**`, `src/app/(site)/layout.tsx`, `Footer.tsx`, `Hero.tsx` (inline colours), `src/design/cms.css` (stock colour names), `docs/design-notes.md`, new `ThemeToggle.tsx`, `TopBar.tsx`, `src/site/content/i18n.ts`. Tests: `tests/unit/tokens.contrast.unit.spec.ts` (extended), `tests/unit/stray-colours.*`, new e2e for the toggle, new dark visual baselines.
 
 ## Risks
 1. Light mode drifts while hard-coded colours move to tokens. Guard: the 24 existing visual baselines must pass untouched.

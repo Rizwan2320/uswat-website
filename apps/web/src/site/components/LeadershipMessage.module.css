@@ -1,5 +1,5 @@
 /* Compact leadership band: the Vice Chancellor stands on a campus photo with a ribbon name plate on the left, message on the right, a second campus photo fading in on the far right. */
-section.section { position: relative; isolation: isolate; overflow: hidden; background: var(--ivory); padding-block: clamp(24px, 2.6vw, 38px) clamp(40px, 3.6vw, 52px); }
+section.section { position: relative; isolation: isolate; overflow: hidden; background: var(--surface); padding-block: clamp(24px, 2.6vw, 38px) clamp(40px, 3.6vw, 52px); }
 
 /* Backdrops. The photos are near-white at their fading edges, so multiply makes that white vanish into the ivory. */
 .bg { position: absolute; z-index: 0; pointer-events: none; mix-blend-mode: multiply; }
@@ -43,7 +43,7 @@ section.section { position: relative; isolation: isolate; overflow: hidden; back
 /* Ribbon: wider than the portrait so its wings hide the cut at the bottom of the photo. */
 .ribbon {
   position: relative; z-index: 1; width: 100%; margin-top: -46px; padding: 17px 54px 15px; text-align: center; color: #fff;
-  display: grid; gap: 1px; filter: drop-shadow(0 8px 14px rgb(0 42 16 / 0.28));
+  display: grid; gap: 1px; filter: drop-shadow(0 8px 14px rgb(var(--shadow-rgb) / 0.28));
 }
 .ribbonBg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
 .name { display: block; font-family: var(--stack-serif); font-weight: 700; font-size: 1.15rem; line-height: 1.25; }
@@ -51,12 +51,12 @@ section.section { position: relative; isolation: isolate; overflow: hidden; back
 
 .text { max-width: 600px; }
 .badge { display: flex; align-items: center; gap: 14px; margin: 0; }
-.badge > span:first-child { padding: 6px 16px; border-radius: 999px; background: var(--forest); color: var(--ivory); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.16em; }
-.rule { flex: 0 1 120px; height: 2px; background: linear-gradient(to right, var(--maroon), transparent); }
-[dir='rtl'] .rule { background: linear-gradient(to left, var(--maroon), transparent); }
-.title { white-space: pre-line; margin: 12px 0 14px; font-family: var(--stack-serif); font-weight: 600; font-size: clamp(1.6rem, 2.8vw, 2.25rem); line-height: 1.15; color: var(--forest); }
+.badge > span:first-child { padding: 6px 16px; border-radius: 999px; background: var(--fill); color: var(--on-fill); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.16em; }
+.rule { flex: 0 1 120px; height: 2px; background: linear-gradient(to right, var(--mark), transparent); }
+[dir='rtl'] .rule { background: linear-gradient(to left, var(--mark), transparent); }
+.title { white-space: pre-line; margin: 12px 0 14px; font-family: var(--stack-serif); font-weight: 600; font-size: clamp(1.6rem, 2.8vw, 2.25rem); line-height: 1.15; color: var(--ink); }
 .quote { position: relative; margin: 0 0 20px; padding-inline-start: 48px; max-width: 480px; }
-.mark { position: absolute; inset-inline-start: 0; top: -10px; font-family: var(--stack-serif); font-size: 68px; line-height: 1; color: var(--maroon); }
+.mark { position: absolute; inset-inline-start: 0; top: -10px; font-family: var(--stack-serif); font-size: 68px; line-height: 1; color: var(--mark); }
 .quote p { margin: 0; font-size: 1rem; line-height: 1.65; }
 
 @media (max-width: 767px) {
@@ -71,3 +71,15 @@ section.section { position: relative; isolation: isolate; overflow: hidden; back
 }
 /* Below about 1100 px the message column runs under the right-hand photo, so the photo is dropped to keep the text readable. */
 @media (max-width: 1100px) { .bgRight { display: none; } }
+
+/* Dark theme. The left photo is leaves on white that multiply away into the ivory; on a dark page that would turn it black, so
+   it is inverted (white becomes black) and added with "screen", which leaves a faint green glow. The right photo is a colour
+   picture, so it is dimmed. The two blocks are identical on purpose: one for a manual choice, one for the system setting. */
+:root[data-theme='dark'] .bgLeft { mix-blend-mode: screen; opacity: 0.5; }
+:root[data-theme='dark'] .bgLeft .bgImg { filter: invert(1) hue-rotate(180deg); }
+:root[data-theme='dark'] .bgRight .bgImg { filter: brightness(0.6) saturate(0.9); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .bgLeft { mix-blend-mode: screen; opacity: 0.5; }
+  :root:not([data-theme='light']) .bgLeft .bgImg { filter: invert(1) hue-rotate(180deg); }
+  :root:not([data-theme='light']) .bgRight .bgImg { filter: brightness(0.6) saturate(0.9); }
+}
