@@ -82,7 +82,7 @@ export const mediaBeforeChange: CollectionBeforeChangeHook = async ({
     })
     if (dupes.docs[0]) {
       throw new APIError(
-        `This image is already in the library (record ${dupes.docs[0].id}). Use that one.`,
+        `This image is already in the media library (item ${dupes.docs[0].id}). Use that one instead.`,
         409,
         { code: 'MEDIA_DUPLICATE', existingId: dupes.docs[0].id },
         true,

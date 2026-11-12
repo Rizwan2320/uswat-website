@@ -102,7 +102,7 @@ export function checkMediaWrite(i: MediaWriteInput): { ok: true } | MediaRuleErr
   ) {
     return fail(
       'RIGHTS_REVIEWER_ONLY',
-      'Only an approver or administrator can record the rights status of an image.',
+      'Only an approver or administrator can change "Permission to use" on an image.',
       403,
     )
   }
