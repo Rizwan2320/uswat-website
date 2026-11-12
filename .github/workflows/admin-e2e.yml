@@ -1,0 +1,74 @@
+# Runs the real-browser admin tests (editor, approver and every other role) against a production
+# build and a throwaway database. Added in P3 slice 3o after a browser pass found bugs (a blank
+# create page, drafts visible across offices) that no integration test could see.
+# Kept in its own file so the main `ci` workflow is unchanged. Everything here is made fresh on the
+# runner: the database, the users (setup script), and the secrets, which are test-only values.
+name: admin-e2e
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/admin-e2e.yml'
+      - 'pnpm-lock.yaml'
+
+concurrency:
+  group: admin-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: uswat
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d uswat"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/uswat
+      PAYLOAD_SECRET: ci-only-secret-0123456789
+      CRON_SECRET: ci-only-cron-0123456789
+      PREVIEW_SECRET: ci-only-preview-0123456789
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install the browser
+        working-directory: apps/web
+        run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm db:migrate
+      - run: pnpm build
+      - name: Create the test people and one live page
+        working-directory: apps/web
+        run: pnpm exec cross-env NODE_OPTIONS=--no-deprecation payload run tests/e2e/support/setup.ts
+      - name: Start the site
+        run: |
+          nohup pnpm start > /tmp/next.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -fs -o /dev/null http://localhost:3000/admin/login && exit 0
+            sleep 2
+          done
+          echo "site did not start"; cat /tmp/next.log; exit 1
+      - name: Browser tests
+        working-directory: apps/web
+        env:
+          CI: 'true'
+        run: >
+          pnpm exec cross-env NODE_OPTIONS="--no-deprecation --import=tsx/esm"
+          playwright test tests/e2e/editor-flows.e2e.spec.ts tests/e2e/role-views.e2e.spec.ts
+          --config=playwright.config.ts --project=chromium --reporter=list
+      - name: Site log on failure
+        if: failure()
+        run: tail -n 80 /tmp/next.log || true
