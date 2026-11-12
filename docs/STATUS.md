@@ -165,6 +165,13 @@ Updated: 2026-11-09 (Mon) PKT
 - **Route map:** the owner does not need to supply it again; `scripts/import/data/route_map.csv` is already in the repo (merged with #14).
 - **Importer ownership (the owner could not say which agent owns it, so the main agent decides):** the main agent takes the redirect loader (route map into the Redirects collection) and the one-hop 301/410 test (MIG-02), because it touches routes, which the main agent owns. The content importer (pages, news, notices from the data pack) stays unassigned until the organized data pack exists; it will be assigned then. The P3 agent keeps the CMS collections and the review fixes on its stack. The owner may override.
 
+## Old-address redirects, MIG-02 (2026-11-12, branch `feat/legacy-redirects`, main agent)
+- Built `src/proxy.ts` plus `src/legacy/routeMap.ts` and a generated map (`pnpm routemap:build`). Of the 1,613 route-map rows: 1,542 answer a real 301 to the new path, 5 dead links answer 410 (my decision, the old site already returned 404; the owner may choose a redirect to a parent), and 66 keep their address and are not redirects (a redirect there would loop). ADR-0012 records why this replaces "load the CSV into the Redirects collection": that route gives 307, cannot give 410, and every old address ends in a slash so each would take two hops.
+- Checked: 14 unit tests over the real CSV (3 mutation checks caught), and an e2e run on a production build requesting all 1,613 old addresses as the old site wrote them (4 tests pass). Full suites: unit 12 files pass, e2e 29 pass with the same 2 older template failures, visual 18 pass with the same 6 `news` failures, lint 0 errors.
+- Not run: the 307 behaviour of `redirect()` and the default two-hop behaviour without `skipTrailingSlashRedirect` (taken from the framework's documentation); an e2e mutation of the proxy itself; any check that targets exist (the new pages are not imported, so every target answers 404 until the importer runs); DNS and the live site (never touched).
+- Interpretation to confirm: MIG-02 says "100% of old URLs return 301 or an explicit 410". 66 rows keep the same address and are served in place, so they are neither; that is intended.
+- Open P3 stack as of this entry: #7, #11, #13 still stacked on their old bases, and new #18 (SEO, 3h) and #19 (REST access, 3i) are stacked behind them; #16 is retargeted to `main` but the head is unchanged since my review (R1 and R2 open).
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
