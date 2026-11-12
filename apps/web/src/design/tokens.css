@@ -8,6 +8,12 @@
  *   Rule: maroon is for light surfaces (it is 1.3:1 on forest, unreadable); gold is for dark-green surfaces.
  * Everything else is a shade of those.
  *
+ * Dark mode (docs/briefs/dark-mode.md): components use the ROLE tokens below (--surface, --ink, --accent, --cta ...), never
+ * the brand colours directly for page surfaces, text or accents. Light values reference the brand colours, so light mode is
+ * unchanged. Dark values are written twice, once for a manual choice ([data-theme='dark']) and once for the system setting;
+ * the unit test fails if the two copies differ. Brand bands (top bar, hero, page header, footer, admissions banner) keep
+ * the brand greens in both themes. In dark, the maroon rule holds: maroon accents become gold.
+ *
  * tests/unit/tokens.contrast.unit.spec.ts reads this file, so a token edit that breaks a WCAG 2.2 AA pair fails CI.
  * Font families (--font-serif / --font-sans / --font-urdu) are set in site.css next to the @fontsource imports.
  */
@@ -28,6 +34,41 @@
   /* Body text: forest at 85% over ivory. The unit test blends the same way. */
   --text: rgb(0 59 23 / 0.85);
 
+  color-scheme: light;
+
+  /* Surfaces (light values are the brand colours, so light mode is unchanged) */
+  --surface: var(--ivory);
+  --surface-alt: var(--ivory-deep);
+  --surface-raised: #ffffff;
+  --surface-card: var(--ivory);
+
+  /* Text and accents */
+  --ink: var(--forest);
+  --ink-hover: var(--forest-soft);
+  --mark: var(--maroon);
+  --mark-hover: var(--maroon-deep);
+  --mark-rgb: 122 31 38;
+  --on-mark: var(--ivory);
+
+  /* Calls to action and selected state */
+  --cta: var(--maroon);
+  --cta-hover: var(--maroon-deep);
+  --on-cta: var(--ivory);
+  --sel: var(--forest);
+  --sel-hover: var(--forest-soft);
+  --on-sel: var(--ivory);
+  --fill: var(--forest);
+  --on-fill: var(--ivory);
+
+  /* Lines, tints and shadows */
+  --hairline: var(--ivory-deep);
+  --line-rgb: 0 59 23;
+  --line-green: #b4d0a9;
+  --line-input: #b4d0a9;
+  --tint: #e8efe1;
+  --tint-strong: #dbe6d1;
+  --shadow-rgb: 0 42 16;
+
   /* Layout */
   --container: 1200px;
   --gutter: clamp(16px, 4vw, 32px);
@@ -39,4 +80,82 @@
   --stack-serif: var(--font-serif), Georgia, 'Times New Roman', serif;
   --stack-sans: var(--font-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
   --stack-urdu: var(--font-urdu), 'Noto Naskh Arabic', var(--font-sans), serif;
+}
+
+/* DARK THEME. Keep the two blocks below identical (a unit test compares them). */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Surfaces: deep forest-black, three steps */
+  --surface: #0d1410; /* page */
+  --surface-alt: #121b15; /* alternating section tint */
+  --surface-raised: #17231b; /* cards, inputs, panels */
+  --surface-card: #17231b; /* floating or card surface (menus, dialogs, cards) */
+
+  /* Text and accents */
+  --ink: #f3efe3; /* headings, links, outlines */
+  --ink-hover: #ffd84d;
+  --text: rgb(252 250 244 / 0.86);
+  --mark: #f2b705; /* dates, rules, quote marks: gold replaces maroon on dark */
+  --mark-hover: #ffd84d;
+  --mark-rgb: 242 183 5;
+  --on-mark: #003b17;
+
+  /* Calls to action and selected state */
+  --cta: #f2b705;
+  --cta-hover: #ffd84d;
+  --on-cta: #003b17;
+  --sel: #f2b705; /* selected tab, current page, outline-button hover */
+  --sel-hover: #ffd84d;
+  --on-sel: #003b17;
+  --fill: #0b5a27; /* icon circles and badges (the glyph carries the meaning) */
+  --on-fill: #fcfaf4;
+
+  /* Lines, tints and shadows */
+  --hairline: rgb(252 250 244 / 0.1);
+  --line-rgb: 252 250 244;
+  --line-green: rgb(252 250 244 / 0.2);
+  --line-input: rgb(252 250 244 / 0.45);
+  --tint: rgb(252 250 244 / 0.08);
+  --tint-strong: rgb(252 250 244 / 0.14);
+  --shadow-rgb: 0 0 0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    /* Surfaces: deep forest-black, three steps */
+    --surface: #0d1410; /* page */
+    --surface-alt: #121b15; /* alternating section tint */
+    --surface-raised: #17231b; /* cards, inputs, panels */
+    --surface-card: #17231b; /* floating or card surface (menus, dialogs, cards) */
+
+    /* Text and accents */
+    --ink: #f3efe3; /* headings, links, outlines */
+    --ink-hover: #ffd84d;
+    --text: rgb(252 250 244 / 0.86);
+    --mark: #f2b705; /* dates, rules, quote marks: gold replaces maroon on dark */
+    --mark-hover: #ffd84d;
+    --mark-rgb: 242 183 5;
+    --on-mark: #003b17;
+
+    /* Calls to action and selected state */
+    --cta: #f2b705;
+    --cta-hover: #ffd84d;
+    --on-cta: #003b17;
+    --sel: #f2b705; /* selected tab, current page, outline-button hover */
+    --sel-hover: #ffd84d;
+    --on-sel: #003b17;
+    --fill: #0b5a27; /* icon circles and badges (the glyph carries the meaning) */
+    --on-fill: #fcfaf4;
+
+    /* Lines, tints and shadows */
+    --hairline: rgb(252 250 244 / 0.1);
+    --line-rgb: 252 250 244;
+    --line-green: rgb(252 250 244 / 0.2);
+    --line-input: rgb(252 250 244 / 0.45);
+    --tint: rgb(252 250 244 / 0.08);
+    --tint-strong: rgb(252 250 244 / 0.14);
+    --shadow-rgb: 0 0 0;
+  }
 }

@@ -6,17 +6,6 @@
       "#cfe0c8",
       "#e6efe0"
     ],
-    "site/components/Header.module.css": [
-      "#b4d0a9"
-    ],
-    "site/components/NavMenu.module.css": [
-      "#b4d0a9",
-      "#dbe6d1",
-      "#e8efe1"
-    ],
-    "site/components/SearchOverlay.module.css": [
-      "#b4d0a9"
-    ],
     "site/components/kit/PageHeader.module.css": [
       "#0b4a22"
     ]
