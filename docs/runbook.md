@@ -25,3 +25,13 @@ Called **hourly** by `.github/workflows/lifecycle-sweep.yml` (it calls `handle-s
 - **Cadence is one setting.** `LIFECYCLE_CRON` in `apps/web/src/governance/schedule.ts` and the `cron:` line in the workflow must be the same text (a unit test checks). Hourly is the default because every five minutes is about 8,600 database queries a month and would likely keep the free Neon compute awake all day. To tighten it, change both together, and check the database plan's compute allowance first. Scheduled publish and expiry are accurate to about one cadence interval.
 - **GitHub disables scheduled workflows after 60 days with no repository activity.** If publish, expiry or stale marking stops happening, open the Actions tab and re-enable the workflow (any commit also resets the timer). The public site does not depend on the sweep to hide expired content: current lists check dates at query time.
 - If records are not archived or published on time, look at the last runs of that workflow first.
+
+## Admin flow tests in a browser (editor and approver)
+
+`apps/web/tests/e2e/editor-flows.e2e.spec.ts` drives the real admin for the CMS-15 tasks. It is not part of CI yet. To run it against a local database:
+
+1. Start PostgreSQL, run `pnpm payload migrate`, then `pnpm build` and `pnpm exec next start -p 3000` with `DATABASE_URL` set.
+2. `pnpm payload run tests/e2e/support/setup.ts` (creates an editor, an approver, an admin and one live page; writes `/tmp/uswat-e2e/fixtures.json`).
+3. `pnpm exec playwright test tests/e2e/editor-flows.e2e.spec.ts --project=chromium`.
+
+Run step 2 again before each run (the page-edit test changes the page). Use a throwaway database: the setup creates platform admin accounts.
