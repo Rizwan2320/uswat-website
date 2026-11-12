@@ -37,6 +37,8 @@ export type HandlerDeps = {
 }
 
 const SIGN_IN = `${AUTH_BASE}/sign-in/email`
+/** Also takes a password, so it is also a channel for guessing one. Counted on its own counters (see signInThrottle). */
+const RECOVERY_SIGN_IN = `${AUTH_BASE}/recovery/sign-in`
 
 /** Client address as Vercel passes it. Only a counter key: a wrong value weakens the per-address delay, nothing else. */
 function clientAddress(req: Request): string {
@@ -65,9 +67,10 @@ function refusal(status: number, error: string, redirectTo?: string): Response {
 }
 
 export function createAuthHandlers(deps: HandlerDeps) {
-  /** Password sign-in with the progressive delay around it (ABU-01). Status alone tells failure from success. */
+  /** Password sign-in, and recovery sign-in (which also checks a password), with the progressive delay around them (ABU-01). Status alone tells failure from success. */
   async function throttledSignIn(req: Request): Promise<Response> {
-    const target = { email: await signInEmail(req), address: clientAddress(req) }
+    const channel = new URL(req.url).pathname === RECOVERY_SIGN_IN ? ('recovery' as const) : ('password' as const)
+    const target = { email: await signInEmail(req), address: clientAddress(req), channel }
     try {
       const verdict = await deps.signInThrottle.check(target, Date.now())
       if (!verdict.allowed) {
@@ -93,7 +96,7 @@ export function createAuthHandlers(deps: HandlerDeps) {
     const pathname = new URL(req.url).pathname
     const cls = classifyPath(pathname)
 
-    if (req.method === 'POST' && pathname === SIGN_IN) return throttledSignIn(req)
+    if (req.method === 'POST' && (pathname === SIGN_IN || pathname === RECOVERY_SIGN_IN)) return throttledSignIn(req)
 
     let userId: string | null = null
     let sessionId: string | null = null

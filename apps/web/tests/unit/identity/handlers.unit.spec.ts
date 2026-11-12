@@ -302,4 +302,40 @@ describe('portal auth route handlers', () => {
     vi.spyOn(s.store, 'recordFailure').mockRejectedValue(new Error('db down'))
     expect((await s.h.POST(signIn('a@example.test'))).status).toBe(401)
   })
+
+  const recover = (email: string, ip = '203.0.113.7') =>
+    new Request(`https://portal.uswat.edu.pk${AUTH_BASE}/recovery/sign-in`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-real-ip': ip },
+      body: JSON.stringify({ email, password: 'whatever password', code: 'AAAAA-AAAAA' }),
+    })
+
+  it('ABU-01: failed recovery sign-ins (wrong password or wrong code) count against the account and the address too', async () => {
+    const s = setup()
+    s.libHandler.mockImplementation(async () => new Response('{}', { status: 401 }))
+    for (let i = 0; i < 4; i++) expect((await s.h.POST(recover('a@example.test'))).status).toBe(401)
+    const calls = s.libHandler.mock.calls.length
+    const res = await s.h.POST(recover('a@example.test'))
+    expect(res.status).toBe(429)
+    expect(res.headers.get('retry-after')).toBeTruthy()
+    expect(s.libHandler.mock.calls.length).toBe(calls)
+  })
+
+  it('ABU-01: password sign-in and recovery sign-in are counted apart: an attack on one never delays the owner on the other', async () => {
+    const s = setup()
+    s.libHandler.mockImplementation(async () => new Response('{}', { status: 401 }))
+    for (let i = 0; i < 6; i++) await s.h.POST(signIn('a@example.test'))
+    expect((await s.h.POST(signIn('a@example.test'))).status).toBe(429)
+    expect((await s.h.POST(recover('a@example.test'))).status).toBe(401)
+  })
+
+  it('ABU-01: a successful recovery sign-in clears the recovery counter', async () => {
+    const s = setup()
+    s.libHandler.mockImplementation(async () => new Response('{}', { status: 401 }))
+    for (let i = 0; i < 3; i++) await s.h.POST(recover('a@example.test'))
+    s.libHandler.mockImplementation(async () => new Response('{}', { status: 200 }))
+    expect((await s.h.POST(recover('a@example.test'))).status).toBe(200)
+    s.libHandler.mockImplementation(async () => new Response('{}', { status: 401 }))
+    for (let i = 0; i < 3; i++) expect((await s.h.POST(recover('a@example.test'))).status).toBe(401)
+  })
 })

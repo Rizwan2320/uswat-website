@@ -136,4 +136,33 @@ describe('sign-in throttle', () => {
     await t.failed({ email: 'x'.repeat(100_000), address: '192.0.2.8' }, T0)
     for (const k of store.keys()) expect(k.length).toBeLessThan(100)
   })
+
+  it('keeps the password channel and the recovery channel apart: failing at one never delays the other, for the account or the address', async () => {
+    const { t } = setup()
+    const pw = { email: 'a@example.test', address: '192.0.2.40', channel: 'password' as const }
+    const rec = { email: 'a@example.test', address: '192.0.2.40', channel: 'recovery' as const }
+    await fail(t, 6, T0, pw)
+    expect((await t.check(pw, T0)).allowed).toBe(false)
+    expect((await t.check(rec, T0)).allowed).toBe(true)
+    await fail(t, 6, T0, rec)
+    expect((await t.check(rec, T0)).allowed).toBe(false)
+    await t.succeeded(rec)
+    expect((await t.check(rec, T0)).allowed).toBe(true)
+    expect((await t.check(pw, T0)).allowed).toBe(false)
+  })
+
+  it('defaults to the password channel', async () => {
+    const { t } = setup()
+    await fail(t, 4, T0, { email: 'a@example.test', address: '192.0.2.41' })
+    expect((await t.check({ email: 'a@example.test', address: '192.0.2.41', channel: 'password' }, T0)).allowed).toBe(false)
+  })
+
+  it('the address counters are apart too: 21 password failures from one address leave recovery from that address free', async () => {
+    const { t } = setup()
+    for (let i = 0; i < ADDRESS_POLICY.free + 1; i++) {
+      await t.failed({ email: `u${i}@example.test`, address: '192.0.2.50', channel: 'password' }, T0)
+    }
+    expect((await t.check({ email: 'fresh@example.test', address: '192.0.2.50', channel: 'password' }, T0)).allowed).toBe(false)
+    expect((await t.check({ email: 'fresh@example.test', address: '192.0.2.50', channel: 'recovery' }, T0)).allowed).toBe(true)
+  })
 })

@@ -31,12 +31,14 @@ export interface ThrottleStore {
   reset(key: string): Promise<void>
 }
 
-export type Target = { email: string; address: string }
+/** Password sign-in and recovery sign-in both take a password, so both are channels for guessing one. Counted apart: an attack on one must never delay the owner on the other. */
+export type Channel = 'password' | 'recovery'
+export type Target = { email: string; address: string; channel?: Channel }
 export type CheckResult = { allowed: true } | { allowed: false; retryAfterMs: number }
 
 const sha = (s: string) => createHash('sha256').update(s).digest('hex')
-const accountKey = (email: string) => `a:${sha(email.trim().toLowerCase().slice(0, 254))}`
-const addressKey = (address: string) => `i:${sha(address.slice(0, 64))}`
+const accountKey = (t: Target) => `${t.channel ?? 'password'}:a:${sha(t.email.trim().toLowerCase().slice(0, 254))}`
+const addressKey = (t: Target) => `${t.channel ?? 'password'}:i:${sha(t.address.slice(0, 64))}`
 
 function remaining(state: ThrottleState | null, policy: ThrottlePolicy, now: number): number {
   if (!state || now - state.lastFailureAt > DECAY_MS) return 0
@@ -48,16 +50,16 @@ export function createSignInThrottle(deps: { store: ThrottleStore }) {
   return {
     /** Throws if the counters cannot be read: the caller refuses the request rather than wave it through. */
     async check(target: Target, now: number): Promise<CheckResult> {
-      const [a, i] = await Promise.all([store.get(accountKey(target.email)), store.get(addressKey(target.address))])
+      const [a, i] = await Promise.all([store.get(accountKey(target)), store.get(addressKey(target))])
       const retryAfterMs = Math.max(remaining(a, ACCOUNT_POLICY, now), remaining(i, ADDRESS_POLICY, now))
       return retryAfterMs > 0 ? { allowed: false, retryAfterMs } : { allowed: true }
     },
     async failed(target: Target, now: number): Promise<void> {
-      await Promise.all([store.recordFailure(accountKey(target.email), now), store.recordFailure(addressKey(target.address), now)])
+      await Promise.all([store.recordFailure(accountKey(target), now), store.recordFailure(addressKey(target), now)])
     },
     /** The password was right: clear the account counter. The address counter stays (one success proves nothing about a guesser). */
-    async succeeded(target: { email: string }): Promise<void> {
-      await store.reset(accountKey(target.email))
+    async succeeded(target: { email: string; channel?: Channel }): Promise<void> {
+      await store.reset(accountKey({ ...target, address: '' }))
     },
   }
 }

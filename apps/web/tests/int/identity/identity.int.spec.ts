@@ -12,7 +12,8 @@ import { totpAt } from '../../helpers/totp'
 import { readPortalConfig } from '@/modules/identity/config'
 import { createPortalAuth, type PortalAuth } from '@/modules/identity/auth'
 import { createPgAssuranceStore } from '@/modules/identity/assuranceStore'
-import { createPgRecoveryStore } from '@/modules/identity/recoveryStore'
+import { createRecoveryService } from '@/modules/identity/recoveryService'
+import { createPgAttemptStore, createPgRecoveryStore } from '@/modules/identity/recoveryStore'
 import { createPgSessionStore } from '@/modules/identity/sessionStore'
 import { createSignInThrottle } from '@/modules/identity/signInThrottle'
 import { createPgThrottleStore } from '@/modules/identity/signInThrottleStore'
@@ -368,18 +369,23 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
     expect((await recoverySignIn(new Jar(), addr, codes[0]!)).status).toBe(200)
   })
 
-  it('locks the account after five wrong codes: even a right code is refused, with the same answer', async () => {
+  it('locks the account after five wrong codes: even a right code is refused (the service on the real tables)', async () => {
     const { addr, jar } = await makeEnrolledUser('lock')
     const { codes } = await issue(jar)
-    for (let i = 0; i < 5; i++) expect((await recoverySignIn(new Jar(), addr, 'AAAAA-AAAAA')).status).toBe(401)
-    const locked = await recoverySignIn(new Jar(), addr, codes[0]!)
-    expect(locked.status).toBe(401)
+    const pool = getIdentityPool(env.PORTAL_DATABASE_URL as string)
+    const svc = createRecoveryService({ recovery: createPgRecoveryStore(pool), attempts: createPgAttemptStore(pool) })
+    const [u] = await sql<{ id: string }>(`select "id" from identity."user" where "email" = $1`, [addr])
+    for (let i = 0; i < 5; i++) expect(await svc.redeem(u!.id, 'AAAAA-AAAAA', Date.now())).toEqual({ status: 'invalid' })
+    expect(await svc.redeem(u!.id, codes[0]!, Date.now())).toEqual({ status: 'locked' })
+    // and through the route a right code is refused too, whichever of the two brakes answers first
+    expect([401, 429]).toContain((await recoverySignIn(new Jar(), addr, codes[0]!)).status)
     const rows = await sql<{ failures: number }>(
       `select a."failures" from identity.recovery_attempt a join identity."user" u on u."id" = a."userId" where u."email" = $1`,
       [addr],
     )
     expect(rows[0]!.failures).toBeGreaterThanOrEqual(5)
   })
+
   it('two simultaneous sign-ins with the same code: exactly one succeeds', async () => {
     const { addr, jar } = await makeEnrolledUser('race')
     const { codes } = await issue(jar)
@@ -502,7 +508,7 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
     const rows = await sql<{ key: string }>(`select "key" from identity.signin_failure`)
     expect(rows.length).toBeGreaterThan(0)
     for (const r of rows) {
-      expect(r.key).toMatch(/^[ai]:[0-9a-f]{64}$/)
+      expect(r.key).toMatch(/^(password|recovery):[ai]:[0-9a-f]{64}$/)
       expect(r.key).not.toContain(target)
       expect(r.key).not.toContain(jar.ip)
     }
@@ -526,5 +532,20 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
     await store.recordFailure(key, Date.now() - 2 * 3_600_000)
     await store.recordFailure(key, Date.now())
     expect((await store.get(key))!.failures).toBe(1)
+  })
+  it('ABU-01: wrong passwords at recovery sign-in are counted: four of them and the next attempt waits, whatever the code', async () => {
+    const { addr, jar } = await makeEnrolledUser('recpw')
+    const { codes } = await issue(jar)
+    const attacker = new Jar()
+    for (let i = 0; i < 4; i++) expect((await recoverySignIn(attacker, addr, codes[0]!, 'wrong password number ' + i)).status).toBe(401)
+    const blocked = await recoverySignIn(attacker, addr, codes[0]!)
+    expect(blocked.status).toBe(429)
+    expect(blocked.headers.get('retry-after')).toBeTruthy()
+    // the code was never touched
+    const left = await sql<{ n: string }>(
+      `select count(*)::text as n from identity.recovery_code r join identity."user" u on u."id" = r."userId" where u."email" = $1 and r."usedAt" is null`,
+      [addr],
+    )
+    expect(left[0]!.n).toBe('10')
   })
 })
