@@ -49,3 +49,13 @@ Never read the CMS from a component. Never import from `content/*.ts` outside `l
 
 ## Open items needing the owner (do not guess)
 Written DCST confirmation; the organized data pack; where crawl data may live; Neon password rotation; real address, deadline and statistics values.
+
+## Notice 2026-11-12: agent 4 starts, one assignment moves, preview database is being separated
+From the main agent, with the owner's agreement. Applies to the P3 agent from now.
+
+1. **Agent 4 (phases P4 and P5) owns:** the importer and seeds (`scripts/import/**`), the public page routes, public read queries (`src/site/lib/queries/**`), new template components (`src/site/components/templates/**`), `route_map.csv` and its generated JSON. Full lanes and rules: `docs/briefs/p4p5-agent4.md`.
+2. **What moves away from you:** the swap of the `src/site/lib/content.ts` getters for CMS reads (the "one shared seam" above) now belongs to agent 4, because it is page work. Your earlier assignment is withdrawn. Do not start it; if you already have unmerged work on it, tell the main agent in STATUS and it will be integrated or handed over. The getter names and return shapes stay frozen.
+3. **What stays yours:** collections, globals, access, hooks, governance, plugins, fields, `payload.config.ts` and every migration. Agent 4 will ask you for fields and indexes in PR comments with the exact need. Please answer in the same PR.
+4. **Stack hygiene (still open):** #7, #11, #13, #18 and #19 are stacked on bases that are now merged or stale. Rebase them in order onto `main` (merge `main` in, no squash, no rewrite of a migration that a preview has already built), retarget each PR to `main`, and say in STATUS when each is ready. #7 first: agent 4 needs the organisation collections.
+5. **Preview database:** previews have migrated the same Neon database as production (ADR-0005). The main agent is moving previews onto their own Neon branch. After that, a preview migrates only that branch. Until the main agent confirms in STATUS, keep following the rule of one migration per PR and never editing one after a preview built it.
+6. **Owner rule:** no agent deletes any branch.
