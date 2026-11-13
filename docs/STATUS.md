@@ -225,6 +225,15 @@ Updated: 2026-11-09 (Mon) PKT
 - Prediction M-1 has the actuals. Not run: an HTTP probe on a deployment of `main`.
 - Still open from #32 (their list, not changed here): the preview link carries `PREVIEW_SECRET` in its address (rotate it if it was ever shared); no preview for notices, events, jobs and tenders until those pages exist (agent 4).
 
+## PR #7 merged as #44, and what production's database turned out to hold (2026-11-13, main agent)
+- #7 (P3 slice 3e, organisation collections) was 54 commits behind main. Integrated as PR #44 (merge of main and #7, one conflict in `docs/predictions.md`, both kept), checked on the merged tree (typecheck, lint 0 errors, 435 tests pass and 17 skipped, no `generate:types` drift, build) and by a migration drill on a scratch database (prediction M-7: p3e up, down alone, up again, all three schema dumps identical to the expected ones). Fast-forwarded into main at `eb95de5`. Production deployment `dpl_Mt6zfDX2...` READY, `/readyz` returns `{"status":"ready","database":"ok"}`.
+- **Correction to what I told the owner before merging.** I said merging would apply the 40-table migration to the production Neon database on the next deploy. It did not: the production build's `payload migrate` printed no "Migrating" line, because **production (`main` branch of the Neon project) already had p3e applied, and also p3f (`20261111_014816_p3f_media_rules`) and p3h (`20261111_102441_p3h_seo_search_redirects`)**: 8 recorded migrations, 194 tables, identical on the `previews` branch (read-only queries, 2026-11-13). Those two belong to PRs that are not merged (#11 and #18). Most likely cause: P3's preview builds ran before the `previews` branch existed (created 2026-11-12 02:13) and migrated the production branch, the exact thing ADR-0005 is meant to prevent. Not confirmed from logs.
+- Effect today: none visible. The extra migrations only add nullable columns (or one defaulted column) and new tables, so main's code runs on the newer schema (readyz ok). Effect later: when #11 and #18 merge, their migrations will already be recorded and will run as no-ops; production's schema is ahead of its code until then.
+- Do not roll back production to older code that predates p3e without checking: the schema has columns and tables it does not know about (harmless to it, but the down migrations would drop them).
+- To do: ask the P3 agent to confirm when p3e, p3f and p3h first reached production and whether any preview since the `previews` branch still points at production; check the Vercel Preview environment's `DATABASE_URL` (not run, secrets are not read here).
+- Review note on #7 for P3: People `details` is free text and is not covered by the per-field privacy rule; an address pasted there would be public. Suggest a line in the editor guide.
+- Not run: the migration against Neon by me (it was already applied), a data-level check (the new tables hold no rows), Safari or Firefox.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
