@@ -9,3 +9,4 @@ coverage/
 .DS_Store
 .pnpm-store/
 *.tsbuildinfo
+scripts/import/out/
