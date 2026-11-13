@@ -14,7 +14,7 @@
   box-shadow: 0 12px 16px -10px rgb(0 42 16 / 0.34), 0 3px 6px rgb(0 42 16 / 0.07);
 }
 .icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--forest); color: var(--ivory); font-size: 1.4rem; }
-.title { font-family: var(--stack-sans); font-weight: 700; font-size: 1rem; color: var(--forest); }
+.title { font-weight: 700; font-size: 1rem; color: var(--forest); }
 .title a { text-decoration: none; color: inherit; }
 .desc { margin: 0; font-size: 0.9rem; line-height: 1.45; color: var(--text); flex: 1 1 auto; }
 .arrow { color: var(--forest); font-size: 1.2rem; line-height: 1; margin-top: 2px; }

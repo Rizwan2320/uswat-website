@@ -5,6 +5,7 @@
 .divider { width: 1px; height: 14px; background: rgb(252 250 244 / 0.4); }
 .tagline { white-space: nowrap; font-style: italic; letter-spacing: 0.01em; }
 .right { display: flex; align-items: center; gap: 8px; flex: none; }
+.right { font-family: var(--stack-nav); }
 .right a { color: inherit; text-decoration: none; padding: 8px 4px; }
 .right a:hover { text-decoration: underline; text-underline-offset: 4px; }
 .sep { opacity: 0.5; }

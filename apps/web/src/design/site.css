@@ -9,7 +9,8 @@
    The Urdu face is split into unicode-range subsets by fontsource, so English visitors never download it. */
 :root {
   --font-serif: 'Playfair Display Variable';
-  --font-sans: 'Inter Variable';
+  --font-sans: 'Lato';
+  --font-nav: 'Poppins';
   --font-urdu: 'Noto Nastaliq Urdu Variable';
 }
 
@@ -29,7 +30,7 @@ body {
 [lang='ur'] > :is(span, button, a), span[lang='ur'] { font-family: var(--stack-urdu); line-height: 1.9; }
 img { max-width: 100%; display: block; }
 a { color: inherit; }
-h1, h2, h3, h4 { margin: 0; }
+h1, h2, h3, h4 { margin: 0; font-family: var(--stack-serif); }
 p { margin: 0; }
 ul { margin: 0; padding: 0; list-style: none; }
 button { font: inherit; }
