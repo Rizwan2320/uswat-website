@@ -221,6 +221,14 @@ Updated: 2026-11-09 (Mon) PKT
 - Prediction M-1 has the actuals. Not run: an HTTP probe on a deployment of `main`.
 - Still open from #32 (their list, not changed here): the preview link carries `PREVIEW_SECRET` in its address (rotate it if it was ever shared); no preview for notices, events, jobs and tenders until those pages exist (agent 4).
 
+## Landing page fonts and News & Events (2026-11-13, branch `feat/landing-fonts-news`, main agent, owner request)
+- Brief `docs/briefs/landing-fonts-news.md`, ADR 0025, prediction L-1 with actuals.
+- Fonts: headings Playfair Display (every h1 to h4, including the card titles that were sans), navigation Poppins (menu, drop-downs, mobile menu, top-bar links, Apply button), body Lato. Inter removed. Urdu unchanged. Lato has no 500 or 600 weight, so those draw as 400 and 700. Footer links and breadcrumbs stay in the body font; say so if you want them in Poppins.
+- Apply button text 0.92rem to 0.82rem.
+- News & Events: first card one story, second card two stories as small rows, events card three items; the gap above "View All News & Events" is unchanged and the news cards grow to match. The third event (Hunerkada) comes from the Events class of the owner's route map; its wording is taken from the address, it has no venue, and it must be confirmed against the post. The second news row (solar) has no photo yet, so it shows the green placeholder.
+- Baselines for `home` and `style-guide` updated on purpose (12). Still failing on main and untouched: 12 `news` and `not-found` baselines.
+- Dark mode (#30) is separate and unmerged; whichever merges second will need its CSS merged by hand.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
