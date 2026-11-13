@@ -1,0 +1,105 @@
+{
+  "ranAt": "2026-11-13T09:51:00.150Z",
+  "results": [
+    {
+      "id": "A1 signed-out visitor to /portal is sent to sign-in",
+      "ok": true,
+      "note": "/portal/sign-in"
+    },
+    {
+      "id": "A2 page has lang, a title, one h1, skip link, sample banner, noindex",
+      "ok": true,
+      "note": "Sign in | University of Swat faculty portal"
+    },
+    {
+      "id": "A3 password sign-in with no factor lands on the enrol page",
+      "ok": true,
+      "note": "/portal/enrol"
+    },
+    {
+      "id": "A4 passkey added with the virtual authenticator",
+      "ok": true,
+      "note": "confirmation shown"
+    },
+    {
+      "id": "A5 ten recovery codes shown once",
+      "ok": false,
+      "note": "0 codes"
+    },
+    {
+      "id": "A6 Continue stays disabled until the codes are confirmed saved",
+      "ok": true,
+      "note": "disabled"
+    },
+    {
+      "id": "A7 home shows the signed-in email",
+      "ok": true,
+      "note": "/portal"
+    },
+    {
+      "id": "A8 after sign-out /portal needs sign-in again",
+      "ok": true,
+      "note": "/portal/sign-in"
+    },
+    {
+      "id": "A9 passkey sign-in reaches the portal",
+      "ok": true,
+      "note": "/portal"
+    },
+    {
+      "id": "A10 a signed-in person visiting sign-in is sent home",
+      "ok": true,
+      "note": "/portal"
+    },
+    {
+      "id": "B1 setup key shown as text with an otpauth link and no QR needed",
+      "ok": true,
+      "note": "52 chars"
+    },
+    {
+      "id": "B2 authenticator app confirmed",
+      "ok": true,
+      "note": "confirmation shown"
+    },
+    {
+      "id": "B2b ten recovery codes after TOTP enrolment too",
+      "ok": true,
+      "note": "10 codes"
+    },
+    {
+      "id": "B3 password step moves to the code step and focuses the code field",
+      "ok": true,
+      "note": "focus on code"
+    },
+    {
+      "id": "B4 TOTP sign-in with the keyboard only reaches the portal",
+      "ok": true,
+      "note": "/portal"
+    },
+    {
+      "id": "C1 wrong password shows one plain error, focus moves to it",
+      "ok": true,
+      "note": "The email or password is not right. Check them and try again."
+    },
+    {
+      "id": "C2 wrong recovery code shows the shared error",
+      "ok": true,
+      "note": "The email, password or recovery code is not right. Check them and try again."
+    },
+    {
+      "id": "C3 a real recovery code signs in",
+      "ok": true,
+      "note": "/portal/enrol"
+    },
+    {
+      "id": "D1 portal page loads none of the public-site stylesheet classes",
+      "ok": true,
+      "note": "no site chrome classes found"
+    },
+    {
+      "id": "D2 public home is unaffected and has no portal banner",
+      "ok": true,
+      "note": "public home ok"
+    }
+  ]
+}
