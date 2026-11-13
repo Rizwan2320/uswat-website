@@ -9,7 +9,7 @@
  * Everything else is a shade of those.
  *
  * tests/unit/tokens.contrast.unit.spec.ts reads this file, so a token edit that breaks a WCAG 2.2 AA pair fails CI.
- * Font families (--font-serif / --font-sans / --font-urdu) are set in site.css next to the @fontsource imports.
+ * Font families (--font-serif headings: Playfair Display, --font-sans body: Lato, --font-nav navigation: Poppins, --font-urdu) are set in site.css next to the @fontsource imports.
  */
 :root {
   /* The three brand colours */
@@ -38,5 +38,6 @@
   /* Type stacks. The families come from next/font-style CSS variables on <html>. */
   --stack-serif: var(--font-serif), Georgia, 'Times New Roman', serif;
   --stack-sans: var(--font-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --stack-nav: var(--font-nav), var(--font-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
   --stack-urdu: var(--font-urdu), 'Noto Naskh Arabic', var(--font-sans), serif;
 }
