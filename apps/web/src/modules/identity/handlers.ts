@@ -6,19 +6,13 @@
  */
 import { readPortalConfig } from './config'
 import { AUTH_BASE, decide, classifyPath, type FactorState } from './gate'
-import { evaluateSession, shouldTouch } from './sessionLifetime'
+import { readSessionState, type SessionLookup } from './sessionState'
 import type { SignInThrottle } from './signInThrottle'
 
 export type AuthLike = {
   handler: (req: Request) => Promise<Response>
   api: {
-    getSession: (opts: {
-      headers: Headers
-      query?: { disableRefresh?: boolean }
-    }) => Promise<{
-      user: { id: string }
-      session: { id: string; createdAt?: Date | string | number; updatedAt?: Date | string | number }
-    } | null>
+    getSession: (opts: { headers: Headers; query?: { disableRefresh?: boolean } }) => Promise<SessionLookup | null>
   }
 }
 
@@ -98,46 +92,14 @@ export function createAuthHandlers(deps: HandlerDeps) {
 
     if (req.method === 'POST' && (pathname === SIGN_IN || pathname === RECOVERY_SIGN_IN)) return throttledSignIn(req)
 
-    let userId: string | null = null
-    let sessionId: string | null = null
-    if (cls !== 'public' && cls !== 'forbidden') {
-      try {
-        // No refresh: our own lookup must not reset the idle clock; activity is recorded below.
-        const session = await deps.getAuth().api.getSession({ headers: req.headers, query: { disableRefresh: true } })
-        userId = session?.user.id ?? null
-        sessionId = session?.session.id ?? null
-        if (session) {
-          const now = Date.now()
-          const verdict = evaluateSession({ createdAt: session.session.createdAt, updatedAt: session.session.updatedAt, now })
-          if (verdict !== 'ok') {
-            await deps.endSession(session.session.id).catch(() => {})
-            return refusal(401, 'session expired', '/portal/sign-in')
-          }
-          const updated = new Date(session.session.updatedAt as Date | string | number)
-          if (shouldTouch(updated, now)) await deps.touchSession(session.session.id, now).catch(() => {})
-        }
-      } catch {
-        userId = null
-        sessionId = null
-      }
-    }
+    const state = await readSessionState(deps, req.headers, cls, Date.now())
+    if (state.kind === 'expired') return refusal(401, 'session expired', '/portal/sign-in')
 
-    let factors: FactorState | null = null
-    let sessionStrong = false
-    if (userId && sessionId && (cls === 'portal' || cls === 'enrolment')) {
-      try {
-        factors = await deps.loadFactors(userId)
-      } catch {
-        factors = null
-      }
-      try {
-        sessionStrong = await deps.isStrongSession(sessionId)
-      } catch {
-        sessionStrong = false
-      }
-    }
-
-    const d = decide({ hasSession: userId !== null, sessionStrong, factors, pathname })
+    const d = decide(
+      state.kind === 'active'
+        ? { hasSession: true, sessionStrong: state.sessionStrong, factors: state.factors, pathname }
+        : { hasSession: false, sessionStrong: false, factors: null, pathname },
+    )
     if (!d.allow) return refusal(d.status, d.status === 404 ? 'not found' : d.reason, d.redirectTo)
     return deps.getAuth().handler(req)
   }

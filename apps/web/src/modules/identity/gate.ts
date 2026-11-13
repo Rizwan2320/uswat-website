@@ -34,6 +34,7 @@ export function hasSecondFactor(f: FactorState): boolean {
 
 const PUBLIC = new Set<string>([
   `${PORTAL_BASE}/sign-in`,
+  `${PORTAL_BASE}/recover`,
   `${AUTH_BASE}/sign-in/email`,
   `${AUTH_BASE}/passkey/generate-authenticate-options`,
   `${AUTH_BASE}/passkey/verify-authentication`,
