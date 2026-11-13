@@ -13,6 +13,7 @@ export default function Shell({ email, children }: { email?: string | null; chil
         {email ? (
           <nav className="portal-nav" aria-label="Portal">
             <Link href="/portal">{COPY.nav.home}</Link>
+            <Link href="/portal/security">{COPY.nav.security}</Link>
             <SignOutButton />
           </nav>
         ) : null}

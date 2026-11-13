@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 import { COPY } from '@/modules/portal/copy'
 import { requirePortalPage } from '@/modules/portal/server'
 import Shell from '@/modules/portal/Shell'
@@ -12,6 +14,7 @@ export default async function PortalHome() {
       <h1>{COPY.home.title}</h1>
       <p>{COPY.home.intro}</p>
       <p>{COPY.home.signedInAs} <strong>{email}</strong>.</p>
+      <p><Link className="portal-link" href="/portal/security">{COPY.home.securityLink}</Link></p>
     </Shell>
   )
 }

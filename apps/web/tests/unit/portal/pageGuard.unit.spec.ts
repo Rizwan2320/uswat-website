@@ -50,12 +50,12 @@ describe('guardPage: the same rules as the route, applied to pages', () => {
 
   it('the sign-in and recovery pages render for a signed-out visitor', async () => {
     const s = setup({ session: false })
-    expect(await s.run('/portal/sign-in')).toEqual({ action: 'render', email: null, strong: false })
-    expect(await s.run('/portal/recover')).toEqual({ action: 'render', email: null, strong: false })
+    expect(await s.run('/portal/sign-in')).toEqual({ action: 'render', email: null, strong: false, factors: null })
+    expect(await s.run('/portal/recover')).toEqual({ action: 'render', email: null, strong: false, factors: null })
   })
 
   it('the sign-in page still renders when the session lookup fails', async () => {
-    expect(await setup({ session: 'throw' }).run('/portal/sign-in')).toEqual({ action: 'render', email: null, strong: false })
+    expect(await setup({ session: 'throw' }).run('/portal/sign-in')).toEqual({ action: 'render', email: null, strong: false, factors: null })
   })
 
   it('a path that is not a portal page (odd encodings, dot segments) is a 404', async () => {
@@ -82,6 +82,7 @@ describe('guardPage: the same rules as the route, applied to pages', () => {
       action: 'render',
       email: 'dr.sample@example.test',
       strong: true,
+      factors: passkey,
     })
   })
 
@@ -123,5 +124,13 @@ describe('guardPage: the same rules as the route, applied to pages', () => {
         }
       }
     }
+  })
+
+  it('the security page: strong session with a factor opens and carries the factor state; password-only, signed-out and no-factor do not', async () => {
+    const strong = await setup({ session: true, factors: passkey, strong: true }).run('/portal/security')
+    expect(strong).toMatchObject({ action: 'render', strong: true, factors: passkey })
+    expect(await setup({ session: true, factors: passkey, strong: false }).run('/portal/security')).toEqual({ action: 'redirect', to: '/portal/sign-in?reason=second-factor' })
+    expect(await setup({}).run('/portal/security')).toEqual({ action: 'redirect', to: '/portal/sign-in' })
+    expect(await setup({ session: true, factors: none, strong: false }).run('/portal/security')).toEqual({ action: 'redirect', to: '/portal/enrol' })
   })
 })
