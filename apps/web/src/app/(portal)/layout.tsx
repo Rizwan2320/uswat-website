@@ -1,7 +1,12 @@
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 
-import '@fontsource-variable/inter'
+/* The same three faces as the public site: Playfair Display headings, Poppins navigation and buttons, Lato body. */
+import '@fontsource/lato/400.css'
+import '@fontsource/lato/700.css'
+import '@fontsource/poppins/500.css'
+import '@fontsource/poppins/600.css'
+import '@fontsource-variable/playfair-display'
 
 import '../../design/tokens.css'
 import '../../modules/portal/portal.css'

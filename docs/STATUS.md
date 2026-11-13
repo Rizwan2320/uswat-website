@@ -248,6 +248,11 @@ Updated: 2026-11-09 (Mon) PKT
 - **Semantic conflict found only by building the merged tree.** My landing PR removed `@fontsource-variable/inter` from `package.json` (the public site stopped using it); the portal layout still imports it. Git merged `package.json` cleanly and each PR's CI passed alone, but the merged build failed with "Can't resolve '@fontsource-variable/inter'". Fixed by restoring the dependency (portal is the faculty agent's lane, so its font stays as it was). Follow-up for the faculty agent and the owner: should the portal move to Lato and Poppins for consistency, and then drop Inter again.
 - Not run: the portal switched on at all in a deployment (no portal Vercel project exists yet; ADR-0020 wants its own origin), real devices, Urdu text, screen readers, https behind Vercel. The pages show a Sample banner and only a seeded test account can sign in.
 
+## Portal fonts aligned with the landing page (2026-11-13, main agent, owner request, prediction PF-1)
+- The faculty portal now uses Playfair Display (headings), Poppins (buttons and the signed-in navigation links) and Lato (body), as the public site does. Touched only the portal's own layout and `modules/portal/portal.css` (faculty lane; the owner asked for it and the faculty agent has no open PR), plus one sentence on the style-guide page that still said "Inter". `@fontsource-variable/inter` is removed again, now for good.
+- The portal had never applied Inter: it read `--font-sans` and `--font-serif`, which only `site.css` defines, so it fell back to the system font and Georgia. Checked by computed styles with the portal switched on locally against a scratch identity database. For the faculty agent: any new portal CSS should use `var(--stack-sans)`, `var(--stack-serif)` and `var(--stack-nav)`.
+- Not run: the signed-in navigation links (the rule is in the CSS; no session was created), Urdu, Safari, Firefox, a real phone.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
