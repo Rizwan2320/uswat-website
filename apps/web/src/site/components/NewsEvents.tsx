@@ -14,11 +14,11 @@ const ALL_NEWS = 'https://uswat.edu.pk/category/latestnews/'
 export default async function NewsEvents() {
   const [news, events] = await Promise.all([getNews(), getEvents()])
   const [first, ...rest] = news
-  const more = rest.slice(0, 2)
+  const more = rest.slice(0, 3)
   const thumbs: Record<string, { src: string; alt: string }> = images.newsThumbs
   const now = new Date()
   const upcoming = events.filter((e) => e.startISO && !isPast(e.startISO, now))
-  const shown = (upcoming.length ? upcoming : events).slice(0, 3)
+  const shown = (upcoming.length ? upcoming : events).slice(0, 4)
   const heading = upcoming.length ? 'Upcoming Events' : 'Recent Events'
 
   return (
@@ -44,9 +44,16 @@ export default async function NewsEvents() {
               <ul className={styles.stack}>
                 {more.map((item) => (
                   <li key={item.id} className={styles.item}>
-                    <div className={`media ${styles.thumb}`}>
-                      <SafeImage src={thumbs[item.id]?.src ?? ''} alt={thumbs[item.id]?.alt ?? ''} fill sizes="104px" className={styles.fillImg} />
-                    </div>
+                    {thumbs[item.id]?.src ? (
+                      <div className={`media ${styles.thumb}`}>
+                        <SafeImage src={thumbs[item.id]!.src} alt={thumbs[item.id]!.alt} fill sizes="104px" className={styles.fillImg} />
+                      </div>
+                    ) : (
+                      /* No photo for this story yet: the crest on a cream tile, with no alt text because it is not a picture of the story. */
+                      <div className={`media ${styles.thumb} ${styles.thumbCrest}`} aria-hidden="true">
+                        <SafeImage src="/images/crest.png" alt="" fill sizes="104px" className={styles.crestImg} />
+                      </div>
+                    )}
                     <NewsText item={item} />
                   </li>
                 ))}

@@ -6,6 +6,7 @@
 }
 /* Compact outlined pill (replaces the large .btn): fills with forest green on hover. */
 .all {
+  position: absolute; top: calc(100% + 30px); inset-inline: 0; margin-inline: auto; width: fit-content;
   flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 0 14px; align-self: center;
   border: 1.5px solid var(--forest); border-radius: 999px; color: var(--forest); background: transparent;
   font-size: 0.85rem; font-weight: 600; text-decoration: none; white-space: nowrap;
@@ -13,10 +14,16 @@
 }
 .all:hover { background: var(--forest); color: var(--ivory); }
 .allArrow { font-size: 0.95rem; }
-.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); align-items: stretch; max-width: 1120px; margin-inline: auto; }
+/* All three cards share one height (--news-h, a little shorter than before). The "view all" button hangs below the events card, so it
+   never adds to the row height; the grid reserves room for it (30px gap plus the 36px button). */
+.grid {
+  --news-h: 360px;
+  display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: minmax(var(--news-h), auto); gap: var(--gap); align-items: stretch;
+  max-width: 1120px; margin-inline: auto; margin-bottom: 66px;
+}
 .card { position: relative; padding: 28px 18px 14px; display: flex; flex-direction: column; }
-.eventsCol { display: flex; flex-direction: column; gap: 30px; min-width: 0; }
-.eventsCol .events { flex: 0 0 auto; }
+.eventsCol { position: relative; display: flex; flex-direction: column; min-width: 0; }
+.eventsCol .events { flex: 1 1 auto; padding-top: 22px; }
 .grid .card { background: #fff; border-color: rgb(0 59 23 / 0.07); }
 .grid .card:not(:hover):not(:has(:focus-visible)) {
   box-shadow: 0 12px 16px -10px rgb(0 42 16 / 0.34), 0 3px 6px rgb(0 42 16 / 0.07);
@@ -48,22 +55,25 @@
 .eventsHead { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 .eventsIcon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--forest); color: var(--ivory); font-size: 1.2rem; }
 .eventsTitle { font-family: var(--stack-serif); font-size: 1.3rem; font-weight: 600; color: var(--forest); }
-.eventList { display: grid; gap: 6px; flex: 1 1 auto; }
-.evLink { display: grid; grid-template-columns: 56px 1fr; gap: 12px; align-items: center; padding: 6px 8px; color: var(--forest); text-decoration: none; }
+.eventList { display: grid; align-content: space-between; gap: 4px; flex: 1 1 auto; }
+.evLink { display: grid; grid-template-columns: 56px 1fr; gap: 12px; align-items: center; padding: 2px 8px; color: var(--forest); text-decoration: none; }
 .block { display: grid; place-items: center; align-content: center; width: 56px; height: 56px; border: 2px solid var(--forest); border-radius: 12px; background: var(--ivory); color: var(--forest); line-height: 1.1; }
 .day { font-family: var(--stack-serif); font-size: 1.25rem; font-weight: 700; }
 .mon { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; }
 .evText { display: grid; gap: 2px; }
-.evTitle { font-weight: 600; font-size: 0.98rem; }
+.evTitle { font-weight: 600; font-size: 0.98rem; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .venue { font-size: 0.85rem; color: var(--text); }
 .none { padding: 12px 8px; color: var(--text); }
 /* Second news card: the next two stories as small rows (photo left, text right), sharing the card's height. */
 .stack { display: flex; flex-direction: column; flex: 1 1 auto; }
-.item { position: relative; flex: 1 1 0; display: grid; grid-template-columns: 104px 1fr; gap: 14px; align-items: center; padding: 18px; }
+.item { position: relative; flex: 1 1 0; display: grid; grid-template-columns: 104px 1fr; gap: 14px; align-items: center; padding: 14px 18px; }
 .item + .item { border-top: 1px solid rgb(0 59 23 / 0.07); }
 .grid .item .thumb { position: relative; width: 104px; height: 80px; overflow: hidden; border-radius: 10px; }
-.item .text { margin-top: 0; padding: 0; }
-.item .more { margin-top: 2px; }
-.item .newsTitle { font-size: 0.95rem; -webkit-line-clamp: 3; }
-@media (max-width: 1023px) { .grid { grid-template-columns: repeat(2, 1fr); } .eventsCol { grid-column: 1 / -1; } }
+/* Date and Read More share one line so three stories fit the card height with no gaps. */
+.item .text { margin-top: 0; padding: 0; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 14px; }
+.item .newsTitle { flex: 0 0 100%; font-size: 0.95rem; -webkit-line-clamp: 3; }
+.item .more { margin-top: 0; }
+.grid .item .thumbCrest { background: var(--ivory-deep); }
+.crestImg { object-fit: contain; padding: 14px; }
+@media (max-width: 1023px) { .grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: none; } .eventsCol { grid-column: 1 / -1; } }
 @media (max-width: 639px) { .grid { grid-template-columns: 1fr; } }

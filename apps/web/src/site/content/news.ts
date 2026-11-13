@@ -1,7 +1,9 @@
 import type { NewsItem } from './types'
 
 /* Real headlines from https://uswat.edu.pk/category/latestnews/ (crawled 2026-11-06). Month-only dates: the pages
-   show the day in images/PDF only. Images: see content/images.ts (none copied yet). */
+   show the day in images/PDF only. Images: see content/images.ts (none copied yet).
+   The last item (roadmap) is worded from its address in the owner's route map (scripts/import/data/route_map.csv, class News), not
+   read from the page: punctuation is inferred and the wording is to be confirmed. */
 const V = '2026-11-06'
 const U = 'https://uswat.edu.pk'
 
@@ -28,6 +30,14 @@ export const news: NewsItem[] = [
     href: `${U}/2026/10/university-of-swat-became-the-first-in-the-province-to-launch-a-major-solarization-project/`,
     month: '2026-10',
     source: `${U}/2026/10/university-of-swat-became-the-first-in-the-province-to-launch-a-major-solarization-project/`,
+    verifiedAt: V,
+  },
+  {
+    id: 'roadmap',
+    title: 'University of Swat Unveils New Roadmap for Institutional Excellence: Focus on Good Governance, Transparency',
+    href: `${U}/2026/11/university-of-swat-unveils-new-roadmap-for-institutional-excellence-focus-on-good-governance-transparency/`,
+    month: '2026-11',
+    source: `${U}/2026/11/university-of-swat-unveils-new-roadmap-for-institutional-excellence-focus-on-good-governance-transparency/`,
     verifiedAt: V,
   },
 ]
