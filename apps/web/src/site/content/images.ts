@@ -39,6 +39,8 @@ export const images = {
   newsThumbs: {
     niibs: { src: '/images/news/niibs-visit.webp', alt: 'University of Swat hosts the visiting delegation with a welcome bouquet', width: 900, height: 600 },
     climate: { src: '/images/news/climate-plaque.webp', alt: 'A commemorative shield is presented at the climate resilience conference at Bara Gali', width: 900, height: 600 },
-    solar: { src: '', alt: '', width: 640, height: 420 },
+    /* Supplied by the owner on 2026-11-13 (photographs from the university's posts; people are visible, public use not yet confirmed). Native size, not upscaled. */
+    solar: { src: '/images/news/solar-ppa-signing.webp', alt: 'Officials exchange signed agreement documents at the solar power project signing ceremony while colleagues applaud', width: 729, height: 445 },
+    roadmap: { src: '/images/news/roadmap-meeting.webp', alt: 'Faculty and officials seated around long tables in a meeting hall during a university planning session', width: 733, height: 545 },
   } satisfies Record<string, SiteImage>,
 }
