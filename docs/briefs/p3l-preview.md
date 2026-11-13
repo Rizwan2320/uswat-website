@@ -1,5 +1,8 @@
 # P3 slice 3l: preview reads use the viewer's own access
 
+> **Update 2026-11-13:** the main agent applied the fix in PR #35 (`6797d49`) using the same `governance/preview.ts` and tests, and `main` now has it, so the leak is closed there. This slice's duplicate commit was dropped when the stack was rebased onto `main`. The handover patch described below was removed; what remains of 3l is the improved label guard and the four label fixes. The sections below are the record of what was found at the time.
+
+
 **Branch:** `p3/preview-3l`, stacked on `p3/labels-3k`. **Plan refs:** CMS-01 (drafts, autosave, preview, restore), CMS-02 (roles), rule 5 (nothing private leaks).
 
 ## What I found

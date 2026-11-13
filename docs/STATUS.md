@@ -279,6 +279,9 @@ Updated: 2026-11-09 (Mon) PKT
 - New workflow `.github/workflows/admin-e2e.yml` runs the 14 browser tests on pull requests that touch `apps/web`. First run green. `ci.yml` untouched. Brief: `docs/briefs/p3o-admin-e2e-ci.md`.
 - Decision for the user: make `admin-e2e` a required check in branch protection if wanted (not done).
 
+## Stack rebased onto `main` (2026-11-13)
+- Slices 3e to 3o were rebased onto `origin/main` at `6797d49` (only doc-append conflicts). `main` already carries the preview fix (#35 = my `governance/preview.ts` and its tests), so that commit was dropped and `docs/handover/p3l-preview-read.patch` removed. On the rebased tip: typecheck, lint (0 errors), 527 tests passed with 17 skipped (the skips are not in my suites), `next build`, and the 14 browser tests pass. The branches on origin still hold the old, pre-rebase commits until the user approves the force-pushes.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
