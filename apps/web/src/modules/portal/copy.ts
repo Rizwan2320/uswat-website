@@ -1,0 +1,87 @@
+/**
+ * Every word a person reads on the portal's identity pages, in one place, so the text can be
+ * reviewed and translated (Urdu to follow) without touching the pages. English first.
+ * Plain words, short sentences. The portal is a SAMPLE until the university supplies real data.
+ */
+export const COPY = {
+  siteName: 'University of Swat faculty portal',
+  sampleBanner: 'Sample portal for demonstration. It is not the university’s system and holds no real records.',
+  skipLink: 'Skip to the main content',
+  signOut: 'Sign out',
+  nav: { home: 'Home', security: 'Security' },
+
+  signIn: {
+    title: 'Sign in',
+    intro: 'Use your passkey if you have one. Otherwise use your email and password.',
+    passkeyButton: 'Sign in with a passkey',
+    orDivider: 'or sign in with a password',
+    emailLabel: 'Email address',
+    passwordLabel: 'Password',
+    passwordButton: 'Sign in with password',
+    working: 'Signing in…',
+    expired: 'You were signed out because the session ended. Please sign in again.',
+    needSecondFactor: 'Your password was right, but this account is protected by a second step. Sign in with your passkey, or sign out and use the authenticator app.',
+    totpTitle: 'Enter your authenticator code',
+    totpIntro: 'Open your authenticator app and type the six-digit code for this account.',
+    totpLabel: 'Six-digit code',
+    totpButton: 'Verify and sign in',
+    totpBack: 'Start again',
+    recoverLink: 'Lost your device? Sign in with a recovery code',
+  },
+
+  home: {
+    title: 'Your portal',
+    intro: 'You are signed in. This sample page will later show your profile, publications and requests.',
+    signedInAs: 'Signed in as',
+    securityLink: 'Manage your sign-in security',
+  },
+
+  enrol: {
+    title: 'Secure your account',
+    intro: 'Before you can use the portal you need a second way to prove it is you. A passkey is the easiest and the safest.',
+    passkeyTitle: 'Add a passkey',
+    passkeyHelp: 'Your phone, laptop or security key will ask for your fingerprint, face or screen lock. Nothing is sent to us that could be reused elsewhere.',
+    passkeyButton: 'Add a passkey',
+    passkeyDone: 'Your passkey is saved.',
+    totpTitle: 'Or use an authenticator app',
+    totpHelp: 'Use this if your device cannot hold a passkey. Confirm your password to see the setup key.',
+    passwordLabel: 'Your password',
+    totpStart: 'Show the setup key',
+    keyLabel: 'Setup key',
+    keyHelp: 'Type this key into your authenticator app. On a phone you can also open the setup link.',
+    linkLabel: 'Open the setup link on this device',
+    codeLabel: 'Six-digit code from the app',
+    verifyButton: 'Confirm the app',
+    totpDone: 'Your authenticator app is confirmed.',
+    working: 'Please wait…',
+    codesTitle: 'Save your recovery codes',
+    codesHelp: 'If you lose your device, one of these codes lets you sign in. Each works once. We cannot show them again.',
+    codesWarning: 'Keep them somewhere safe and private, not on the device you use to sign in.',
+    savedConfirm: 'I have saved these codes',
+    continueButton: 'Continue to the portal',
+    getCodesButton: 'Get my recovery codes',
+  },
+
+  recover: {
+    title: 'Sign in with a recovery code',
+    intro: 'Use this only if you lost the device you normally sign in with. Using a code signs out every other device.',
+    emailLabel: 'Email address',
+    passwordLabel: 'Password',
+    codeLabel: 'Recovery code',
+    codeHelp: 'Ten letters and numbers, for example ABCDE-FGHJK.',
+    button: 'Sign in with the code',
+    working: 'Checking…',
+    backLink: 'Back to the normal sign-in',
+    afterwards: 'After you sign in, add a new passkey straight away.',
+  },
+
+  errors: {
+    badCredentials: 'The email or password is not right. Check them and try again.',
+    tooMany: 'Too many attempts. Please wait a little and try again.',
+    passkeyFailed: 'That passkey could not be used. Try again, or sign in with your password.',
+    passkeyCancelled: 'The passkey prompt was closed. Try again when you are ready.',
+    badCode: 'That code is not right. Check it and try again.',
+    badRecovery: 'The email, password or recovery code is not right. Check them and try again.',
+    generic: 'Something went wrong. Please try again in a moment.',
+  },
+} as const
