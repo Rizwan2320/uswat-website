@@ -28,3 +28,7 @@ Unit: the guard table for every page and state; the error-message mapping; the c
 
 ## Risks
 Page and route diverging (mitigated by one wiring module and a test that both refuse the same states). A page that leaks into the public site build (mitigated: the portal route group has its own root layout and 404s when off; the existing build check stays). Time: the pages are the largest piece so far; 7a first, review, then 7b and 7c.
+
+## 7c addendum (2026-11-13): security page
+Branch `fp/portal-security`, stacked on `fp/portal-pages` (PR #45). Page `/portal/security` (class `portal`, so a strong session is needed) with: passkeys listed and one more addable; a passkey deletable unless it is the last factor (button hidden and explained; **the server does not enforce this on a direct call, because the library's delete endpoint is not ours; named as a gap, step-up AUTH-09 is the proper fix**); recovery codes regenerated (old ones stop working, shown once); other sessions listed (device text, created time) and revocable, the current one marked and ended with sign-out instead. No new dependency, no new server endpoint. Guard result now carries the factor state so the page does not re-read it. Tests: guard unit (factors present, security page rules), browser run with the virtual authenticator, mutation of the last-factor rule.
+
