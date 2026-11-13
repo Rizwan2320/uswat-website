@@ -28,7 +28,7 @@
   background: var(--forest); color: var(--ivory); font-size: 0.8rem; font-weight: 600;
 }
 .row { display: flex; flex-direction: column; flex: 1 1 auto; }
-.photo { position: relative; flex: none; height: 176px; overflow: hidden; min-height: 0; }
+.photo { position: relative; flex: 1 1 176px; min-height: 176px; overflow: hidden; }
 /* .pop .media (global) gives the photo the row's small radius, so match its specificity or better.
    The mask fades the bottom of the picture into the white card. */
 .grid .row .photo {
@@ -40,7 +40,7 @@
 .fillImg { object-fit: cover; }
 .posNiibs { object-position: 50% 28%; }
 .posPlaque { object-position: 50% 22%; }
-.text { display: flex; flex-direction: column; gap: 8px; flex: 1 1 auto; margin-top: -6px; padding: 0 18px 14px; position: relative; }
+.text { display: flex; flex-direction: column; gap: 8px; flex: none; margin-top: -6px; padding: 0 18px 14px; position: relative; }
 .newsTitle { font-family: var(--stack-serif); font-weight: 600; font-size: 1rem; line-height: 1.3; color: var(--forest); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 .newsTitle a { text-decoration: none; color: inherit; }
 .meta { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--maroon); }
@@ -57,5 +57,13 @@
 .evTitle { font-weight: 600; font-size: 0.98rem; }
 .venue { font-size: 0.85rem; color: var(--text); }
 .none { padding: 12px 8px; color: var(--text); }
+/* Second news card: the next two stories as small rows (photo left, text right), sharing the card's height. */
+.stack { display: flex; flex-direction: column; flex: 1 1 auto; }
+.item { position: relative; flex: 1 1 0; display: grid; grid-template-columns: 104px 1fr; gap: 14px; align-items: center; padding: 18px; }
+.item + .item { border-top: 1px solid rgb(0 59 23 / 0.07); }
+.grid .item .thumb { position: relative; width: 104px; height: 80px; overflow: hidden; border-radius: 10px; }
+.item .text { margin-top: 0; padding: 0; }
+.item .more { margin-top: 2px; }
+.item .newsTitle { font-size: 0.95rem; -webkit-line-clamp: 3; }
 @media (max-width: 1023px) { .grid { grid-template-columns: repeat(2, 1fr); } .eventsCol { grid-column: 1 / -1; } }
 @media (max-width: 639px) { .grid { grid-template-columns: 1fr; } }
