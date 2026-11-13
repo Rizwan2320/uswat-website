@@ -18,6 +18,7 @@ import {
   governanceBeforeOperation,
   type GovernanceOptions,
 } from './hooks'
+import { publishGuard } from './mediaGuard'
 import { notifyNewDraft } from './notify'
 import {
   ORIGINS,
@@ -45,24 +46,31 @@ export const safeHrefValidate: TextFieldSingleValidation = (value, options) => {
 const options = <T extends string>(values: readonly T[], labels?: Record<T, string>) =>
   values.map((value) => ({ value, label: labels?.[value] ?? value }))
 
-const ORIGIN_LABELS = { editor: 'Editor', importer: 'Importer', watcher: 'Source watcher' } as const
-const VERIFICATION_LABELS = {
-  unverified: 'Unverified',
-  verified: 'Verified',
-  stale: 'Stale',
+const ORIGIN_LABELS = {
+  editor: 'Written by an editor',
+  importer: 'Imported from the old site',
+  watcher: 'Found by the source watcher',
 } as const
+const VERIFICATION_LABELS = {
+  unverified: 'Not verified yet',
+  verified: 'Verified',
+  stale: 'Needs a new check',
+} as const
+// Shown only for records that did not start with an editor (imports), so editors never see them.
+const NOT_FROM_EDITOR = (_data: unknown, siblingData: { origin?: string } | undefined) =>
+  Boolean(siblingData?.origin && siblingData.origin !== 'editor')
 
 export const governanceFields: Field[] = [
   {
     name: 'status',
-    label: 'Workflow status',
+    label: 'Stage',
     type: 'select',
     defaultValue: 'draft',
     options: options(WORKFLOW_STATUSES, WORKFLOW_LABELS),
     index: true,
     admin: {
       description:
-        'Draft, In review, Approved, Published, Archived. Moves are checked against your role when you save.',
+        'Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.',
     },
   },
   {
@@ -70,6 +78,13 @@ export const governanceFields: Field[] = [
     label: 'Owner office',
     type: 'text',
     index: true,
+    // New records start with the person's first office. Without this the admin's first automatic
+    // draft save has no office and an editor is refused before typing anything (found in a real
+    // browser; the create page came up blank). A person with several offices can change it.
+    defaultValue: ({ user }) => {
+      const offices = (user as { offices?: unknown } | null)?.offices
+      return Array.isArray(offices) && typeof offices[0] === 'string' ? offices[0] : undefined
+    },
     admin: {
       description:
         'The office accountable for this record (for example "Registrar"). Required to publish.',
@@ -77,80 +92,104 @@ export const governanceFields: Field[] = [
   },
   {
     name: 'source',
+    label: 'Source of the facts',
     type: 'text',
     admin: {
-      description: 'Where the facts come from: a URL or a named document. Required to publish.',
+      description:
+        'A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.',
     },
   },
   {
     name: 'verificationStatus',
-    label: 'Verification',
+    label: 'Fact-check',
     type: 'select',
     defaultValue: 'unverified',
     options: options(VERIFICATION_STATUSES, VERIFICATION_LABELS),
     index: true,
     admin: {
       description:
-        'Only a reviewer can mark a record verified. Unverified records cannot be published.',
+        'Only a reviewer can mark a record Verified. A record that is not verified cannot be published.',
     },
   },
   {
     name: 'verifiedAt',
-    label: 'Verified at',
+    label: 'Verified on',
     type: 'date',
     admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
   },
   {
     name: 'reviewDueAt',
-    label: 'Review due',
+    label: 'Check again by',
     type: 'date',
-    admin: { description: 'Required to publish a high-impact record.' },
+    admin: {
+      description: 'The date someone should re-check this. Needed to publish a high-impact record.',
+    },
   },
   {
     name: 'riskClass',
-    label: 'Risk class',
+    label: 'How sensitive is it?',
     type: 'select',
     defaultValue: 'standard',
     options: options(RISK_CLASSES, RISK_LABELS),
     admin: {
       description:
-        'High-impact: fees, admissions, deadlines, merit lists, legal notices. Needs an approver.',
+        'Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.',
     },
   },
   {
     name: 'publishAt',
-    label: 'Publish at',
+    label: 'Go live on',
     type: 'date',
-    admin: { date: { pickerAppearance: 'dayAndTime' } },
+    admin: {
+      description:
+        'Optional. Set the Stage to Approved and this item goes live by itself at this time.',
+      date: { pickerAppearance: 'dayAndTime' },
+    },
   },
   {
     name: 'expireAt',
-    label: 'Expire at',
+    label: 'Take down on',
     type: 'date',
-    admin: { date: { pickerAppearance: 'dayAndTime' } },
+    admin: {
+      description: 'Optional. After this time the item is archived and no longer shown.',
+      date: { pickerAppearance: 'dayAndTime' },
+    },
   },
   {
     name: 'origin',
+    label: 'Where this came from',
     type: 'select',
     defaultValue: 'editor',
     options: options(ORIGINS, ORIGIN_LABELS),
-    admin: { readOnly: true },
+    admin: { readOnly: true, condition: NOT_FROM_EDITOR },
   },
-  { name: 'contentHash', label: 'Content hash', type: 'text', admin: { readOnly: true } },
+  // Internal change-detection fingerprints: kept in the data, never shown to editors.
+  {
+    name: 'contentHash',
+    label: 'Content fingerprint',
+    type: 'text',
+    admin: { readOnly: true, hidden: true },
+  },
   {
     name: 'sourceContentHash',
-    label: 'Source content hash',
+    label: 'Source fingerprint',
     type: 'text',
-    admin: { readOnly: true },
+    admin: { readOnly: true, hidden: true },
   },
-  { name: 'collectedAt', label: 'Collected at', type: 'date', admin: { readOnly: true } },
+  {
+    name: 'collectedAt',
+    label: 'Collected on',
+    type: 'date',
+    admin: { readOnly: true, condition: NOT_FROM_EDITOR },
+  },
   {
     name: 'pinned',
+    label: 'Keep in current lists',
     type: 'checkbox',
     defaultValue: false,
     admin: {
       description:
-        'A pinned notice with no expiry date stays in current lists past the 90-day age-out. Reviewers only.',
+        'Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.',
     },
   },
   {
@@ -164,7 +203,7 @@ export const governanceFields: Field[] = [
 
 export const governanceGroup: Field = {
   name: 'governance',
-  label: 'Governance',
+  label: 'Ownership and approval',
   type: 'group',
   admin: { position: 'sidebar' },
   fields: governanceFields,
@@ -187,6 +226,7 @@ export function withGovernance<T extends CollectionConfig>(
       beforeOperation: [governanceBeforeOperation, ...(config.hooks?.beforeOperation ?? [])],
       beforeChange: [
         governanceBeforeChange(contentFields, options),
+        publishGuard,
         ...(config.hooks?.beforeChange ?? []),
       ],
       afterChange: [...(config.hooks?.afterChange ?? []), notifyNewDraft],

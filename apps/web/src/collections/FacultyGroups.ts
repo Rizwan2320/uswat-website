@@ -1,4 +1,4 @@
-import { slugField } from 'payload'
+import { plainSlugField } from '@/fields/plainSlug'
 
 import { governedCollection } from './governedCollection'
 
@@ -15,7 +15,7 @@ export const FacultyGroups = governedCollection({
   group: 'Organisation',
   fields: [
     { name: 'name', type: 'text', required: true, localized: true },
-    slugField({ useAsSlug: 'name', position: undefined }),
+    plainSlugField({ useAsSlug: 'name', position: undefined }),
     {
       name: 'legacyKey',
       label: 'Old menu label',

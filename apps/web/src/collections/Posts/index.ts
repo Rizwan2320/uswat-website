@@ -26,12 +26,12 @@ import { revalidateDelete, revalidatePost } from './hooks/revalidatePost'
 
 import {
   MetaDescriptionField,
-  MetaImageField,
   MetaTitleField,
   OverviewField,
   PreviewField,
 } from '@payloadcms/plugin-seo/fields'
-import { slugField } from 'payload'
+import { plainMetaImageField } from '@/fields/plainMetaImage'
+import { plainSlugField } from '@/fields/plainSlug'
 
 export const Posts: CollectionConfig<'posts'> = withGovernance(
   {
@@ -56,6 +56,7 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
       },
     },
     admin: {
+      group: 'Content',
       defaultColumns: ['title', 'slug', 'updatedAt'],
       livePreview: {
         url: ({ data, req }) =>
@@ -86,6 +87,7 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
             fields: [
               {
                 name: 'heroImage',
+                label: 'Main image',
                 type: 'upload',
                 relationTo: 'media',
               },
@@ -114,8 +116,10 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
             fields: [
               {
                 name: 'relatedPosts',
+                label: 'Related posts',
                 type: 'relationship',
                 admin: {
+                  description: 'Other posts readers may want next.',
                   position: 'sidebar',
                 },
                 filterOptions: ({ id }) => {
@@ -149,11 +153,11 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
                 relationTo: 'article-tags',
               },
             ],
-            label: 'Meta',
+            label: 'Details',
           },
           {
             name: 'meta',
-            label: 'SEO',
+            label: 'Search and sharing',
             fields: [
               OverviewField({
                 titlePath: 'meta.title',
@@ -163,9 +167,7 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
               MetaTitleField({
                 hasGenerateFn: true,
               }),
-              MetaImageField({
-                relationTo: 'media',
-              }),
+              plainMetaImageField(),
 
               MetaDescriptionField({}),
               PreviewField({
@@ -182,8 +184,11 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
       },
       {
         name: 'publishedAt',
+        label: 'Date shown to readers',
         type: 'date',
         admin: {
+          description:
+            'The date printed on the post. It does not publish it; use "Go live on" under Ownership and approval for that.',
           date: {
             pickerAppearance: 'dayAndTime',
           },
@@ -235,16 +240,16 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
       },
       {
         name: 'bodyStatus',
-        label: 'Body',
+        label: 'Text status',
         type: 'select',
         defaultValue: 'full',
         options: [
           { label: 'Full text', value: 'full' },
-          { label: 'Stub (text not collected yet)', value: 'stub' },
+          { label: 'Placeholder (text still to be added)', value: 'stub' },
         ],
         admin: { position: 'sidebar' },
       },
-      slugField(),
+      plainSlugField(),
     ],
     hooks: {
       afterChange: [revalidatePost],

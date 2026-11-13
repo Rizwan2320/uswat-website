@@ -248,6 +248,21 @@ async function archiveOrMark(
           previous: doc,
           next: { ...doc, governance: { ...(doc.governance ?? {}), ...patch } },
         })
+        // The write above skips collection hooks, so the search plugin never hears that this item
+        // ended. An archived item must leave search the same moment it leaves the public lists.
+        if (action === 'archive' && payload.collections['search' as 'pages']) {
+          await payload.delete({
+            collection: 'search' as 'pages',
+            where: {
+              and: [
+                { 'doc.relationTo': { equals: collection } },
+                { 'doc.value': { equals: doc.id } },
+              ],
+            },
+            overrideAccess: true,
+            req,
+          })
+        }
       },
       context,
     )

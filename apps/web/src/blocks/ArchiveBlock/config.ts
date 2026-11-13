@@ -24,19 +24,20 @@ export const Archive: Block = {
           ]
         },
       }),
-      label: 'Intro Content',
+      label: 'Introduction',
     },
     {
       name: 'populateBy',
+      label: 'Choose items',
       type: 'select',
       defaultValue: 'collection',
       options: [
         {
-          label: 'Collection',
+          label: 'Everything in a collection',
           value: 'collection',
         },
         {
-          label: 'Individual Selection',
+          label: 'Choose items by hand',
           value: 'selection',
         },
       ],
@@ -48,7 +49,7 @@ export const Archive: Block = {
         condition: (_, siblingData) => siblingData.populateBy === 'collection',
       },
       defaultValue: 'posts',
-      label: 'Collections To Show',
+      label: 'What to list',
       options: [
         {
           label: 'Posts',
@@ -63,7 +64,7 @@ export const Archive: Block = {
         condition: (_, siblingData) => siblingData.populateBy === 'collection',
       },
       hasMany: true,
-      label: 'Categories To Show',
+      label: 'Only these categories',
       relationTo: 'categories',
     },
     {
@@ -74,7 +75,7 @@ export const Archive: Block = {
         step: 1,
       },
       defaultValue: 10,
-      label: 'Limit',
+      label: 'How many to show',
     },
     {
       name: 'selectedDocs',
@@ -83,7 +84,7 @@ export const Archive: Block = {
         condition: (_, siblingData) => siblingData.populateBy === 'selection',
       },
       hasMany: true,
-      label: 'Selection',
+      label: 'Items to show',
       relationTo: ['posts'],
     },
   ],

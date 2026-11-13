@@ -1,10 +1,12 @@
 import type { GlobalConfig } from 'payload'
 
 import { link } from '@/fields/link'
+import { hiddenFromEditors } from '@/governance/adminMenu'
 import { revalidateHeader } from './hooks/revalidateHeader'
 
 export const Header: GlobalConfig = {
   slug: 'header',
+  admin: { hidden: hiddenFromEditors },
   access: {
     read: () => true,
   },

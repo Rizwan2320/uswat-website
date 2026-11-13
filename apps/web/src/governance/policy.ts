@@ -17,6 +17,7 @@
 
 import {
   RISK_RANK,
+  WORKFLOW_LABELS,
   type Actor,
   type RiskClass,
   type VerificationStatus,
@@ -117,6 +118,8 @@ export function canRestore(actor: Actor, rec: Scope): boolean {
   return actor.role === 'approver' && inScope(actor, rec.ownerOffice)
 }
 
+const stage = (s: WorkflowStatus): string => WORKFLOW_LABELS[s] ?? s
+
 const NEXT_STATES: Record<WorkflowStatus, WorkflowStatus[]> = {
   draft: ['in_review', 'approved'],
   in_review: ['draft', 'approved'],
@@ -135,14 +138,14 @@ export function checkTransition(
   if (!NEXT_STATES[from].includes(to)) {
     return deny(
       'TRANSITION_ILLEGAL',
-      `A record cannot move from "${from}" to "${to}". From "${from}" the next step is: ${NEXT_STATES[from].join(' or ')}.`,
+      `This cannot move from ${stage(from)} to ${stage(to)}. From ${stage(from)} the next step is ${NEXT_STATES[from].map(stage).join(' or ')}.`,
       400,
     )
   }
   const system = actor.kind === 'system'
   const reviewer = isReviewerFor(actor, rec)
   const forbidden = (who: string): Denial =>
-    deny('TRANSITION_FORBIDDEN', `Moving a record from "${from}" to "${to}" needs ${who}.`)
+    deny('TRANSITION_FORBIDDEN', `Moving this from ${stage(from)} to ${stage(to)} needs ${who}.`)
 
   switch (`${from}>${to}`) {
     case 'draft>in_review':
@@ -158,21 +161,25 @@ export function checkTransition(
       return reviewer
         ? null
         : forbidden(
-            'a reviewer: an approver of the owning office, a platform admin, or a site manager for records that are not high-impact',
+            'a reviewer: an approver of the owning office, a platform admin, or a site manager for items that are not High impact',
           )
     case 'approved>published':
     case 'published>archived':
       return reviewer || system
         ? null
         : forbidden(
-            'a reviewer: an approver of the owning office, a platform admin, or a site manager for records that are not high-impact',
+            'a reviewer: an approver of the owning office, a platform admin, or a site manager for items that are not High impact',
           )
     case 'archived>published':
       return canRestore(actor, rec)
         ? null
         : forbidden('an approver of the owning office or a platform admin')
     default:
-      return deny('TRANSITION_ILLEGAL', `Unsupported move "${from}" to "${to}".`, 400)
+      return deny(
+        'TRANSITION_ILLEGAL',
+        `This cannot move from ${stage(from)} to ${stage(to)}.`,
+        400,
+      )
   }
 }
 
@@ -224,7 +231,7 @@ export function evaluateSave(input: SaveInput): SaveOutcome {
   ) {
     return deny(
       'EXPIRY_REQUIRED',
-      'This type of record needs an expiry date (expireAt) before it can be submitted, approved or published.',
+      'This type of item needs a "Take down on" date before it can be sent for review, approved or published.',
       400,
     )
   }
@@ -234,10 +241,10 @@ export function evaluateSave(input: SaveInput): SaveOutcome {
 function evaluateCore(input: SaveInput): SaveOutcome {
   const { actor } = input
   if (actor.kind === 'anonymous') {
-    return deny('ANONYMOUS', 'You must be signed in to change content.')
+    return deny('ANONYMOUS', 'You are not signed in. Sign in again to change content.')
   }
   if (isUser(actor) && actor.role === 'auditor') {
-    return deny('READ_ONLY_ROLE', 'The auditor role is read-only.')
+    return deny('READ_ONLY_ROLE', 'Your role (auditor) can read content but not change it.')
   }
   return input.operation === 'create' || !input.prev
     ? evaluateCreate(input)
@@ -251,7 +258,7 @@ function evaluateCreate(input: SaveInput): SaveOutcome {
   if (publishing) {
     return deny(
       'CREATE_PUBLISHED',
-      'A record cannot be created as published. Save it as a draft, then move it through review, approval and publishing.',
+      'A new item cannot start as Published. Save it as a draft, then send it for review, approve it and publish it.',
       400,
     )
   }
@@ -260,7 +267,7 @@ function evaluateCreate(input: SaveInput): SaveOutcome {
     (actor.role === 'approver' || actor.role === 'editor') &&
     !inScope(actor, next.ownerOffice)
   ) {
-    return deny('OWNER_OUT_OF_SCOPE', 'You can only create records for an office you belong to.')
+    return deny('OWNER_OUT_OF_SCOPE', 'You can only create items for an office you belong to.')
   }
 
   const reviewer = isReviewerFor(actor, next)
@@ -298,7 +305,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
       (actor.role === 'approver' || actor.role === 'editor') &&
       !inScope(actor, prev.ownerOffice)
     ) {
-      return deny('OWNER_OUT_OF_SCOPE', 'This record belongs to another office.')
+      return deny('OWNER_OUT_OF_SCOPE', 'This item belongs to another office.')
     }
     if (
       actor.role === 'contributor' &&
@@ -324,14 +331,14 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
     next.ownerOffice !== prev.ownerOffice &&
     !inScope(actor, next.ownerOffice)
   ) {
-    return deny('OWNER_OUT_OF_SCOPE', 'You cannot move a record to an office you do not belong to.')
+    return deny('OWNER_OUT_OF_SCOPE', 'You cannot move an item to an office you do not belong to.')
   }
   // Only a reviewer may lower the risk class (otherwise anyone could downgrade a fee notice).
   if (RISK_RANK[next.risk] < RISK_RANK[prev.risk] && !reviewerOnPrev) {
-    return deny('RISK_LOWER_FORBIDDEN', 'Only a reviewer can lower the risk class of a record.')
+    return deny('RISK_LOWER_FORBIDDEN', 'Only a reviewer can lower "How sensitive is it?".')
   }
   if (next.pinned !== prev.pinned && !reviewer) {
-    return deny('PIN_FORBIDDEN', 'Only a reviewer can pin or unpin a record.')
+    return deny('PIN_FORBIDDEN', 'Only a reviewer can change "Keep in current lists".')
   }
 
   // Verification (VER-01 needs a human reviewer).
@@ -342,12 +349,12 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
       if (!reviewer) {
         return deny(
           'VERIFY_FORBIDDEN',
-          'Only a reviewer (a person, never an import or a job) can mark a record as verified.',
+          'Only a reviewer (a person, never an import or a job) can set Fact-check to Verified.',
         )
       }
       verifiedAt = now
     } else if (!(reviewer || actor.kind === 'system')) {
-      return deny('VERIFY_FORBIDDEN', 'Only a reviewer can change the verification status.')
+      return deny('VERIFY_FORBIDDEN', 'Only a reviewer can change Fact-check.')
     }
   }
 
@@ -360,7 +367,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
       if (target === 'published' && contentChanged && !reviewer) {
         return deny(
           'EDIT_LIVE_NEEDS_REVIEWER',
-          'Changes to published content must be saved as a draft and go through review, approval and publishing.',
+          'Changes to published content are saved as a draft first, then go through review, approval and publishing.',
         )
       }
     } else if (
@@ -385,28 +392,24 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
       if (verification !== 'verified') {
         return deny(
           'NOT_VERIFIED',
-          'This record is not verified, so it cannot be published. A reviewer must mark it as verified (with its source) first.',
+          'This cannot be published yet: Fact-check is not Verified. A reviewer must verify it, with its source, first.',
           400,
         )
       }
       if (!next.ownerOffice) {
         return deny(
           'OWNER_REQUIRED',
-          'Set the owner office before publishing, so the record has someone accountable for it.',
+          'Fill in Owner office before publishing, so someone is accountable for it.',
           400,
         )
       }
       if (!next.source?.trim()) {
-        return deny(
-          'SOURCE_REQUIRED',
-          'Record where this information comes from (source) before publishing.',
-          400,
-        )
+        return deny('SOURCE_REQUIRED', 'Fill in "Source of the facts" before publishing.', 400)
       }
       if (scope.risk === 'high_impact' && !next.reviewDueAt) {
         return deny(
           'REVIEW_DATE_REQUIRED',
-          'High-impact records need a review date before they can be published.',
+          'Fill in "Check again by" before publishing a High impact item.',
           400,
         )
       }
@@ -415,7 +418,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
     if (input.unpublishing && !reviewerOnPrev && actor.kind !== 'system') {
       return deny(
         'UNPUBLISH_FORBIDDEN',
-        'Taking published content offline needs a reviewer: an approver of the owning office, a platform admin, or a site manager for records that are not high-impact.',
+        'Taking published content offline needs a reviewer: an approver of the owning office, a platform admin, or a site manager for items that are not High impact.',
       )
     }
     let requested = next.status
@@ -425,7 +428,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
       } else {
         return deny(
           'NEEDS_PUBLISH_ACTION',
-          'Publishing and archiving take effect immediately. Use Publish (not Save draft) for this change.',
+          'Publishing and archiving take effect immediately. Use the Publish changes button for this.',
           400,
         )
       }
@@ -471,6 +474,6 @@ export function checkDelete(actor: Actor, rec: Pick<RecordState, 'risk'>): Denia
   if (actor.role === 'siteManager' && rec.risk !== 'high_impact') return null
   return deny(
     'DELETE_FORBIDDEN',
-    'Only a platform admin can delete this record (site managers cannot delete high-impact records).',
+    'Only a platform admin can delete this item (site managers cannot delete High impact items).',
   )
 }

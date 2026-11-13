@@ -19,7 +19,7 @@ export const AuditLogs: CollectionConfig = {
   admin: {
     useAsTitle: 'collection',
     defaultColumns: ['createdAt', 'action', 'collection', 'recordId', 'actorEmail'],
-    group: 'Governance',
+    group: 'Administration',
   },
   access: {
     read: ({ req }) => {
@@ -41,20 +41,36 @@ export const AuditLogs: CollectionConfig = {
   fields: [
     {
       name: 'action',
+      label: 'What happened',
       type: 'select',
       required: true,
       index: true,
-      options: ['create', 'update', 'delete', 'login'],
+      options: [
+        { label: 'Created', value: 'create' },
+        { label: 'Changed', value: 'update' },
+        { label: 'Deleted', value: 'delete' },
+        { label: 'Signed in', value: 'login' },
+      ],
     },
-    { name: 'collection', type: 'text', required: true, index: true },
-    { name: 'recordId', type: 'text', index: true },
-    { name: 'actorKind', type: 'select', required: true, options: ['user', 'system', 'anonymous'] },
-    { name: 'actorId', type: 'text', index: true },
-    { name: 'actorRole', type: 'text' },
-    { name: 'actorEmail', type: 'text' },
-    { name: 'transitionFrom', type: 'text' },
-    { name: 'transitionTo', type: 'text' },
-    { name: 'locale', type: 'text' },
-    { name: 'changes', type: 'json' },
+    { name: 'collection', label: 'Kind of record', type: 'text', required: true, index: true },
+    { name: 'recordId', label: 'Record number', type: 'text', index: true },
+    {
+      name: 'actorKind',
+      label: 'Done by',
+      type: 'select',
+      required: true,
+      options: [
+        { label: 'A signed-in person', value: 'user' },
+        { label: 'The system (scheduled job)', value: 'system' },
+        { label: 'A visitor who was not signed in', value: 'anonymous' },
+      ],
+    },
+    { name: 'actorId', label: 'Person number', type: 'text', index: true },
+    { name: 'actorRole', label: 'Their role', type: 'text' },
+    { name: 'actorEmail', label: 'Their email', type: 'text' },
+    { name: 'transitionFrom', label: 'Moved from stage', type: 'text' },
+    { name: 'transitionTo', label: 'Moved to stage', type: 'text' },
+    { name: 'locale', label: 'Language', type: 'text' },
+    { name: 'changes', label: 'What changed', type: 'json' },
   ],
 }

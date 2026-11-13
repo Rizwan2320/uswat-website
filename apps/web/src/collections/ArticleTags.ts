@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { slugField } from 'payload'
+import { plainSlugField } from '@/fields/plainSlug'
 
 import {
   governedCreate,
@@ -26,7 +26,7 @@ export const ArticleTags: CollectionConfig = withGovernance(
     versions: { drafts: { autosave: { interval: 1000 } }, maxPerDoc: 25 },
     fields: [
       { name: 'name', type: 'text', required: true, localized: true },
-      slugField({ useAsSlug: 'name', position: undefined }),
+      plainSlugField({ useAsSlug: 'name', position: undefined }),
       {
         name: 'aliases',
         type: 'array',

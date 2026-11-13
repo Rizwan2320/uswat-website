@@ -224,6 +224,63 @@ Updated: 2026-11-09 (Mon) PKT
 - Applied now, without waiting for the rest of the P3 stack: only `src/governance/preview.ts`, its integration test (`tests/int/preview.int.spec.ts`) and the patch (kept at `docs/handover/p3l-preview-read.patch`) from PR #32. Authored by the P3 agent; when PR #32 is rebased onto `main` these files will already be there, so they should drop them from that PR. New source guard `tests/unit/preview-guard.unit.spec.ts` fails if a public page reads with an override tied to draft mode.
 - Prediction M-1 has the actuals. Not run: an HTTP probe on a deployment of `main`.
 - Still open from #32 (their list, not changed here): the preview link carries `PREVIEW_SECRET` in its address (rotate it if it was ever shared); no preview for notices, events, jobs and tenders until those pages exist (agent 4).
+## P3 slice 3f (2026-11-11, branch `p3/media-a11y-3f`, stacked on `p3/org-3e`)
+- Done: Media rules (alt required from a person, rights status reviewer-only, sha256 duplicate refusal, JPEG/PNG/WebP/AVIF only, 8 MB proposed limit); publish guard on every governed collection (image alt, image rights, skipped heading, bare link text; also stops a scheduled publish); generated migration `20261111_014816_p3f_media_rules` (up, down, up proven; no `DROP CONSTRAINT` fix needed); 23 unit and 15 integration tests. Brief: `docs/briefs/p3f-media-accessibility.md`. Predictions P3f-a to P3f-d with actuals.
+- Decisions for the owner: `permission_pending` may publish (mark is a template concern); existing media become rights `unknown` on migration; the 8 MB limit is a proposal.
+- Not run: HTTP upload and Payload's global `upload.limits`, Playwright, Lexical JSON produced by the admin editor, re-check of pages when an image's alt or rights change later.
+
+## P3 slice 3g (2026-11-11, branch `p3/dashboard-3g`, stacked on `p3/media-a11y-3f`)
+- Done: editor dashboard on the admin home page (my drafts, waiting for review, expiring soon, needs a fresh check, images without alt text), loaded with the signed-in user's own access; draft editor guide `docs/editor-guide.md`; template Seed welcome removed; import map regenerated. 7 unit and 8 integration tests; also checked once in a real browser. Brief: `docs/briefs/p3g-dashboard.md`. Predictions P3g-a to P3g-d with actuals.
+- Not run: Neon wake-up timing, mobile layout, CMS-15 usability test with real staff (the guide is untested by real editors), Urdu admin.
+- Still to do in P3: SEO and redirects and form-builder checks, preview, plain-language label audit on every field, Playwright admin flows, REST versions-list test, then the getter switch to CMS reads (main agent's seam).
+
+## P3 stack after the main agent's review (2026-11-11)
+- #3 and #4 are merged. Stack rebased onto `main` (`c43b0a3`) in order: #5 `p3/post-types-3d`, #7 `p3/org-3e`, #11 `p3/media-a11y-3f`, #13 `p3/dashboard-3g`. Append-only conflicts in STATUS and predictions kept on both sides. The `p3d_post_types` migration file is unchanged since its preview ran.
+- #5 review R1 done: one `safeHrefValidate` (reuses `isSafeHref` from `utilities/safeHref`) on `attachments[].url`, `MeritLists documents[].url` and `AffiliatedColleges.link` (the third is my addition: same risk). R2 done: `Events.startsAt` required. No schema change (P3d-e). Payload checks validators at publish, not on draft save, so tests assert the refusal at publish.
+- Checked on the top of the stack on a fresh database: typecheck, lint (0 errors), 344 tests (28 files), `next build`. Not run: Playwright, the first GitHub sweep run.
+- Waiting for the user's force-push approval, then #5 is retargeted to `main`.
+
+## P3 slice 3h (2026-11-11, branch `p3/seo-3h`, stacked on `p3/dashboard-3g`)
+- Done: SEO group on Notices, Events, Jobs and Tenders; search and redirects extended to them; archived items now leave search (found by test); pages sitemap tested; generated migration `p3h_seo_search_redirects` (columns only; up, down, up proven). Brief: `docs/briefs/p3h-seo-search-redirects.md`. Predictions P3h-a to P3h-d with actuals.
+- Handover to the main agent: routes for `/notices`, `/events`, `/jobs`, `/tenders` before a redirect to them lands; existing content needs a search re-index.
+- Not built or not run: form spam control and office mailbox routing (no email adapter), HTTP search query, redirect hop, Playwright.
+- Still to do in P3: preview, plain-language label audit, Playwright admin flows, REST versions-list test; then the getter switch (main agent's seam).
+
+## P3 slice 3i (2026-11-11, branch `p3/rest-access-3i`, stacked on `p3/seo-3h`)
+- Done: the reviewer's open follow-up, REST versions and drafts access by role (anonymous, other-office editor, office editor, contributor, auditor, site manager, platform admin), 11 integration tests on real route handlers and JWTs; mutation check fails 3 tests. No code change was needed: the rules already held. Predictions P3i-a and P3i-b with actuals.
+- Still not run: Playwright admin flows, browser check of the admin edit form, preview, plain-language label audit.
+
+## P3 slice 3j (2026-11-12, branch `p3/admin-flows-3j`, stacked on `p3/rest-access-3i`)
+- **Bug found in a real browser and fixed:** an editor or approver could not open a create page (blank; first autosave refused with `OWNER_OUT_OF_SCOPE`). `Owner office` now defaults to the person's first office. Only a platform admin had ever been tried in the browser.
+- Done: 4 Playwright admin flows (notice to review to publish, image upload with required alt, edit live page, schedule); editor guide corrected for autosave; runbook steps. Brief: `docs/briefs/p3j-admin-flows.md`.
+- Known UX items for the usability test: Publish button visible to editors; lower-case office names.
+- Not run: e2e in CI, Urdu admin, mobile, CMS-15 with real staff, a scheduled item actually publishing.
+
+## P3 slice 3k (2026-11-12, branch `p3/labels-3k`, stacked on `p3/admin-flows-3j`)
+- Done: plain-language labels across all collections, a guard test, hidden internal fields, menu groups, link-safety validator on the remaining document and publication links, SEO title generator fixed. No migration. Brief: `docs/briefs/p3k-plain-language-labels.md`. Predictions P3k-a to c recorded with actuals.
+- Slip: a repo-wide formatter touched about 80 out-of-lane files; all restored before commit.
+- Not run: Urdu admin wording, real editors (CMS-15), message audit.
+- Handover to main agent: public site titles still say "Payload Website Template".
+
+## P3 slice 3l (2026-11-12, branch `p3/preview-3l`, stacked on `p3/labels-3k`)
+- Found by real requests: preview leaked drafts to another office and to a logged-out browser (template code in `(site)` reads drafts with `overrideAccess: draft`). Added `governance/preview.ts` (`findForPreview`), 10 tests, a handover patch `docs/handover/p3l-preview-read.patch`. **The leak stays open on `main` until the main agent applies the patch to `[slug]/page.tsx` and `posts/[slug]/page.tsx`.**
+- Guard test now catches labels made from field names; four fixed.
+- Not run: browser leak probe after the patch lands, Urdu, mobile. No previews for notices, events, jobs, tenders (no public routes).
+
+## P3 slice 3m (2026-11-12, branch `p3/role-browser-3m`, stacked on `p3/preview-3l`)
+- Browser pass as all seven roles. Fixed: settings areas hidden from editing roles' menus, untitled drafts named on the dashboard, plain "not allowed" message. Access was already correct (matrix test). 10 new browser tests, 9 new integration tests. Brief: `docs/briefs/p3m-role-browser-pass.md`.
+- Not run: site manager invite and role-change flow in a browser, Urdu, mobile, CMS-15.
+
+## P3 slice 3n (2026-11-12, branch `p3/messages-3n`, stacked on `p3/role-browser-3m`)
+- Refusal messages rewritten in the words on the screen; codes unchanged; guard test; editor guide table updated. Brief: `docs/briefs/p3n-plain-messages.md`.
+- Not run: real editors, Urdu.
+
+## P3 slice 3o (2026-11-12, branch `p3/admin-e2e-ci-3o`, stacked on `p3/messages-3n`)
+- New workflow `.github/workflows/admin-e2e.yml` runs the 14 browser tests on pull requests that touch `apps/web`. First run green. `ci.yml` untouched. Brief: `docs/briefs/p3o-admin-e2e-ci.md`.
+- Decision for the user: make `admin-e2e` a required check in branch protection if wanted (not done).
+
+## Stack rebased onto `main` (2026-11-13)
+- Slices 3e to 3o were rebased onto `origin/main` at `6797d49` (only doc-append conflicts). `main` already carries the preview fix (#35 = my `governance/preview.ts` and its tests), so that commit was dropped and `docs/handover/p3l-preview-read.patch` removed. On the rebased tip: typecheck, lint (0 errors), 527 tests passed with 17 skipped (the skips are not in my suites), `next build`, and the 14 browser tests pass. The branches on origin still hold the old, pre-rebase commits until the user approves the force-pushes.
 
 ## PR #7 merged as #44, and what production's database turned out to hold (2026-11-13, main agent)
 - #7 (P3 slice 3e, organisation collections) was 54 commits behind main. Integrated as PR #44 (merge of main and #7, one conflict in `docs/predictions.md`, both kept), checked on the merged tree (typecheck, lint 0 errors, 435 tests pass and 17 skipped, no `generate:types` drift, build) and by a migration drill on a scratch database (prediction M-7: p3e up, down alone, up again, all three schema dumps identical to the expected ones). Fast-forwarded into main at `eb95de5`. Production deployment `dpl_Mt6zfDX2...` READY, `/readyz` returns `{"status":"ready","database":"ok"}`.

@@ -14,14 +14,14 @@ import { Content } from '../../blocks/Content/config'
 import { FormBlock } from '../../blocks/Form/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { hero } from '@/heros/config'
-import { slugField } from 'payload'
+import { plainMetaImageField } from '@/fields/plainMetaImage'
+import { plainSlugField } from '@/fields/plainSlug'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateDelete, revalidatePage } from './hooks/revalidatePage'
 
 import {
   MetaDescriptionField,
-  MetaImageField,
   MetaTitleField,
   OverviewField,
   PreviewField,
@@ -45,6 +45,7 @@ export const Pages: CollectionConfig<'pages'> = withGovernance(
       slug: true,
     },
     admin: {
+      group: 'Content',
       defaultColumns: ['title', 'slug', 'updatedAt'],
       livePreview: {
         url: ({ data, req }) =>
@@ -92,7 +93,7 @@ export const Pages: CollectionConfig<'pages'> = withGovernance(
           },
           {
             name: 'meta',
-            label: 'SEO',
+            label: 'Search and sharing',
             fields: [
               OverviewField({
                 titlePath: 'meta.title',
@@ -102,9 +103,7 @@ export const Pages: CollectionConfig<'pages'> = withGovernance(
               MetaTitleField({
                 hasGenerateFn: true,
               }),
-              MetaImageField({
-                relationTo: 'media',
-              }),
+              plainMetaImageField(),
 
               MetaDescriptionField({}),
               PreviewField({
@@ -121,12 +120,15 @@ export const Pages: CollectionConfig<'pages'> = withGovernance(
       },
       {
         name: 'publishedAt',
+        label: 'Date shown to readers',
         type: 'date',
         admin: {
+          description:
+            'The date printed on the page. It does not publish it; use "Go live on" under Ownership and approval for that.',
           position: 'sidebar',
         },
       },
-      slugField(),
+      plainSlugField(),
     ],
     hooks: {
       afterChange: [revalidatePage],

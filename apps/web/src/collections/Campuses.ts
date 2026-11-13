@@ -1,4 +1,4 @@
-import { slugField } from 'payload'
+import { plainSlugField } from '@/fields/plainSlug'
 
 import { governedCollection } from './governedCollection'
 
@@ -14,7 +14,7 @@ export const Campuses = governedCollection({
   group: 'Organisation',
   fields: [
     { name: 'name', type: 'text', required: true, localized: true },
-    slugField({ useAsSlug: 'name', position: undefined }),
+    plainSlugField({ useAsSlug: 'name', position: undefined }),
     { name: 'address', type: 'textarea', localized: true },
     { name: 'link', type: 'text', admin: { description: 'A web page or map link.' } },
   ],
