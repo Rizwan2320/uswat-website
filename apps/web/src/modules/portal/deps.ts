@@ -33,6 +33,7 @@ export const portalDeps: Omit<HandlerDeps, 'env'> = {
   getAuth,
   loadFactors: (userId) => loadFactors(pool(), userId),
   isStrongSession: (sessionId) => createPgAssuranceStore(pool()).isStrong(sessionId),
+  lastVerifiedAt: (sessionId) => createPgAssuranceStore(pool()).lastVerifiedAt(sessionId),
   endSession: (sessionId) => createPgSessionStore(pool()).end(sessionId),
   touchSession: (sessionId, now) => createPgSessionStore(pool()).touch(sessionId, now),
   signInThrottle: {
