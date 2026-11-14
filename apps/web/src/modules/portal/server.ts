@@ -9,9 +9,9 @@ import type { FactorState } from '../identity/gate'
 import { portalDeps } from './deps'
 import { guardPage } from './pageGuard'
 
-export async function requirePortalPage(pathname: string): Promise<{ email: string | null; strong: boolean; factors: FactorState | null }> {
+export async function requirePortalPage(pathname: string): Promise<{ email: string | null; strong: boolean; factors: FactorState | null; fresh: boolean }> {
   const result = await guardPage({ env: process.env, ...portalDeps }, await headers(), pathname, Date.now())
   if (result.action === 'notFound') notFound()
   if (result.action === 'redirect') redirect(result.to)
-  return { email: result.email, strong: result.strong, factors: result.factors }
+  return { email: result.email, strong: result.strong, factors: result.factors, fresh: result.fresh }
 }

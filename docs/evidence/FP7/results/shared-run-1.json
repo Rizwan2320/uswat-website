@@ -1,0 +1,60 @@
+{
+  "ranAt": "2026-11-14T05:11:43.679Z",
+  "results": [
+    {
+      "id": "A1 the checkbox is on the sign-in page with its hint",
+      "ok": true,
+      "note": "Tick this on a lab, library or borrowed computer. You will be signed out after 15 minutes without activity."
+    },
+    {
+      "id": "A2 keyboard only: Tab reaches the checkbox and Space ticks it",
+      "ok": true,
+      "note": "ticked"
+    },
+    {
+      "id": "A3 the session is recorded as shared",
+      "ok": true,
+      "note": "1 row"
+    },
+    {
+      "id": "A4 idle 14 minutes: still signed in",
+      "ok": true,
+      "note": "/portal"
+    },
+    {
+      "id": "A5 idle 16 minutes: signed out with a plain notice",
+      "ok": true,
+      "note": "/portal/sign-in?reason=expired"
+    },
+    {
+      "id": "B1 without the tick the session is not shared",
+      "ok": true,
+      "note": "0 rows"
+    },
+    {
+      "id": "B2 idle 16 minutes: still signed in",
+      "ok": true,
+      "note": "/portal"
+    },
+    {
+      "id": "B3 idle 31 minutes: signed out (the normal limit is unchanged)",
+      "ok": true,
+      "note": "/portal/sign-in?reason=expired"
+    },
+    {
+      "id": "C1 ticking then unticking leaves the session not shared",
+      "ok": true,
+      "note": "0 shared rows"
+    },
+    {
+      "id": "D1 passkey sign-in with the tick records a shared session",
+      "ok": true,
+      "note": "1 row"
+    },
+    {
+      "id": "D2 and it ends after 16 minutes idle",
+      "ok": true,
+      "note": "/portal/sign-in?reason=expired"
+    }
+  ]
+}

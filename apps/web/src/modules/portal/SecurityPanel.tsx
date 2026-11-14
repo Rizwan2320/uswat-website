@@ -1,16 +1,72 @@
 'use client'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { authClient, postJson } from './client'
+import { authClient, go, postJson } from './client'
 import { COPY } from './copy'
 import { mapAuthError } from './errors'
+import Field from './Field'
 import { canDeletePasskey, describeDevice, formatWhen } from './securityRules'
 
 type Passkey = { id: string; name?: string | null; createdAt?: string | Date | null }
 type SessionRow = { token: string; userAgent?: string | null; createdAt?: string | Date | null }
 const C = COPY.security
 
-export default function SecurityPanel({ totpVerified, recoveryCodesRemaining }: { totpVerified: boolean; recoveryCodesRemaining: number }) {
+/** Step-up (AUTH-09): prove the second factor again. A passkey makes a new session; a code proves it in place. */
+function ConfirmCard({ hasPasskey, hasTotp }: { hasPasskey: boolean; hasTotp: boolean }) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const errorRef = useRef<HTMLParagraphElement>(null)
+  useEffect(() => { if (error) errorRef.current?.focus() }, [error])
+
+  async function run(fn: () => Promise<{ error?: unknown } | undefined>) {
+    setBusy(true); setError(null)
+    try {
+      const res = await fn()
+      if (res?.error) { setError(mapAuthError(res.error)); return }
+      go('/portal/security')
+    } catch (e) {
+      setError(mapAuthError(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <section className="portal-card" aria-labelledby="cf-h">
+      <h2 id="cf-h">{C.confirmTitle}</h2>
+      <p>{C.confirmHelp}</p>
+      {error ? <p ref={errorRef} tabIndex={-1} role="alert" className="portal-error">{error}</p> : null}
+      {hasPasskey ? (
+        <button type="button" className="portal-btn" disabled={busy} onClick={() => void run(() => authClient().signIn.passkey())}>
+          {busy ? C.working : C.confirmPasskey}
+        </button>
+      ) : null}
+      {hasTotp ? (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            const code = String(new FormData(e.currentTarget).get('code') ?? '').replace(/\s/g, '')
+            void run(() => authClient().twoFactor.verifyTotp({ code }))
+          }}
+        >
+          <Field id="confirm-code" label={C.confirmTotpLabel} inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]{6,7}" required name="code" />
+          <button type="submit" className="portal-btn secondary" disabled={busy}>{busy ? C.working : C.confirmTotpButton}</button>
+        </form>
+      ) : null}
+    </section>
+  )
+}
+
+export default function SecurityPanel({
+  totpVerified,
+  hasPasskey,
+  fresh,
+  recoveryCodesRemaining,
+}: {
+  totpVerified: boolean
+  hasPasskey: boolean
+  fresh: boolean
+  recoveryCodesRemaining: number
+}) {
   const [passkeys, setPasskeys] = useState<Passkey[] | null>(null)
   const [sessions, setSessions] = useState<SessionRow[] | null>(null)
   const [currentToken, setCurrentToken] = useState<string | null>(null)
@@ -39,7 +95,11 @@ export default function SecurityPanel({ totpVerified, recoveryCodesRemaining }: 
     setBusy(true); setError(null); setStatus(null)
     try {
       const res = await fn()
-      if (res && 'error' in res && res.error) { setError(mapAuthError(res.error)); return }
+      if (res && 'error' in res && res.error) {
+        // The proof ran out while the page was open: ask again instead of showing a vague failure.
+        if ((res.error as { status?: number }).status === 403) { setError(C.confirmNeeded); setTimeout(() => go('/portal/security'), 1500); return }
+        setError(mapAuthError(res.error)); return
+      }
       setStatus(label)
       await load()
     } catch (e) {
@@ -57,6 +117,8 @@ export default function SecurityPanel({ totpVerified, recoveryCodesRemaining }: 
       {error ? <p ref={errorRef} tabIndex={-1} role="alert" className="portal-error">{error}</p> : null}
       <p role="status" className="portal-notice" hidden={!status}>{status}</p>
 
+      {fresh ? null : <ConfirmCard hasPasskey={hasPasskey} hasTotp={totpVerified} />}
+
       <section className="portal-card" aria-labelledby="pk-h">
         <h2 id="pk-h">{C.passkeysTitle}</h2>
         {passkeys === null ? <p>{C.loading}</p> : passkeys.length === 0 ? <p>{C.passkeysNone}</p> : (
@@ -64,7 +126,7 @@ export default function SecurityPanel({ totpVerified, recoveryCodesRemaining }: 
             {passkeys.map((p, i) => (
               <li key={p.id}>
                 {p.name || `Passkey ${i + 1}`}{p.createdAt ? <> · {C.passkeyAdded} {formatWhen(p.createdAt)}</> : null}{' '}
-                {keepsFactor ? (
+                {keepsFactor && fresh ? (
                   <button
                     type="button"
                     className="portal-btn secondary"
@@ -80,9 +142,9 @@ export default function SecurityPanel({ totpVerified, recoveryCodesRemaining }: 
           </ul>
         )}
         {passkeys && passkeys.length > 0 && !keepsFactor ? <p className="portal-notice">{C.lastFactor}</p> : null}
-        <button type="button" className="portal-btn" disabled={busy} onClick={() => void act(C.done, () => authClient().passkey.addPasskey({ name: `Passkey ${(passkeys?.length ?? 0) + 1}` }))}>
+        {fresh ? <button type="button" className="portal-btn" disabled={busy} onClick={() => void act(C.done, () => authClient().passkey.addPasskey({ name: `Passkey ${(passkeys?.length ?? 0) + 1}` }))}>
           {busy ? C.working : C.addPasskey}
-        </button>
+        </button> : null}
       </section>
 
       <section className="portal-card" aria-labelledby="rc-h">
@@ -96,7 +158,7 @@ export default function SecurityPanel({ totpVerified, recoveryCodesRemaining }: 
         ) : (
           <>
             <p>{C.codesRegenerateHelp}</p>
-            <button
+            {fresh ? <button
               type="button"
               className="portal-btn secondary"
               disabled={busy}
@@ -108,7 +170,7 @@ export default function SecurityPanel({ totpVerified, recoveryCodesRemaining }: 
               })}
             >
               {C.codesRegenerate}
-            </button>
+            </button> : null}
           </>
         )}
       </section>

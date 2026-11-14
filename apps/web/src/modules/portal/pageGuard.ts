@@ -5,13 +5,13 @@
  * a render, a redirect or a 404.
  */
 import { readPortalConfig } from '../identity/config'
-import { PORTAL_BASE, classifyPath, decide, type FactorState } from '../identity/gate'
+import { PORTAL_BASE, classifyPath, decide, isFresh, type FactorState } from '../identity/gate'
 import { readSessionState, type SessionDeps } from '../identity/sessionState'
 
 export type GuardDeps = SessionDeps & { env: Record<string, string | undefined> }
 
 export type GuardResult =
-  | { action: 'render'; email: string | null; strong: boolean; factors: FactorState | null }
+  | { action: 'render'; email: string | null; strong: boolean; factors: FactorState | null; fresh: boolean }
   | { action: 'redirect'; to: string }
   | { action: 'notFound' }
 
@@ -32,7 +32,7 @@ export async function guardPage(deps: GuardDeps, headers: Headers, pathname: str
       const d = decide({ hasSession: true, sessionStrong: state.sessionStrong, factors: state.factors, pathname: HOME })
       if (d.allow) return { action: 'redirect', to: HOME }
     }
-    return { action: 'render', email: null, strong: false, factors: null }
+    return { action: 'render', email: null, strong: false, factors: null, fresh: false }
   }
 
   const state = await readSessionState(deps, headers, cls, now)
@@ -54,5 +54,6 @@ export async function guardPage(deps: GuardDeps, headers: Headers, pathname: str
     email: state.kind === 'active' ? state.email : null,
     strong: state.kind === 'active' && state.sessionStrong,
     factors: state.kind === 'active' ? state.factors : null,
+    fresh: state.kind === 'active' && state.sessionStrong && isFresh(state.verifiedAt, now),
   }
 }

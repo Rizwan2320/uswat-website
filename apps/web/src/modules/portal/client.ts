@@ -4,6 +4,7 @@ import { createAuthClient } from 'better-auth/client'
 import { twoFactorClient } from 'better-auth/client/plugins'
 
 import { AUTH_BASE } from '../identity/gate'
+import { SHARED_COOKIE, SHARED_COOKIE_MAX_AGE_S, SHARED_COOKIE_VALUE } from '../identity/sharedComputer'
 
 function build() {
   return createAuthClient({
@@ -40,4 +41,15 @@ export async function postJson(path: string, body: unknown): Promise<{ status: n
  */
 export function go(path: string): void {
   window.location.assign(path)
+}
+
+/**
+ * "Shared computer" (SES-04): a short-lived cookie the server reads when it makes the session. It can only ask
+ * for the stricter 15-minute idle limit. Call it before every sign-in attempt, so it matches the box as ticked.
+ */
+export function setSharedComputer(on: boolean): void {
+  // `Secure` is required for a __Host- cookie; browsers accept it on localhost as well as on https.
+  document.cookie = on
+    ? `${SHARED_COOKIE}=${SHARED_COOKIE_VALUE}; Path=/; Secure; SameSite=Lax; Max-Age=${SHARED_COOKIE_MAX_AGE_S}`
+    : `${SHARED_COOKIE}=; Path=/; Secure; SameSite=Lax; Max-Age=0`
 }
