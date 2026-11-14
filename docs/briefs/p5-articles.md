@@ -1,0 +1,12 @@
+# Brief: public article pages, T6 listing and T5 article (agent 4, 2026-11-13)
+
+- **Objective.** `/news`, `/notices`, `/events`, `/jobs`, `/tenders` (T6 card list) and `/{type}/{slug}` (T5 article), English and Urdu, reading published records from the CMS. This is the address space the route map already points old addresses at.
+- **Paths touched.** `apps/web/src/site/articles/*` (new), `apps/web/src/app/(site)/(cms)/{news,notices,events,jobs,tenders}/**` (ten one-line route files), tests, this brief, `docs/predictions.md`, `docs/STATUS.md`. Nothing under `src/collections`, `src/governance`, `src/migrations`, `src/site/components`, tokens or the route map.
+- **Risks.**
+  1. No revalidation hooks for the post types on `main`, so a publish does not refresh a list. Interim rule from the main agent: short time bound. Listings and "more from" are cached 300 s under tag `list:{type}`; the article page is read per request.
+  2. Drafts must never reach the public: every read has no user and `draft: false`; the single-article read uses `previewReadOptions`, so draft mode without a login still serves nothing (tested).
+  3. Crawlable parameter space: only `page` (1 to 500), `year` (2000 to this year) and `view=archive` are read; anything else is ignored, a page past the end is a 404.
+  4. Canonical addresses have no trailing slash (the proxy 308s a slash, so a link with one costs a hop).
+- **Tests.** Unit (parameters, dates in Pakistan time, closed rule, current/archive filters, that every article address in the route map is served by one of the five prefixes); integration on a real PostgreSQL (current vs archive for an expired vacancy, a draft notice, an aged-out and a pinned notice; events soonest first; 12 to a page, newest first; year range; a draft is not served with draft mode on and no login; "more from" excludes itself); manual: screenshots at 1280 and 390 px in English and Urdu, axe (WCAG 2 A, AA) on seven pages.
+- **Gate.** Typecheck, lint, unit and integration green; no axe violations; no horizontal scroll at 390 px; Urdu renders right to left.
+- **Not in this PR.** Hero images, tag pages, related items by tag, search, sitemap entries, redirect of the old `/posts` pages to `/news`, the rich-text internal link for News (`/posts/{slug}`, in the RichText component), Urdu strings for the new interface words (they show in English until the owner supplies them; ADR 0008 forbids machine translation), prebuilding the newest 150 (the page reads headers for preview, so it renders per request: G5b not run).

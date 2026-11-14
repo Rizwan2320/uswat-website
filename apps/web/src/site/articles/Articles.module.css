@@ -1,0 +1,39 @@
+.wrap { padding-block: var(--section-y); }
+.bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin-bottom: 20px; }
+.views { display: flex; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.view { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 999px; font-size: 0.9rem; font-weight: 600; color: var(--forest); text-decoration: none; background: #fff; border: 1px solid rgb(0 59 23 / 0.14); }
+.view:hover { border-color: var(--forest); }
+.viewOn { background: var(--forest); color: var(--ivory); border-color: var(--forest); }
+.filter { display: flex; align-items: center; gap: 8px; }
+.filter label { font-size: 0.9rem; font-weight: 600; color: var(--forest); }
+.select { min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid rgb(0 59 23 / 0.2); background: #fff; color: var(--forest); font: inherit; }
+.go { min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--forest); background: var(--forest); color: var(--ivory); font: inherit; font-weight: 600; cursor: pointer; }
+.go:hover { background: var(--forest-soft); }
+
+.list { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.card { position: relative; display: grid; gap: 6px; padding: 18px 20px; background: #fff; border: 1px solid rgb(0 59 23 / 0.08); border-radius: var(--radius); box-shadow: 0 8px 14px -10px rgb(0 42 16 / 0.3); }
+.card:hover, .card:has(:focus-visible) { border-color: var(--forest); }
+.cardTitle { margin: 0; font-family: var(--stack-sans); font-size: 1.08rem; font-weight: 700; line-height: 1.35; }
+.cardLink { color: var(--forest); text-decoration: none; }
+.cardLink::after { content: ''; position: absolute; inset: 0; border-radius: var(--radius); }
+.cardLink:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
+.meta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; font-size: 0.85rem; font-weight: 600; color: var(--maroon); }
+.meta span { unicode-bidi: plaintext; }
+.excerpt { margin: 0; color: var(--text); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.pill { justify-self: start; padding: 2px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; color: var(--maroon); background: var(--ivory-deep); }
+.empty { padding: 36px 8px; text-align: center; color: var(--text); }
+
+.article { max-width: 760px; margin-inline: auto; padding-block: var(--section-y); }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 0 0 18px; padding: 0; list-style: none; font-weight: 600; color: var(--maroon); }
+.notice { margin: 0 0 20px; padding: 12px 16px; border-radius: 12px; background: var(--ivory-deep); border-inline-start: 4px solid var(--maroon); color: var(--forest); font-weight: 600; }
+.stub { margin: 0 0 20px; padding: 12px 16px; border-radius: 12px; background: #fff; border: 1px dashed rgb(0 59 23 / 0.3); color: var(--text); }
+.heading { margin: 28px 0 10px; font-family: var(--stack-serif); font-size: 1.25rem; color: var(--forest); }
+.files { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.files a { display: inline-flex; align-items: center; min-height: 44px; color: var(--forest); font-weight: 600; text-underline-offset: 4px; }
+.topics { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 0; padding: 0; list-style: none; }
+.topic { padding: 4px 12px; border-radius: 999px; font-size: 0.85rem; background: var(--ivory-deep); color: var(--forest); }
+.more { margin-top: 36px; padding-top: 8px; border-top: 1px solid var(--ivory-deep); }
+.moreLink { color: var(--forest); font-weight: 600; text-underline-offset: 4px; }
+@media (max-width: 600px) { .bar { align-items: stretch; } .filter { width: 100%; } .select { flex: 1 1 auto; } }
+/* The rich-text wrapper sits between the Prose column and the paragraphs, so Prose's sibling spacing needs one more level. */
+.body :global(.payload-richtext) > * + * { margin-top: 1em; }
