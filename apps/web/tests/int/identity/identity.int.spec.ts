@@ -15,6 +15,7 @@ import { createPgAssuranceStore } from '@/modules/identity/assuranceStore'
 import { createRecoveryService } from '@/modules/identity/recoveryService'
 import { createPgAttemptStore, createPgRecoveryStore } from '@/modules/identity/recoveryStore'
 import { createPgSessionStore } from '@/modules/identity/sessionStore'
+import { createPgSharedStore } from '@/modules/identity/sharedStore'
 import { createSignInThrottle } from '@/modules/identity/signInThrottle'
 import { createPgThrottleStore } from '@/modules/identity/signInThrottleStore'
 import { closeIdentityPool, getIdentityPool } from '@/modules/identity/db'
@@ -58,7 +59,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -718,5 +719,150 @@ describe.skipIf(!DB)('step-up (AUTH-09) and session rotation (SES-03) with the r
     await call(u.jar, 'POST', '/sign-in/email', { email: u.email, password: PASSWORD })
     await call(u.jar, 'POST', '/two-factor/verify-totp', { code: '000000' })
     expect(await sessionIds(u.userId)).toEqual(expect.arrayContaining(before))
+  })
+})
+
+describe.skipIf(!DB)('shared computer (SES-04) with the real library', () => {
+  let auth: PortalAuth
+  let h: ReturnType<typeof createAuthHandlers>
+  let pool: pg.Pool
+  let seq = 0
+
+  beforeAll(() => {
+    const config = readPortalConfig(env)
+    if (!config.enabled) throw new Error(`config: ${config.reason}`)
+    auth = createPortalAuth(config)
+    pool = getIdentityPool(config.databaseUrl)
+    h = createAuthHandlers({
+      env,
+      getAuth: () => auth as unknown as AuthLike,
+      loadFactors: (id) => loadFactors(pool, id),
+      isStrongSession: (id) => createPgAssuranceStore(pool).isStrong(id),
+      lastVerifiedAt: (id) => createPgAssuranceStore(pool).lastVerifiedAt(id),
+      isSharedSession: (id) => createPgSharedStore(pool).isShared(id),
+      endSession: (id) => createPgSessionStore(pool).end(id),
+      touchSession: (id, now) => createPgSessionStore(pool).touch(id, now),
+      signInThrottle: createSignInThrottle({ store: createPgThrottleStore(pool) }),
+    })
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  class Jar {
+    readonly ip = `198.20.0.${(++seq % 250) + 1}`
+    private c = new Map<string, string>()
+    set(name: string, value: string) {
+      this.c.set(name, value)
+    }
+    header() {
+      return [...this.c].map(([k, v]) => `${k}=${v}`).join('; ')
+    }
+    absorb(res: Response) {
+      for (const line of res.headers.getSetCookie()) {
+        const [pair] = line.split(';')
+        const i = pair!.indexOf('=')
+        const name = pair!.slice(0, i)
+        const val = pair!.slice(i + 1)
+        if (val === '' || /max-age=0/i.test(line)) this.c.delete(name)
+        else this.c.set(name, val)
+      }
+    }
+  }
+  async function call(jar: Jar, method: 'GET' | 'POST', path: string, body?: unknown) {
+    const res = await h[method](
+      new Request(`${BASE}${path}`, {
+        method,
+        headers: { 'content-type': 'application/json', origin: ORIGIN, cookie: jar.header(), 'x-real-ip': jar.ip },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      }),
+    )
+    jar.absorb(res)
+    return res
+  }
+
+  /** A user with a confirmed authenticator app and recovery codes; returns what is needed to sign in again. */
+  async function user() {
+    const email = `shared-${Date.now()}-${++seq}@example.test`
+    const made = await auth.api.signUpEmail({ body: { email, password: PASSWORD, name: 'Sample Shared' } })
+    await pool.query(`delete from "session" where "userId" = $1`, [made.user.id])
+    const jar = new Jar()
+    await call(jar, 'POST', '/sign-in/email', { email, password: PASSWORD })
+    const enable = (await (await call(jar, 'POST', '/two-factor/enable', { password: PASSWORD })).json()) as { totpURI: string }
+    const secret = new URL(enable.totpURI).searchParams.get('secret') ?? ''
+    await call(jar, 'POST', '/two-factor/verify-totp', { code: totpAt(secret, Date.now() - 30_000) })
+    const codes = ((await (await call(jar, 'POST', '/recovery/issue', {})).json()) as { codes: string[] }).codes
+    await pool.query(`delete from "session" where "userId" = $1`, [made.user.id])
+    return { email, userId: made.user.id, secret, codes }
+  }
+  /** Password then authenticator code, optionally with the shared-computer cookie. Codes: steps t, then t+1. */
+  async function signIn(u: { email: string; secret: string }, shared: boolean, step: number) {
+    const jar = new Jar()
+    if (shared) jar.set('__Host-portal.shared', '1')
+    await call(jar, 'POST', '/sign-in/email', { email: u.email, password: PASSWORD })
+    const done = await call(jar, 'POST', '/two-factor/verify-totp', { code: totpAt(u.secret, Date.now() + step * 30_000) })
+    expect(done.status).toBe(200)
+    return jar
+  }
+  const sessionIds = async (userId: string) => (await pool.query<{ id: string }>(`select "id" from "session" where "userId" = $1`, [userId])).rows.map((r) => r.id)
+  const sharedRows = async (userId: string) =>
+    (await pool.query(`select 1 from "session_shared" where "sessionId" in (select "id" from "session" where "userId" = $1)`, [userId])).rowCount
+  const idle = (userId: string, minutes: number) =>
+    pool.query(`update "session" set "updatedAt" = now() - make_interval(mins => $2) where "userId" = $1`, [userId, minutes])
+
+  it('records the session as shared when the page asked, and not otherwise', async () => {
+    const u = await user()
+    await signIn(u, false, 0)
+    expect(await sharedRows(u.userId)).toBe(0)
+    await pool.query(`delete from "session" where "userId" = $1`, [u.userId])
+    await signIn(u, true, 1)
+    expect(await sharedRows(u.userId)).toBe(1)
+    expect(await sessionIds(u.userId)).toHaveLength(1)
+  })
+
+  it('a shared session idle for 16 minutes is ended; a normal one is not', async () => {
+    const u = await user()
+    const shared = await signIn(u, true, 0)
+    await idle(u.userId, 14)
+    expect((await call(shared, 'GET', '/passkey/list-user-passkeys')).status).toBe(200)
+    await idle(u.userId, 16)
+    const res = await call(shared, 'GET', '/passkey/list-user-passkeys')
+    expect(res.status).toBe(401)
+    expect(await sessionIds(u.userId)).toHaveLength(0)
+
+    const normal = await signIn(u, false, 1)
+    await idle(u.userId, 16)
+    expect((await call(normal, 'GET', '/passkey/list-user-passkeys')).status).toBe(200)
+    await idle(u.userId, 31)
+    expect((await call(normal, 'GET', '/passkey/list-user-passkeys')).status).toBe(401)
+  })
+
+  it('a failed sign-in with the cookie records nothing', async () => {
+    const u = await user()
+    const jar = new Jar()
+    jar.set('__Host-portal.shared', '1')
+    await call(jar, 'POST', '/sign-in/email', { email: u.email, password: PASSWORD })
+    await call(jar, 'POST', '/two-factor/verify-totp', { code: '000000' })
+    expect(await sharedRows(u.userId)).toBe(0)
+  })
+
+  it('the recovery sign-in honours the choice too', async () => {
+    const u = await user()
+    const jar = new Jar()
+    jar.set('__Host-portal.shared', '1')
+    const res = await call(jar, 'POST', '/recovery/sign-in', { email: u.email, password: PASSWORD, code: u.codes[0] })
+    expect(res.status).toBe(200)
+    expect(await sharedRows(u.userId)).toBe(1)
+    const plain = new Jar()
+    const res2 = await call(plain, 'POST', '/recovery/sign-in', { email: u.email, password: PASSWORD, code: u.codes[1] })
+    expect(res2.status).toBe(200)
+    expect(await sharedRows(u.userId)).toBe(0) // the second recovery ended every earlier session, and this one is not shared
+  })
+
+  it('deleting a session removes its flag', async () => {
+    const u = await user()
+    await signIn(u, true, 0)
+    await pool.query(`delete from "session" where "userId" = $1`, [u.userId])
+    expect((await pool.query(`select count(*)::int as n from "session_shared" where "sessionId" not in (select "id" from "session")`)).rows[0].n).toBe(0)
   })
 })

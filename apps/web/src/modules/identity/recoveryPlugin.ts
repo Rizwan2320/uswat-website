@@ -14,6 +14,8 @@ import { APIError, createAuthEndpoint, sessionMiddleware } from 'better-auth/api
 import { setSessionCookie } from 'better-auth/cookies'
 import * as z from 'zod'
 
+import { sharedRequested } from './sharedComputer'
+import type { SharedStore } from './sharedStore'
 import type { AssuranceStore } from './assuranceStore'
 import type { createRecoveryService } from './recoveryService'
 
@@ -23,6 +25,7 @@ export function recoveryPlugin(
   service: ReturnType<typeof createRecoveryService>,
   assurance: AssuranceStore,
   now: () => number = Date.now,
+  shared?: SharedStore,
 ): BetterAuthPlugin {
   const refuse = () => new APIError('UNAUTHORIZED', { message: 'Invalid credentials' })
 
@@ -65,6 +68,7 @@ export function recoveryPlugin(
           const session = await ctx.context.internalAdapter.createSession(found.user.id, false)
           if (!session) throw new APIError('INTERNAL_SERVER_ERROR', { message: 'failed to create session' })
           await assurance.mark(session.id)
+          if (shared && sharedRequested(ctx.headers?.get('cookie'))) await shared.mark(session.id).catch(() => {})
           await setSessionCookie(ctx, { session, user: found.user })
           for (const [k, v] of Object.entries(NO_STORE)) ctx.setHeader(k, v)
           return ctx.json({ token: session.token, remaining: result.remaining })

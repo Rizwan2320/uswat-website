@@ -11,6 +11,8 @@ export const COPY = {
   nav: { home: 'Home', security: 'Security' },
 
   signIn: {
+    sharedLabel: 'This is a shared computer',
+    sharedHint: 'Tick this on a lab, library or borrowed computer. You will be signed out after 15 minutes without activity.',
     title: 'Sign in',
     intro: 'Use your passkey if you have one. Otherwise use your email and password.',
     passkeyButton: 'Sign in with a passkey',
@@ -63,6 +65,8 @@ export const COPY = {
   },
 
   recover: {
+    sharedLabel: 'This is a shared computer',
+    sharedHint: 'You will be signed out after 15 minutes without activity.',
     title: 'Sign in with a recovery code',
     intro: 'Use this only if you lost the device you normally sign in with. Using a code signs out every other device.',
     emailLabel: 'Email address',

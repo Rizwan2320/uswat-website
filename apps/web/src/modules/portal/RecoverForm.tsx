@@ -2,13 +2,14 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
-import { go, postJson } from './client'
+import { go, postJson, setSharedComputer } from './client'
 import { COPY } from './copy'
 import { mapAuthError } from './errors'
-import Field from './Field'
+import Field, { CheckField } from './Field'
 
 export default function RecoverForm() {
   const [busy, setBusy] = useState(false)
+  const [shared, setShared] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const errorRef = useRef<HTMLParagraphElement>(null)
   useEffect(() => { if (error) errorRef.current?.focus() }, [error])
@@ -18,6 +19,7 @@ export default function RecoverForm() {
     const form = new FormData(e.currentTarget)
     setBusy(true)
     setError(null)
+    setSharedComputer(shared)
     try {
       const res = await postJson('/recovery/sign-in', {
         email: String(form.get('email') ?? ''),
@@ -45,6 +47,7 @@ export default function RecoverForm() {
         <Field id="email" label={COPY.recover.emailLabel} type="email" autoComplete="username" required />
         <Field id="password" label={COPY.recover.passwordLabel} type="password" autoComplete="current-password" required />
         <Field id="code" label={COPY.recover.codeLabel} hint={COPY.recover.codeHelp} autoComplete="off" autoCapitalize="characters" spellCheck={false} required />
+        <CheckField id="shared" label={COPY.recover.sharedLabel} hint={COPY.recover.sharedHint} checked={shared} onChange={setShared} />
         <button type="submit" className="portal-btn" disabled={busy}>{busy ? COPY.recover.working : COPY.recover.button}</button>
       </form>
       <p><Link className="portal-link" href="/portal/sign-in">{COPY.recover.backLink}</Link></p>

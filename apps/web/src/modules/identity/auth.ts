@@ -16,6 +16,7 @@ import { twoFactor } from 'better-auth/plugins'
 import { getIdentityPool } from './db'
 import type { PortalConfig } from './config'
 import { createPgAssuranceStore } from './assuranceStore'
+import { createPgSharedStore } from './sharedStore'
 import { recoveryPlugin } from './recoveryPlugin'
 import { createRecoveryService } from './recoveryService'
 import { createPgAttemptStore, createPgRecoveryStore } from './recoveryStore'
@@ -54,10 +55,12 @@ export function createPortalAuth(config: EnabledConfig) {
         backupCodeOptions: { amount: 0 },
       }),
       totpReplayPlugin(createPgReplayStore(pool)),
-      sessionAssurancePlugin(createPgAssuranceStore(pool)),
+      sessionAssurancePlugin(createPgAssuranceStore(pool), createPgSharedStore(pool)),
       recoveryPlugin(
         createRecoveryService({ recovery: createPgRecoveryStore(pool), attempts: createPgAttemptStore(pool) }),
         createPgAssuranceStore(pool),
+        Date.now,
+        createPgSharedStore(pool),
       ),
     ],
   })

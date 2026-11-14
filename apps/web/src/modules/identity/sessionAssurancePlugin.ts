@@ -22,6 +22,8 @@ import type { BetterAuthPlugin } from 'better-auth'
 import { createAuthMiddleware } from 'better-auth/api'
 
 import type { AssuranceStore } from './assuranceStore'
+import { sharedRequested } from './sharedComputer'
+import type { SharedStore } from './sharedStore'
 
 const STRONG_PATHS = new Set(['/passkey/verify-authentication', '/passkey/verify-registration', '/two-factor/verify-totp'])
 /** Registering a key is not a proof of identity, so it never refreshes the step-up clock. */
@@ -53,7 +55,7 @@ export async function endReplacedSession(
   return 'ended'
 }
 
-export function sessionAssurancePlugin(store: AssuranceStore): BetterAuthPlugin {
+export function sessionAssurancePlugin(store: AssuranceStore, shared?: SharedStore): BetterAuthPlugin {
   return {
     id: 'portal-session-assurance',
     hooks: {
@@ -66,6 +68,8 @@ export function sessionAssurancePlugin(store: AssuranceStore): BetterAuthPlugin 
             if (returned instanceof Response && returned.status !== 200) return
             const created = ctx.context.newSession?.session.id
             if (!created) return
+            // "Shared computer" (SES-04): the page set a cookie before signing in; record it on the new session.
+            if (shared && sharedRequested(ctx.headers?.get('cookie'))) await shared.mark(created).catch(() => {})
             const token = await ctx.getSignedCookie(ctx.context.authCookies.sessionToken.name, ctx.context.secret)
             await endReplacedSession(created, token, {
               find: (t) => ctx.context.internalAdapter.findSession(t),

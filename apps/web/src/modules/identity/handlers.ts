@@ -24,6 +24,8 @@ export type HandlerDeps = {
   isStrongSession: (sessionId: string) => Promise<boolean>
   /** Epoch ms of this session's last second-factor proof (step-up). Absent or throwing means not fresh. */
   lastVerifiedAt?: (sessionId: string) => Promise<number | null>
+  /** Whether the session was made with "shared computer". Absent means not shared; throwing means shared. */
+  isSharedSession?: (sessionId: string) => Promise<boolean>
   /** Deletes the session row (idle timeout or absolute lifetime reached). */
   endSession: (sessionId: string) => Promise<void>
   /** Records activity; the store writes at most once a minute. Errors are ignored by the caller. */
