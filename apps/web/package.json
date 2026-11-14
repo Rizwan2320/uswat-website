@@ -24,6 +24,7 @@
     "db:migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
     "db:migrate:down": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:down",
     "routemap:build": "tsx scripts/routemap-build.ts",
+    "dictionary:build": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/data-dictionary.ts",
     "test:unit": "vitest run --config ./vitest.config.mts tests/unit",
     "identity:migrate": "tsx scripts/identity-migrate.ts"
   },
