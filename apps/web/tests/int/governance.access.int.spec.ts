@@ -154,29 +154,75 @@ describe('CMS-02 role matrix on Pages', () => {
     ).toBe(false)
   })
 
-  it('deleting', async () => {
-    const fresh = async (gov = {}) => (await draft(admin, gov)).id
+  it('deleting a draft that was never published (3q)', async () => {
+    const fresh = async (by: User, gov = {}) => (await draft(by, gov)).id
     const del = (user: User, id: number) => () =>
       payload.delete({ collection: 'pages', id, ...as(user) })
 
-    expect(await can(del(admin, await fresh())), 'platformAdmin').toBe(true)
-    expect(await can(del(manager, await fresh())), 'siteManager, standard record').toBe(true)
+    expect(await can(del(admin, await fresh(admin))), 'platformAdmin').toBe(true)
+    expect(await can(del(manager, await fresh(admin))), 'siteManager').toBe(true)
     expect(
-      await can(del(manager, await fresh({ riskClass: 'high_impact' }))),
-      'siteManager, high-impact',
-    ).toBe(false)
-    expect(
-      await can(del(admin, await fresh({ riskClass: 'high_impact' }))),
-      'platformAdmin, high-impact',
+      await can(del(manager, await fresh(admin, { riskClass: 'high_impact' }))),
+      'siteManager, high-impact draft',
     ).toBe(true)
-    for (const [name, user] of [
-      ['approver', approverReg],
-      ['editor', editorReg],
-      ['contributor', contributor],
-      ['auditor', auditor],
-    ] as const) {
-      expect(await can(del(user, await fresh())), name).toBe(false)
+
+    const reg = () => fresh(admin, { ownerOffice: 'Registrar' })
+    expect(await can(del(editorReg, await reg())), 'editor, own office').toBe(true)
+    expect(await can(del(approverReg, await reg())), 'approver, own office').toBe(true)
+    expect(await refusal(del(approverLib, await reg())), 'approver, other office').toBe(
+      'OWNER_OUT_OF_SCOPE',
+    )
+    expect(
+      await refusal(del(editorReg, await fresh(admin, { ownerOffice: 'Library' }))),
+      'editor, other office',
+    ).toBe('OWNER_OUT_OF_SCOPE')
+
+    expect(
+      await can(del(contributor, await fresh(contributor, { ownerOffice: null }))),
+      'author',
+    ).toBe(true)
+    expect(
+      await refusal(del(otherContributor, await fresh(contributor, { ownerOffice: null }))),
+    ).toBe('NOT_YOUR_DRAFT')
+    expect(await refusal(del(contributor, await reg())), 'contributor, someone else').toBe(
+      'NOT_YOUR_DRAFT',
+    )
+    expect(await can(del(auditor, await reg())), 'auditor').toBe(false)
+  })
+
+  it('deleting anything that has left Draft stays with admins (3q)', async () => {
+    const sendOn = async (status: 'in_review' | 'approved', gov = {}) => {
+      const id = (await draft(admin, { ownerOffice: 'Registrar', ...gov })).id
+      await payload.update({
+        collection: 'pages',
+        id,
+        draft: true,
+        data: { governance: { status } },
+        ...as(manager),
+      })
+      return id
     }
+    const del = (user: User, id: number) => () =>
+      payload.delete({ collection: 'pages', id, ...as(user) })
+
+    for (const status of ['in_review', 'approved'] as const) {
+      const id = await sendOn(status)
+      for (const [name, user] of [
+        ['approver', approverReg],
+        ['editor', editorReg],
+        ['contributor', contributor],
+      ] as const) {
+        expect(await refusal(del(user, id)), `${name}, ${status}`).toBe('DELETE_FORBIDDEN')
+      }
+      // The auditor is turned away earlier, by the access rule, with Payload's own code.
+      expect(await can(del(auditor, id)), `auditor, ${status}`).toBe(false)
+      expect(await can(del(manager, id)), `siteManager, ${status}`).toBe(true)
+    }
+    const hi = await sendOn('in_review', { riskClass: 'high_impact' })
+    expect(await refusal(del(manager, hi)), 'siteManager, high-impact, in review').toBe(
+      'DELETE_FORBIDDEN',
+    )
+    expect(await can(del(admin, hi)), 'platformAdmin, high-impact, in review').toBe(true)
   })
 
   it('risk class: a contributor cannot create a low-risk record, and nobody but a reviewer can lower it', async () => {
