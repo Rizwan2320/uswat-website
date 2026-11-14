@@ -1,0 +1,15 @@
+﻿old_url,old_slug,words,new_collection,new_template,proposed_new_url,action,note
+https://sample.invalid/2026/11/sample-notice-one/,sample-notice-one,,Notices,T5 Article,/notices/sample-notice-one/,migrate,Sample
+https://sample.invalid/2026/11/sample-notice-two/,sample-notice-two,,Notices,T5 Article,/notices/sample-notice-two/,migrate,Sample
+https://sample.invalid/2026/11/sample-notice-no-record/,sample-notice-no-record,,Notices,T5 Article,/notices/sample-notice-no-record/,migrate,Sample
+https://sample.invalid/2026/11/sample-notice-no-title/,sample-notice-no-title,,Notices,T5 Article,/notices/sample-notice-no-title/,migrate,Sample
+https://sample.invalid/2021/05/sample-news-a/,sample-news-a,,News,T5 Article,/news/sample-news-a/,migrate,Sample
+https://sample.invalid/2021/05/27/sample-news-a/,sample-news-a,,News,T5 Article,/news/sample-news-a/,duplicate address of an existing article; 301,Sample
+https://sample.invalid/2026/10/sample-tender/,sample-tender,,Tenders,T5 Article,/tenders/sample-tender/,migrate (title+link only until body is imported),Sample
+https://sample.invalid/2026/10/sample-job/,sample-job,,Jobs,T5 Article,/jobs/sample-job/,migrate,Sample
+https://sample.invalid/2026/09/sample-event/,sample-event,,Events,T5 Article,/events/sample-event/,migrate,Sample
+https://sample.invalid/category/latestnews/,category-latestnews,,(none),T6 Listing,/news/,replace with generated listing; 301,
+https://sample.invalid/administration-sample/,administration-sample,,(none),-,,410 or redirect to parent,dead link (404) on the old site
+https://sample.invalid/sample-held-page/,sample-held-page,,(none),-,/,redirect to nearest parent; 301,was hold as draft (near-empty)
+https://sample.invalid/department-of-sample/,department-of-sample,,Departments (+People),T3 Department,/academics/departments/sample/,migrate,Sample
+https://sample.invalid/sample-page/,sample-page,,Pages,T2/T8 Page,/sample-page/,migrate,Sample

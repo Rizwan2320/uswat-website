@@ -1,0 +1,10 @@
+{
+  "_label": "Sample: invented records for tests. Not real notices; no real person, office or number.",
+  "items": [
+    { "url": "https://sample.invalid/2026/11/sample-notice-one/", "title": "Sample: notice one", "categories": ["Sample category A", "Sample category B"], "excerpt": "Sample excerpt.", "text": "Sample paragraph one.\n\nSample paragraph two." },
+    { "url": "https://sample.invalid/2026/11/sample-notice-one/", "title": "Sample: notice one (repeated in the pack)" },
+    { "url": "https://sample.invalid/2026/11/sample-notice-two/", "title": "Sample: notice two", "categories": ["Sample category A"], "text": "Contact sample.person@sample.invalid or 0300 1234567 for details.", "attachments": [{ "label": "Sample circular", "url": "https://sample.invalid/files/sample-circular.pdf" }, { "label": "Mail", "url": "mailto:sample.person@sample.invalid" }, { "label": "Call", "url": "tel:+920000000000" }, { "label": "Script", "url": "javascript:alert(1)" }] },
+    { "url": "https://sample.invalid/2026/11/sample-notice-no-title/", "text": "Sample text with no title." },
+    { "url": "https://sample.invalid/2020/01/not-in-the-route-map/", "title": "Sample: orphan record" }
+  ]
+}
