@@ -139,10 +139,40 @@ describe.each(Object.keys(factories) as Slug[])('governed collection: %s', (slug
     expect(await refusal(() => update(otherEditor, r.id, { status: 'in_review' }))).not.toBeNull()
     expect(await refusal(() => update(contributor, r.id, { status: 'in_review' }))).not.toBeNull()
     expect(await refusal(() => update(auditor, r.id, { status: 'in_review' }))).not.toBeNull()
+    // Deleting (3q): not another office's draft, not a contributor's, not an auditor's ...
+    for (const other of [otherEditor, contributor, auditor]) {
+      expect(
+        await refusal(() => payload.delete({ collection: slug, id: r.id, ...as(other) })),
+      ).not.toBeNull()
+    }
+    // ... but the author's own office may delete a draft that was never published.
     expect(
       await refusal(() => payload.delete({ collection: slug, id: r.id, ...as(editor) })),
-    ).not.toBeNull()
+    ).toBeNull()
     expect(await refusal(() => create(auditor))).not.toBeNull()
+  })
+
+  it('a published page cannot be deleted by an editor, even if its stage field still says Draft', async () => {
+    const r = await create(editor)
+    await update(approver, r.id, { status: 'approved', verificationStatus: 'verified' })
+    await update(approver, r.id, {}, { _status: 'published' }, false)
+    expect(await refusal(() => payload.delete({ collection: slug, id: r.id, ...as(editor) }))).toBe(
+      'DELETE_FORBIDDEN',
+    )
+    // Force the stage field back to Draft on the live row (the shape a page published without a
+    // stage change had in the browser test) and try again.
+    await payload.db.updateOne({
+      collection: slug,
+      id: r.id,
+      returning: false,
+      data: { governance: { status: 'draft' } } as never,
+    })
+    expect(await refusal(() => payload.delete({ collection: slug, id: r.id, ...as(editor) }))).toBe(
+      'DELETE_FORBIDDEN',
+    )
+    expect(
+      await refusal(() => payload.delete({ collection: slug, id: r.id, ...as(admin) })),
+    ).toBeNull()
   })
 
   it('a contributor can start a draft but not submit it', async () => {

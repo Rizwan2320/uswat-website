@@ -65,9 +65,15 @@ export const governedUpdate: Access = ({ req }) => {
   return actor.kind === 'user' && actor.role !== 'auditor'
 }
 
+/**
+ * Deleting is judged by `checkDelete` in the beforeDelete hook, on the latest saved state (slice 3q):
+ * a draft that was never published may be deleted by whoever may edit it; anything else only by a
+ * platform admin (or a site manager if it is not High impact). Access only turns away roles that
+ * can never delete, for the same reason as `governedUpdate`.
+ */
 export const governedDelete: Access = ({ req }) => {
   const actor = actorFromRequest(req)
-  return actor.kind === 'user' && (actor.role === 'platformAdmin' || actor.role === 'siteManager')
+  return actor.kind === 'user' && actor.role !== 'auditor'
 }
 
 export const isPlatformAdmin = (req: PayloadRequest): boolean => {

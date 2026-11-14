@@ -466,14 +466,43 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
   return { ok: true, values, notes }
 }
 
-/** Deleting: platform admin always; site manager unless the record is high-impact; the system for jobs. */
-export function checkDelete(actor: Actor, rec: Pick<RecordState, 'risk'>): Denial | null {
+/**
+ * Deleting (slice 3q).
+ *  - A DRAFT that has never been published may be deleted by whoever may edit it: an editor or approver
+ *    of the owning office, a contributor for a draft they created, a site manager, a platform admin.
+ *    It was never public, so nothing is lost but the draft. (Stage Draft is only ever the stage of a
+ *    record that has never been published; published goes only to archived.) The stage field alone is
+ *    not trusted: `everPublished` is true when any saved version of the record was published, and such a
+ *    record counts as having left Draft whatever its stage says.
+ *  - Anything that has left Draft (in review, approved, published, archived): platform admin always,
+ *    site manager unless High impact, the system for jobs. Nobody else.
+ */
+export function checkDelete(
+  actor: Actor,
+  rec: Pick<RecordState, 'risk' | 'status' | 'ownerOffice' | 'createdBy'>,
+  everPublished = false,
+): Denial | null {
   if (actor.kind === 'system') return null
   if (!isUser(actor)) return deny('ANONYMOUS', 'You must be signed in to delete content.')
   if (actor.role === 'platformAdmin') return null
+  if (rec.status === 'draft' && !everPublished) {
+    if (actor.role === 'siteManager') return null
+    if (actor.role === 'editor' || actor.role === 'approver') {
+      return inScope(actor, rec.ownerOffice)
+        ? null
+        : deny('OWNER_OUT_OF_SCOPE', 'This draft belongs to another office.')
+    }
+    if (actor.role === 'contributor') {
+      return rec.createdBy != null && String(rec.createdBy) === String(actor.id)
+        ? null
+        : deny('NOT_YOUR_DRAFT', 'Contributors can only delete drafts they created.')
+    }
+    return deny('DELETE_FORBIDDEN', 'Your role cannot delete content.')
+  }
   if (actor.role === 'siteManager' && rec.risk !== 'high_impact') return null
+  const state = rec.status === 'draft' ? 'published' : stage(rec.status).toLowerCase()
   return deny(
     'DELETE_FORBIDDEN',
-    'Only a platform admin can delete this item (site managers cannot delete High impact items).',
+    `You can delete a draft, but not an item that is ${state}. Ask a reviewer to archive it, or a platform admin to delete it (site managers cannot delete High impact items).`,
   )
 }
