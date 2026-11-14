@@ -22,6 +22,8 @@ export type HandlerDeps = {
   loadFactors: (userId: string) => Promise<FactorState>
   /** Whether this session was made with a second factor. Throwing counts as not strong. */
   isStrongSession: (sessionId: string) => Promise<boolean>
+  /** Epoch ms of this session's last second-factor proof (step-up). Absent or throwing means not fresh. */
+  lastVerifiedAt?: (sessionId: string) => Promise<number | null>
   /** Deletes the session row (idle timeout or absolute lifetime reached). */
   endSession: (sessionId: string) => Promise<void>
   /** Records activity; the store writes at most once a minute. Errors are ignored by the caller. */
@@ -92,12 +94,13 @@ export function createAuthHandlers(deps: HandlerDeps) {
 
     if (req.method === 'POST' && (pathname === SIGN_IN || pathname === RECOVERY_SIGN_IN)) return throttledSignIn(req)
 
-    const state = await readSessionState(deps, req.headers, cls, Date.now())
+    const now = Date.now()
+    const state = await readSessionState(deps, req.headers, cls, now)
     if (state.kind === 'expired') return refusal(401, 'session expired', '/portal/sign-in')
 
     const d = decide(
       state.kind === 'active'
-        ? { hasSession: true, sessionStrong: state.sessionStrong, factors: state.factors, pathname }
+        ? { hasSession: true, sessionStrong: state.sessionStrong, factors: state.factors, pathname, verifiedAt: state.verifiedAt, now }
         : { hasSession: false, sessionStrong: false, factors: null, pathname },
     )
     if (!d.allow) return refusal(d.status, d.status === 404 ? 'not found' : d.reason, d.redirectTo)
