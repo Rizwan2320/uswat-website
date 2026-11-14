@@ -75,4 +75,12 @@ On a page or post, two buttons sit beside **Publish changes**: the **eye** (Live
 
 ## "Untitled" drafts
 
-Opening **Create New** saves an empty draft straight away. If you start something and leave without a title, it shows on your dashboard as **Untitled (started ...)**. Open it to finish it, or delete it from the list.
+Opening **Create New** saves an empty draft straight away. If you start something and leave without a title, it shows on your dashboard as **Untitled (started ...)**. Open it to finish it, or delete it: open the draft, use the **...** menu beside the title, and choose **Delete**.
+
+## Deleting
+
+You can delete a **draft that was never published**, if it belongs to your office (a contributor can delete only drafts they started). Nothing public is lost, because the public never saw it.
+
+Anything that has been sent for review, approved, published or archived cannot be deleted by editors, approvers or contributors. To remove something that was published, ask an approver to archive it (it then leaves the public pages and search), or ask a platform administrator to delete it. Site managers can delete these too, except High impact items.
+
+The **Delete** button can appear on items you are not allowed to delete. The system refuses the delete and says why; nothing is removed.
