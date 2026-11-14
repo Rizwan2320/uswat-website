@@ -1,0 +1,75 @@
+{
+  "ranAt": "2026-11-14T04:47:46.226Z",
+  "results": [
+    {
+      "id": "A1 first-factor enrolment is not asked to confirm, and leaves one session",
+      "ok": true,
+      "note": "1 session(s)"
+    },
+    {
+      "id": "A2 right after signing in the change controls show and there is no confirm card",
+      "ok": true,
+      "note": "controls shown"
+    },
+    {
+      "id": "A3 with a stale proof the page asks for confirmation and hides Add and Make new codes",
+      "ok": true,
+      "note": "hidden"
+    },
+    {
+      "id": "A4 the same changes called directly are refused with 403 step-up required",
+      "ok": true,
+      "note": "issue 403, delete 403"
+    },
+    {
+      "id": "A5 read-only calls still work while stale",
+      "ok": true,
+      "note": "list-sessions 200"
+    },
+    {
+      "id": "A6 confirming with the passkey brings the controls back",
+      "ok": true,
+      "note": "controls shown"
+    },
+    {
+      "id": "A7 the passkey confirmation made a new session id and ended the old one (SES-03)",
+      "ok": true,
+      "note": "old f7IKts… new nmUQ1l…"
+    },
+    {
+      "id": "A8 the old cookie no longer works",
+      "ok": true,
+      "note": "status 401"
+    },
+    {
+      "id": "A9 a change goes through straight after confirming",
+      "ok": true,
+      "note": "issue 200"
+    },
+    {
+      "id": "A10 if the proof runs out while the page is open the person is told to confirm, in words",
+      "ok": true,
+      "note": "Confirm it is you first. Your last confirmation was more than 10 minutes ago."
+    },
+    {
+      "id": "A11 and the page reloads into the confirm card",
+      "ok": true,
+      "note": "/portal/security"
+    },
+    {
+      "id": "B1 an account with only the app shows the code field and no passkey button",
+      "ok": true,
+      "note": "code field only"
+    },
+    {
+      "id": "B2 a wrong code does not confirm",
+      "ok": true,
+      "note": "That code is not right. Check it and try again."
+    },
+    {
+      "id": "B3 the right code confirms in place: controls back, same session id",
+      "ok": true,
+      "note": "same session"
+    }
+  ]
+}
