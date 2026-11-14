@@ -1,0 +1,12 @@
+/*
+ * Urdu admin (slice 3p). Payload lays out only Arabic, Persian and Hebrew right to left, so Urdu is
+ * flipped here. The rich-text editor parks its floating menus about 10,000px to the left of the page;
+ * left to right that is invisible, right to left it becomes a page 10,793px wide, so it is clipped.
+ */
+html[lang='ur'] {
+  direction: rtl;
+}
+html[lang='ur'],
+html[lang='ur'] body {
+  overflow-x: clip;
+}
