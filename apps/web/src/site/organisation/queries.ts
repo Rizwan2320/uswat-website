@@ -42,7 +42,7 @@ export const listProgrammes = () =>
 type PreviewArgs = { draftModeOn: boolean; headers: Headers }
 
 /** One record by slug. Draft mode is only a cookie: who may see a draft comes from the login on this request. */
-async function bySlug(collection: 'departments' | 'programmes', slug: string, args: PreviewArgs): Promise<Doc | null> {
+async function bySlug(collection: 'departments' | 'programmes' | 'offices', slug: string, args: PreviewArgs): Promise<Doc | null> {
   const payload = await payloadInstance()
   const where = { slug: { equals: slug } }
   const read = await previewReadOptions(payload, args.draftModeOn, args.headers)
@@ -55,6 +55,7 @@ async function bySlug(collection: 'departments' | 'programmes', slug: string, ar
 }
 export const getDepartment = (slug: string, args: PreviewArgs) => bySlug('departments', slug, args)
 export const getProgramme = (slug: string, args: PreviewArgs) => bySlug('programmes', slug, args)
+export const getOffice = (slug: string, args: PreviewArgs) => bySlug('offices', slug, args)
 
 async function programmesOfUncached(departmentId: number | string): Promise<ProgrammeCard[]> {
   const payload = await payloadInstance()

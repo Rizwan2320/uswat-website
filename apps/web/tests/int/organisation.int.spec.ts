@@ -14,6 +14,7 @@ vi.mock('next/cache', () => ({
 
 import {
   getDepartment,
+  getOffice,
   getProgramme,
   listDepartments,
   listProgrammes,
@@ -59,6 +60,9 @@ beforeAll(async () => {
   await mk('people', `${tag} public email`, { department: dept.id, email: `b@${tag}.invalid`, visibility: { email: 'public', photo: 'hidden' } })
   await mk('people', `${tag} former`, { department: dept.id, facultyStatus: 'former' })
   await mk('people', `${tag} draft person`, { department: dept.id }, false)
+  const head = await mk('people', `${tag} office head`, { designation: 'Registrar' })
+  await mk('offices', `${tag} office`, { head: head.id, hours: '9 to 3', group: 'Directorates', phones: [{ number: '+0 000 0000' }], emails: [{ email: `o@${tag}.invalid` }] })
+  await mk('offices', `${tag} draft office`, {}, false)
 }, 120_000)
 
 describe('departments', () => {
@@ -98,5 +102,18 @@ describe('people of a department', () => {
     expect(people.map((p) => p.name)).toEqual([`${tag} current`, `${tag} public email`])
     expect(people.find((p) => p.name.endsWith('current'))?.email).toBeNull()
     expect(people.find((p) => p.name.endsWith('public email'))?.email).toBe(`b@${tag}.invalid`)
+  })
+})
+
+describe('offices', () => {
+  it('serves a published office by slug with its head, hours, phone and address', async () => {
+    const o = await getOffice(`${tag}-office`, live)
+    expect(o).toMatchObject({ name: `${tag} office`, hours: '9 to 3', group: 'Directorates', head: { name: `${tag} office head`, designation: 'Registrar' } })
+    expect((o as { phones: { number: string }[] }).phones[0].number).toBe('+0 000 0000')
+    expect((o as { emails: { email: string }[] }).emails[0].email).toBe(`o@${tag}.invalid`)
+  })
+  it('does not serve a draft office, even with draft mode on and no login', async () => {
+    expect(await getOffice(`${tag}-draft-office`, live)).toBeNull()
+    expect(await getOffice(`${tag}-draft-office`, { draftModeOn: true, headers: noHeaders })).toBeNull()
   })
 })
