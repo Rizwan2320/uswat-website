@@ -12,7 +12,7 @@ const ON = {
 const none: FactorState = { passkeys: 0, totpVerified: false, recoveryCodesRemaining: 0 }
 const passkey: FactorState = { passkeys: 1, totpVerified: false, recoveryCodesRemaining: 0 }
 
-function setup(o: { env?: Record<string, string | undefined>; session?: boolean | 'throw' | 'expired'; factors?: FactorState | 'throw'; strong?: boolean } = {}) {
+function setup(o: { env?: Record<string, string | undefined>; session?: boolean | 'throw' | 'expired'; factors?: FactorState | 'throw'; strong?: boolean; verifiedAgoMs?: number | null } = {}) {
   const updatedMsAgo = o.session === 'expired' ? 31 * 60_000 : 1_000
   const getSession = vi.fn(async () => {
     if (o.session === 'throw') throw new Error('db down')
@@ -31,6 +31,7 @@ function setup(o: { env?: Record<string, string | undefined>; session?: boolean 
       return o.factors ?? none
     },
     isStrongSession: async () => o.strong ?? false,
+    lastVerifiedAt: async () => (o.verifiedAgoMs === null ? null : Date.now() - (o.verifiedAgoMs ?? 1_000)),
     endSession,
     touchSession: async () => {},
   }
@@ -50,12 +51,12 @@ describe('guardPage: the same rules as the route, applied to pages', () => {
 
   it('the sign-in and recovery pages render for a signed-out visitor', async () => {
     const s = setup({ session: false })
-    expect(await s.run('/portal/sign-in')).toEqual({ action: 'render', email: null, strong: false, factors: null })
-    expect(await s.run('/portal/recover')).toEqual({ action: 'render', email: null, strong: false, factors: null })
+    expect(await s.run('/portal/sign-in')).toEqual({ action: 'render', email: null, strong: false, factors: null, fresh: false })
+    expect(await s.run('/portal/recover')).toEqual({ action: 'render', email: null, strong: false, factors: null, fresh: false })
   })
 
   it('the sign-in page still renders when the session lookup fails', async () => {
-    expect(await setup({ session: 'throw' }).run('/portal/sign-in')).toEqual({ action: 'render', email: null, strong: false, factors: null })
+    expect(await setup({ session: 'throw' }).run('/portal/sign-in')).toEqual({ action: 'render', email: null, strong: false, factors: null, fresh: false })
   })
 
   it('a path that is not a portal page (odd encodings, dot segments) is a 404', async () => {
@@ -83,6 +84,7 @@ describe('guardPage: the same rules as the route, applied to pages', () => {
       email: 'dr.sample@example.test',
       strong: true,
       factors: passkey,
+      fresh: true,
     })
   })
 
@@ -118,7 +120,7 @@ describe('guardPage: the same rules as the route, applied to pages', () => {
     for (const strong of [true, false]) {
       for (const f of [none, passkey]) {
         for (const [page, api] of [['/portal', '/portal-api/auth/passkey/list-user-passkeys'], ['/portal/enrol', '/portal-api/auth/two-factor/enable']] as const) {
-          const d = decide({ hasSession: true, sessionStrong: strong, factors: f, pathname: api })
+          const d = decide({ hasSession: true, sessionStrong: strong, factors: f, pathname: api, verifiedAt: Date.now(), now: Date.now() })
           const g = await setup({ session: true, factors: f, strong }).run(page)
           expect(g.action === 'render', `${page} strong=${strong} passkeys=${f.passkeys}`).toBe(d.allow)
         }
@@ -132,5 +134,11 @@ describe('guardPage: the same rules as the route, applied to pages', () => {
     expect(await setup({ session: true, factors: passkey, strong: false }).run('/portal/security')).toEqual({ action: 'redirect', to: '/portal/sign-in?reason=second-factor' })
     expect(await setup({}).run('/portal/security')).toEqual({ action: 'redirect', to: '/portal/sign-in' })
     expect(await setup({ session: true, factors: none, strong: false }).run('/portal/security')).toEqual({ action: 'redirect', to: '/portal/enrol' })
+  })
+
+  it('AUTH-09: the security page says whether the second factor was proved in the last ten minutes', async () => {
+    expect(await setup({ session: true, factors: passkey, strong: true, verifiedAgoMs: 60_000 }).run('/portal/security')).toMatchObject({ action: 'render', fresh: true })
+    expect(await setup({ session: true, factors: passkey, strong: true, verifiedAgoMs: 11 * 60_000 }).run('/portal/security')).toMatchObject({ action: 'render', fresh: false })
+    expect(await setup({ session: true, factors: passkey, strong: true, verifiedAgoMs: null }).run('/portal/security')).toMatchObject({ action: 'render', fresh: false })
   })
 })

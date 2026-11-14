@@ -58,7 +58,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -101,6 +101,7 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
       getAuth: () => auth as unknown as AuthLike,
       loadFactors: (id) => loadFactors(pool, id),
       isStrongSession: (id) => createPgAssuranceStore(pool).isStrong(id),
+      lastVerifiedAt: (id) => createPgAssuranceStore(pool).lastVerifiedAt(id),
       endSession: (id) => createPgSessionStore(pool).end(id),
       touchSession: (id, now) => createPgSessionStore(pool).touch(id, now),
       signInThrottle: createSignInThrottle({ store: createPgThrottleStore(pool) }),
@@ -547,5 +548,175 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
       [addr],
     )
     expect(left[0]!.n).toBe('10')
+  })
+})
+
+describe.skipIf(!DB)('step-up (AUTH-09) and session rotation (SES-03) with the real library', () => {
+  let auth: PortalAuth
+  let h: ReturnType<typeof createAuthHandlers>
+  let pool: pg.Pool
+  let seq = 0
+
+  beforeAll(() => {
+    const config = readPortalConfig(env)
+    if (!config.enabled) throw new Error(`config: ${config.reason}`)
+    auth = createPortalAuth(config)
+    pool = getIdentityPool(config.databaseUrl)
+    h = createAuthHandlers({
+      env,
+      getAuth: () => auth as unknown as AuthLike,
+      loadFactors: (id) => loadFactors(pool, id),
+      isStrongSession: (id) => createPgAssuranceStore(pool).isStrong(id),
+      lastVerifiedAt: (id) => createPgAssuranceStore(pool).lastVerifiedAt(id),
+      endSession: (id) => createPgSessionStore(pool).end(id),
+      touchSession: (id, now) => createPgSessionStore(pool).touch(id, now),
+      signInThrottle: createSignInThrottle({ store: createPgThrottleStore(pool) }),
+    })
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  class Jar {
+    readonly ip = `198.19.0.${(++seq % 250) + 1}`
+    private c = new Map<string, string>()
+    header() {
+      return [...this.c].map(([k, v]) => `${k}=${v}`).join('; ')
+    }
+    absorb(res: Response) {
+      for (const line of res.headers.getSetCookie()) {
+        const [pair] = line.split(';')
+        const i = pair!.indexOf('=')
+        const name = pair!.slice(0, i)
+        const val = pair!.slice(i + 1)
+        if (val === '' || /max-age=0/i.test(line)) this.c.delete(name)
+        else this.c.set(name, val)
+      }
+    }
+  }
+  async function call(jar: Jar, method: 'GET' | 'POST', path: string, body?: unknown) {
+    const res = await h[method](
+      new Request(`${BASE}${path}`, {
+        method,
+        headers: { 'content-type': 'application/json', origin: ORIGIN, cookie: jar.header(), 'x-real-ip': jar.ip },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      }),
+    )
+    jar.absorb(res)
+    return res
+  }
+
+  /** A fresh user with a confirmed authenticator app, and a strong session for it. */
+  async function userWithTotp() {
+    const email = `stepup-${Date.now()}-${++seq}@example.test`
+    const made = await auth.api.signUpEmail({ body: { email, password: PASSWORD, name: 'Sample Step Up' } })
+    // signUpEmail also opens a session for the new user; drop it so the tests count only what they make.
+    await pool.query(`delete from "session" where "userId" = $1`, [made.user.id])
+    const jar = new Jar()
+    await call(jar, 'POST', '/sign-in/email', { email, password: PASSWORD })
+    const enable = (await (await call(jar, 'POST', '/two-factor/enable', { password: PASSWORD })).json()) as { totpURI: string }
+    const secret = new URL(enable.totpURI).searchParams.get('secret') ?? ''
+    expect((await call(jar, 'POST', '/two-factor/verify-totp', { code: totpAt(secret, Date.now() - 30_000) })).status).toBe(200)
+    return { email, userId: made.user.id, secret, jar }
+  }
+  const sessionIds = async (userId: string) =>
+    (await pool.query<{ id: string }>(`select "id" from "session" where "userId" = $1`, [userId])).rows.map((r) => r.id)
+  const age = (userId: string, minutes: number) =>
+    pool.query(
+      `update "session_assurance" set "verifiedAt" = now() - make_interval(mins => $2)
+       where "sessionId" in (select "id" from "session" where "userId" = $1)`,
+      [userId, minutes],
+    )
+
+  it('first-factor enrolment is not asked to step up, and leaves a fresh proof behind', async () => {
+    const u = await userWithTotp()
+    const [id] = await sessionIds(u.userId)
+    const at = await createPgAssuranceStore(pool).lastVerifiedAt(id!)
+    expect(Date.now() - at!).toBeLessThan(60_000)
+    expect((await call(u.jar, 'POST', '/recovery/issue', {})).status).toBe(200)
+  })
+
+  it('a stale proof is refused on every change path, with a pointer to the security page', async () => {
+    const u = await userWithTotp()
+    await age(u.userId, 11)
+    for (const [method, path] of [
+      ['POST', '/recovery/issue'],
+      ['POST', '/passkey/delete-passkey'],
+      ['POST', '/two-factor/enable'],
+      ['GET', '/passkey/generate-register-options'],
+    ] as const) {
+      const res = await call(u.jar, method, path, method === 'POST' ? { id: 'x', password: PASSWORD } : undefined)
+      expect(res.status, path).toBe(403)
+      expect(await res.json(), path).toMatchObject({ error: 'step-up required', redirectTo: '/portal/security' })
+    }
+    // read-only paths are not asked
+    expect((await call(u.jar, 'GET', '/passkey/list-user-passkeys')).status).toBe(200)
+    expect((await call(u.jar, 'GET', '/list-sessions')).status).toBe(200)
+  })
+
+  it('exactly ten minutes ago still passes; just over does not', async () => {
+    const u = await userWithTotp()
+    await age(u.userId, 9)
+    expect((await call(u.jar, 'POST', '/recovery/issue', {})).status).toBe(200)
+    await age(u.userId, 11)
+    expect((await call(u.jar, 'POST', '/recovery/issue', {})).status).toBe(403)
+  })
+
+  it('a code from the authenticator app proves it again in place, and the change then goes through', async () => {
+    const u = await userWithTotp()
+    const before = await sessionIds(u.userId)
+    await age(u.userId, 11)
+    expect((await call(u.jar, 'POST', '/recovery/issue', {})).status).toBe(403)
+    const proof = await call(u.jar, 'POST', '/two-factor/verify-totp', { code: totpAt(u.secret, Date.now()) })
+    expect(proof.status).toBe(200)
+    expect((await call(u.jar, 'POST', '/recovery/issue', {})).status).toBe(200)
+    // in place: the same session, now fresh again
+    expect(await sessionIds(u.userId)).toEqual(before)
+  })
+
+  it('a wrong code does not refresh the proof', async () => {
+    const u = await userWithTotp()
+    await age(u.userId, 11)
+    const bad = await call(u.jar, 'POST', '/two-factor/verify-totp', { code: '000000' })
+    expect(bad.status).toBeGreaterThanOrEqual(400)
+    expect((await call(u.jar, 'POST', '/recovery/issue', {})).status).toBe(403)
+  })
+
+  it('store: an authentication refreshes the clock, registering a key never does, a new row starts fresh', async () => {
+    const u = await userWithTotp()
+    const store = createPgAssuranceStore(pool)
+    const [id] = await sessionIds(u.userId)
+    await age(u.userId, 30)
+    const old = (await store.lastVerifiedAt(id!))!
+    await store.mark(id!, { verified: false })
+    expect(await store.lastVerifiedAt(id!)).toBe(old)
+    await store.mark(id!, { verified: true })
+    expect(Date.now() - (await store.lastVerifiedAt(id!))!).toBeLessThan(60_000)
+    expect(await store.lastVerifiedAt('no-such-session')).toBeNull()
+  })
+
+  it('SES-03: enrolling the first factor from a password session gives a new id and ends the old one', async () => {
+    const email = `rotate-${Date.now()}-${++seq}@example.test`
+    const made = await auth.api.signUpEmail({ body: { email, password: PASSWORD, name: 'Sample Rotate' } })
+    await pool.query(`delete from "session" where "userId" = $1`, [made.user.id])
+    const jar = new Jar()
+    await call(jar, 'POST', '/sign-in/email', { email, password: PASSWORD })
+    const [weak] = await sessionIds(made.user.id)
+    const enable = (await (await call(jar, 'POST', '/two-factor/enable', { password: PASSWORD })).json()) as { totpURI: string }
+    const secret = new URL(enable.totpURI).searchParams.get('secret') ?? ''
+    expect((await call(jar, 'POST', '/two-factor/verify-totp', { code: totpAt(secret, Date.now() - 30_000) })).status).toBe(200)
+    const after = await sessionIds(made.user.id)
+    expect(after).toHaveLength(1)
+    expect(after).not.toContain(weak)
+    expect(await createPgAssuranceStore(pool).isStrong(after[0]!)).toBe(true)
+    expect((await call(jar, 'GET', '/passkey/list-user-passkeys')).status).toBe(200)
+  })
+
+  it('SES-03: a failed sign-in ends nothing', async () => {
+    const u = await userWithTotp()
+    const before = await sessionIds(u.userId)
+    await call(u.jar, 'POST', '/sign-in/email', { email: u.email, password: PASSWORD })
+    await call(u.jar, 'POST', '/two-factor/verify-totp', { code: '000000' })
+    expect(await sessionIds(u.userId)).toEqual(expect.arrayContaining(before))
   })
 })
