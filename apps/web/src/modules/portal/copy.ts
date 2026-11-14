@@ -98,6 +98,13 @@ export const COPY = {
     loading: 'Loading…',
     working: 'Please wait…',
     done: 'Done.',
+    confirmTitle: 'Confirm it is you',
+    confirmHelp: 'Before you change how you sign in, prove it is you again. This lasts 10 minutes.',
+    confirmPasskey: 'Confirm with my passkey',
+    confirmTotpLabel: 'Six-digit code from the authenticator app',
+    confirmTotpButton: 'Confirm with the code',
+    confirmNeeded: 'Confirm it is you first. Your last confirmation was more than 10 minutes ago.',
+    confirmedUntil: 'You confirmed it is you a moment ago. You can change your sign-in methods for the next 10 minutes.',
     loadFailed: 'Could not load this list. Reload the page to try again.',
   },
 
