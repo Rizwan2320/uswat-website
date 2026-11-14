@@ -11,7 +11,8 @@ Date 2026-11-14. Local PostgreSQL 16.15, production build, Chromium with a CDP v
 
 ## Results
 - Browser: `results/stepup-run-2.json`, 14 of 14 (A1-A11 passkey account, B1-B3 authenticator-app account). An earlier run was 12 of 14 for two test-side reasons (the seed script's sign-up leaves a session behind, so the session counts were wrong); its result file was deleted, not kept. The script now drops that session first.
-- Unit and integration: 443 passed (27 files), of which 8 new integration tests on the real library and PostgreSQL. `tsc` clean. Lint 0 errors (28 warnings, one new from the confirm card's effect heuristic).
+- Rebased on `main` after the main agent merged the earlier portal PRs and the font change: the browser run was repeated on the rebased production build, `results/stepup-run-3-rebased.json`, 14 of 14. Unit and identity integration there: 447 passed (28 files); `tsc` clean; lint 0 errors (32 warnings, none new in portal code except the one noted); `next build` passes after `pnpm install` for the fonts main added.
+- Before the rebase: 443 passed (27 files), of which 8 new integration tests on the real library and PostgreSQL. `tsc` clean. Lint 0 errors (28 warnings, one new from the confirm card's effect heuristic).
 - Mutation checks (unit + integration): window doubled, step-up switched off, no-factor exemption removed, clock never set were all caught (4 of 4 straight away). Two more (rotation delete removed, registration refreshing the clock) were first **not** caught; I extracted their rules into `refreshesProof` and `endReplacedSession`, tested them directly, and re-ran: both caught (1 failing test each).
 - The ten minutes were not waited out: "stale" is made by moving `verifiedAt` back 11 minutes in the database. Boundary behaviour (exactly 10 minutes passes, just over fails) is covered by the unit and integration tests, which also use database ageing.
 
