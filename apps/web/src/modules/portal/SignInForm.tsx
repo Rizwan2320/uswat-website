@@ -2,16 +2,17 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
-import { authClient, go } from './client'
+import { authClient, go, setSharedComputer } from './client'
 import { COPY } from './copy'
 import { mapAuthError } from './errors'
-import Field from './Field'
+import Field, { CheckField } from './Field'
 
 type Step = 'start' | 'totp'
 
 export default function SignInForm() {
   const [step, setStep] = useState<Step>('start')
   const [busy, setBusy] = useState(false)
+  const [shared, setShared] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const errorRef = useRef<HTMLParagraphElement>(null)
 
@@ -23,6 +24,7 @@ export default function SignInForm() {
   async function run(fn: () => Promise<{ error?: unknown; data?: unknown } | undefined>, onData?: (data: unknown) => boolean) {
     setBusy(true)
     setError(null)
+    setSharedComputer(shared)
     try {
       const res = await fn()
       if (res?.error) { setError(mapAuthError(res.error)); return }
@@ -60,6 +62,7 @@ export default function SignInForm() {
       {error ? <p ref={errorRef} tabIndex={-1} role="alert" className="portal-error">{error}</p> : null}
       {step === 'start' ? (
         <>
+          <CheckField id="shared" label={COPY.signIn.sharedLabel} hint={COPY.signIn.sharedHint} checked={shared} onChange={setShared} />
           <button type="button" className="portal-btn" onClick={onPasskey} disabled={busy}>
             {busy ? COPY.signIn.working : COPY.signIn.passkeyButton}
           </button>

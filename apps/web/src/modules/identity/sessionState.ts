@@ -23,6 +23,8 @@ export type SessionDeps = {
   isStrongSession: (sessionId: string) => Promise<boolean>
   /** Epoch ms of the last second-factor proof (step-up). Optional so older callers fail closed (not fresh). */
   lastVerifiedAt?: (sessionId: string) => Promise<number | null>
+  /** Whether the session was made with "shared computer" (15 minutes idle). Absent means not shared; throwing means shared (stricter). */
+  isSharedSession?: (sessionId: string) => Promise<boolean>
   endSession: (sessionId: string) => Promise<void>
   touchSession: (sessionId: string, now: number) => Promise<void>
 }
@@ -60,7 +62,13 @@ export async function readSessionState(
   }
   if (!found) return { kind: 'none' }
 
-  const verdict = evaluateSession({ createdAt: found.session.createdAt, updatedAt: found.session.updatedAt, now })
+  let shared = false
+  try {
+    shared = (await deps.isSharedSession?.(found.session.id)) ?? false
+  } catch {
+    shared = true // cannot tell: use the stricter limit
+  }
+  const verdict = evaluateSession({ createdAt: found.session.createdAt, updatedAt: found.session.updatedAt, now, shared })
   if (verdict !== 'ok') {
     await deps.endSession(found.session.id).catch(() => {})
     return { kind: 'expired' }
