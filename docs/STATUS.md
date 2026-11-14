@@ -310,6 +310,14 @@ Updated: 2026-11-09 (Mon) PKT
 - The portal had never applied Inter: it read `--font-sans` and `--font-serif`, which only `site.css` defines, so it fell back to the system font and Georgia. Checked by computed styles with the portal switched on locally against a scratch identity database. For the faculty agent: any new portal CSS should use `var(--stack-sans)`, `var(--stack-serif)` and `var(--stack-nav)`.
 - Not run: the signed-in navigation links (the rule is in the CSS; no session was created), Urdu, Safari, Firefox, a real phone.
 
+## P3 stack integrated: slices 3f to 3o, PRs #11 to #39 (2026-11-14, main agent; owner asked for it)
+- Integrated as one merge of the top of the stack (`p3/admin-e2e-ci-3o`), because the ten PRs are a strict chain and each was already green. Trial merge onto main at `27e7f13`: conflicts only in the seven organisation collection files and the migration index (add/add: P3's rebase rewrote the slice 3e commits that main already held) and in `docs/predictions.md`. Kept the stack's copy of the code files (main's copy is their ancestor; the diff between them is only later-slice edits: plain-language labels, `safeHrefValidate`, `plainSlugField`). Regenerated `payload-types.ts` (the auto-merge no longer matched the config).
+- Checked on the merged tree: typecheck, lint 0 errors (45 warnings), 402 unit and 634 integration tests (identity ones included), `generate:types` clean after regeneration, production build compiles. Migration drill M-P3: p3h and p3f each roll back alone to a schema identical to a database built without them, and re-apply identically.
+- Reviewed: the new `admin-e2e` workflow (throwaway database, test-only secrets, `pull_request` not `pull_request_target`); the three new `overrideAccess: true` calls (duplicate-image lookup, media-rights lookup, scheduled sweep: all server-side reads; the sweep runs only with the cron secret and refuses when none is set). Note for P3: the duplicate-image error returns the existing item's numeric id to any signed-in uploader; harmless today, worth a thought if media ever becomes private per office.
+- The production database already held p3f and p3h (see the 2026-11-13 entry), so the next production deploy applies nothing new.
+- Not run locally: the admin browser tests (the new `admin-e2e` workflow runs them on this PR's CI); Safari, Firefox, a real phone.
+- Still open: #7 and the stack's draft PRs will show merged or closable once this lands (their commits are rewritten copies, so GitHub may not mark them merged; close them with a link to this PR).
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
