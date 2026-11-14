@@ -9,7 +9,7 @@ import { SampleNote, SamplePill } from './SamplePill'
 import type { PersonCard } from './queries'
 import { DEPARTMENTS_PATH, PROGRAMMES_PATH, departmentHref, isSample, paragraphs, programmeHref, rel, str, type Doc, type ProgrammeCard } from './shape'
 
-const Text = ({ text }: { text: unknown }) => (
+export const Text = ({ text }: { text: unknown }) => (
   <div className={styles.text}>
     {paragraphs(text).map((p) => (
       <p key={p}>{p}</p>
@@ -17,7 +17,7 @@ const Text = ({ text }: { text: unknown }) => (
   </div>
 )
 
-const Section = ({ id, title, children }: { id: string; title: string; children: React.ReactNode }) => (
+export const Section = ({ id, title, children }: { id: string; title: string; children: React.ReactNode }) => (
   <section aria-labelledby={id}>
     <h2 id={id} className={styles.heading}>
       <T k={title} />

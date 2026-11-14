@@ -5,6 +5,7 @@ import {
   departmentHref,
   groupBy,
   isSample,
+  officeHref,
   paragraphs,
   programmeHref,
   toDepartmentCard,
@@ -33,6 +34,7 @@ describe('hrefs', () => {
   it('have no trailing slash and escape the slug', () => {
     expect(departmentHref('sample-department-of-physics')).toBe('/academics/departments/sample-department-of-physics')
     expect(programmeHref('a b')).toBe('/academics/programmes/a%20b')
+    expect(officeHref('sample-library')).toBe('/administration/sample-library')
   })
 })
 
