@@ -3,6 +3,8 @@ import sharp from 'sharp'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
+import { en } from 'payload/i18n/en'
+import { completeUrdu, urAdminLanguage, urTranslations } from './i18n/ur'
 
 import { AffiliatedColleges } from './collections/AffiliatedColleges'
 import { ArticleTags } from './collections/ArticleTags'
@@ -86,7 +88,11 @@ const built = buildConfig({
   // Locales are fixed before any data exists. Adding or renaming them later forces
   // risky column moves (see docs/evidence/G0/spike-report.md item 6).
   i18n: {
+    fallbackLanguage: 'en',
+    // Urdu is not one of Payload's accepted admin languages, so the type is cast (see src/i18n/ur.ts).
+    supportedLanguages: { en, ur: urAdminLanguage } as never,
     translations: {
+      ...({ ur: urTranslations } as object),
       en: {
         error: {
           // Payload's own text says "you must be logged in" even to a signed-in auditor who may only read.
@@ -151,5 +157,6 @@ const built = buildConfig({
 export default built.then((config) => {
   const stats = config.globals?.find((g) => g.slug === 'payload-jobs-stats')
   if (stats) stats.access = { ...stats.access, ...GLOBAL_ACCESS['payload-jobs-stats'] }
+  completeUrdu(config)
   return config
 })
