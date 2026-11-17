@@ -357,6 +357,14 @@ Updated: 2026-11-09 (Mon) PKT
 - Production check for the previous merge #58 (main 3c7dd7e): deployment READY, `/readyz` ok, `/administration/<unknown>` serves the styled 404 from the new route.
 - To keep the dictionary honest, re-run `pnpm dictionary:build` after any collection change; a CI drift check would need an ADR under rule 9.
 
+## P3 slice 3q integrated: editors can delete a never-published draft, #57 (2026-11-18, main agent; owner decision "a draft is not a publication")
+
+- Access rule change in `governance/access.ts`, `hooks.ts`, `policy.ts`; no schema change, no migration. Editors and approvers of the owning office, and contributors for drafts they created, may delete a draft that was never published; anything in review, approved, published or archived stays platform-admin (or site manager unless High impact).
+- Review: all eight collections that use `governedDelete` are wrapped by `withGovernance`, so the `beforeDelete` check covers every delete the looser access now lets through; all have drafts enabled, so the `findVersions` lookup is safe. The stage field alone is not trusted (a version that was ever published counts as published); the PR's browser test found that gap (P3q-a).
+- Run on the merged tree: typecheck, lint (0 errors), 517 unit, 756 integration (identity spec skipped, env var unset), `generate:types` no drift, production build. Browser tests (`role-views`) run in CI `admin-e2e`.
+- Known and left alone: Payload still shows a Delete button to people whose delete will be refused (access is the security).
+- Not run: a manual delete in the live admin, bulk delete from the list view.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
