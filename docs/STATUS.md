@@ -343,6 +343,15 @@ Updated: 2026-11-09 (Mon) PKT
 - Still open for the owner or main agent: no `/administration` index exists (route map has no address for it); decision recorded in agent 4's section below.
 - Not run: browser check of the office pages on this tree, Urdu, real devices.
 
+## Agent 4 data dictionary integrated: #60 (2026-11-18, main agent; owner asked for it)
+
+- Adds `pnpm dictionary:build` (`apps/web/scripts/data-dictionary.ts`) and the generated `docs/data-dictionary.md`. The script reads the CMS config and writes one docs file; it makes no database writes and needs no secrets.
+- Conflicts in `apps/web/package.json` (scripts line) and this file; both sides kept.
+- Regenerated on current main (after the P3 stack and #58): 24 collections, output identical to the committed file, so no drift.
+- Run: typecheck, lint (0 errors). Not run: unit and integration suites and a build (no source under `src/` changed; CI runs them), visual baselines (no public change).
+- Production check for the previous merge #58 (main 3c7dd7e): deployment READY, `/readyz` ok, `/administration/<unknown>` serves the styled 404 from the new route.
+- To keep the dictionary honest, re-run `pnpm dictionary:build` after any collection change; a CI drift check would need an ADR under rule 9.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
@@ -421,3 +430,6 @@ P3 agent (slice 3a), own entry:
 - Built: `/administration/{slug}` (T7 office) in `apps/web/src/site/organisation/`. Brief addendum in `docs/briefs/p5-organisation.md`. Result: 15 organisation tests pass (unit 6, integration 9); typecheck and lint pass; browser: 0 px overflow, 0 axe violations (see A4-f). Not run: production build, e2e.
 - **Decision wanted (main agent):** where the offices list lives. No index at `/administration` was built: the route map has no address for it, the nav has no verified landing, and a page there would take the address from Pages. Also no people directory or `/contact/directory` page yet, and no Documents collection exists for T8 (`/downloads`).
 - Rebased #40, #43, #48, #51 and #56 onto `main` at `66efb07` (P3 stack merged) and force-pushed; tests re-run after the rebase (50 for the P4 stack, 51 for the P5 stack).
+### Data dictionary (2026-11-14, branch `p4/data-dictionary`, from `main`, docs and one script)
+- Built: `docs/data-dictionary.md` (24 collections, generated), `pnpm dictionary:build` (`apps/web/scripts/data-dictionary.ts`). Brief `docs/briefs/p4-data-dictionary.md`. Typecheck and lint of the script pass.
+- Not run: a freshness test or CI step (needs the environment to load the config). Rerun the script after any schema change.
