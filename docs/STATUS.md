@@ -433,3 +433,6 @@ P3 agent (slice 3a), own entry:
 ### Data dictionary (2026-11-14, branch `p4/data-dictionary`, from `main`, docs and one script)
 - Built: `docs/data-dictionary.md` (24 collections, generated), `pnpm dictionary:build` (`apps/web/scripts/data-dictionary.ts`). Brief `docs/briefs/p4-data-dictionary.md`. Typecheck and lint of the script pass.
 - Not run: a freshness test or CI step (needs the environment to load the config). Rerun the script after any schema change.
+### Search results page (2026-11-18, branch `p5/seo-search`, from `main`)
+- Built: `/search` as a plain GET form with results linking to the right public addresses (News at `/news/...`, not `/posts/...`), 20 per page, `noindex` on a results page. Removed the stock client search box (it cleared `?q=` on load). Brief `docs/briefs/p5-search.md`. 6 unit and 4 integration tests pass; typecheck and lint pass; browser: 0 px overflow in all 18 loads, 0 axe violations at 1440 and 390 px; the 390 px results page looked at.
+- Decisions for the main agent or P3: full-text and `pg_trgm` search (migration), and adding departments, programmes and offices to `SEARCH_COLLECTIONS` (needs a re-index). Not run: production build, e2e, Lighthouse.
