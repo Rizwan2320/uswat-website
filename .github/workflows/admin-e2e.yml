@@ -67,7 +67,7 @@ jobs:
           CI: 'true'
         run: >
           pnpm exec cross-env NODE_OPTIONS="--no-deprecation --import=tsx/esm"
-          playwright test tests/e2e/editor-flows.e2e.spec.ts tests/e2e/role-views.e2e.spec.ts
+          playwright test tests/e2e/editor-flows.e2e.spec.ts tests/e2e/role-views.e2e.spec.ts tests/e2e/urdu-admin.e2e.spec.ts
           --config=playwright.config.ts --project=chromium --reporter=list
       - name: Site log on failure
         if: failure()
