@@ -9,6 +9,8 @@ vi.mock('next/cache', () => ({
   unstable_cache: (fn: unknown) => fn,
 }))
 
+import { GET as GET_CONTENT } from '../../src/app/(frontend)/(sitemaps)/content-sitemap.xml/route'
+import { GET as GET_POSTS } from '../../src/app/(frontend)/(sitemaps)/posts-sitemap.xml/route'
 import { GET } from '../../src/app/(frontend)/(sitemaps)/pages-sitemap.xml/route'
 import type { User } from '../../src/payload-types'
 import { as, getTestPayload, makeUser, pageData, uniq } from '../helpers/governance'
@@ -61,3 +63,35 @@ describe('pages sitemap', () => {
     expect(xml).not.toContain(draft)
   })
 })
+
+describe('content and news sitemaps', () => {
+  const body = (t: string) => ({
+    root: { type: 'root', format: '', indent: 0, version: 1, direction: null, children: [{ type: 'paragraph', format: '', indent: 0, version: 1, direction: null, textFormat: 0, children: [{ type: 'text', version: 1, text: t, format: 0, detail: 0, mode: 'normal', style: '' }] }] },
+  })
+  async function publish(collection: string, data: Record<string, unknown>, source: string, draftOnly = false) {
+    const rec = (await payload.create({ collection: collection as never, draft: true, data: { ...data, governance: { ownerOffice: 'Registrar', source } } as never, ...as(editor) })) as unknown as { id: number }
+    if (draftOnly) return
+    const gov = (u: User, g: Record<string, unknown>) => payload.update({ collection: collection as never, id: rec.id, draft: true, data: { governance: g } as never, ...as(u) })
+    await gov(editor, { status: 'in_review' })
+    await gov(approver, { status: 'approved', verificationStatus: 'verified' })
+    await payload.update({ collection: collection as never, id: rec.id, data: { _status: 'published', governance: {} } as never, ...as(approver) })
+  }
+
+  it('lists a published notice and news at their public addresses, and not a draft or a Sample record', async () => {
+    const t = uniq('sm').toLowerCase().replace(/[^a-z0-9]/g, '')
+    const base = { excerpt: 'Sample excerpt', body: body('Sample') }
+    await publish('notices', { ...base, title: `${t} live`, slug: `${t}-live` }, 'https://uswat.edu.pk/x')
+    await publish('notices', { ...base, title: `${t} draft`, slug: `${t}-draft` }, 'https://uswat.edu.pk/x', true)
+    await publish('notices', { ...base, title: `${t} sample`, slug: `${t}-sample` }, 'https://sample.invalid/seed/notices/x')
+    await publish('posts', { title: `${t} story`, slug: `${t}-story`, content: body('Sample') }, 'https://uswat.edu.pk/y')
+    const content = await (await GET_CONTENT()).text()
+    expect(content).toContain(`/notices/${t}-live</loc>`)
+    expect(content).not.toContain(`${t}-draft`)
+    expect(content).not.toContain(`${t}-sample`)
+    expect(content).toMatch(/<loc>https?:\/\/[^<]+\/news<\/loc>/)
+    const news = await (await GET_POSTS()).text()
+    expect(news).toContain(`/news/${t}-story</loc>`)
+    expect(news).not.toContain('/posts/')
+  })
+})
+
