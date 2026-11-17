@@ -81,3 +81,37 @@ test('editor: an untitled draft is named as untitled on the dashboard, not by a 
   await page.goto(`${BASE}/admin`)
   await expect(page.getByText(/Untitled \(started \d{4}-\d{2}-\d{2}, #\d+\)/).first()).toBeVisible()
 })
+
+/** Open the "..." menu of a document and press Delete, then Confirm. */
+async function deleteFromDocument(page: Page) {
+  await page.locator('.doc-controls__popup .popup-button').last().click()
+  await page.locator('.popup-button-list__button', { hasText: 'Delete' }).first().click()
+  await page
+    .locator('.confirmation-modal')
+    .getByRole('button', { name: /confirm|delete/i })
+    .last()
+    .click()
+}
+
+test('editor: can delete their own empty draft, but a published page cannot be deleted (3q)', async ({
+  page,
+}) => {
+  await signIn(page, fx.editor)
+
+  // Opening a create form saves an empty draft; the editor deletes it from its own screen.
+  await page.goto(`${BASE}/admin/collections/notices/create`)
+  await expect(page.locator('#field-title')).toBeVisible()
+  await page.waitForURL(/\/admin\/collections\/notices\/\d+/, { timeout: 30_000 })
+  await deleteFromDocument(page)
+  await page.waitForURL(/\/admin\/collections\/notices(\?.*)?$/, { timeout: 30_000 })
+
+  // A published page: the delete is refused in plain words and the page is still there.
+  await page.goto(`${BASE}/admin/collections/pages/${fx.page.id}`)
+  await expect(page.locator('#field-title')).toBeVisible()
+  await deleteFromDocument(page)
+  await expect(page.getByText(/can delete a draft, but not an item that is/i).first()).toBeVisible({
+    timeout: 15_000,
+  })
+  const still = await fetch(`${BASE}/api/pages/${fx.page.id}`)
+  expect(still.status).toBe(200)
+})

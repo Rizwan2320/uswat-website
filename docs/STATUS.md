@@ -279,6 +279,11 @@ Updated: 2026-11-09 (Mon) PKT
 - New workflow `.github/workflows/admin-e2e.yml` runs the 14 browser tests on pull requests that touch `apps/web`. First run green. `ci.yml` untouched. Brief: `docs/briefs/p3o-admin-e2e-ci.md`.
 - Decision for the user: make `admin-e2e` a required check in branch protection if wanted (not done).
 
+## P3 slice 3q (2026-11-14, branch `p3/delete-drafts-3q`, stacked on `p3/admin-e2e-ci-3o`)
+- Editors, approvers (own office) and contributors (own drafts) can delete a draft that was never published. Everything past Draft stays admin-only (site manager unless High impact). No migration. Brief: `docs/briefs/p3q-delete-drafts.md`; prediction P3q-a recorded with the actual.
+- The browser test showed an editor deleting a live page; the delete check now also looks for a published version instead of trusting the stage field. Verified: typecheck, 66 unit tests, 209 integration tests, build, 15 browser tests.
+- The Claude Doc guide still says only admins and site managers can delete: update after 3q is merged or reviewed.
+
 ## Stack rebased onto `main` (2026-11-13)
 - Slices 3e to 3o were rebased onto `origin/main` at `6797d49` (only doc-append conflicts). `main` already carries the preview fix (#35 = my `governance/preview.ts` and its tests), so that commit was dropped and `docs/handover/p3l-preview-read.patch` removed. On the rebased tip: typecheck, lint (0 errors), 527 tests passed with 17 skipped (the skips are not in my suites), `next build`, and the 14 browser tests pass. The branches on origin still hold the old, pre-rebase commits until the user approves the force-pushes.
 

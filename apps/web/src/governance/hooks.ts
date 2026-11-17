@@ -202,7 +202,21 @@ export const governanceBeforeDelete: CollectionBeforeDeleteHook = async ({
     depth: 0,
     req,
     overrideAccess: true,
-  })) as { governance?: Gov | null }
-  const denial = checkDelete(actorFromRequest(req), toRecordState(latest.governance))
+  })) as { governance?: Gov | null; _status?: string }
+  // The stage field can say Draft on a page that went live (published without a stage change), so
+  // also look at the saved versions: any published version means it is no longer just a draft.
+  let everPublished = latest._status === 'published'
+  if (!everPublished) {
+    const published = await req.payload.findVersions({
+      collection: collection.slug as 'pages',
+      where: { and: [{ parent: { equals: id } }, { 'version._status': { equals: 'published' } }] },
+      limit: 1,
+      depth: 0,
+      req,
+      overrideAccess: true,
+    })
+    everPublished = published.totalDocs > 0
+  }
+  const denial = checkDelete(actorFromRequest(req), toRecordState(latest.governance), everPublished)
   if (denial) throw new APIError(denial.message, denial.httpStatus, { code: denial.code }, true)
 }

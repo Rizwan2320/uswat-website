@@ -24,7 +24,10 @@ interface Rule {
 }
 const NOBODY: Who[] = []
 
-const governed: Rule = { create: STAFF, update: STAFF, delete: ADMINS }
+// Delete is STAFF at the access layer because the policy hook decides (slice 3q): a draft that was
+// never published may be deleted by whoever may edit it; anything else only by an admin. The
+// per-stage rules are proven in governance.access.int.spec.ts.
+const governed: Rule = { create: STAFF, update: STAFF, delete: STAFF }
 const adminsWrite: Rule = { create: ADMINS, update: ADMINS, delete: ADMINS }
 
 const COLLECTIONS: Record<string, Rule> = {

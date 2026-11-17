@@ -486,19 +486,77 @@ describe('scope on updates is judged on the latest saved state', () => {
 })
 
 describe('deleting', () => {
-  it('platform admin always; site manager unless high-impact; system for jobs; nobody else', () => {
-    expect(checkDelete(admin, { risk: 'high_impact' })).toBeNull()
-    expect(checkDelete(manager, { risk: 'standard' })).toBeNull()
-    expect(checkDelete(manager, { risk: 'high_impact' })).toMatchObject({
-      code: 'DELETE_FORBIDDEN',
-    })
-    expect(checkDelete(system, { risk: 'high_impact' })).toBeNull()
-    for (const a of [approverIn, editorIn, contributor, auditor]) {
-      expect(checkDelete(a, { risk: 'low' }), JSON.stringify(a)).toMatchObject({
+  const rec = (over: Record<string, unknown> = {}) => ({
+    risk: 'standard' as const,
+    status: 'published' as const,
+    ownerOffice: 'registrar',
+    createdBy: 99,
+    ...over,
+  })
+
+  it('beyond Draft: platform admin always; site manager unless high-impact; system for jobs; nobody else', () => {
+    for (const status of ['in_review', 'approved', 'published', 'archived'] as const) {
+      expect(checkDelete(admin, rec({ status, risk: 'high_impact' }))).toBeNull()
+      expect(checkDelete(manager, rec({ status }))).toBeNull()
+      expect(checkDelete(manager, rec({ status, risk: 'high_impact' }))).toMatchObject({
         code: 'DELETE_FORBIDDEN',
       })
+      expect(checkDelete(system, rec({ status, risk: 'high_impact' }))).toBeNull()
+      for (const a of [approverIn, editorIn, contributor, auditor]) {
+        expect(checkDelete(a, rec({ status })), `${status} ${JSON.stringify(a)}`).toMatchObject({
+          code: 'DELETE_FORBIDDEN',
+        })
+      }
     }
-    expect(checkDelete(anonymous, { risk: 'low' })).toMatchObject({ code: 'ANONYMOUS' })
+    expect(checkDelete(anonymous, rec())).toMatchObject({ code: 'ANONYMOUS' })
+  })
+
+  it('the refusal names the stage and what to do instead', () => {
+    const denial = checkDelete(editorIn, rec({ status: 'in_review' }))
+    expect(denial?.ok).toBe(false)
+    expect(denial?.message).toContain('in review')
+    expect(denial?.message).toContain('archive')
+  })
+
+  it('a draft that was never published: whoever may edit it may delete it', () => {
+    const draft = rec({ status: 'draft', ownerOffice: 'registrar' })
+    expect(checkDelete(admin, draft)).toBeNull()
+    expect(checkDelete(manager, rec({ status: 'draft', risk: 'high_impact' }))).toBeNull()
+    expect(checkDelete(editorIn, draft)).toBeNull()
+    expect(checkDelete(approverIn, draft)).toBeNull()
+    expect(checkDelete(editorIn, rec({ status: 'draft', risk: 'high_impact' }))).toBeNull()
+  })
+
+  it('a record that was ever published is not a draft, whatever its stage field says', () => {
+    const live = rec({ status: 'draft', ownerOffice: 'registrar' })
+    for (const a of [editorIn, approverIn]) {
+      expect(checkDelete(a, live, true)).toMatchObject({ code: 'DELETE_FORBIDDEN' })
+    }
+    expect(checkDelete(contributor, rec({ status: 'draft', createdBy: 7 }), true)).toMatchObject({
+      code: 'DELETE_FORBIDDEN',
+    })
+    expect(checkDelete(editorIn, live, true)?.message).toContain('published')
+    expect(checkDelete(manager, live, true)).toBeNull()
+    expect(checkDelete(manager, rec({ status: 'draft', risk: 'high_impact' }), true)).toMatchObject(
+      { code: 'DELETE_FORBIDDEN' },
+    )
+    expect(checkDelete(admin, live, true)).toBeNull()
+  })
+
+  it('a draft of another office is not yours to delete, and a contributor can delete only their own', () => {
+    expect(checkDelete(editorIn, rec({ status: 'draft', ownerOffice: 'finance' }))).toMatchObject({
+      code: 'OWNER_OUT_OF_SCOPE',
+    })
+    expect(checkDelete(approverIn, rec({ status: 'draft', ownerOffice: null }))).toMatchObject({
+      code: 'OWNER_OUT_OF_SCOPE',
+    })
+    expect(checkDelete(contributor, rec({ status: 'draft', createdBy: 99 }))).toMatchObject({
+      code: 'NOT_YOUR_DRAFT',
+    })
+    expect(checkDelete(contributor, rec({ status: 'draft', createdBy: 7 }))).toBeNull()
+    expect(checkDelete(auditor, rec({ status: 'draft' }))).toMatchObject({
+      code: 'DELETE_FORBIDDEN',
+    })
   })
 })
 
