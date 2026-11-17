@@ -371,6 +371,14 @@ Updated: 2026-11-09 (Mon) PKT
 - **Not done: a native speaker has not read any of the Urdu.** The language is labelled "Urdu (draft translation)" in the picker. Still English: about 430 labels, 60 descriptions, menu groups, dashboard lists, the publishing-rule messages, most of Payload's own words.
 - Not run: the width check as a mutation (I measured 10,793 px by hand before the fix and 1,280 after; the CI test asserts it but I did not break the rule to see the test fail).
 
+## P3 slice 3p integrated: Urdu for the admin screens, first slice, #52 (2026-11-18, main agent; owner asked for it)
+
+- Admin only; no schema change, no migration. Urdu is added by hand (Payload has no Urdu admin language): `src/i18n/ur.ts`, `supportedLanguages` in `payload.config.ts` (cast, see the file), a right-to-left rule in `custom.scss` that applies only under `html[lang='ur']`, and a plugin step that must stay last in `plugins/index.ts`. It is off by default; a person picks it on their account page. The CI workflow `admin-e2e` now also runs `urdu-admin.e2e.spec.ts`.
+- **No native speaker has read any of the Urdu.** The picker says "Urdu (draft translation)" (ADR-0008, ADR-0013). About 430 labels and most of Payload's words stay English until supplied.
+- Not a Payload-supported setup: a Payload upgrade may change language handling; the browser tests are the warning. If the English admin ever breaks after a Payload bump, suspect `completeUrdu(config)` in `payload.config.ts` first.
+- Run on the merged tree: typecheck, lint (0 errors), 523 unit, 763 integration (identity spec skipped, env var unset), `generate:types` no drift, production build. English admin flows and the Urdu browser tests run in CI `admin-e2e`.
+- Not run: a native-speaker review, the width check as a mutation, a real device, a manual pick of Urdu on the live admin.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
