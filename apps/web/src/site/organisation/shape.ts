@@ -2,6 +2,7 @@
 
 export const DEPARTMENTS_PATH = '/academics/departments'
 export const PROGRAMMES_PATH = '/academics/programmes'
+export const OFFICES_PATH = '/administration'
 export const LIST_REVALIDATE_SECONDS = 300
 
 export type Doc = Record<string, unknown> & { id: number | string }
@@ -27,6 +28,7 @@ export function paragraphs(text: unknown): string[] {
 }
 
 export const departmentHref = (slug: string) => `${DEPARTMENTS_PATH}/${encodeURIComponent(slug)}`
+export const officeHref = (slug: string) => `${OFFICES_PATH}/${encodeURIComponent(slug)}`
 export const programmeHref = (slug: string) => `${PROGRAMMES_PATH}/${encodeURIComponent(slug)}`
 
 /** Groups in the order they first appear, so a list sorted by name stays sorted inside each group. */
