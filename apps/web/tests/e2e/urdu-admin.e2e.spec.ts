@@ -53,3 +53,29 @@ test('English admin is unchanged: panel in English, left to right', async ({ pag
   expect(labels.join(' | ')).toContain('Ownership and approval')
   expect(labels.join(' | ')).not.toContain('ملکیت')
 })
+
+test('Urdu admin (3r): field labels, menu group and collection name are in Urdu, still no sideways scroll', async ({
+  page,
+}) => {
+  await openNotice(page, 'ur')
+  const labels = (
+    await page.locator('label, legend, h3, .tabs-field__tab-button').allInnerTexts()
+  ).join(' | ')
+  expect(labels).toContain('مختصر خلاصہ') // Short summary
+  expect(labels).toContain('بنیادی متن') // Main text
+  const nav = await page.locator('nav, .nav').first().innerText()
+  expect(nav).toContain('نوٹسز') // Notices
+  expect(nav).toContain('اعلانات') // Announcements
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1300)
+  await page.screenshot({ path: '/tmp/p3r-notice-ur.png', fullPage: false })
+})
+
+test('English admin (3r): the same labels stay English', async ({ page }) => {
+  await openNotice(page, 'en')
+  const labels = (await page.locator('label, legend, h3').allInnerTexts()).join(' | ')
+  expect(labels).toContain('Short summary')
+  expect(labels).toContain('Main text')
+  const nav = await page.locator('nav, .nav').first().innerText()
+  expect(nav).toContain('Notices')
+  expect(nav).not.toMatch(/[؀-ۿ]/)
+})
