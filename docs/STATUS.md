@@ -379,11 +379,11 @@ Updated: 2026-11-09 (Mon) PKT
 - Run on the merged tree: typecheck, lint (0 errors), 523 unit, 763 integration (identity spec skipped, env var unset), `generate:types` no drift, production build. English admin flows and the Urdu browser tests run in CI `admin-e2e`.
 - Not run: a native-speaker review, the width check as a mutation, a real device, a manual pick of Urdu on the live admin.
 
-## Next step
-1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
-2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
-3. Owner decisions waiting: (a) seed clearly labelled "Sample" news items and one page into the demo database so `/posts` and the templates show real layouts live; (b) go to create a separate Neon branch for previews (finding above); (c) written DCST confirmation, real address, deadline and stats values; (d) turn Vercel Deployment Protection off before judges; rotate the Neon password.
-4. Then P4 (content), with the Urdu text supplied and reviewed.
+## Next step (rewritten 2026-11-18, main agent)
+1. Open PRs on GitHub: only #30 (dark mode for the public site), deliberately on hold. Everything else is integrated into main (latest: #52, #57, #58, #60 via #71, #68, #63, #64; faculty step-up and shared-computer via #62) or closed as stale. Production is the latest main and READY.
+2. Owner decisions waiting: (a) approve seeding clearly labelled Sample content into the production database (the seed and import scripts refuse hosted databases; this needs an explicit, separate step); (b) the data pack for the importer (gate G4 was missed); (c) the 33 held-page 301 targets (implemented as `/` and `/academics/`; confirm before cutover); (d) written confirmation that the two news photos may be used publicly, and the wording of the news item "roadmap" and the psychology event, which were inferred; (e) Vercel: set or confirm the `PORTAL_*` variables only when the faculty portal is meant to go live (it is off and returns 404 now); turn Deployment Protection off before judges; rotate the Neon password; (f) Urdu: a native reader for the admin words and the public words.
+3. Main agent, next: run identity migrations `0005` and `0006` against the portal database before enabling the portal (they are not run at deploy); decide on a `/administration` index page (no address in the route map); regenerate `docs/data-dictionary.md` after any collection change; decide whether #30 goes in once the owner has looked at it.
+4. Not verified anywhere yet: Safari and Firefox, real devices, screen readers, the Vercel environment variables (unreadable from here), Urdu with a native reader.
 
 P3 agent (slice 3a), own entry:
 - Slice 3d (proposed): the five post types (News, Notices, Events, Jobs, Tenders) with expiry rules, then media rules, accessibility guard, editor dashboard and guide, getter switch to CMS reads.
