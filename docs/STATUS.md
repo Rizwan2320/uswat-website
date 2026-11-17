@@ -433,3 +433,6 @@ P3 agent (slice 3a), own entry:
 ### Data dictionary (2026-11-14, branch `p4/data-dictionary`, from `main`, docs and one script)
 - Built: `docs/data-dictionary.md` (24 collections, generated), `pnpm dictionary:build` (`apps/web/scripts/data-dictionary.ts`). Brief `docs/briefs/p4-data-dictionary.md`. Typecheck and lint of the script pass.
 - Not run: a freshness test or CI step (needs the environment to load the config). Rerun the script after any schema change.
+### Sitemaps (2026-11-18, branch `p5/sitemap`, from `main`)
+- Built: `content-sitemap.xml` (notices, events, jobs, tenders, departments, programmes, offices, list pages); `posts-sitemap.xml` now lists `/news/{slug}`; both stock sitemaps build absolute addresses with `getServerSideURL()` (they used a bare host name before); `/posts` removed from the pages sitemap; Sample records are left out. robots.txt config lists the new sitemap. Brief `docs/briefs/p5-sitemap.md`. 4 unit and 2 integration tests pass (the integration file also holds the existing pages-sitemap test); typecheck and lint pass; dev server: 3 sitemaps return 200 and parse.
+- Not run: `next-sitemap` post-build / robots.txt, production build. The site stays `noindex` (site layout) until launch.
