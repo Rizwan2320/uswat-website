@@ -279,6 +279,12 @@ Updated: 2026-11-09 (Mon) PKT
 - New workflow `.github/workflows/admin-e2e.yml` runs the 14 browser tests on pull requests that touch `apps/web`. First run green. `ci.yml` untouched. Brief: `docs/briefs/p3o-admin-e2e-ci.md`.
 - Decision for the user: make `admin-e2e` a required check in branch protection if wanted (not done).
 
+## P3 slice 3r (2026-11-18, branch `p3/urdu-labels-3r`, stacked on `p3/urdu-admin-3p`)
+- Urdu for field labels, descriptions, select options, tab names, collection and global names and menu groups: about 250 lines in one file (`src/i18n/urWords.ts`), applied by a plugin (`src/i18n/urLabels.ts`). English unchanged; collection files untouched. Brief `docs/briefs/p3r-urdu-labels.md`, predictions P3r-a to c with actuals.
+- A coverage test fails when an editor-facing label has no Urdu line or a dictionary line has no matching label. Left in English on purpose: Payload system collections, technical words Payload adds to uploads, image size names (list in the same file).
+- Verified: typecheck, lint clean on changed files, 697 tests passed (28 skipped, identity), production build, 18 browser tests.
+- **Not done: a native speaker has not read any Urdu.** Still English: Payload's own words (about 570: "Status", "Created", "Last Modified", "Unlock", editor hints), the publishing-rule error messages, the dashboard lists, and page content. Not looked at: every collection's screen in Urdu (one screen was viewed), a phone, Safari, Firefox.
+
 ## Stack rebased onto `main` (2026-11-13)
 - Slices 3e to 3o were rebased onto `origin/main` at `6797d49` (only doc-append conflicts). `main` already carries the preview fix (#35 = my `governance/preview.ts` and its tests), so that commit was dropped and `docs/handover/p3l-preview-read.patch` removed. On the rebased tip: typecheck, lint (0 errors), 527 tests passed with 17 skipped (the skips are not in my suites), `next build`, and the 14 browser tests pass. The branches on origin still hold the old, pre-rebase commits until the user approves the force-pushes.
 
