@@ -6,7 +6,7 @@
  */
 import { symmetricDecrypt } from 'better-auth/crypto'
 import pg from 'pg'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
 import { totpAt } from '../../helpers/totp'
 import { readPortalConfig } from '@/modules/identity/config'
@@ -15,6 +15,8 @@ import { createPgAssuranceStore } from '@/modules/identity/assuranceStore'
 import { createRecoveryService } from '@/modules/identity/recoveryService'
 import { createPgAttemptStore, createPgRecoveryStore } from '@/modules/identity/recoveryStore'
 import { createPgSessionStore } from '@/modules/identity/sessionStore'
+import { purgeExpired } from '@/modules/identity/purge'
+import { evaluateSession } from '@/modules/identity/sessionLifetime'
 import { createPgSharedStore } from '@/modules/identity/sharedStore'
 import { createSignInThrottle } from '@/modules/identity/signInThrottle'
 import { createPgThrottleStore } from '@/modules/identity/signInThrottleStore'
@@ -864,5 +866,144 @@ describe.skipIf(!DB)('shared computer (SES-04) with the real library', () => {
     await signIn(u, true, 0)
     await pool.query(`delete from "session" where "userId" = $1`, [u.userId])
     expect((await pool.query(`select count(*)::int as n from "session_shared" where "sessionId" not in (select "id" from "session")`)).rows[0].n).toBe(0)
+  })
+})
+
+describe.skipIf(!DB)('purge of expired identity rows (FP-10)', () => {
+  let auth: PortalAuth
+  let pool: pg.Pool
+  let userId = ''
+  let seq = 0
+  const NOW = Date.now()
+  const ago = (ms: number) => new Date(NOW - ms)
+
+  beforeAll(async () => {
+    const config = readPortalConfig(env)
+    if (!config.enabled) throw new Error(`config: ${config.reason}`)
+    auth = createPortalAuth(config)
+    pool = getIdentityPool(config.databaseUrl)
+    const made = await auth.api.signUpEmail({ body: { email: `purge-${Date.now()}@example.test`, password: PASSWORD, name: 'Sample Purge' } })
+    userId = made.user.id
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+  beforeEach(async () => {
+    await pool.query(`delete from "session" where "userId" = $1`, [userId])
+    await pool.query(`delete from "signin_failure"`)
+    await pool.query(`delete from "recovery_attempt"`)
+    await pool.query(`delete from "totp_replay"`)
+    await pool.query(`delete from "verification"`)
+  })
+
+  /** A session with exact ages (ms before NOW); optionally shared and strong. Returns its id. */
+  async function session(createdAgo: number, idleAgo: number, opts: { shared?: boolean; strong?: boolean } = {}) {
+    const id = `purge-s-${++seq}-${Date.now()}`
+    await pool.query(
+      `insert into "session" ("id","expiresAt","token","createdAt","updatedAt","userId") values ($1, now() + interval '7 days', $2, $3, $4, $5)`,
+      [id, `tok-${id}`, ago(createdAgo), ago(idleAgo), userId],
+    )
+    if (opts.shared) await pool.query(`insert into "session_shared" ("sessionId") values ($1)`, [id])
+    if (opts.strong) await pool.query(`insert into "session_assurance" ("sessionId") values ($1)`, [id])
+    return id
+  }
+  const exists = async (id: string) => ((await pool.query(`select 1 from "session" where "id" = $1`, [id])).rowCount ?? 0) === 1
+  const count = async (table: string) => (await pool.query(`select count(*)::int as n from "${table}"`)).rows[0].n as number
+  const MIN = 60_000
+
+  it('sessions: kept just inside each limit, removed just past it', async () => {
+    const keepIdle = await session(60 * MIN, 30 * MIN - 1000)
+    const dropIdle = await session(60 * MIN, 30 * MIN + 1000)
+    const keepShared = await session(60 * MIN, 15 * MIN - 1000, { shared: true })
+    const dropShared = await session(60 * MIN, 15 * MIN + 1000, { shared: true })
+    const keepAbs = await session(12 * 60 * MIN - 1000, 1000)
+    const dropAbs = await session(12 * 60 * MIN + 1000, 1000)
+    const counts = await purgeExpired(pool, NOW)
+    expect(counts.sessions).toBe(3)
+    expect(await exists(keepIdle)).toBe(true)
+    expect(await exists(keepShared)).toBe(true)
+    expect(await exists(keepAbs)).toBe(true)
+    expect(await exists(dropIdle)).toBe(false)
+    expect(await exists(dropShared)).toBe(false)
+    expect(await exists(dropAbs)).toBe(false)
+  })
+
+  it('a shared session is held to 15 minutes; the same age unshared is still fine', async () => {
+    const shared = await session(60 * MIN, 20 * MIN, { shared: true })
+    const plain = await session(60 * MIN, 20 * MIN)
+    await purgeExpired(pool, NOW)
+    expect(await exists(shared)).toBe(false)
+    expect(await exists(plain)).toBe(true)
+  })
+
+  it('removes the assurance and shared rows with the session, and leaves live ones alone', async () => {
+    const dead = await session(60 * MIN, 40 * MIN, { shared: true, strong: true })
+    const live = await session(60 * MIN, 1 * MIN, { strong: true })
+    await purgeExpired(pool, NOW)
+    expect((await pool.query(`select 1 from "session_assurance" where "sessionId" = $1`, [dead])).rowCount).toBe(0)
+    expect((await pool.query(`select 1 from "session_shared" where "sessionId" = $1`, [dead])).rowCount).toBe(0)
+    expect((await pool.query(`select 1 from "session_assurance" where "sessionId" = $1`, [live])).rowCount).toBe(1)
+  })
+
+  it('never removes a session the lifetime check would still accept, across many ages', async () => {
+    const cases: { id: string; created: number; idle: number; shared: boolean }[] = []
+    for (const shared of [false, true]) {
+      for (const created of [5 * MIN, 60 * MIN, 11 * 60 * MIN, 12 * 60 * MIN - 1, 12 * 60 * MIN, 12 * 60 * MIN + 1, 20 * 60 * MIN]) {
+        for (const idle of [0, 1, 14 * MIN, 15 * MIN - 1, 15 * MIN, 15 * MIN + 1, 29 * MIN, 30 * MIN - 1, 30 * MIN, 30 * MIN + 1, 3 * 60 * MIN]) {
+          if (idle > created) continue
+          cases.push({ id: await session(created, idle, { shared }), created, idle, shared })
+        }
+      }
+    }
+    await purgeExpired(pool, NOW)
+    for (const c of cases) {
+      const verdict = evaluateSession({ createdAt: ago(c.created), updatedAt: ago(c.idle), now: NOW, shared: c.shared })
+      if (verdict === 'ok') expect(await exists(c.id), JSON.stringify(c)).toBe(true) // the one that must never fail
+      else expect(await exists(c.id), JSON.stringify(c)).toBe(false)
+    }
+  })
+
+  it('stale counters and marks go; fresh ones stay', async () => {
+    await pool.query(`insert into "signin_failure" ("key","failures","lastFailureAt") values ('old', 5, $1), ('new', 5, $2)`, [ago(60 * MIN + 1000), ago(60 * MIN - 1000)])
+    await pool.query(
+      `insert into "recovery_attempt" ("userId","failures","windowStart") values ($1, 3, $2) on conflict ("userId") do update set "windowStart" = $2`,
+      [userId, ago(15 * MIN + 1000)],
+    )
+    await pool.query(`insert into "totp_replay" ("key","usedAt") values ('old', $1), ('new', $2)`, [ago(120_000 + 1000), ago(120_000 - 1000)])
+    await pool.query(`insert into "verification" ("id","identifier","value","expiresAt") values ('v1','x','y',$1), ('v2','x','y',$2)`, [ago(1000), new Date(NOW + 60_000)])
+    const counts = await purgeExpired(pool, NOW)
+    expect(counts).toMatchObject({ signInFailures: 1, recoveryAttempts: 1, totpReplays: 1, verifications: 1 })
+    expect((await pool.query(`select "key" from "signin_failure"`)).rows).toEqual([{ key: 'new' }])
+    expect((await pool.query(`select "key" from "totp_replay"`)).rows).toEqual([{ key: 'new' }])
+    expect((await pool.query(`select "id" from "verification"`)).rows).toEqual([{ id: 'v2' }])
+  })
+
+  it('a recovery window just inside its 15 minutes is kept', async () => {
+    await pool.query(
+      `insert into "recovery_attempt" ("userId","failures","windowStart") values ($1, 5, $2) on conflict ("userId") do update set "failures" = 5, "windowStart" = $2`,
+      [userId, ago(15 * MIN - 1000)],
+    )
+    expect((await purgeExpired(pool, NOW)).recoveryAttempts).toBe(0)
+    expect(await count('recovery_attempt')).toBe(1)
+  })
+
+  it('a second run deletes nothing, and a dry run changes nothing but reports the same counts', async () => {
+    await session(60 * MIN, 40 * MIN)
+    await pool.query(`insert into "signin_failure" ("key","failures","lastFailureAt") values ('old', 5, $1)`, [ago(2 * 60 * MIN)])
+    const dry = await purgeExpired(pool, NOW, { dryRun: true })
+    expect(dry).toMatchObject({ sessions: 1, signInFailures: 1 })
+    expect(await count('session')).toBeGreaterThanOrEqual(1)
+    expect(await count('signin_failure')).toBe(1)
+    const real = await purgeExpired(pool, NOW)
+    expect(real).toEqual(dry)
+    const again = await purgeExpired(pool, NOW)
+    expect(Object.values(again).every((n) => n === 0)).toBe(true)
+  })
+
+  it('leaves users, accounts, passkeys, recovery codes and two-factor secrets alone', async () => {
+    const before = await Promise.all(['user', 'account', 'passkey', 'recovery_code', 'twoFactor'].map(count))
+    await session(20 * 60 * MIN, 19 * 60 * MIN)
+    await purgeExpired(pool, NOW)
+    expect(await Promise.all(['user', 'account', 'passkey', 'recovery_code', 'twoFactor'].map(count))).toEqual(before)
   })
 })

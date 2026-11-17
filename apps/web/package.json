@@ -27,7 +27,8 @@
     "import:run": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/import.ts",
     "seed:sample": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed-sample.ts",
     "test:unit": "vitest run --config ./vitest.config.mts tests/unit",
-    "identity:migrate": "tsx scripts/identity-migrate.ts"
+    "identity:migrate": "tsx scripts/identity-migrate.ts",
+    "identity:purge": "tsx scripts/identity-purge.ts"
   },
   "dependencies": {
     "@better-auth/passkey": "1.7.18",
