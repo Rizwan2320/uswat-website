@@ -335,6 +335,14 @@ Updated: 2026-11-09 (Mon) PKT
 - Portal stays off live (`PORTAL_ENABLED` and three more vars); `/portal*` still 404 until the owner enables it.
 - Not run: waiting out the 10-minute window in a browser, real devices, Urdu, https behind Vercel, backfill on a large table, the old-session-row limitation after password-then-code sign-in.
 
+## Agent 4 office pages integrated: #58 (2026-11-17, main agent; owner asked for it)
+
+- #58 (`/administration/{slug}`, T7) was stacked on #56, which is already in main; merged straight onto main e382207. Conflict only in this file (kept both sides).
+- #58's own CI failed on typecheck: two casts in `tests/int/organisation.int.spec.ts` (phones, emails) are not allowed from the loosely typed document. Fixed here with `as unknown as`; no production code changed.
+- Run on the merged tree: typecheck, lint (0 errors), 513 unit, integration (747 passed; identity file skipped because `IDENTITY_TEST_DATABASE_URL` was not set, and it passed on the previous merge with no identity code touched here), production build (route `/administration/[slug]` present), 12 visual baselines (public pages unchanged).
+- Still open for the owner or main agent: no `/administration` index exists (route map has no address for it); decision recorded in agent 4's section below.
+- Not run: browser check of the office pages on this tree, Urdu, real devices.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
