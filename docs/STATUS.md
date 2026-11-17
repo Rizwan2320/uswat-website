@@ -327,6 +327,14 @@ Updated: 2026-11-09 (Mon) PKT
 - Production has no Sample organisation rows and no articles (the seeds and importer have not run there), so the new pages show their empty state until the owner approves seeding. The Sample seeds are for a local or preview database; a Sample pill shows on any record whose source is on `sample.invalid`.
 - Not run: the importer against a real data pack (none supplied; gate G4 missed), the pages with real content, Urdu text read by a person, Safari, Firefox, a real phone.
 
+## Faculty portal step-up and shared-computer integrated: #55, #59 (2026-11-17, main agent; owner asked for it)
+
+- Merged `fp/shared-computer` (contains #55 step-up and #59 shared-computer) onto main 7c405e4. Conflicts only in this file and `predictions.md`; both sides kept.
+- Run on the merged tree: typecheck, lint (0 errors), 513 unit, 62 integration files (786 tests), `generate:types` (no drift), production build, 12 visual baselines for home and style-guide (public pages unchanged).
+- Identity migrations `0005_step_up` and `0006_session_shared` are NOT run at deploy (`pnpm identity:migrate up` is separate). Prediction I-0005: down and up SQL tried on a scratch DB with one populated row; `verifiedAt` backfilled to `createdAt`.
+- Portal stays off live (`PORTAL_ENABLED` and three more vars); `/portal*` still 404 until the owner enables it.
+- Not run: waiting out the 10-minute window in a browser, real devices, Urdu, https behind Vercel, backfill on a large table, the old-session-row limitation after password-then-code sign-in.
+
 ## Next step
 1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
 2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
