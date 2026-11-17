@@ -5,7 +5,7 @@
 .link {
   position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 4px 9px;
   border: 0; border-radius: 999px; background: transparent; color: var(--forest);
-  font: inherit; font-weight: 500; font-size: 0.95rem; letter-spacing: -0.005em; text-decoration: none; cursor: pointer; white-space: nowrap;
+  font: inherit; font-family: var(--stack-nav); font-weight: 500; font-size: 0.95rem; letter-spacing: -0.005em; text-decoration: none; cursor: pointer; white-space: nowrap;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 .link:hover, .link[aria-expanded='true'] { background: #e8efe1; }
@@ -43,13 +43,13 @@
 .col:first-child { padding-inline-end: 6px; }
 .col a {
   display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 4px 8px; border-radius: 10px;
-  color: var(--forest); text-decoration: none; font-size: 0.88rem; font-weight: 500; line-height: 1.25;
+  color: var(--forest); text-decoration: none; font-family: var(--stack-nav); font-size: 0.88rem; font-weight: 500; line-height: 1.25;
 }
 .ico { flex: none; display: grid; place-items: center; width: 22px; font-size: 1.25rem; color: var(--forest); }
 .col a:hover, .col a:focus-visible { background: #e8efe1; }
 .all {
   display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; margin-top: 6px; padding: 6px 14px;
-  border-radius: 10px; background: #e8efe1; color: var(--forest); text-decoration: none; font-size: 0.9rem; font-weight: 600;
+  border-radius: 10px; background: #e8efe1; color: var(--forest); text-decoration: none; font-family: var(--stack-nav); font-size: 0.9rem; font-weight: 600;
 }
 .all:hover, .all:focus-visible { background: #dbe6d1; }
 

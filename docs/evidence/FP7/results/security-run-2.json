@@ -1,0 +1,75 @@
+{
+  "ranAt": "2026-11-13T10:01:42.034Z",
+  "results": [
+    {
+      "id": "S1a security page lists the one passkey",
+      "ok": true,
+      "note": "one row"
+    },
+    {
+      "id": "S1b no Remove button for the only second factor, and the reason is shown",
+      "ok": true,
+      "note": "hidden + explained"
+    },
+    {
+      "id": "S1c recovery code count shown",
+      "ok": true,
+      "note": "ten left"
+    },
+    {
+      "id": "S2a a second passkey is added and listed",
+      "ok": true,
+      "note": "two rows"
+    },
+    {
+      "id": "S2b with two passkeys each has a Remove button",
+      "ok": true,
+      "note": "two buttons"
+    },
+    {
+      "id": "S3 removing one passkey leaves one, and the Remove button disappears again",
+      "ok": true,
+      "note": "one row, no button"
+    },
+    {
+      "id": "S4a ten new codes shown, none equal to the old ones",
+      "ok": true,
+      "note": "10 codes"
+    },
+    {
+      "id": "S5a a second device with the password alone is not let in",
+      "ok": true,
+      "note": "/portal/sign-in"
+    },
+    {
+      "id": "S5b second device signs in with a new recovery code",
+      "ok": true,
+      "note": "/portal/enrol"
+    },
+    {
+      "id": "S5b2 the recovery-code sign-in signed this first device out",
+      "ok": true,
+      "note": "/portal/sign-in"
+    },
+    {
+      "id": "S5c this device is marked and the other shows browser and system in words",
+      "ok": true,
+      "note": "[\"This device\",\"Chrome on Windows · Signed in 13 Nov 2026, 15:01 Sign this device out\"]"
+    },
+    {
+      "id": "S5d the revoked device is sent to sign-in",
+      "ok": true,
+      "note": "/portal/sign-in"
+    },
+    {
+      "id": "S5e this device is still signed in",
+      "ok": true,
+      "note": "/portal/security"
+    },
+    {
+      "id": "S6 the Add another passkey button is reachable with Tab",
+      "ok": true,
+      "note": "focused"
+    }
+  ]
+}

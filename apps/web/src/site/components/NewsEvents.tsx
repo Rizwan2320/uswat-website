@@ -8,14 +8,17 @@ import styles from './NewsEvents.module.css'
 
 const ALL_NEWS = 'https://uswat.edu.pk/category/latestnews/'
 
-/* Three equal columns: two news stories (one photo each, fading into the text below it) and an events card.
+/* Three equal columns: the latest story (one photo, fading into the text below it), a card with the next two stories as
+   small rows, and an events card with up to three items.
    Titles are forest (the mockup's blue is not a brand colour). Images fall back to a gradient until real photos are added. */
 export default async function NewsEvents() {
   const [news, events] = await Promise.all([getNews(), getEvents()])
-  const [first, second] = news
+  const [first, ...rest] = news
+  const more = rest.slice(0, 3)
+  const thumbs: Record<string, { src: string; alt: string }> = images.newsThumbs
   const now = new Date()
   const upcoming = events.filter((e) => e.startISO && !isPast(e.startISO, now))
-  const shown = upcoming.length ? upcoming : events
+  const shown = (upcoming.length ? upcoming : events).slice(0, 4)
   const heading = upcoming.length ? 'Upcoming Events' : 'Recent Events'
 
   return (
@@ -36,14 +39,25 @@ export default async function NewsEvents() {
             </article>
           ) : null}
 
-          {second ? (
-            <article className={`pop ${styles.card} ${styles.newsCard}`}>
-              <div className={styles.row}>
-                <div className={`media ${styles.photo}`}>
-                  <SafeImage src={images.newsThumbs.climate.src} alt={images.newsThumbs.climate.alt} fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px" className={`${styles.fillImg} ${styles.posPlaque}`} />
-                </div>
-                <NewsText item={second} />
-              </div>
+          {more.length ? (
+            <article className={`pop ${styles.card} ${styles.newsCard}`} aria-label="More news">
+              <ul className={styles.stack}>
+                {more.map((item) => (
+                  <li key={item.id} className={styles.item}>
+                    {thumbs[item.id]?.src ? (
+                      <div className={`media ${styles.thumb}`}>
+                        <SafeImage src={thumbs[item.id]!.src} alt={thumbs[item.id]!.alt} fill sizes="104px" className={styles.fillImg} />
+                      </div>
+                    ) : (
+                      /* No photo for this story yet: the crest on a cream tile, with no alt text because it is not a picture of the story. */
+                      <div className={`media ${styles.thumb} ${styles.thumbCrest}`} aria-hidden="true">
+                        <SafeImage src="/images/crest.png" alt="" fill sizes="104px" className={styles.crestImg} />
+                      </div>
+                    )}
+                    <NewsText item={item} />
+                  </li>
+                ))}
+              </ul>
             </article>
           ) : null}
 

@@ -55,7 +55,7 @@ export default function DesignPage() {
           <h2 id="d-type" className="section-title">Type</h2>
           <div className={styles.card}>
             <p className={styles.display}>Aspiring for Quality Education with Relevance</p>
-            <p>Body text is Inter at 1 rem: Join a vibrant academic community committed to excellence, innovation and service to society.</p>
+            <p>Body text is Lato at 1 rem: Join a vibrant academic community committed to excellence, innovation and service to society.</p>
           </div>
         </section>
 

@@ -1,7 +1,11 @@
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 
-import '@fontsource-variable/inter'
+import '@fontsource/lato/400.css'
+import '@fontsource/lato/400-italic.css'
+import '@fontsource/lato/700.css'
+import '@fontsource/poppins/500.css'
+import '@fontsource/poppins/600.css'
 import '@fontsource-variable/noto-nastaliq-urdu'
 import '@fontsource-variable/playfair-display'
 
