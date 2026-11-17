@@ -282,7 +282,8 @@ Updated: 2026-11-09 (Mon) PKT
 ## P3 slice 3q (2026-11-14, branch `p3/delete-drafts-3q`, stacked on `p3/admin-e2e-ci-3o`)
 - Editors, approvers (own office) and contributors (own drafts) can delete a draft that was never published. Everything past Draft stays admin-only (site manager unless High impact). No migration. Brief: `docs/briefs/p3q-delete-drafts.md`; prediction P3q-a recorded with the actual.
 - The browser test showed an editor deleting a live page; the delete check now also looks for a published version instead of trusting the stage field. Verified: typecheck, 66 unit tests, 209 integration tests, build, 15 browser tests.
-- The Claude Doc guide still says only admins and site managers can delete: update after 3q is merged or reviewed.
+- The Claude Doc guide's delete rows were updated to the new rule (owner then asked for no further edits to it).
+- 2026-11-17: the P3 stack is already in `main` (merge `964a696`), so #57 (3q) and #52 (3p, Urdu) were retargeted to `main`, and `main` was merged into each branch (docs-only conflicts, both sides kept, plain push). Both are draft, mergeable and green on CI. Re-verified on the merged 3q tree: typecheck clean, 688 tests passed (28 skipped, identity, not my lane). Not re-run after the merge: the 15 browser tests locally (CI's `browser` job passed), lint, build.
 
 ## Stack rebased onto `main` (2026-11-13)
 - Slices 3e to 3o were rebased onto `origin/main` at `6797d49` (only doc-append conflicts). `main` already carries the preview fix (#35 = my `governance/preview.ts` and its tests), so that commit was dropped and `docs/handover/p3l-preview-read.patch` removed. On the rebased tip: typecheck, lint (0 errors), 527 tests passed with 17 skipped (the skips are not in my suites), `next build`, and the 14 browser tests pass. The branches on origin still hold the old, pre-rebase commits until the user approves the force-pushes.
