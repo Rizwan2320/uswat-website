@@ -467,3 +467,8 @@ P3 agent (slice 3a), own entry:
 ### Search results page (2026-11-18, branch `p5/seo-search`, from `main`)
 - Built: `/search` as a plain GET form with results linking to the right public addresses (News at `/news/...`, not `/posts/...`), 20 per page, `noindex` on a results page. Removed the stock client search box (it cleared `?q=` on load). Brief `docs/briefs/p5-search.md`. 6 unit and 4 integration tests pass; typecheck and lint pass; browser: 0 px overflow in all 18 loads, 0 axe violations at 1440 and 390 px; the 390 px results page looked at.
 - Decisions for the main agent or P3: full-text and `pg_trgm` search (migration), and adding departments, programmes and offices to `SEARCH_COLLECTIONS` (needs a re-index). Not run: production build, e2e, Lighthouse.
+### Home sections from the CMS (2026-11-18, branch `p5/home-feeds`, from `main`)
+- Built: notices, jobs, tenders, news and events on the home page read published CMS records, with the sourced items as fallback per section (`site/home/`, `site/lib/content.ts`). Brief `docs/briefs/p5-home-feeds.md`. 4 unit and 3 integration tests pass; typecheck and lint pass; browser: 0 px overflow, 0 axe violations (A4-f).
+- Touches the main agent's `NewsEvents` component (first card no longer shows the NIIBS photo for every story; "view all" goes to `/news` when news come from the CMS) and the home `revalidate` (3600 to 300). Please look at those two edits.
+- Not run: production build, e2e, Lighthouse.
+- Also open: #58 (office pages, rebased on `main`), #60 (data dictionary). #43, #51, #56 were integrated by the main agent in the merges of 165b6eb.
