@@ -433,3 +433,8 @@ P3 agent (slice 3a), own entry:
 ### Data dictionary (2026-11-14, branch `p4/data-dictionary`, from `main`, docs and one script)
 - Built: `docs/data-dictionary.md` (24 collections, generated), `pnpm dictionary:build` (`apps/web/scripts/data-dictionary.ts`). Brief `docs/briefs/p4-data-dictionary.md`. Typecheck and lint of the script pass.
 - Not run: a freshness test or CI step (needs the environment to load the config). Rerun the script after any schema change.
+### Home sections from the CMS (2026-11-18, branch `p5/home-feeds`, from `main`)
+- Built: notices, jobs, tenders, news and events on the home page read published CMS records, with the sourced items as fallback per section (`site/home/`, `site/lib/content.ts`). Brief `docs/briefs/p5-home-feeds.md`. 4 unit and 3 integration tests pass; typecheck and lint pass; browser: 0 px overflow, 0 axe violations (A4-f).
+- Touches the main agent's `NewsEvents` component (first card no longer shows the NIIBS photo for every story; "view all" goes to `/news` when news come from the CMS) and the home `revalidate` (3600 to 300). Please look at those two edits.
+- Not run: production build, e2e, Lighthouse.
+- Also open: #58 (office pages, rebased on `main`), #60 (data dictionary). #43, #51, #56 were integrated by the main agent in the merges of 165b6eb.

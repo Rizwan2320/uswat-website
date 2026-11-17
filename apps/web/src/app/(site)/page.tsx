@@ -7,8 +7,8 @@ import PortalsGrid from '@/site/components/PortalsGrid'
 import StatsCard from '@/site/components/StatsCard'
 import { site } from '@/site/content/site'
 
-// The admissions open/closed state and "upcoming" events are decided on the server from the clock, so refresh hourly.
-export const revalidate = 3600
+// The admissions open/closed state and "upcoming" events are decided on the server from the clock, so refresh every five minutes (the same bound as the CMS lists it reads).
+export const revalidate = 300
 
 export default function HomePage() {
   const jsonLd = {
