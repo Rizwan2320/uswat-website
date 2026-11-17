@@ -12,7 +12,7 @@
 }
 .head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 .icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--forest); color: var(--ivory); font-size: 1.2rem; flex: none; }
-.title { flex: 1 1 auto; font-family: var(--stack-sans); font-weight: 700; font-size: 1.1rem; color: var(--forest); }
+.title { flex: 1 1 auto; font-weight: 700; font-size: 1.1rem; color: var(--forest); }
 .all { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; font-size: 0.85rem; font-weight: 600; color: var(--forest); text-decoration: none; }
 .all:hover { text-decoration: underline; text-underline-offset: 4px; }
 .allArrow { font-size: 1rem; }

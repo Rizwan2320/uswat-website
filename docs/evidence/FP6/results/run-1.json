@@ -1,0 +1,101 @@
+{
+  "origin": "http://localhost:3040",
+  "ranAt": "2026-11-13T02:07:07.037Z",
+  "results": [
+    {
+      "id": "S1a password sign-in works for an account with no factor (so it can enrol)",
+      "ok": true,
+      "note": "{\"user\":true}"
+    },
+    {
+      "id": "S1b AUTH-01 protected path refused to a password-only session with no factor",
+      "ok": true,
+      "note": "status 403 {\"error\":\"second factor not enrolled\",\"redirectTo\":\"/portal/enrol\"}"
+    },
+    {
+      "id": "S1c own session can still be read",
+      "ok": true,
+      "note": "status 200"
+    },
+    {
+      "id": "S2a first passkey registered from the password session (UV required)",
+      "ok": true,
+      "note": "{\"name\":\"virtual device\",\"publicKey\":\"pAEBAycgBiFYIL08q4m7OqmwwUgxvUxeGSYMGzSwwGlQztA85Zi6cCEM\",\"userId\":\"eF74tZUYNi6uEJlFsfCNu9tIGKRzKax9\",\"credentialID\":\"UV_9GS5mxr-H1Cb6vZVEU8tbggHKOv2S5gUEgT2fUD8\""
+    },
+    {
+      "id": "S2b the session is strong after registering the first factor: protected path open",
+      "ok": true,
+      "note": "status 200"
+    },
+    {
+      "id": "S3a password sign-in still gives a (weak) session for an account that has only a passkey",
+      "ok": true,
+      "note": "{\"user\":true}"
+    },
+    {
+      "id": "S3b AUTH-01 a password alone does NOT open the portal for an account with a passkey",
+      "ok": true,
+      "note": "status 403 {\"error\":\"this session was not made with a second factor\",\"redirectTo\":\"/portal/sign-in\"}"
+    },
+    {
+      "id": "S3c a password-only session cannot add a TOTP to an account that already has a passkey",
+      "ok": true,
+      "note": "status 403"
+    },
+    {
+      "id": "S3d a password-only session cannot start adding a second passkey",
+      "ok": true,
+      "note": "status 403"
+    },
+    {
+      "id": "S4a passkey sign-in (UV=1) gives a session",
+      "ok": true,
+      "note": "\"session ok\""
+    },
+    {
+      "id": "S4b a passkey sign-in session is strong: protected path open",
+      "ok": true,
+      "note": "status 200"
+    },
+    {
+      "id": "S4c a strong session may start enrolling a further passkey",
+      "ok": true,
+      "note": "status 200"
+    },
+    {
+      "id": "S5 FPR-01 an assertion with UV=0 is rejected: no session",
+      "ok": true,
+      "note": "get-session 401; {\"message\":\"Authentication failed\",\"code\":\"AUTHENTICATION_FAILED\",\"status\":400,\"statusText\":\"BAD_REQUEST\"}"
+    },
+    {
+      "id": "S6a recovery codes issued from a strong passkey session",
+      "ok": true,
+      "note": "status 200, 10 codes"
+    },
+    {
+      "id": "S6b session cookie attributes (SES-01, SES-02)",
+      "ok": true,
+      "note": "secure=true httpOnly=true sameSite=Lax path=/ domain=localhost"
+    },
+    {
+      "id": "S6c PJ3 recovery sign-in from a fresh browser works",
+      "ok": true,
+      "note": "status 200 {\"token\":\"uGyZe2QDdOKSb9WRkDSrwYoOOBBmRYth\",\"remaining\":9}"
+    },
+    {
+      "id": "S6d the recovery session is strong: protected path open",
+      "ok": true,
+      "note": "status 200"
+    },
+    {
+      "id": "S6e PJ3 the old browser session is dead on its next request",
+      "ok": true,
+      "note": "status 401"
+    },
+    {
+      "id": "S6f a recovery code works once",
+      "ok": true,
+      "note": "second use status 401"
+    }
+  ]
+}
