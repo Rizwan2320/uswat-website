@@ -3,13 +3,13 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { unstable_cache } from 'next/cache'
 
+import { getServerSideURL } from '@/utilities/getURL'
+
 const getPagesSitemap = unstable_cache(
   async () => {
     const payload = await getPayload({ config })
-    const SITE_URL =
-      process.env.NEXT_PUBLIC_SERVER_URL ||
-      process.env.VERCEL_PROJECT_PRODUCTION_URL ||
-      'https://example.com'
+    // Not the raw VERCEL_PROJECT_PRODUCTION_URL: that is a bare host name with no https://.
+    const SITE_URL = getServerSideURL()
 
     const results = await payload.find({
       collection: 'pages',
@@ -31,13 +31,10 @@ const getPagesSitemap = unstable_cache(
 
     const dateFallback = new Date().toISOString()
 
+    // News is listed in the content sitemap at /news; /posts is the stock blog index and not a public address.
     const defaultSitemap = [
       {
         loc: `${SITE_URL}/search`,
-        lastmod: dateFallback,
-      },
-      {
-        loc: `${SITE_URL}/posts`,
         lastmod: dateFallback,
       },
     ]

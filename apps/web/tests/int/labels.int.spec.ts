@@ -50,6 +50,23 @@ type Row = {
   options?: { label: string; value: string }[]
 }
 
+/**
+ * A label is plain text or an English and Urdu pair (`{ en, ur }`, slice 3p). The wording rules judge
+ * the English; a pair must have both sides written.
+ */
+function words(raw: unknown, where: string, problems: string[]): string | undefined {
+  if (typeof raw === 'string') return raw
+  if (raw && typeof raw === 'object' && 'en' in raw) {
+    const pair = raw as { en?: unknown; ur?: unknown }
+    if (typeof pair.en !== 'string' || !pair.en.trim())
+      problems.push(`${where}: English side is empty`)
+    if (typeof pair.ur !== 'string' || !pair.ur.trim())
+      problems.push(`${where}: Urdu side is empty`)
+    return typeof pair.en === 'string' ? pair.en : undefined
+  }
+  return undefined
+}
+
 function visible(f: Field): boolean {
   const admin = (f as { admin?: { hidden?: boolean; disabled?: boolean } }).admin
   return !(admin?.hidden || admin?.disabled)
@@ -74,8 +91,9 @@ function collect(fields: Field[], where: string, out: Row[], problems: string[])
     if (!visible(f)) continue
     const path = `${where}${name}`
     if (PROVIDED.has(path)) continue
-    const raw = (f as { label?: unknown }).label
-    if (raw === false) {
+    const rawLabel = (f as { label?: unknown }).label
+    const raw = rawLabel === false ? undefined : words(rawLabel, `${path} label`, problems)
+    if (rawLabel === false) {
       // Deliberately unlabelled (a rich-text body inside a block): its parent is labelled.
     } else if (typeof raw !== 'string') {
       problems.push(`${path}: no written label`)
@@ -95,7 +113,7 @@ function collect(fields: Field[], where: string, out: Row[], problems: string[])
       for (const o of options) {
         const opt =
           typeof o === 'string' ? { label: o, value: o } : (o as { label: unknown; value: string })
-        const label = typeof opt.label === 'string' ? opt.label : ''
+        const label = words(opt.label, `${path} option "${opt.value}"`, problems) ?? ''
         if (!label) problems.push(`${path}: option "${opt.value}" has no label`)
         else if (
           /_/.test(label) ||
@@ -143,5 +161,30 @@ describe('admin wording', () => {
     for (const n of ['contentHash', 'sourceContentHash']) {
       expect(gov.fields.find((f) => f.name === n)?.admin?.hidden).toBe(true)
     }
+  })
+
+  it('the Ownership and approval panel has an Urdu side for every label, description and option', () => {
+    const col = payload.collections.notices.config
+    const gov = col.fields.find((f) => 'name' in f && f.name === 'governance') as {
+      label: unknown
+      fields: {
+        name: string
+        label?: unknown
+        admin?: { hidden?: boolean; description?: unknown }
+        options?: { label: unknown }[]
+      }[]
+    }
+    const isPair = (v: unknown) =>
+      !!v && typeof v === 'object' && 'en' in v && 'ur' in v && !!(v as { ur: string }).ur
+    const missing: string[] = []
+    if (!isPair(gov.label)) missing.push('panel title')
+    for (const f of gov.fields) {
+      if (f.admin?.hidden) continue
+      if (!isPair(f.label)) missing.push(`${f.name} label`)
+      if (f.admin?.description !== undefined && !isPair(f.admin.description))
+        missing.push(`${f.name} description`)
+      for (const o of f.options ?? []) if (!isPair(o.label)) missing.push(`${f.name} option`)
+    }
+    expect(missing).toEqual([])
   })
 })

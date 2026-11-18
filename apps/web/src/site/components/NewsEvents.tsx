@@ -19,6 +19,8 @@ export default async function NewsEvents() {
   const now = new Date()
   const upcoming = events.filter((e) => e.startISO && !isPast(e.startISO, now))
   const shown = (upcoming.length ? upcoming : events).slice(0, 4)
+  // News from the CMS link to this site, so "view all" does too; the sourced fallback still links to the old site's category.
+  const allNews = first?.href.startsWith('/') ? '/news' : ALL_NEWS
   const heading = upcoming.length ? 'Upcoming Events' : 'Recent Events'
 
   return (
@@ -31,9 +33,16 @@ export default async function NewsEvents() {
             <article className={`pop ${styles.card} ${styles.newsCard}`}>
               <span className={styles.tab}><T k="Latest News" /></span>
               <div className={styles.row}>
-                <div className={`media ${styles.photo}`}>
-                  <SafeImage src={images.newsThumbs.niibs.src} alt={images.newsThumbs.niibs.alt} fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px" className={`${styles.fillImg} ${styles.posNiibs}`} />
-                </div>
+                {thumbs[first.id]?.src ? (
+                  <div className={`media ${styles.photo}`}>
+                    <SafeImage src={thumbs[first.id]!.src} alt={thumbs[first.id]!.alt} fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px" className={`${styles.fillImg} ${first.id === 'niibs' ? styles.posNiibs : ''}`} />
+                  </div>
+                ) : (
+                  /* No photo for this story: the crest on a cream tile, with no alt text because it is not a picture of the story. */
+                  <div className={`media ${styles.photo} ${styles.photoCrest}`} aria-hidden="true">
+                    <SafeImage src="/images/crest.png" alt="" fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px" className={styles.crestImg} />
+                  </div>
+                )}
                 <NewsText item={first} />
               </div>
             </article>
@@ -99,7 +108,7 @@ export default async function NewsEvents() {
               )}
             </article>
           {/* The one "view all" link for the section: under the events card, in the space the shorter card leaves. */}
-          <a className={styles.all} href={ALL_NEWS} rel="noopener noreferrer">
+          <a className={styles.all} href={allNews} {...(allNews === ALL_NEWS ? { rel: 'noopener noreferrer' } : {})}>
             <T k="View All News & Events" /> <ArrowRightIcon className={`btn-arrow ${styles.allArrow}`} />
           </a>
           </div>
