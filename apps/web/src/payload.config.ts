@@ -149,6 +149,8 @@ const built = buildConfig({
       run: ({ req }: { req: PayloadRequest }): boolean => canRunJobs(req, env.CRON_SECRET),
     },
     tasks: [lifecycleSweepTask],
+    // Keep finished runs: the Operations panel reads them. The sweep prunes its own old runs.
+    deleteJobOnComplete: false,
   },
 })
 
