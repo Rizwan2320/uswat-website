@@ -150,7 +150,7 @@ export const governanceFields: Field[] = [
   {
     // Who marked it Verified. Set by the system from the signed-in reviewer, never from the request.
     name: 'verifiedBy',
-    label: 'Verified by',
+    label: bi('Verified by', 'تصدیق کنندہ'),
     type: 'relationship',
     relationTo: 'users',
     admin: { readOnly: true },
