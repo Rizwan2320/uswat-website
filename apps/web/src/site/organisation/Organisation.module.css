@@ -29,3 +29,7 @@
 .personName { font-weight: 700; color: var(--forest); unicode-bidi: plaintext; }
 .personRole { color: var(--text); unicode-bidi: plaintext; }
 @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+.contacts { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; font-weight: 600; }
+.contacts li { overflow-wrap: anywhere; unicode-bidi: plaintext; }
+.contacts a { display: inline-flex; align-items: center; min-height: 44px; color: var(--forest); text-underline-offset: 4px; }
+.contacts a:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
