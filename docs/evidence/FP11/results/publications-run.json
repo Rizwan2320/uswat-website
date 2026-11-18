@@ -1,0 +1,82 @@
+[
+  {
+    "id": "Q0 a signed-out visitor is sent to sign-in",
+    "ok": true,
+    "note": "http://localhost:3040/portal/sign-in"
+  },
+  {
+    "id": "Q1 without an ORCID iD the page says so and the harvest button is disabled",
+    "ok": true,
+    "note": "orcid needed"
+  },
+  {
+    "id": "Q2 the first harvest adds 5 works, recognises 2 repeats and drops 2 broken records",
+    "ok": true,
+    "note": "five pending"
+  },
+  {
+    "id": "Q3 the Urdu work is shown and its title is direction-aware",
+    "ok": true,
+    "note": "urdu title"
+  },
+  {
+    "id": "Q4 harvesting again adds nothing",
+    "ok": true,
+    "note": "still five"
+  },
+  {
+    "id": "Q5 claiming moves it to Claimed",
+    "ok": true,
+    "note": "نمونہ مقالہ: ایک نمونہ وادی میں پانی"
+  },
+  {
+    "id": "Q6 \"not me\" moves it to Not mine",
+    "ok": true,
+    "note": "rejected"
+  },
+  {
+    "id": "Q7 the rejected work does not come back after another harvest",
+    "ok": true,
+    "note": "stays rejected"
+  },
+  {
+    "id": "Q8 a duplicate is listed with the work it repeats",
+    "ok": true,
+    "note": "Sample paper: a study of optical fibres in rural networks"
+  },
+  {
+    "id": "Q9 the duplicate button stays disabled until a work is chosen",
+    "ok": true,
+    "note": "disabled"
+  },
+  {
+    "id": "Q10 a second account starts with an empty list (nothing of A's decisions)",
+    "ok": true,
+    "note": "B empty"
+  },
+  {
+    "id": "Q11 the same works are found separately for B (5 pending, none claimed or rejected)",
+    "ok": true,
+    "note": "B has own five"
+  },
+  {
+    "id": "Q12 A's crafted decision on B's work is refused and B's work is unchanged",
+    "ok": true,
+    "note": "0:{\"a\":\"$@1\",\"f\":\"\",\"q\":\"\",\"i\":false,\"b\":\"akBXMdQSB-qu5--XgWo7w\"} 1:{\"ok\":false,\"error\":\"n | status pending"
+  },
+  {
+    "id": "Q13 a malformed id is refused as invalid",
+    "ok": true,
+    "note": "invalid id"
+  },
+  {
+    "id": "Q14 a work can be claimed by keyboard alone",
+    "ok": true,
+    "note": "keyboard"
+  },
+  {
+    "id": "Q15 no horizontal scroll at 390 px wide with works listed",
+    "ok": true,
+    "note": "overflow 0px"
+  }
+]

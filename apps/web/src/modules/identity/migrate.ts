@@ -30,7 +30,7 @@ export function assertSafeTarget(databaseUrl: string, env: Record<string, string
   }
 }
 
-export const MIGRATIONS = ['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft'] as const
+export const MIGRATIONS = ['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate'] as const
 
 async function sql(name: string, direction: 'up' | 'down'): Promise<string> {
   return readFile(path.join(process.cwd(), 'src/modules/identity/sql', `${name}.${direction}.sql`), 'utf8')
