@@ -178,6 +178,16 @@ export const governanceBeforeChange =
         values.verification === 'verified'
           ? (values.verifiedAt ?? prevGov?.verifiedAt ?? null)
           : null,
+      // Who verified: the signed-in reviewer when it becomes Verified in this save, kept while it
+      // stays Verified, cleared when verification is reset. Never taken from the request.
+      verifiedBy:
+        values.verification === 'verified'
+          ? values.verifiedAt
+            ? actor.kind === 'user'
+              ? actor.id
+              : null
+            : (idOf(prevGov?.verifiedBy) ?? null)
+          : null,
       // Set by the system only; a person cannot claim a record came from an importer.
       origin: system ? origin : pick<Origin>(ORIGINS, prevGov?.origin, 'editor'),
       sourceContentHash: system

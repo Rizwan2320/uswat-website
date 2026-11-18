@@ -118,6 +118,14 @@ export const governanceFields: Field[] = [
     admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
   },
   {
+    // Who marked it Verified. Set by the system from the signed-in reviewer, never from the request.
+    name: 'verifiedBy',
+    label: 'Verified by',
+    type: 'relationship',
+    relationTo: 'users',
+    admin: { readOnly: true },
+  },
+  {
     name: 'reviewDueAt',
     label: 'Check again by',
     type: 'date',
