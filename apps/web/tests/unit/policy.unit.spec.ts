@@ -303,6 +303,32 @@ describe('VER-01: an unverified record can never be published', () => {
     expect(r).toMatchObject({ ok: false, code: 'VERIFY_FORBIDDEN' })
   })
 
+  it('going live with no review date gets a default by risk (3s); a person-set date is kept', () => {
+    const day = 24 * 60 * 60 * 1000
+    const plus = (days: number) => new Date(Date.parse(NOW) + days * day).toISOString()
+    const std = publish(admin, { verification: 'verified', risk: 'standard', reviewDueAt: null })
+    expect(std).toMatchObject({ ok: true, values: { reviewDueAt: plus(180) } })
+    const low = publish(admin, { verification: 'verified', risk: 'low', reviewDueAt: null })
+    expect(low).toMatchObject({ ok: true, values: { reviewDueAt: plus(365) } })
+    const kept = publish(admin, {
+      verification: 'verified',
+      risk: 'standard',
+      reviewDueAt: '2027-03-01T00:00:00.000Z',
+    })
+    expect(kept).toMatchObject({ ok: true })
+    expect((kept as { values: { reviewDueAt?: string } }).values.reviewDueAt).toBeUndefined()
+  })
+
+  it('a save that does not go live never invents a review date', () => {
+    const r = save({
+      actor: editorIn,
+      prev: record({ status: 'draft' }),
+      next: record({ status: 'draft' }),
+    })
+    expect(r).toMatchObject({ ok: true })
+    expect((r as { values: { reviewDueAt?: string } }).values.reviewDueAt).toBeUndefined()
+  })
+
   it('high-impact records also need a review date', () => {
     const r = publish(approverIn, {
       verification: 'verified',
