@@ -34,7 +34,13 @@ export const listingPage = (type: ArticleType) =>
 export const listingMetadata = (type: ArticleType) =>
   async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
     const params = parseListingParams(await searchParams, new Date().getUTCFullYear())
-    return { title: TYPES[type].label, alternates: { canonical: listingHref(TYPES[type].path, params) } }
+    return {
+      title: TYPES[type].label,
+      alternates: {
+        canonical: listingHref(TYPES[type].path, params),
+        types: { 'application/rss+xml': `/${TYPES[type].path}/feed.xml` },
+      },
+    }
   }
 
 export const articlePage = (type: ArticleType) =>
