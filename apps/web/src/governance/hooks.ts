@@ -16,6 +16,7 @@ import {
 
 import { hashContent, stableStringify } from './hash'
 import { checkDelete, evaluateSave, type RecordState } from './policy'
+import { describeUse, findReferences } from './references'
 import {
   actorFromRequest,
   normalizeOffice,
@@ -219,4 +220,16 @@ export const governanceBeforeDelete: CollectionBeforeDeleteHook = async ({
   }
   const denial = checkDelete(actorFromRequest(req), toRecordState(latest.governance), everPublished)
   if (denial) throw new APIError(denial.message, denial.httpStatus, { code: denial.code }, true)
+
+  // Integrity, not permission: nobody, administrators included, may delete a record that other
+  // records still use. Checked after the permission test so counts go only to people who may delete.
+  const used = await findReferences(req.payload, collection.slug, id, req)
+  if (used.length > 0) {
+    throw new APIError(
+      `This cannot be deleted because it is still used by ${describeUse(used)}. Remove those links first, or archive this item instead.`,
+      409,
+      { code: 'IN_USE', used },
+      true,
+    )
+  }
 }
