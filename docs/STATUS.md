@@ -502,3 +502,8 @@ P3 agent (slice 3a), own entry:
 - Touches the main agent's `NewsEvents` component (first card no longer shows the NIIBS photo for every story; "view all" goes to `/news` when news come from the CMS) and the home `revalidate` (3600 to 300). Please look at those two edits.
 - Not run: production build, e2e, Lighthouse.
 - Also open: #58 (office pages, rebased on `main`), #60 (data dictionary). #43, #51, #56 were integrated by the main agent in the merges of 165b6eb.
+### RSS feeds (2026-11-18, branch `p5/rss`, from `main`)
+- Built: `/news`, `/notices`, `/events`, `/jobs`, `/tenders` each with `/feed.xml` (RSS 2.0, newest 30 published current records, title, link, date and the excerpt, plus when and where for events and the closing date for jobs and tenders), and a feed link in each list page's head. Code in `apps/web/src/site/feeds/`; brief `docs/briefs/p5-rss.md`; prediction A4-i. No dependency, no collection or route-map change.
+- Result: 8 unit and 4 integration tests pass (local PostgreSQL); typecheck and lint pass; all five feeds parse as XML from the dev server. Records whose source is on `sample.invalid` are left out. Not run: a feed reader or the W3C validator, production build, e2e.
+- Notes: feeds are cached 300 s under the list tags (same bound as the lists until the post types get revalidation hooks). News items carry only a title and a date (no excerpt field). The links use `NEXT_PUBLIC_SERVER_URL`, so staging and production must set it.
+- Not built, and why: feeds that carry the full text (needs a rich-text serializer), a combined feed.
