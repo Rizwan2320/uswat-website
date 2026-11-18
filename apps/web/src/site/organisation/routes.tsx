@@ -3,10 +3,11 @@ import { draftMode, headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 
 import { DepartmentsIndex, ProgrammesIndex } from './Lists'
+import { AcademicsPage, CampusPage } from './Landing'
 import OfficePage from './Office'
 import { DepartmentPage, ProgrammePage } from './Pages'
-import { getDepartment, getOffice, getProgramme, listDepartments, listProgrammes, peopleOfDepartment, programmesOfDepartment } from './queries'
-import { DEPARTMENTS_PATH, OFFICES_PATH, PROGRAMMES_PATH, str } from './shape'
+import { getCampus, getDepartment, getOffice, getProgramme, listDepartments, listProgrammes, peopleOfDepartment, programmesAtCampus, programmesOfDepartment } from './queries'
+import { ACADEMICS_PATH, CAMPUSES_PATH, DEPARTMENTS_PATH, OFFICES_PATH, PROGRAMMES_PATH, str } from './shape'
 
 /* The route files under (site)/(cms)/academics/{departments,programmes} are one-liners over these. */
 
@@ -68,4 +69,20 @@ export async function officeMetadata({ params }: { params: SlugParams }): Promis
   return doc
     ? { title: str(doc.name) ?? 'Office', alternates: { canonical: `${OFFICES_PATH}/${encodeURIComponent(slug)}` } }
     : { title: 'Office' }
+}
+
+export async function AcademicsRoute() {
+  return <AcademicsPage departments={await listDepartments()} />
+}
+export const academicsMetadata: Metadata = { title: 'Academics', alternates: { canonical: ACADEMICS_PATH } }
+
+export async function CampusRoute({ params }: { params: SlugParams }) {
+  const doc = await getCampus(decode((await params).slug ?? ''), await preview())
+  if (!doc) notFound()
+  return <CampusPage doc={doc} programmes={await programmesAtCampus(doc.id)} />
+}
+export async function campusMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
+  const slug = decode((await params).slug ?? '')
+  const doc = await getCampus(slug, await preview())
+  return doc ? { title: str(doc.name) ?? 'Campus', alternates: { canonical: `${CAMPUSES_PATH}/${encodeURIComponent(slug)}` } } : { title: 'Campus' }
 }

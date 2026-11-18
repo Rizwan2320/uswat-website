@@ -13,12 +13,14 @@ vi.mock('next/cache', () => ({
 }))
 
 import {
+  getCampus,
   getDepartment,
   getOffice,
   getProgramme,
   listDepartments,
   listProgrammes,
   peopleOfDepartment,
+  programmesAtCampus,
   programmesOfDepartment,
 } from '../../src/site/organisation/queries'
 import { as, getTestPayload, makeUser, run } from '../helpers/governance'
@@ -44,7 +46,7 @@ const mk = async (collection: string, name: string, data: Record<string, unknown
   return doc
 }
 
-let group: { id: number }, dept: { id: number }, otherDept: { id: number }
+let group: { id: number }, dept: { id: number }, otherDept: { id: number }, campus: { id: number }
 beforeAll(async () => {
   payload = await getTestPayload()
   admin = await makeUser(payload, 'platformAdmin')
@@ -63,6 +65,10 @@ beforeAll(async () => {
   const head = await mk('people', `${tag} office head`, { designation: 'Registrar' })
   await mk('offices', `${tag} office`, { head: head.id, hours: '9 to 3', group: 'Directorates', phones: [{ number: '+0 000 0000' }], emails: [{ email: `o@${tag}.invalid` }] })
   await mk('offices', `${tag} draft office`, {}, false)
+  campus = await mk('campuses', `${tag} campus`, { address: 'Line one\n\nLine two', link: 'https://example.test/map' })
+  await mk('campuses', `${tag} draft campus`, {}, false)
+  await mk('programmes', `${tag} at campus`, { department: dept.id, campus: campus.id, level: 'BS' })
+  await mk('programmes', `${tag} draft at campus`, { department: dept.id, campus: campus.id }, false)
 }, 120_000)
 
 describe('departments', () => {
@@ -84,11 +90,11 @@ describe('departments', () => {
 describe('programmes', () => {
   it('lists published programmes with department names and skips drafts', async () => {
     const mine = (await listProgrammes()).filter((p) => p.name.startsWith(tag))
-    expect(mine.map((p) => p.name).sort()).toEqual([`${tag} bs one`, `${tag} elsewhere`, `${tag} ms two`])
+    expect(mine.map((p) => p.name).sort()).toEqual([`${tag} at campus`, `${tag} bs one`, `${tag} elsewhere`, `${tag} ms two`])
     expect(mine.find((p) => p.name.endsWith('bs one'))).toMatchObject({ level: 'BS', duration: '4 years', departmentName: `${tag} dept` })
   })
   it('lists only the programmes of one department', async () => {
-    expect((await programmesOfDepartment(dept.id)).map((p) => p.name)).toEqual([`${tag} bs one`, `${tag} ms two`])
+    expect((await programmesOfDepartment(dept.id)).map((p) => p.name)).toEqual([`${tag} at campus`, `${tag} bs one`, `${tag} ms two`])
   })
   it('serves a programme by slug and not a draft one', async () => {
     expect(await getProgramme(`${tag}-bs-one`, live)).toMatchObject({ level: 'BS' })
@@ -115,5 +121,18 @@ describe('offices', () => {
   it('does not serve a draft office, even with draft mode on and no login', async () => {
     expect(await getOffice(`${tag}-draft-office`, live)).toBeNull()
     expect(await getOffice(`${tag}-draft-office`, { draftModeOn: true, headers: noHeaders })).toBeNull()
+  })
+})
+
+describe('campuses', () => {
+  it('serves a published campus by slug with its address and link', async () => {
+    expect(await getCampus(`${tag}-campus`, live)).toMatchObject({ name: `${tag} campus`, address: 'Line one\n\nLine two', link: 'https://example.test/map' })
+  })
+  it('does not serve a draft campus, even with draft mode on and no login', async () => {
+    expect(await getCampus(`${tag}-draft-campus`, live)).toBeNull()
+    expect(await getCampus(`${tag}-draft-campus`, { draftModeOn: true, headers: noHeaders })).toBeNull()
+  })
+  it('lists the published programmes taught at the campus and no draft', async () => {
+    expect((await programmesAtCampus(campus.id)).map((p) => p.name)).toEqual([`${tag} at campus`])
   })
 })
