@@ -172,6 +172,8 @@ export const governanceBeforeChange =
       riskClass: values.risk,
       pinned: values.pinned,
       ownerOffice: normalizeOffice(merged.ownerOffice) || null,
+      // A person's date always wins; the default fills a gap only when going live without one (3s).
+      reviewDueAt: values.reviewDueAt ?? merged.reviewDueAt ?? null,
       verifiedAt:
         values.verification === 'verified'
           ? (values.verifiedAt ?? prevGov?.verifiedAt ?? null)

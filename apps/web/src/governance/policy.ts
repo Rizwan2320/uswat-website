@@ -15,6 +15,7 @@
  *   verified record back to unverified, so approval always refers to the content that was seen.
  */
 
+import { defaultReviewDueAt } from './lifecycle'
 import {
   RISK_RANK,
   WORKFLOW_LABELS,
@@ -213,6 +214,8 @@ export interface SaveValues {
   verification: VerificationStatus
   /** Set only when the record becomes verified in this save. */
   verifiedAt?: string
+  /** Set only when a record goes live with no "Check again by": the default for its risk (3s). */
+  reviewDueAt?: string
   risk: RiskClass
   pinned: boolean
 }
@@ -344,6 +347,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
   // Verification (VER-01 needs a human reviewer).
   let verification = next.verification
   let verifiedAt: string | undefined
+  let reviewDefault: string | null = null
   if (next.verification !== prev.verification) {
     if (next.verification === 'verified') {
       if (!reviewer) {
@@ -413,6 +417,10 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
           400,
         )
       }
+      if (!next.reviewDueAt) {
+        reviewDefault = defaultReviewDueAt(scope.risk, now)
+        if (reviewDefault) notes.push('review_date_defaulted')
+      }
     }
   } else {
     if (input.unpublishing && !reviewerOnPrev && actor.kind !== 'system') {
@@ -463,6 +471,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
 
   const values: SaveValues = { status, verification, risk: next.risk, pinned: next.pinned }
   if (verifiedAt && verification === 'verified') values.verifiedAt = verifiedAt
+  if (reviewDefault) values.reviewDueAt = reviewDefault
   return { ok: true, values, notes }
 }
 

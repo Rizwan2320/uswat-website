@@ -11,6 +11,21 @@ import type { Where } from 'payload'
 
 export const AGE_OUT_DAYS_NOTICES = 90
 
+/**
+ * Days until a published record is due for a new check when nobody set "Check again by" (slice 3s).
+ * PROPOSED values, not university rules: change them here, in one place. High impact is left out on
+ * purpose: a person must choose that date (policy.ts REVIEW_DATE_REQUIRED).
+ */
+export const DEFAULT_REVIEW_DAYS: Readonly<Record<string, number>> = { standard: 180, low: 365 }
+
+/** The default "Check again by" for a record of this risk, as an ISO time, or null if there is none. */
+export function defaultReviewDueAt(risk: string, nowIso: string): string | null {
+  const days = DEFAULT_REVIEW_DAYS[risk]
+  const base = Date.parse(nowIso)
+  if (days === undefined || Number.isNaN(base)) return null
+  return new Date(base + days * 24 * 60 * 60 * 1000).toISOString()
+}
+
 export interface LifecycleRecord {
   status: string
   verification: string
