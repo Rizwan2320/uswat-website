@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { LIMITS, buildPreview, changedFields, normaliseOrcid, orcidChecksumOk, safeHttpsUrl, validateEdit } from '../../../src/modules/portal/profile/rules'
+import { LIMITS, buildPreview, changedFields, normaliseOrcid, orcidChecksumOk, safeHttpsUrl, tidyInterests, validateEdit } from '../../../src/modules/portal/profile/rules'
 import type { Profile, ProfileEdit } from '../../../src/modules/portal/profile/types'
 
 const good = (over: Record<string, unknown> = {}) => ({
@@ -136,6 +136,17 @@ const profile = (vis: { email: 'hidden' | 'internal' | 'public'; photo: 'hidden'
   cvLink: '',
   visibility: vis,
   sample: true,
+})
+
+describe('tidyInterests', () => {
+  it('trims, drops empties and removes case-insensitive duplicates, keeping the first spelling', () => {
+    expect(tidyInterests([' optics ', 'OPTICS', '', 'Lasers', 'lasers'])).toEqual(['optics', 'Lasers'])
+  })
+  it('agrees with what validateEdit stores for the same input (the preview cannot differ from the saved value)', () => {
+    const items = [' a ', 'A', 'b', '', 'B ', 'c']
+    const r = validateEdit(good({ researchInterests: items }))
+    expect(r.ok && r.edit.researchInterests).toEqual(tidyInterests(items))
+  })
 })
 
 describe('buildPreview (FP-06)', () => {

@@ -18,7 +18,7 @@ export default async function ProfilePage() {
   return (
     <Shell email={email} wide>
       <h1>
-        {COPY.profile.title}
+        {COPY.profile.title}{' '}
         {loaded.profile.sample ? <span className="portal-sample">{COPY.profile.sampleBadge}</span> : null}
       </h1>
       <ProfileEditor initial={loaded} />

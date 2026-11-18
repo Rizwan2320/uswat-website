@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import type { FactorState } from '@/modules/identity/gate'
-import { guardPage, type GuardDeps } from '@/modules/portal/pageGuard'
+import { accountFrom, guardPage, type GuardDeps } from '@/modules/portal/pageGuard'
 
 const ON = {
   PORTAL_ENABLED: 'true',
@@ -141,5 +141,17 @@ describe('guardPage: the same rules as the route, applied to pages', () => {
     expect(await setup({ session: true, factors: passkey, strong: true, verifiedAgoMs: 60_000 }).run('/portal/security')).toMatchObject({ action: 'render', fresh: true })
     expect(await setup({ session: true, factors: passkey, strong: true, verifiedAgoMs: 11 * 60_000 }).run('/portal/security')).toMatchObject({ action: 'render', fresh: false })
     expect(await setup({ session: true, factors: passkey, strong: true, verifiedAgoMs: null }).run('/portal/security')).toMatchObject({ action: 'render', fresh: false })
+  })
+})
+
+describe('accountFrom (what a server action may act for)', () => {
+  const ok = { action: 'render', userId: 'u1', email: 'a@example.test', strong: true, factors: passkey, fresh: true } as const
+  it('returns the account for a strong render and nothing otherwise', () => {
+    expect(accountFrom(ok)).toEqual({ id: 'u1', email: 'a@example.test' })
+    expect(accountFrom({ ...ok, strong: false })).toBeNull()
+    expect(accountFrom({ ...ok, userId: null })).toBeNull()
+    expect(accountFrom({ ...ok, email: null })).toBeNull()
+    expect(accountFrom({ action: 'notFound' })).toBeNull()
+    expect(accountFrom({ action: 'redirect', to: '/portal/sign-in' })).toBeNull()
   })
 })

@@ -1,0 +1,112 @@
+[
+  {
+    "id": "P0 a signed-out visitor to /portal/profile is sent to sign-in",
+    "ok": true,
+    "note": "/portal/sign-in"
+  },
+  {
+    "id": "P1 profile page: one h1, Sample badge, sample note, not-saved status",
+    "ok": true,
+    "note": "Your profile | University of Swat faculty portal"
+  },
+  {
+    "id": "P2 fixed fields are listed as text, not as inputs",
+    "ok": true,
+    "note": "designation shown read-only"
+  },
+  {
+    "id": "P3 preview starts with no email and no photo",
+    "ok": true,
+    "note": "hidden by default"
+  },
+  {
+    "id": "P4 the Urdu field is right-to-left and tagged lang=ur",
+    "ok": true,
+    "note": "dir=rtl lang=ur"
+  },
+  {
+    "id": "P5 the preview updates as you type, Urdu preview is rtl, duplicates removed",
+    "ok": true,
+    "note": "live preview"
+  },
+  {
+    "id": "P6 email appears in the preview only when set to Public",
+    "ok": true,
+    "note": "public shows"
+  },
+  {
+    "id": "P7 Internal hides it from the public preview",
+    "ok": true,
+    "note": "internal hidden"
+  },
+  {
+    "id": "P8 photo shown in preview only when Public",
+    "ok": true,
+    "note": "photo public"
+  },
+  {
+    "id": "P9 a wrong ORCID checksum is refused with a linked message and nothing is saved",
+    "ok": true,
+    "note": "aria-invalid set"
+  },
+  {
+    "id": "P10 an http Scholar link is refused",
+    "ok": true,
+    "note": "refused"
+  },
+  {
+    "id": "P11 a valid save shows the draft status",
+    "ok": true,
+    "note": "draft"
+  },
+  {
+    "id": "P12 values persist after a reload (Urdu intact)",
+    "ok": true,
+    "note": "reloaded"
+  },
+  {
+    "id": "P13 a crafted request carrying a high-impact field is refused as read-only",
+    "ok": true,
+    "note": "0:{\"a\":\"$@1\",\"f\":\"\",\"q\":\"\",\"i\":false,\"b\":\"BPxvCeYZFr4M34MDeUlDm\"} 1:{\"ok\":false,\"error\":\"invalid\",\"errors\":{\"designation\":\"read-only\"}} "
+  },
+  {
+    "id": "P14 a crafted request carrying another account id is refused",
+    "ok": true,
+    "note": "0:{\"a\":\"$@1\",\"f\":\"\",\"q\":\"\",\"i\":false,\"b\":\"BPxvCeYZFr4M34MDeUlDm\"} 1:{\"ok\":false,\"error\":\"invalid\",\"errors\":{\"userId\":\"unknown\"}} "
+  },
+  {
+    "id": "P15 after the crafted requests the designation is unchanged",
+    "ok": true,
+    "note": "unchanged"
+  },
+  {
+    "id": "P16 submitting locks the form and offers to take it back",
+    "ok": true,
+    "note": "locked"
+  },
+  {
+    "id": "P17 a crafted save while submitted is refused as locked",
+    "ok": true,
+    "note": "locked"
+  },
+  {
+    "id": "P18 taking it back re-enables editing",
+    "ok": true,
+    "note": "editable"
+  },
+  {
+    "id": "P19 the Save button is reachable by Tab and works with Enter",
+    "ok": true,
+    "note": "keyboard"
+  },
+  {
+    "id": "P20 no horizontal scroll at 390 px wide",
+    "ok": true,
+    "note": "overflow 0px"
+  },
+  {
+    "id": "P21 a second account sees only its own (empty) profile",
+    "ok": true,
+    "note": "account B is empty"
+  }
+]

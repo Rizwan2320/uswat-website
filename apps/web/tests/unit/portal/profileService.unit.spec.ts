@@ -26,6 +26,11 @@ describe('profile service', () => {
     expect(full.withdraw).not.toHaveBeenCalled()
   })
 
+  it('a signed-out caller learns nothing about validation: bad input still gets the session answer', async () => {
+    const { service } = setup(null)
+    expect(await service.save({ designation: 'x' })).toEqual({ ok: false, error: 'session' })
+  })
+
   it('saves under the session account, whatever id the request carries', async () => {
     const { full, service } = setup()
     expect(await service.save({ ...EMPTY_EDIT })).toEqual({ ok: true })

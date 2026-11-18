@@ -4,7 +4,7 @@ import { useId, useMemo, useState, useTransition } from 'react'
 import { COPY } from '../copy'
 import { saveProfile, submitProfile, withdrawProfile } from './actions'
 import PublicPreview from './PublicPreview'
-import { LIMITS, buildPreview, type FieldErrors } from './rules'
+import { LIMITS, buildPreview, tidyInterests, type FieldErrors } from './rules'
 import type { LoadedProfile, Visibility } from './types'
 import { VISIBILITIES } from './types'
 
@@ -39,7 +39,7 @@ function toForm(l: LoadedProfile): Form {
   }
 }
 
-const splitInterests = (s: string) => s.split(',').map((x) => x.trim()).filter(Boolean)
+const splitInterests = (s: string) => tidyInterests(s.split(','))
 
 function toEdit(f: Form) {
   return {

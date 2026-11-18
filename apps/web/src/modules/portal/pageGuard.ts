@@ -58,3 +58,9 @@ export async function guardPage(deps: GuardDeps, headers: Headers, pathname: str
     fresh: state.kind === 'active' && state.sessionStrong && isFresh(state.verifiedAt, now),
   }
 }
+
+/** The account a server action may act for: only from a render result of a strong session, with its id and address. */
+export function accountFrom(result: GuardResult): { id: string; email: string } | null {
+  if (result.action !== 'render' || !result.strong || !result.userId || !result.email) return null
+  return { id: result.userId, email: result.email }
+}

@@ -18,7 +18,7 @@ export default function PublicPreview({ preview }: { preview: Preview }) {
   const empty = !preview.bio.en && !preview.bio.ur && rows.length === 0 && links.length === 0
   return (
     <section className="portal-preview" aria-labelledby="preview-title" data-testid="public-preview">
-      <h2 id="preview-title">{C.previewTitle}{preview.sample ? <span className="portal-sample">{C.sampleBadge}</span> : null}</h2>
+      <h2 id="preview-title">{C.previewTitle}{' '}{preview.sample ? <span className="portal-sample">{C.sampleBadge}</span> : null}</h2>
       <p className="hint">{C.previewHelp}</p>
       <div className="photo">{preview.showPhoto ? C.previewPhoto : C.previewNoPhoto}</div>
       <h3>{preview.name.en}</h3>

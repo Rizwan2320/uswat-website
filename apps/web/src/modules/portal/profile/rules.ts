@@ -64,6 +64,21 @@ export function safeHttpsUrl(raw: string, host?: (h: string) => boolean): string
 
 const isScholarHost = (h: string) => h === 'scholar.google.com'
 
+/** Trims, drops empties and removes case-insensitive duplicates. Used by `validateEdit` and by the editor's preview so both agree. */
+export function tidyInterests(items: string[]): string[] {
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const raw of items) {
+    const t = raw.trim()
+    if (t === '') continue
+    const k = t.toLowerCase()
+    if (seen.has(k)) continue
+    seen.add(k)
+    out.push(t)
+  }
+  return out
+}
+
 export function validateEdit(input: unknown): Validated {
   const errors: FieldErrors = {}
   if (typeof input !== 'object' || input === null || Array.isArray(input)) return { ok: false, errors: { form: 'not-an-object' } }
@@ -108,25 +123,26 @@ export function validateEdit(input: unknown): Validated {
   let researchInterests: string[] = []
   if (!Array.isArray(body.researchInterests)) errors.researchInterests = 'invalid'
   else {
-    const seen = new Set<string>()
+    const cleaned: string[] = []
     for (const item of body.researchInterests) {
       const t = clean(item, false)
       if (t === null) {
         errors.researchInterests = 'invalid'
         break
       }
-      if (t === '') continue
       if ([...t].length > LIMITS.interest) {
         errors.researchInterests = 'too-long'
         break
       }
-      const k = t.toLowerCase()
-      if (seen.has(k)) continue
-      seen.add(k)
-      researchInterests.push(t)
+      cleaned.push(t)
     }
-    if (researchInterests.length > LIMITS.interests) errors.researchInterests = 'too-many'
-    if (errors.researchInterests) researchInterests = []
+    if (!errors.researchInterests) {
+      researchInterests = tidyInterests(cleaned)
+      if (researchInterests.length > LIMITS.interests) {
+        errors.researchInterests = 'too-many'
+        researchInterests = []
+      }
+    }
   }
 
   const officeLocation = text('officeLocation', false, LIMITS.officeLocation)

@@ -7,7 +7,7 @@ import { notFound, redirect } from 'next/navigation'
 
 import type { FactorState } from '../identity/gate'
 import { portalDeps } from './deps'
-import { guardPage } from './pageGuard'
+import { accountFrom, guardPage } from './pageGuard'
 
 export async function requirePortalPage(pathname: string): Promise<{ userId: string | null; email: string | null; strong: boolean; factors: FactorState | null; fresh: boolean }> {
   const result = await guardPage({ env: process.env, ...portalDeps }, await headers(), pathname, Date.now())
@@ -23,6 +23,5 @@ export async function requirePortalPage(pathname: string): Promise<{ userId: str
  */
 export async function strongAccount(pathname: string): Promise<{ id: string; email: string } | null> {
   const result = await guardPage({ env: process.env, ...portalDeps }, await headers(), pathname, Date.now())
-  if (result.action !== 'render' || !result.strong || !result.userId || !result.email) return null
-  return { id: result.userId, email: result.email }
+  return accountFrom(result)
 }
