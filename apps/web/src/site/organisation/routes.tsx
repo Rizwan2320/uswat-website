@@ -3,9 +3,10 @@ import { draftMode, headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 
 import { DepartmentsIndex, ProgrammesIndex } from './Lists'
+import OfficePage from './Office'
 import { DepartmentPage, ProgrammePage } from './Pages'
-import { getDepartment, getProgramme, listDepartments, listProgrammes, peopleOfDepartment, programmesOfDepartment } from './queries'
-import { DEPARTMENTS_PATH, PROGRAMMES_PATH, str } from './shape'
+import { getDepartment, getOffice, getProgramme, listDepartments, listProgrammes, peopleOfDepartment, programmesOfDepartment } from './queries'
+import { DEPARTMENTS_PATH, OFFICES_PATH, PROGRAMMES_PATH, str } from './shape'
 
 /* The route files under (site)/(cms)/academics/{departments,programmes} are one-liners over these. */
 
@@ -54,4 +55,17 @@ export async function programmeMetadata({ params }: { params: SlugParams }): Pro
   return doc
     ? { title: str(doc.name) ?? 'Programme', description: str(doc.eligibility)?.slice(0, 160) ?? undefined, alternates: { canonical: `${PROGRAMMES_PATH}/${encodeURIComponent(slug)}` } }
     : { title: 'Programme' }
+}
+
+export async function OfficeRoute({ params }: { params: SlugParams }) {
+  const doc = await getOffice(decode((await params).slug ?? ''), await preview())
+  if (!doc) notFound()
+  return <OfficePage doc={doc} />
+}
+export async function officeMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
+  const slug = decode((await params).slug ?? '')
+  const doc = await getOffice(slug, await preview())
+  return doc
+    ? { title: str(doc.name) ?? 'Office', alternates: { canonical: `${OFFICES_PATH}/${encodeURIComponent(slug)}` } }
+    : { title: 'Office' }
 }

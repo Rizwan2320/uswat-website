@@ -11,3 +11,9 @@
 - **Not in this PR.** News on a department page (no field links a post to a department), an apply link on T4 (no such field in the CMS), person pages (plan non-goal), offices and people directory (T7) and documents (T8, next PR), faculty-group pages, search and sitemap entries, Urdu strings for the new interface words (they show in English until the owner supplies them; ADR 0008).
 - **Tests.** Unit: Sample detection, paragraphs, grouping and ordering, cards. Integration on a real PostgreSQL: published only, draft not served with draft mode and no login, programmes of one department, current people only, public vs hidden email. Manual: screenshots at 1440, 1024 and 390 px, left-to-right and right-to-left; axe (WCAG 2 A, AA) on the four pages and a 404.
 - **Gate.** Typecheck, lint, unit and integration green; no axe violations; no horizontal scroll at 390 px; right-to-left renders.
+
+## Addendum 2026-11-14: office pages (T7), branch `p5/offices`
+- **Objective.** `/administration/{slug}` for one office or board: group, head, hours, text, phone numbers, addresses and documents, each shown only when filled. These are the 38 addresses the route map sends the old office pages to.
+- **No index at `/administration`.** The route map has no address for an offices list, the nav has no verified landing page for Administration (`site/content/nav.ts`), and a page at `/administration` would take that address from the Pages catch-all. It waits for the section landings (T2) and the main agent's decision; `/administration` still answers 404 as before.
+- **Not here.** A people directory (no address is designated for one) and `/contact/directory` (ContactDirectory, 38 rows) and Documents (T8, `/downloads`): there is no Documents collection on `main`. All need a decision first.
+- **Tests.** Integration: published office served with head, hours, phone and address; draft office not served with draft mode on and no login. Same browser checks as T3 and T4.

@@ -21,6 +21,10 @@ export type SessionDeps = {
   }
   loadFactors: (userId: string) => Promise<FactorState>
   isStrongSession: (sessionId: string) => Promise<boolean>
+  /** Epoch ms of the last second-factor proof (step-up). Optional so older callers fail closed (not fresh). */
+  lastVerifiedAt?: (sessionId: string) => Promise<number | null>
+  /** Whether the session was made with "shared computer" (15 minutes idle). Absent means not shared; throwing means shared (stricter). */
+  isSharedSession?: (sessionId: string) => Promise<boolean>
   endSession: (sessionId: string) => Promise<void>
   touchSession: (sessionId: string, now: number) => Promise<void>
 }
@@ -37,6 +41,8 @@ export type SessionState =
       factors: FactorState | null
       /** false when unknown or unreadable. Only read for portal and enrolment paths. */
       sessionStrong: boolean
+      /** Epoch ms of the last second-factor proof; null when unknown. Only read for portal and enrolment paths. */
+      verifiedAt: number | null
     }
 
 export async function readSessionState(
@@ -56,7 +62,13 @@ export async function readSessionState(
   }
   if (!found) return { kind: 'none' }
 
-  const verdict = evaluateSession({ createdAt: found.session.createdAt, updatedAt: found.session.updatedAt, now })
+  let shared = false
+  try {
+    shared = (await deps.isSharedSession?.(found.session.id)) ?? false
+  } catch {
+    shared = true // cannot tell: use the stricter limit
+  }
+  const verdict = evaluateSession({ createdAt: found.session.createdAt, updatedAt: found.session.updatedAt, now, shared })
   if (verdict !== 'ok') {
     await deps.endSession(found.session.id).catch(() => {})
     return { kind: 'expired' }
@@ -66,6 +78,7 @@ export async function readSessionState(
 
   let factors: FactorState | null = null
   let sessionStrong = false
+  let verifiedAt: number | null = null
   if (cls === 'portal' || cls === 'enrolment') {
     try {
       factors = await deps.loadFactors(found.user.id)
@@ -77,6 +90,11 @@ export async function readSessionState(
     } catch {
       sessionStrong = false
     }
+    try {
+      verifiedAt = (await deps.lastVerifiedAt?.(found.session.id)) ?? null
+    } catch {
+      verifiedAt = null
+    }
   }
   return {
     kind: 'active',
@@ -85,5 +103,6 @@ export async function readSessionState(
     email: found.user.email ?? null,
     factors,
     sessionStrong,
+    verifiedAt,
   }
 }

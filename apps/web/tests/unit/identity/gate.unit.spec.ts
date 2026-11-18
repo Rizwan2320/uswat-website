@@ -228,10 +228,13 @@ describe('decide: how the session was made (AUTH-01, FP-2: a password alone is n
   })
 
   it('lets a session made with a second factor enrol further factors and reach protected paths', () => {
+    // With a fresh proof; without one these two are the step-up paths (see stepUp.unit.spec.ts).
     for (const p of [`${AUTH_BASE}/two-factor/enable`, `${AUTH_BASE}/passkey/verify-registration`]) {
-      expect(strong(passkey, p)).toEqual({ allow: true })
+      expect(decide({ hasSession: true, sessionStrong: true, factors: passkey, pathname: p, verifiedAt: 1_000, now: 2_000 })).toEqual({ allow: true })
     }
-    for (const p of PROTECTED) expect(strong(passkey, p)).toEqual({ allow: true })
+    for (const p of PROTECTED) {
+      expect(decide({ hasSession: true, sessionStrong: true, factors: passkey, pathname: p, verifiedAt: 1_000, now: 2_000 }), p).toEqual({ allow: true })
+    }
   })
 
   it('any session may read itself and sign out', () => {

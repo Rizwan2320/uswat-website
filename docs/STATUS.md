@@ -293,10 +293,22 @@ Updated: 2026-11-09 (Mon) PKT
 - Verified: typecheck, lint clean on changed files, 713 tests passed (28 skipped, identity), production build, 15 browser tests. Not run: the in-use message in a browser; a delete of a record with 1,000+ references (the check counts, it does not load them).
 - **Merge notes:** `verifiedBy` needs a Urdu word when it meets the Urdu PRs: add a `bi()` pair if #52 lands first, or an entry for "Verified by" in `urWords.ts` if #69 does (its coverage test will say so). The Claude Doc guide still lists only admins and site managers as able to delete and does not mention the in-use rule; the owner asked me not to edit it further.
 - **Deliberately not done** (from the same review): bulk verify and publish for stub articles (loosens VER-01: owner decision), shared facts (touches the main agent's content layer), importer digest (agent 4's lane), Operations panel (needs a stored sweep run), redirect hit counters (a database write on every public redirect), public-site features (main agent's lane).
+- The Claude Doc guide still says only admins and site managers can delete: update after 3q is merged or reviewed.
+## P3 slice 3r (2026-11-18, branch `p3/urdu-labels-3r`, stacked on `p3/urdu-admin-3p`)
+- Urdu for field labels, descriptions, select options, tab names, collection and global names and menu groups: about 250 lines in one file (`src/i18n/urWords.ts`), applied by a plugin (`src/i18n/urLabels.ts`). English unchanged; collection files untouched. Brief `docs/briefs/p3r-urdu-labels.md`, predictions P3r-a to c with actuals.
+- A coverage test fails when an editor-facing label has no Urdu line or a dictionary line has no matching label. Left in English on purpose: Payload system collections, technical words Payload adds to uploads, image size names (list in the same file).
+- Verified: typecheck, lint clean on changed files, 697 tests passed (28 skipped, identity), production build, 18 browser tests.
+- **Not done: a native speaker has not read any Urdu.** Still English: Payload's own words (about 570: "Status", "Created", "Last Modified", "Unlock", editor hints), the publishing-rule error messages, the dashboard lists, and page content. Not looked at: every collection's screen in Urdu (one screen was viewed), a phone, Safari, Firefox.
 
 ## Stack rebased onto `main` (2026-11-13)
 - Slices 3e to 3o were rebased onto `origin/main` at `6797d49` (only doc-append conflicts). `main` already carries the preview fix (#35 = my `governance/preview.ts` and its tests), so that commit was dropped and `docs/handover/p3l-preview-read.patch` removed. On the rebased tip: typecheck, lint (0 errors), 527 tests passed with 17 skipped (the skips are not in my suites), `next build`, and the 14 browser tests pass. The branches on origin still hold the old, pre-rebase commits until the user approves the force-pushes.
 
+## P3 slice 3p (2026-11-13, branch `p3/urdu-admin-3p`, stacked on `p3/admin-e2e-ci-3o`)
+- Urdu for the admin screens, first slice. Payload has no Urdu admin language, so it is added by hand as English plus Urdu overrides (`src/i18n/ur.ts`, ADR-0013). Off by default; chosen per person on the account page. Brief: `docs/briefs/p3p-urdu-admin.md`.
+- Done: the Ownership and approval panel and 13 everyday Payload words in Urdu; right-to-left layout by one stylesheet rule; no raw translation keys; the page-width fault found by the spike (10,793 px right to left) fixed; 2 new browser tests (in CI); the wording guard reads `{ en, ur }` pairs.
+- Verification run: typecheck clean, lint clean on changed files, 534 tests passed (17 skipped, outside my suites), production build, 16 browser tests passed (14 existing + 2 new). Predictions P3p-a to d recorded with actuals (a was partly wrong).
+- **Not done: a native speaker has not read any of the Urdu.** The language is labelled "Urdu (draft translation)" in the picker. Still English: about 430 labels, 60 descriptions, menu groups, dashboard lists, the publishing-rule messages, most of Payload's own words.
+- Not run: the width check as a mutation (I measured 10,793 px by hand before the fix and 1,280 after; the CI test asserts it but I did not break the rule to see the test fail).
 ## PR #7 merged as #44, and what production's database turned out to hold (2026-11-13, main agent)
 - #7 (P3 slice 3e, organisation collections) was 54 commits behind main. Integrated as PR #44 (merge of main and #7, one conflict in `docs/predictions.md`, both kept), checked on the merged tree (typecheck, lint 0 errors, 435 tests pass and 17 skipped, no `generate:types` drift, build) and by a migration drill on a scratch database (prediction M-7: p3e up, down alone, up again, all three schema dumps identical to the expected ones). Fast-forwarded into main at `eb95de5`. Production deployment `dpl_Mt6zfDX2...` READY, `/readyz` returns `{"status":"ready","database":"ok"}`.
 - **Correction to what I told the owner before merging.** I said merging would apply the 40-table migration to the production Neon database on the next deploy. It did not: the production build's `payload migrate` printed no "Migrating" line, because **production (`main` branch of the Neon project) already had p3e applied, and also p3f (`20261111_014816_p3f_media_rules`) and p3h (`20261111_102441_p3h_seo_search_redirects`)**: 8 recorded migrations, 194 tables, identical on the `previews` branch (read-only queries, 2026-11-13). Those two belong to PRs that are not merged (#11 and #18). Most likely cause: P3's preview builds ran before the `previews` branch existed (created 2026-11-12 02:13) and migrated the production branch, the exact thing ADR-0005 is meant to prevent. Not confirmed from logs.
@@ -342,11 +354,77 @@ Updated: 2026-11-09 (Mon) PKT
 - Production has no Sample organisation rows and no articles (the seeds and importer have not run there), so the new pages show their empty state until the owner approves seeding. The Sample seeds are for a local or preview database; a Sample pill shows on any record whose source is on `sample.invalid`.
 - Not run: the importer against a real data pack (none supplied; gate G4 missed), the pages with real content, Urdu text read by a person, Safari, Firefox, a real phone.
 
-## Next step
-1. Main agent: P2 branch merged (`28797e1`); P2 is closed except the owner items above.
-2. Main agent: #5 and #14 are merged; review #7 once retargeted and rebased, then #11 and #13; integrate #16 after R1 and R2.
-3. Owner decisions waiting: (a) seed clearly labelled "Sample" news items and one page into the demo database so `/posts` and the templates show real layouts live; (b) go to create a separate Neon branch for previews (finding above); (c) written DCST confirmation, real address, deadline and stats values; (d) turn Vercel Deployment Protection off before judges; rotate the Neon password.
-4. Then P4 (content), with the Urdu text supplied and reviewed.
+## Faculty portal step-up and shared-computer integrated: #55, #59 (2026-11-17, main agent; owner asked for it)
+
+- Merged `fp/shared-computer` (contains #55 step-up and #59 shared-computer) onto main 7c405e4. Conflicts only in this file and `predictions.md`; both sides kept.
+- Run on the merged tree: typecheck, lint (0 errors), 513 unit, 62 integration files (786 tests), `generate:types` (no drift), production build, 12 visual baselines for home and style-guide (public pages unchanged).
+- Identity migrations `0005_step_up` and `0006_session_shared` are NOT run at deploy (`pnpm identity:migrate up` is separate). Prediction I-0005: down and up SQL tried on a scratch DB with one populated row; `verifiedAt` backfilled to `createdAt`.
+- Portal stays off live (`PORTAL_ENABLED` and three more vars); `/portal*` still 404 until the owner enables it.
+- Not run: waiting out the 10-minute window in a browser, real devices, Urdu, https behind Vercel, backfill on a large table, the old-session-row limitation after password-then-code sign-in.
+
+## Agent 4 office pages integrated: #58 (2026-11-17, main agent; owner asked for it)
+
+- #58 (`/administration/{slug}`, T7) was stacked on #56, which is already in main; merged straight onto main e382207. Conflict only in this file (kept both sides).
+- #58's own CI failed on typecheck: two casts in `tests/int/organisation.int.spec.ts` (phones, emails) are not allowed from the loosely typed document. Fixed here with `as unknown as`; no production code changed.
+- Run on the merged tree: typecheck, lint (0 errors), 513 unit, integration (747 passed; identity file skipped because `IDENTITY_TEST_DATABASE_URL` was not set, and it passed on the previous merge with no identity code touched here), production build (route `/administration/[slug]` present), 12 visual baselines (public pages unchanged).
+- Still open for the owner or main agent: no `/administration` index exists (route map has no address for it); decision recorded in agent 4's section below.
+- Not run: browser check of the office pages on this tree, Urdu, real devices.
+
+## Agent 4 data dictionary integrated: #60 (2026-11-18, main agent; owner asked for it)
+
+- Adds `pnpm dictionary:build` (`apps/web/scripts/data-dictionary.ts`) and the generated `docs/data-dictionary.md`. The script reads the CMS config and writes one docs file; it makes no database writes and needs no secrets.
+- Conflicts in `apps/web/package.json` (scripts line) and this file; both sides kept.
+- Regenerated on current main (after the P3 stack and #58): 24 collections, output identical to the committed file, so no drift.
+- Run: typecheck, lint (0 errors). Not run: unit and integration suites and a build (no source under `src/` changed; CI runs them), visual baselines (no public change).
+- Production check for the previous merge #58 (main 3c7dd7e): deployment READY, `/readyz` ok, `/administration/<unknown>` serves the styled 404 from the new route.
+- To keep the dictionary honest, re-run `pnpm dictionary:build` after any collection change; a CI drift check would need an ADR under rule 9.
+
+## P3 slice 3q integrated: editors can delete a never-published draft, #57 (2026-11-18, main agent; owner decision "a draft is not a publication")
+
+- Access rule change in `governance/access.ts`, `hooks.ts`, `policy.ts`; no schema change, no migration. Editors and approvers of the owning office, and contributors for drafts they created, may delete a draft that was never published; anything in review, approved, published or archived stays platform-admin (or site manager unless High impact).
+- Review: all eight collections that use `governedDelete` are wrapped by `withGovernance`, so the `beforeDelete` check covers every delete the looser access now lets through; all have drafts enabled, so the `findVersions` lookup is safe. The stage field alone is not trusted (a version that was ever published counts as published); the PR's browser test found that gap (P3q-a).
+- Run on the merged tree: typecheck, lint (0 errors), 517 unit, 756 integration (identity spec skipped, env var unset), `generate:types` no drift, production build. Browser tests (`role-views`) run in CI `admin-e2e`.
+- Known and left alone: Payload still shows a Delete button to people whose delete will be refused (access is the security).
+- Not run: a manual delete in the live admin, bulk delete from the list view.
+## P3 slice 3p (2026-11-13, branch `p3/urdu-admin-3p`, stacked on `p3/admin-e2e-ci-3o`)
+- Urdu for the admin screens, first slice. Payload has no Urdu admin language, so it is added by hand as English plus Urdu overrides (`src/i18n/ur.ts`, ADR-0013). Off by default; chosen per person on the account page. Brief: `docs/briefs/p3p-urdu-admin.md`.
+- Done: the Ownership and approval panel and 13 everyday Payload words in Urdu; right-to-left layout by one stylesheet rule; no raw translation keys; the page-width fault found by the spike (10,793 px right to left) fixed; 2 new browser tests (in CI); the wording guard reads `{ en, ur }` pairs.
+- Verification run: typecheck clean, lint clean on changed files, 534 tests passed (17 skipped, outside my suites), production build, 16 browser tests passed (14 existing + 2 new). Predictions P3p-a to d recorded with actuals (a was partly wrong).
+- **Not done: a native speaker has not read any of the Urdu.** The language is labelled "Urdu (draft translation)" in the picker. Still English: about 430 labels, 60 descriptions, menu groups, dashboard lists, the publishing-rule messages, most of Payload's own words.
+- Not run: the width check as a mutation (I measured 10,793 px by hand before the fix and 1,280 after; the CI test asserts it but I did not break the rule to see the test fail).
+
+## P3 slice 3p integrated: Urdu for the admin screens, first slice, #52 (2026-11-18, main agent; owner asked for it)
+
+- Admin only; no schema change, no migration. Urdu is added by hand (Payload has no Urdu admin language): `src/i18n/ur.ts`, `supportedLanguages` in `payload.config.ts` (cast, see the file), a right-to-left rule in `custom.scss` that applies only under `html[lang='ur']`, and a plugin step that must stay last in `plugins/index.ts`. It is off by default; a person picks it on their account page. The CI workflow `admin-e2e` now also runs `urdu-admin.e2e.spec.ts`.
+- **No native speaker has read any of the Urdu.** The picker says "Urdu (draft translation)" (ADR-0008, ADR-0013). About 430 labels and most of Payload's words stay English until supplied.
+- Not a Payload-supported setup: a Payload upgrade may change language handling; the browser tests are the warning. If the English admin ever breaks after a Payload bump, suspect `completeUrdu(config)` in `payload.config.ts` first.
+- Run on the merged tree: typecheck, lint (0 errors), 523 unit, 763 integration (identity spec skipped, env var unset), `generate:types` no drift, production build. English admin flows and the Urdu browser tests run in CI `admin-e2e`.
+- Not run: a native-speaker review, the width check as a mutation, a real device, a manual pick of Urdu on the live admin.
+
+## Wave 3 integrated: #66 identity purge, #70 sitemap, #67 search, #65 home feeds (2026-11-18, main agent; owner said go ahead)
+
+- Merged `fp/identity-cleanup`, `p5/sitemap`, `p5/seo-search`, `p5/home-feeds` onto main 148f043 as one branch. Conflicts only in this file and `predictions.md`; both sides kept. No schema change, no Payload migration, no identity migration.
+- Run on the merged tree: typecheck, lint (0 errors), 537 unit, 834 integration in 68 files with nothing skipped (this time the identity database was attached, so the identity tests ran), `generate:types` no drift, production build, 12 visual baselines (home and style-guide).
+- Visual baselines: they only pass on an EMPTY database and a clean `.next`. My first run failed because the production build had cached CMS lists (`unstable_cache`, 5 minutes) from a scratch database that integration tests had filled; home now shows published CMS records when there are any (#65). After `rm -rf .next` on a fresh migrated database all 12 passed. Run baselines that way.
+- #65: the home page reads News, Events, notices, jobs and tenders from the CMS when published records exist, else keeps the sourced items. Production has no published CMS records, so the live home looks the same until content is added or Sample is seeded.
+- #67 removed the buggy stock search box; `/search` is a plain GET form. Departments, programmes and offices are not searchable (needs a re-index; P5 decision). #70 fixed sitemap addresses (`/news/{slug}`, `https://` host).
+- **Decision (main agent): the identity purge (#66, `pnpm identity:purge`) is NOT scheduled.** The portal is off, so the identity tables are empty and nothing grows. Schedule it (hourly on the portal project) in the same step that enables the portal; run `pnpm identity:purge --dry-run` first. It is local-only unless `IDENTITY_ALLOW_REMOTE` is set, so the owner must set that deliberately for the hosted portal database.
+- Not run: the purge on a large table or under concurrent sign-ins, the `next-sitemap` post-build output in production, Lighthouse, a browser check of `/search` on this tree (the PR agent did it on its branch).
+
+## P3 slice 3r integrated: Urdu for admin field labels and names, #69 (2026-11-18, main agent; owner said go ahead)
+
+- About 250 Urdu lines in one file, `apps/web/src/i18n/urWords.ts`, applied by a plugin (`urLabels.ts`) that wraps a matching English string as `{ en, ur }`. English text does not change; no collection file touched; no schema change, no migration. Off by default; the picker still says "Urdu (draft translation)".
+- **Every Urdu line is an unreviewed draft written by the assistant.** A native reader should correct `urWords.ts` before staff are shown it. A coverage test fails if an editor-facing label has no Urdu line or a dictionary line matches nothing, so a renamed label cannot leave a dead line.
+- Merge notes: the branch had main merged into it earlier, so its history carried older copies of two prediction rows (A4-g, M-P3); dropped the byte-identical duplicates. Docs conflicts kept both sides.
+- Run on the merged tree: typecheck, lint (0 errors), 542 unit, 845 integration in 70 files (identity database attached, none skipped), `generate:types` no drift, production build, 12 visual baselines (empty database, clean `.next`). English and Urdu browser tests run in CI `admin-e2e`.
+- Still English: Payload's own words (about 570), the publishing-rule error messages, the dashboard lists.
+- Not run: a native-speaker read, a real device, a manual look at every collection in Urdu.
+
+## Next step (rewritten 2026-11-18, main agent)
+1. Open PRs on GitHub: only #30 (dark mode for the public site), deliberately on hold. Everything else is integrated into main (latest: #52, #57, #58, #60 via #71, #68, #63, #64; faculty step-up and shared-computer via #62) or closed as stale. Production is the latest main and READY.
+2. Owner decisions waiting: (a) approve seeding clearly labelled Sample content into the production database (the seed and import scripts refuse hosted databases; this needs an explicit, separate step); (b) the data pack for the importer (gate G4 was missed); (c) the 33 held-page 301 targets (implemented as `/` and `/academics/`; confirm before cutover); (d) written confirmation that the two news photos may be used publicly, and the wording of the news item "roadmap" and the psychology event, which were inferred; (e) Vercel: set or confirm the `PORTAL_*` variables only when the faculty portal is meant to go live (it is off and returns 404 now); turn Deployment Protection off before judges; rotate the Neon password; (f) Urdu: a native reader for the admin words and the public words.
+3. Main agent, next: run identity migrations `0005` and `0006` against the portal database before enabling the portal (they are not run at deploy); decide on a `/administration` index page (no address in the route map); regenerate `docs/data-dictionary.md` after any collection change; decide whether #30 goes in once the owner has looked at it.
+4. Not verified anywhere yet: Safari and Firefox, real devices, screen readers, the Vercel environment variables (unreadable from here), Urdu with a native reader.
 
 P3 agent (slice 3a), own entry:
 - Slice 3d (proposed): the five post types (News, Notices, Events, Jobs, Tenders) with expiry rules, then media rules, accessibility guard, editor dashboard and guide, getter switch to CMS reads.
@@ -414,3 +492,24 @@ P3 agent (slice 3a), own entry:
 - Result: 6 unit and 7 integration tests pass on a local PostgreSQL; typecheck and lint pass. Browser (dev server, Sample rows): 0 px overflow at 1440, 1024 and 390 px in both directions, 0 axe violations on 15 scanned loads. A4-f updated. Not run: production build, `pnpm test:e2e`, 1024 px axe, Lighthouse.
 - Not shown, and why: news on a department (no field links a post to a department), an apply link on a programme (no such field), person pages (non-goal). Both missing fields are for the P3 agent to decide; I changed no collection.
 - Next: T7 directory (offices and people) and T8 document pages, then section landings, utility pages and the home page.
+- FP-8 (2026-11-14, branch `fp/step-up`, stacked on `fp/portal-security`): step-up re-authentication (AUTH-09) enforced in the API gate with a 10-minute window, migration 0005, session rotation (SES-03) for passkey confirmation and first-factor enrolment, confirm card on the security page. Browser run 14 of 14 (`docs/evidence/FP7/results-fp8.md`). Limits: password-then-code re-sign-in leaves the old session row; backfill on a populated database not run.
+- FP-9 (2026-11-14, branch `fp/shared-computer`, stacked on `fp/step-up-on-main`): the "shared computer" sign-in option (SES-04): 15 minutes idle instead of 30, chosen by a checkbox, recorded per session (migration 0006). Browser run 11 of 11 (`docs/evidence/FP7/results-fp9.md`). Not built: countdown warning, a setting for the number, clean-up job.
+### Office pages (2026-11-14, branch `p5/offices`, stacked on `p5/departments-programmes` / PR #56)
+- Built: `/administration/{slug}` (T7 office) in `apps/web/src/site/organisation/`. Brief addendum in `docs/briefs/p5-organisation.md`. Result: 15 organisation tests pass (unit 6, integration 9); typecheck and lint pass; browser: 0 px overflow, 0 axe violations (see A4-f). Not run: production build, e2e.
+- **Decision wanted (main agent):** where the offices list lives. No index at `/administration` was built: the route map has no address for it, the nav has no verified landing, and a page there would take the address from Pages. Also no people directory or `/contact/directory` page yet, and no Documents collection exists for T8 (`/downloads`).
+- Rebased #40, #43, #48, #51 and #56 onto `main` at `66efb07` (P3 stack merged) and force-pushed; tests re-run after the rebase (50 for the P4 stack, 51 for the P5 stack).
+### Data dictionary (2026-11-14, branch `p4/data-dictionary`, from `main`, docs and one script)
+- Built: `docs/data-dictionary.md` (24 collections, generated), `pnpm dictionary:build` (`apps/web/scripts/data-dictionary.ts`). Brief `docs/briefs/p4-data-dictionary.md`. Typecheck and lint of the script pass.
+- Not run: a freshness test or CI step (needs the environment to load the config). Rerun the script after any schema change.
+- FP-10 (2026-11-18, branch `fp/identity-cleanup`, from main 3c7dd7e): `pnpm identity:purge [--dry-run]` removes expired sessions (with their flag rows), expired verification rows, stale sign-in counters, recovery windows and TOTP replay marks, using the same constants as the checks; closes the old-session-row limit from FP-8 once it is scheduled. No schedule or route added (owner or main agent decides). Integration 49 passed; 8 new tests; mutations caught. Not run: scheduling, large tables, concurrent sign-ins.
+### Sitemaps (2026-11-18, branch `p5/sitemap`, from `main`)
+- Built: `content-sitemap.xml` (notices, events, jobs, tenders, departments, programmes, offices, list pages); `posts-sitemap.xml` now lists `/news/{slug}`; both stock sitemaps build absolute addresses with `getServerSideURL()` (they used a bare host name before); `/posts` removed from the pages sitemap; Sample records are left out. robots.txt config lists the new sitemap. Brief `docs/briefs/p5-sitemap.md`. 4 unit and 2 integration tests pass (the integration file also holds the existing pages-sitemap test); typecheck and lint pass; dev server: 3 sitemaps return 200 and parse.
+- Not run: `next-sitemap` post-build / robots.txt, production build. The site stays `noindex` (site layout) until launch.
+### Search results page (2026-11-18, branch `p5/seo-search`, from `main`)
+- Built: `/search` as a plain GET form with results linking to the right public addresses (News at `/news/...`, not `/posts/...`), 20 per page, `noindex` on a results page. Removed the stock client search box (it cleared `?q=` on load). Brief `docs/briefs/p5-search.md`. 6 unit and 4 integration tests pass; typecheck and lint pass; browser: 0 px overflow in all 18 loads, 0 axe violations at 1440 and 390 px; the 390 px results page looked at.
+- Decisions for the main agent or P3: full-text and `pg_trgm` search (migration), and adding departments, programmes and offices to `SEARCH_COLLECTIONS` (needs a re-index). Not run: production build, e2e, Lighthouse.
+### Home sections from the CMS (2026-11-18, branch `p5/home-feeds`, from `main`)
+- Built: notices, jobs, tenders, news and events on the home page read published CMS records, with the sourced items as fallback per section (`site/home/`, `site/lib/content.ts`). Brief `docs/briefs/p5-home-feeds.md`. 4 unit and 3 integration tests pass; typecheck and lint pass; browser: 0 px overflow, 0 axe violations (A4-f).
+- Touches the main agent's `NewsEvents` component (first card no longer shows the NIIBS photo for every story; "view all" goes to `/news` when news come from the CMS) and the home `revalidate` (3600 to 300). Please look at those two edits.
+- Not run: production build, e2e, Lighthouse.
+- Also open: #58 (office pages, rebased on `main`), #60 (data dictionary). #43, #51, #56 were integrated by the main agent in the merges of 165b6eb.

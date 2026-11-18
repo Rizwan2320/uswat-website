@@ -90,6 +90,36 @@ export function classifyPath(pathname: string): RouteClass {
   return 'portal'
 }
 
+/**
+ * Step-up (AUTH-09): changing how someone signs in needs a second factor proved within the last 10 minutes.
+ * Paths are matched exactly, as the allow-lists are. An account with no second factor yet is not asked: it has
+ * nothing to prove with, and the first factor is enrolled from a password session on purpose.
+ */
+export const STEP_UP_WINDOW_MS = 10 * 60_000
+
+const STEP_UP = new Set<string>([
+  `${AUTH_BASE}/passkey/generate-register-options`,
+  `${AUTH_BASE}/passkey/verify-registration`,
+  `${AUTH_BASE}/passkey/delete-passkey`,
+  `${AUTH_BASE}/passkey/update-passkey`,
+  `${AUTH_BASE}/two-factor/enable`,
+  `${AUTH_BASE}/two-factor/disable`,
+  `${AUTH_BASE}/recovery/issue`,
+])
+
+export function needsStepUp(pathname: string): boolean {
+  if (!isPlain(pathname)) return false
+  const p = pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname
+  return STEP_UP.has(p) || STEP_UP.has(p.toLowerCase())
+}
+
+/** Unknown, in the future (clock trouble) or older than the window all mean not fresh. */
+export function isFresh(verifiedAt: number | null | undefined, now: number): boolean {
+  if (verifiedAt === null || verifiedAt === undefined || !Number.isFinite(verifiedAt)) return false
+  const age = now - verifiedAt
+  return age >= -60_000 && age <= STEP_UP_WINDOW_MS
+}
+
 export type GateInput = {
   hasSession: boolean
   /**
@@ -102,13 +132,26 @@ export type GateInput = {
   /** null means the factor state could not be read: fail closed. */
   factors: FactorState | null
   pathname: string
+  /** Epoch ms of the session's last second-factor proof. Unknown (null or absent) is not fresh. */
+  verifiedAt?: number | null
+  /** Epoch ms now. Absent is treated as unknown, so a caller that forgets it is refused, never allowed. */
+  now?: number
 }
 
 export type GateDecision =
   | { allow: true }
   | { allow: false; status: 401 | 403 | 404; redirectTo?: string; reason: string }
 
-export function decide({ hasSession, sessionStrong, factors, pathname }: GateInput): GateDecision {
+export function decide({ hasSession, sessionStrong, factors, pathname, verifiedAt, now }: GateInput): GateDecision {
+  const decision = decideBase({ hasSession, sessionStrong, factors, pathname })
+  if (!decision.allow || !needsStepUp(pathname)) return decision
+  // Only an account that already has a second factor is asked to prove it again.
+  if (factors === null || !hasSecondFactor(factors)) return decision
+  if (now !== undefined && isFresh(verifiedAt, now)) return decision
+  return { allow: false, status: 403, redirectTo: `${PORTAL_BASE}/security`, reason: 'step-up required' }
+}
+
+function decideBase({ hasSession, sessionStrong, factors, pathname }: GateInput): GateDecision {
   const cls = classifyPath(pathname)
   if (cls === 'forbidden') return { allow: false, status: 404, reason: 'endpoint not offered' }
   if (cls === 'public') return { allow: true }

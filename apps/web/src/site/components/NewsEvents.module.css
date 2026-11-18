@@ -44,6 +44,7 @@
   mask-image: linear-gradient(to bottom, #000 0, #000 42%, transparent 100%);
 }
 .grid .newsCard .row, .grid .newsCard .row:hover { border-radius: var(--radius); background: none; }
+.photoCrest { background: var(--ivory-deep); }
 .fillImg { object-fit: cover; }
 .posNiibs { object-position: 50% 28%; }
 .posPlaque { object-position: 50% 22%; }

@@ -7,6 +7,8 @@ import { Plugin } from 'payload'
 import { revalidateRedirects } from '@/hooks/revalidateRedirects'
 import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
+import { urduFromEnglish } from '@/i18n/ur'
+import { urduLabels } from '@/i18n/urLabels'
 import { hiddenFromEditors } from '@/governance/adminMenu'
 import { searchFields } from '@/search/fieldOverrides'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
@@ -108,4 +110,8 @@ export const plugins: Plugin[] = [
       },
     },
   }),
+  // Urdu words for labels and descriptions (slice 3r). After every plugin that adds fields, before the English fill.
+  urduLabels,
+  // Must stay last: it copies the English words the plugins above added into Urdu.
+  urduFromEnglish,
 ]
