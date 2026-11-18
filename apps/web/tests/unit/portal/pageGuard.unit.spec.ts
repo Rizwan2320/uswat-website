@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import type { FactorState } from '@/modules/identity/gate'
-import { guardPage, type GuardDeps } from '@/modules/portal/pageGuard'
+import { accountFrom, guardPage, type GuardDeps } from '@/modules/portal/pageGuard'
 
 const ON = {
   PORTAL_ENABLED: 'true',
@@ -51,12 +51,12 @@ describe('guardPage: the same rules as the route, applied to pages', () => {
 
   it('the sign-in and recovery pages render for a signed-out visitor', async () => {
     const s = setup({ session: false })
-    expect(await s.run('/portal/sign-in')).toEqual({ action: 'render', email: null, strong: false, factors: null, fresh: false })
-    expect(await s.run('/portal/recover')).toEqual({ action: 'render', email: null, strong: false, factors: null, fresh: false })
+    expect(await s.run('/portal/sign-in')).toEqual({ action: 'render', userId: null, email: null, strong: false, factors: null, fresh: false })
+    expect(await s.run('/portal/recover')).toEqual({ action: 'render', userId: null, email: null, strong: false, factors: null, fresh: false })
   })
 
   it('the sign-in page still renders when the session lookup fails', async () => {
-    expect(await setup({ session: 'throw' }).run('/portal/sign-in')).toEqual({ action: 'render', email: null, strong: false, factors: null, fresh: false })
+    expect(await setup({ session: 'throw' }).run('/portal/sign-in')).toEqual({ action: 'render', userId: null, email: null, strong: false, factors: null, fresh: false })
   })
 
   it('a path that is not a portal page (odd encodings, dot segments) is a 404', async () => {
@@ -81,6 +81,7 @@ describe('guardPage: the same rules as the route, applied to pages', () => {
   it('the home page opens for a strong session with a registered factor, and says whose it is', async () => {
     expect(await setup({ session: true, factors: passkey, strong: true }).run('/portal')).toEqual({
       action: 'render',
+      userId: 'u1',
       email: 'dr.sample@example.test',
       strong: true,
       factors: passkey,
@@ -140,5 +141,17 @@ describe('guardPage: the same rules as the route, applied to pages', () => {
     expect(await setup({ session: true, factors: passkey, strong: true, verifiedAgoMs: 60_000 }).run('/portal/security')).toMatchObject({ action: 'render', fresh: true })
     expect(await setup({ session: true, factors: passkey, strong: true, verifiedAgoMs: 11 * 60_000 }).run('/portal/security')).toMatchObject({ action: 'render', fresh: false })
     expect(await setup({ session: true, factors: passkey, strong: true, verifiedAgoMs: null }).run('/portal/security')).toMatchObject({ action: 'render', fresh: false })
+  })
+})
+
+describe('accountFrom (what a server action may act for)', () => {
+  const ok = { action: 'render', userId: 'u1', email: 'a@example.test', strong: true, factors: passkey, fresh: true } as const
+  it('returns the account for a strong render and nothing otherwise', () => {
+    expect(accountFrom(ok)).toEqual({ id: 'u1', email: 'a@example.test' })
+    expect(accountFrom({ ...ok, strong: false })).toBeNull()
+    expect(accountFrom({ ...ok, userId: null })).toBeNull()
+    expect(accountFrom({ ...ok, email: null })).toBeNull()
+    expect(accountFrom({ action: 'notFound' })).toBeNull()
+    expect(accountFrom({ action: 'redirect', to: '/portal/sign-in' })).toBeNull()
   })
 })
