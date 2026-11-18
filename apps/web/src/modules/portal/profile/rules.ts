@@ -24,9 +24,7 @@ export type FieldErrors = Partial<Record<string, string>>
 export type Validated = { ok: true; edit: ProfileEdit } | { ok: false; errors: FieldErrors }
 
 // Control characters (and bidi overrides that can disguise text) are removed; \n and \t survive only where `multiline`.
-// eslint-disable-next-line no-control-regex
 const CONTROL = /[\u0000-\u0008\u000B-\u001F\u007F-\u009F‪-‮⁦-⁩]/g
-// eslint-disable-next-line no-control-regex
 const CONTROL_SINGLE = /[\u0000-\u001F\u007F-\u009F‪-‮⁦-⁩]/g
 
 function clean(v: unknown, multiline: boolean): string | null {
