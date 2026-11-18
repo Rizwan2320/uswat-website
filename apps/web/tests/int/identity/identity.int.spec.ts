@@ -22,6 +22,8 @@ import { closeIdentityPool, getIdentityPool } from '@/modules/identity/db'
 import { loadFactors } from '@/modules/identity/factors'
 import { createAuthHandlers, type AuthLike } from '@/modules/identity/handlers'
 import { migrateDown, migrateUp } from '@/modules/identity/migrate'
+import { EMPTY_EDIT, createSampleProfileStore } from '@/modules/portal/profile/sampleStore'
+import type { ProfileEdit } from '@/modules/portal/profile/types'
 
 const DB = process.env.IDENTITY_TEST_DATABASE_URL
 const ORIGIN = 'http://localhost:3999'
@@ -59,7 +61,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -864,5 +866,111 @@ describe.skipIf(!DB)('shared computer (SES-04) with the real library', () => {
     await signIn(u, true, 0)
     await pool.query(`delete from "session" where "userId" = $1`, [u.userId])
     expect((await pool.query(`select count(*)::int as n from "session_shared" where "sessionId" not in (select "id" from "session")`)).rows[0].n).toBe(0)
+  })
+})
+
+describe.skipIf(!DB)('faculty profile draft store (FP-11), sample adapter on real PostgreSQL', () => {
+  const pool = () => getIdentityPool(DB!)
+  const store = () => createSampleProfileStore(pool())
+  const edit = (over: Partial<ProfileEdit> = {}): ProfileEdit => ({ ...EMPTY_EDIT, bio: { en: 'Hello', ur: 'سلام' }, researchInterests: ['optics'], ...over })
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  async function account(tag: string): Promise<{ id: string; email: string }> {
+    const id = `profile-${tag}-${Math.random().toString(36).slice(2, 8)}`
+    const email = `${id}@example.invalid`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Sample ${tag}`, email])
+    return { id, email }
+  }
+
+  it('a new account loads a sample profile with nothing saved', async () => {
+    const a = await account('new')
+    const l = await store().load(a)
+    expect(l.status).toBe('none')
+    expect(l.updatedAt).toBeNull()
+    expect(l.profile.sample).toBe(true)
+    expect(l.profile.email).toBe(a.email)
+    expect(l.profile.name.en).toBe('Sample new')
+    expect(l.profile.visibility).toEqual({ email: 'hidden', photo: 'hidden' })
+  })
+
+  it('save then load round-trips every editable field, Urdu included', async () => {
+    const a = await account('round')
+    const e = edit({ orcid: '0000-0002-1825-0097', officeHours: 'Mon 10-12', visibility: { email: 'public', photo: 'internal' } })
+    expect(await store().saveDraft(a.id, e)).toBe(true)
+    const l = await store().load(a)
+    expect(l.status).toBe('draft')
+    expect(l.updatedAt).toBeGreaterThan(0)
+    expect(l.profile.bio.ur).toBe('سلام')
+    expect(l.profile).toMatchObject(e)
+  })
+
+  it('saving twice keeps one row per account and the later edit wins', async () => {
+    const a = await account('twice')
+    await store().saveDraft(a.id, edit({ officeLocation: 'first' }))
+    await store().saveDraft(a.id, edit({ officeLocation: 'second' }))
+    expect((await pool().query(`select count(*)::int as n from "profile_draft" where "userId" = $1`, [a.id])).rows[0].n).toBe(1)
+    expect((await store().load(a)).profile.officeLocation).toBe('second')
+  })
+
+  it("one account's draft never appears in or changes another's", async () => {
+    const a = await account('A')
+    const b = await account('B')
+    await store().saveDraft(a.id, edit({ officeLocation: 'A only' }))
+    expect((await store().load(b)).profile.officeLocation).toBe('')
+    expect((await store().load(b)).status).toBe('none')
+    await store().saveDraft(b.id, edit({ officeLocation: 'B only' }))
+    expect((await store().load(a)).profile.officeLocation).toBe('A only')
+    expect(await store().submit(b.id)).toBe(true)
+    expect((await store().load(a)).status).toBe('draft')
+  })
+
+  it('submit needs a draft, locks editing, and only withdraw reopens it', async () => {
+    const a = await account('submit')
+    expect(await store().submit(a.id)).toBe(false) // nothing to submit
+    await store().saveDraft(a.id, edit({ officeLocation: 'kept' }))
+    expect(await store().submit(a.id)).toBe(true)
+    expect(await store().submit(a.id)).toBe(false) // already submitted
+    expect(await store().saveDraft(a.id, edit({ officeLocation: 'sneaky' }))).toBe(false)
+    const locked = await store().load(a)
+    expect(locked.status).toBe('submitted')
+    expect(locked.profile.officeLocation).toBe('kept')
+    expect(await store().withdraw(a.id)).toBe(true)
+    expect(await store().withdraw(a.id)).toBe(false) // not submitted any more
+    expect(await store().saveDraft(a.id, edit({ officeLocation: 'changed' }))).toBe(true)
+    expect((await store().load(a)).profile.officeLocation).toBe('changed')
+  })
+
+  it('withdraw does nothing for an account with no draft', async () => {
+    expect(await store().withdraw((await account('nodraft')).id)).toBe(false)
+  })
+
+  it('the fixed fields come from the sample seed and cannot be changed by saving', async () => {
+    const a = await account('fixed')
+    // A stored edit that (wrongly) carried high-impact keys must not override them on load.
+    await pool().query(`insert into "profile_draft" ("userId","edit","status") values ($1,$2,'draft')`, [a.id, JSON.stringify({ ...EMPTY_EDIT, designation: { en: 'Vice Chancellor', ur: '' }, department: 'Elsewhere', sample: false })])
+    const l = await store().load(a)
+    expect(l.profile.designation.en).toBe('Lecturer (sample)')
+    expect(l.profile.department).toBe('Sample Department')
+    expect(l.profile.sample).toBe(true)
+  })
+
+  it('deleting the account deletes its draft', async () => {
+    const a = await account('cascade')
+    await store().saveDraft(a.id, edit())
+    await pool().query(`delete from "user" where "id" = $1`, [a.id])
+    expect((await pool().query(`select count(*)::int as n from "profile_draft" where "userId" = $1`, [a.id])).rows[0].n).toBe(0)
+  })
+
+  it('the table refuses an unknown status and a draft for a missing account', async () => {
+    const a = await account('check')
+    await expect(pool().query(`insert into "profile_draft" ("userId","edit","status") values ($1,'{}','published')`, [a.id])).rejects.toThrow()
+    await expect(pool().query(`insert into "profile_draft" ("userId","edit","status") values ('nobody','{}','draft')`)).rejects.toThrow()
   })
 })

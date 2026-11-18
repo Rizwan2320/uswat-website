@@ -78,6 +78,11 @@ describe('validateEdit', () => {
     expect(validateEdit(good({ officeHours: 'x'.repeat(LIMITS.officeHours + 1) }))).toEqual({ ok: false, errors: { officeHours: 'too-long' } })
   })
 
+  it('counts characters outside the basic plane once (a name or tag with such letters is not cut short)', () => {
+    expect(validateEdit(good({ officeLocation: '𐴀'.repeat(LIMITS.officeLocation) })).ok).toBe(true)
+    expect(validateEdit(good({ officeLocation: '𐴀'.repeat(LIMITS.officeLocation + 1) }))).toEqual({ ok: false, errors: { officeLocation: 'too-long' } })
+  })
+
   it('removes control and direction-override characters but keeps newlines in the bio only', () => {
     const r = validateEdit(good({ bio: { en: 'a\u0000b‮c\nd', ur: '' }, officeLocation: 'x\ny\u0007' }))
     expect(r.ok).toBe(true)

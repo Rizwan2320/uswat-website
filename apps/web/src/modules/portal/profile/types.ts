@@ -54,4 +54,6 @@ export interface ProfileStore {
   saveDraft(accountId: string, edit: ProfileEdit): Promise<boolean>
   /** Sends the saved draft for review. Returns false when there is no draft or it was already submitted. */
   submit(accountId: string): Promise<boolean>
+  /** Takes a submitted edit back to draft so it can be changed again. Returns false when nothing was submitted. */
+  withdraw(accountId: string): Promise<boolean>
 }
