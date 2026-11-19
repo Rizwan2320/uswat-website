@@ -84,6 +84,10 @@ html[lang='ur'] {
 html[lang='ur'] body {
   line-height: 1.9;
 }
+// Headings keep a tighter line so the dashboard title does not run into the cards below it.
+html[lang='ur'] :is(h1, h2, h3) {
+  line-height: 1.4;
+}
 
 // Payload's own dark-mode "Locale:" label is grey on grey at 3.38:1; one step lighter passes.
 html[data-theme='dark'] .localizer-button__label {
