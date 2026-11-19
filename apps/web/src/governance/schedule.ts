@@ -13,3 +13,9 @@
  */
 export const LIFECYCLE_CRON = '17 * * * *'
 export const LIFECYCLE_QUEUE = 'lifecycle'
+
+/**
+ * How long finished sweep runs are kept so the Operations section can show what the sweep did
+ * (slice 3v). PROPOSED: 30 days, about 720 hourly runs. The sweep deletes older ones itself.
+ */
+export const SWEEP_HISTORY_DAYS = 30

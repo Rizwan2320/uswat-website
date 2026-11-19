@@ -1,0 +1,82 @@
+[
+  {
+    "id": "R0 a signed-out visitor is sent to sign-in",
+    "ok": true,
+    "note": "http://localhost:3040/portal/sign-in"
+  },
+  {
+    "id": "R1 one h1 with the Sample badge, an empty list message and the sample note",
+    "ok": true,
+    "note": "Courses you teach | University of Swat faculty portal"
+  },
+  {
+    "id": "R2 a valid course is added (code upper-cased) and the form is cleared",
+    "ok": true,
+    "note": "added"
+  },
+  {
+    "id": "R3 the same code in the same semester is refused with a message",
+    "ok": true,
+    "note": "duplicate"
+  },
+  {
+    "id": "R4 a bad code and a bad year are refused with linked messages",
+    "ok": true,
+    "note": "aria-invalid set"
+  },
+  {
+    "id": "R5 courses list newest semester first; an Urdu title is kept and direction-aware",
+    "ok": true,
+    "note": "Spring 2027 | Fall 2026 · Sample Programme | Winter 2025"
+  },
+  {
+    "id": "R6 a second account starts with an empty list",
+    "ok": true,
+    "note": "B empty"
+  },
+  {
+    "id": "R7 removing a course by its labelled button removes it",
+    "ok": true,
+    "note": "removed"
+  },
+  {
+    "id": "R8 a crafted add carrying another account id is refused",
+    "ok": true,
+    "note": "0:{\"a\":\"$@1\",\"f\":\"\",\"q\":\"\",\"i\":false,\"b\":\"nidyzNJWBsDrU5nyDbXE4\"} 1:{\"ok\":false,\"error\":\"invalid\",\"errors\":{\"form\":\"unkn"
+  },
+  {
+    "id": "R9 a crafted remove of B's course is refused and B's course is unchanged",
+    "ok": true,
+    "note": "0:{\"a\":\"$@1\",\"f\":\"\",\"q\":\"\",\"i\":false,\"b\":\"nidyzNJWBsDrU5nyDbXE4\"} 1:{\"ok\":false,\"error\":\"n | rows 1"
+  },
+  {
+    "id": "R10 a malformed id is refused as invalid",
+    "ok": true,
+    "note": "invalid"
+  },
+  {
+    "id": "R11 a course can be added by keyboard alone",
+    "ok": true,
+    "note": "keyboard"
+  },
+  {
+    "id": "R12 sixty courses list without horizontal scroll at 390 px",
+    "ok": true,
+    "note": "no overflow"
+  },
+  {
+    "id": "R13 the sixty-first course is refused with the limit message",
+    "ok": true,
+    "note": "limit"
+  },
+  {
+    "id": "R14 the import command: a dry run counts the rows without storing them, the real run loads them, the second run adds nothing (every row is then a repeat)",
+    "ok": true,
+    "note": "dry 7, real 7, again 0/7"
+  },
+  {
+    "id": "R15 imported courses show an Imported tag and no Remove button; Urdu title kept",
+    "ok": true,
+    "note": "items 2, tags 2, remove buttons 0"
+  }
+]

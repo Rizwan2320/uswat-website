@@ -11,6 +11,8 @@ const schema = z.object({
   NEXT_PUBLIC_SERVER_URL: z.string().url().default('http://localhost:3000'),
   CRON_SECRET: z.string().min(16, 'CRON_SECRET must be at least 16 characters'),
   PREVIEW_SECRET: z.string().min(16, 'PREVIEW_SECRET must be at least 16 characters'),
+  // Optional: set on Vercel to keep uploaded media in Blob (ADR-0014). Unset means local disk.
+  BLOB_READ_WRITE_TOKEN: z.string().optional(),
 })
 
 export type Env = z.infer<typeof schema>
@@ -34,5 +36,6 @@ export const env: Env =
         NEXT_PUBLIC_SERVER_URL: process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:3000',
         CRON_SECRET: process.env.CRON_SECRET ?? '',
         PREVIEW_SECRET: process.env.PREVIEW_SECRET ?? '',
+        BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
       } as Env)
     : parseEnv(process.env)

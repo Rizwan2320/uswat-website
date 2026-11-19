@@ -1,18 +1,17 @@
 import { TYPES, type ArticleType } from '@/site/articles/config'
 import { formatDate, formatDateTime } from '@/site/articles/format'
 import { s, type Doc } from '@/site/articles/where'
-import { isSample } from '@/site/organisation/shape'
 
 import { rfc822, type FeedItem } from './rss'
 
 type Gov = { expireAt?: string | null } | null | undefined
 
-/** One record as a feed item: title, address, date and a short line. A Sample record is left out (it is invented data). */
+/** One record as a feed item: title, address, date and a short line. A Sample record is included: its title already says Sample. */
 export function toFeedItem(type: ArticleType, doc: Doc, base: string): FeedItem | null {
   const cfg = TYPES[type]
   const slug = s(doc.slug)
   const title = s(doc.title)
-  if (!slug || !title || isSample(doc)) return null
+  if (!slug || !title) return null
   const parts: string[] = []
   const excerpt = cfg.hasExcerpt ? s(doc.excerpt) : null
   if (excerpt) parts.push(excerpt)

@@ -77,7 +77,7 @@ describe('content and news sitemaps', () => {
     await payload.update({ collection: collection as never, id: rec.id, data: { _status: 'published', governance: {} } as never, ...as(approver) })
   }
 
-  it('lists a published notice and news at their public addresses, and not a draft or a Sample record', async () => {
+  it('lists a published notice and news at their public addresses, and a Sample record, but not a draft', async () => {
     const t = uniq('sm').toLowerCase().replace(/[^a-z0-9]/g, '')
     const base = { excerpt: 'Sample excerpt', body: body('Sample') }
     await publish('notices', { ...base, title: `${t} live`, slug: `${t}-live` }, 'https://uswat.edu.pk/x')
@@ -87,7 +87,7 @@ describe('content and news sitemaps', () => {
     const content = await (await GET_CONTENT()).text()
     expect(content).toContain(`/notices/${t}-live</loc>`)
     expect(content).not.toContain(`${t}-draft`)
-    expect(content).not.toContain(`${t}-sample`)
+    expect(content).toContain(`/notices/${t}-sample</loc>`)
     expect(content).toMatch(/<loc>https?:\/\/[^<]+\/news<\/loc>/)
     const news = await (await GET_POSTS()).text()
     expect(news).toContain(`/news/${t}-story</loc>`)

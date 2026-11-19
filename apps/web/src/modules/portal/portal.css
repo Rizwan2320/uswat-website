@@ -16,7 +16,7 @@
 .portal-main h1 { font-family: var(--stack-serif, Georgia, serif); color: var(--forest); font-size: clamp(1.6rem, 4vw, 2.1rem); margin: 0 0 12px; }
 .portal-main h2 { font-family: var(--stack-serif, Georgia, serif); color: var(--forest); font-size: 1.25rem; margin: 28px 0 8px; }
 .portal-card { background: #fff; border: 1px solid var(--ivory-deep); border-radius: var(--radius); padding: 20px; margin: 16px 0; }
-.portal-field { display: grid; gap: 6px; margin: 14px 0; }
+.portal-field { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin: 14px 0; }
 .portal-field label { font-weight: 600; color: var(--forest); }
 .portal-field .hint { font-size: 0.9rem; }
 .portal-field input { font: inherit; padding: 12px 14px; border: 2px solid var(--forest); border-radius: 10px; background: #fff; color: var(--forest); min-height: 44px; }
@@ -71,3 +71,9 @@
 .pub-actions, .pub-dup { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .pub-dup > * { min-width: 0; }
 .pub-dup select { font: inherit; padding: 10px 12px; border: 2px solid var(--forest); border-radius: 10px; background: #fff; color: var(--forest); min-height: 44px; max-width: 100%; }
+
+/* Courses (FP-30) */
+.course-semester { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.course-semester .portal-field { min-width: 0; }
+.course-semester .portal-field > input, .course-semester .portal-field > select { box-sizing: border-box; min-height: 4.4rem; }
+.portal-tag { display: inline-block; font-family: var(--stack-nav); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; border: 1px solid var(--forest); color: var(--forest); border-radius: 999px; padding: 1px 10px; margin-inline-start: 10px; vertical-align: middle; }

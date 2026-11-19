@@ -5,6 +5,7 @@ import { currentWhere } from '@/governance/lifecycle'
 import type { TypeConfig } from './config'
 import { isClosed } from './format'
 import type { ListingParams } from './params'
+import { isSample } from '../organisation/shape'
 
 /* Pure parts of the public reads: what a listing asks for and how a record becomes a list item.
    Nothing here opens the CMS, so unit tests can use it. */
@@ -19,6 +20,8 @@ export type ListItem = {
   venue: string | null
   closesAt: string | null
   closed: boolean
+  /** The record holds invented data (its source is on sample.invalid): shown with a Sample label. */
+  sample: boolean
 }
 
 export type Listing = { items: ListItem[]; page: number; totalPages: number; totalDocs: number }
@@ -67,7 +70,7 @@ export const selectFor = (cfg: TypeConfig) =>
     publishedAt: true,
     ...(cfg.hasExcerpt ? { excerpt: true } : {}),
     ...(cfg.kind === 'event' ? { startsAt: true, venue: true } : {}),
-    governance: { status: true, expireAt: true, pinned: true },
+    governance: { status: true, expireAt: true, pinned: true, source: true },
   }) as never
 
 export function toItem(cfg: TypeConfig, doc: Doc, now: Date): ListItem {
@@ -82,5 +85,6 @@ export function toItem(cfg: TypeConfig, doc: Doc, now: Date): ListItem {
     venue: cfg.kind === 'event' ? s(doc.venue) : null,
     closesAt: cfg.kind === 'deadline' || cfg.kind === 'event' ? s(gov?.expireAt) : null,
     closed: isClosed(gov, now),
+    sample: isSample(doc),
   }
 }

@@ -364,6 +364,17 @@ export const INTERNAL_ENGLISH: readonly string[] = [
   'large',
   'xlarge',
   'og',
+  // Hidden storage fields the media adapter adds in every environment (slice 3t, ADR-0014)
+  'Prefix',
+  '_object Key',
+  'Sizes',
+  'Thumbnail',
+  'Square',
+  'Small',
+  'Medium',
+  'Large',
+  'Xlarge',
+  'Og',
   // Payload system collections and their fields
   'System',
   'Payload Kv',

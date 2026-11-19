@@ -48,7 +48,8 @@ const built = buildConfig({
       // The university crest and name on the sign-in page and in the menu (slice 3u).
       graphics: { Icon: '@/admin/Brand/Icon', Logo: '@/admin/Brand/Logo' },
       // The editor dashboard (CMS-09): my drafts, review queue, expiring soon, stale, needs alt.
-      beforeDashboard: ['@/admin/EditorDashboard'],
+      // Operations (3v): sweep status and work by office, for admin, site manager and auditor only.
+      beforeDashboard: ['@/admin/EditorDashboard', '@/admin/OperationsPanel'],
     },
     importMap: {
       baseDir: path.resolve(dirname),
@@ -156,6 +157,8 @@ const built = buildConfig({
       run: ({ req }: { req: PayloadRequest }): boolean => canRunJobs(req, env.CRON_SECRET),
     },
     tasks: [lifecycleSweepTask],
+    // Keep finished runs: the Operations panel reads them. The sweep prunes its own old runs.
+    deleteJobOnComplete: false,
   },
 })
 

@@ -28,6 +28,10 @@ import { EMPTY_EDIT, createSampleProfileStore } from '@/modules/portal/profile/s
 import type { ProfileEdit } from '@/modules/portal/profile/types'
 import { createPgPublicationStore } from '@/modules/portal/publications/pgStore'
 import type { Candidate } from '@/modules/portal/publications/types'
+import { importCourses } from '@/modules/portal/courses/importer'
+import { createPgCourseStore } from '@/modules/portal/courses/pgStore'
+import { LIMITS as COURSE_LIMITS } from '@/modules/portal/courses/rules'
+import type { CourseInput } from '@/modules/portal/courses/types'
 
 const DB = process.env.IDENTITY_TEST_DATABASE_URL
 const ORIGIN = 'http://localhost:3999'
@@ -65,7 +69,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -1242,5 +1246,207 @@ describe.skipIf(!DB)('publication candidates (FP-12, FPR-05), PostgreSQL store',
     await expect(pool().query(`update "publication_candidate" set "status" = 'published' where "userId" = $1`, [a])).rejects.toThrow()
     await pool().query(`delete from "user" where "id" = $1`, [a])
     expect((await pool().query(`select count(*)::int as n from "publication_candidate" where "userId" = $1`, [a])).rows[0].n).toBe(0)
+  })
+})
+
+describe.skipIf(!DB)('courses taught (FP-30), PostgreSQL store', () => {
+  const pool = () => getIdentityPool(DB!)
+  const store = () => createPgCourseStore(pool())
+  const course = (over: Partial<CourseInput> = {}): CourseInput => ({ code: 'SAM 101', title: 'Sample Course', season: 'Fall', year: 2026, programme: 'Sample Programme', ...over })
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  async function account(tag: string): Promise<string> {
+    const id = `course-${tag}-${Math.random().toString(36).slice(2, 8)}`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Sample ${tag}`, `${id}@example.invalid`])
+    return id
+  }
+
+  it('add then list round-trips, Urdu title included', async () => {
+    const a = await account('rt')
+    expect(await store().add(a, course({ title: 'نمونہ کورس' }))).toBe('added')
+    const [c] = await store().list(a)
+    expect(c).toMatchObject({ code: 'SAM 101', title: 'نمونہ کورس', season: 'Fall', year: 2026, programme: 'Sample Programme', source: 'manual' })
+  })
+
+  it('lists newest semester first (Winter, Fall, Summer, Spring within a year), then by code', async () => {
+    const a = await account('order')
+    for (const c of [course({ code: 'B', season: 'Spring', year: 2025 }), course({ code: 'A', season: 'Spring', year: 2026 }), course({ code: 'C', season: 'Winter', year: 2025 }), course({ code: 'D', season: 'Fall', year: 2026 }), course({ code: 'AB', season: 'Fall', year: 2026 }), course({ code: 'E', season: 'Summer', year: 2026 })])
+      await store().add(a, { ...c, code: c.code + ' 1' })
+    expect((await store().list(a)).map((c) => `${c.season}${c.year} ${c.code}`)).toEqual(['Fall2026 AB 1', 'Fall2026 D 1', 'Summer2026 E 1', 'Spring2026 A 1', 'Winter2025 C 1', 'Spring2025 B 1'])
+  })
+
+  it('the same code in the same semester is a duplicate; another semester or code is fine', async () => {
+    const a = await account('dup')
+    expect(await store().add(a, course())).toBe('added')
+    expect(await store().add(a, course({ title: 'Other title' }))).toBe('duplicate')
+    expect(await store().add(a, course({ season: 'Spring' }))).toBe('added')
+    expect(await store().add(a, course({ code: 'SAM 102' }))).toBe('added')
+    expect(await store().list(a)).toHaveLength(3)
+  })
+
+  it('stops at the limit, and two simultaneous adds at the edge cannot both get in', async () => {
+    const a = await account('limit')
+    for (let i = 0; i < COURSE_LIMITS.perAccount - 1; i++) await store().add(a, course({ code: `L ${i}` }))
+    const results = await Promise.all([store().add(a, course({ code: 'X 1' })), store().add(a, course({ code: 'X 2' })), store().add(a, course({ code: 'X 3' }))])
+    expect(results.filter((r) => r === 'added')).toHaveLength(1)
+    expect(results.filter((r) => r === 'limit')).toHaveLength(2)
+    expect(await store().list(a)).toHaveLength(COURSE_LIMITS.perAccount)
+    // Removing one makes room again.
+    const [first] = await store().list(a)
+    expect(await store().remove(a, first.id)).toBe(true)
+    expect(await store().add(a, course({ code: 'X 4' }))).toBe('added')
+  })
+
+  it("one account cannot list or remove another's courses; the same course can belong to two accounts", async () => {
+    const a = await account('A')
+    const b = await account('B')
+    await store().add(a, course())
+    expect(await store().add(b, course())).toBe('added')
+    const [ac] = await store().list(a)
+    expect(await store().remove(b, ac.id)).toBe(false)
+    expect(await store().list(a)).toHaveLength(1)
+    expect((await store().list(b)).map((c) => c.id)).not.toContain(ac.id)
+    expect(await store().remove(a, ac.id)).toBe(true)
+    expect(await store().remove(a, ac.id)).toBe(false)
+  })
+
+  it('an imported course cannot be removed by hand', async () => {
+    const a = await account('feed')
+    await pool().query(`insert into "course_taught" ("userId","code","title","season","year","source") values ($1,'IMP 1','Imported','Fall',2026,'import')`, [a])
+    const [c] = await store().list(a)
+    expect(c.source).toBe('import')
+    expect(await store().remove(a, c.id)).toBe(false)
+    expect(await store().list(a)).toHaveLength(1)
+  })
+
+  it('deleting the account deletes its courses; the table refuses a bad season, a bad year and an unknown source', async () => {
+    const a = await account('check')
+    await store().add(a, course())
+    for (const [season, year, source] of [['Autumn', 2026, 'manual'], ['Fall', 1999, 'manual'], ['Fall', 2026, 'other']])
+      await expect(pool().query(`insert into "course_taught" ("userId","code","title","season","year","source") values ($1,'Z 1','t',$2,$3,$4)`, [a, season, year, source])).rejects.toThrow()
+    await pool().query(`delete from "user" where "id" = $1`, [a])
+    expect((await pool().query(`select count(*)::int as n from "course_taught" where "userId" = $1`, [a])).rows[0].n).toBe(0)
+  })
+})
+
+describe.skipIf(!DB)('course import from a file (FP-30), PostgreSQL', () => {
+  const pool = () => getIdentityPool(DB!)
+  const NOW = Date.UTC(2026, 10, 19)
+  const tag = Math.random().toString(36).slice(2, 7)
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  async function account(name: string): Promise<{ id: string; email: string }> {
+    const id = `imp-${name}-${tag}`
+    const email = `${id}@example.invalid`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Sample ${name}`, email])
+    return { id, email }
+  }
+  const row = (email: string, over: Record<string, unknown> = {}) => ({ email, code: 'IMP 1', title: 'Imported course', season: 'Fall', year: 2026, programme: 'Sample Programme', ...over })
+  const count = async (id: string) => (await pool().query(`select count(*)::int as n from "course_taught" where "userId" = $1`, [id])).rows[0].n as number
+
+  it('loads good rows, reports the repeat and the three bad rows, and leaves the rest of the file loaded', async () => {
+    const a = await account('a')
+    const b = await account('b')
+    const rows = [
+      row(a.email, { code: 'IMP 1' }),
+      row(a.email, { code: 'IMP 2' }),
+      row(a.email, { code: 'IMP 1' }), // repeat of the first
+      row(a.email, { code: 'x' }), // bad code
+      row(`nobody-${tag}@example.invalid`), // no such account
+      row(b.email, { title: 'نمونہ درآمد شدہ کورس' }),
+      row(b.email, { code: 'IMP 3', phone: '123' }), // extra key
+      'not an object',
+    ]
+    const report = await importCourses(pool(), rows, NOW)
+    expect(report).toMatchObject({ added: 3, duplicate: 1, limit: 0, dryRun: false })
+    expect(report.rejected.map((r) => [r.row, r.reason])).toEqual([[4, 'invalid'], [5, 'unknown-account'], [7, 'unknown-key'], [8, 'bad-row']])
+    expect(await count(a.id)).toBe(2)
+    const urdu = (await createPgCourseStore(pool()).list(b.id))[0]
+    expect(urdu).toMatchObject({ title: 'نمونہ درآمد شدہ کورس', source: 'import' })
+  })
+
+  it('running the same file again adds nothing (every row is a repeat)', async () => {
+    const a = await account('again')
+    const rows = [row(a.email, { code: 'R 1' }), row(a.email, { code: 'R 2' })]
+    expect((await importCourses(pool(), rows, NOW)).added).toBe(2)
+    expect(await importCourses(pool(), rows, NOW)).toMatchObject({ added: 0, duplicate: 2 })
+    expect(await count(a.id)).toBe(2)
+  })
+
+  it('a dry run counts like a real run but leaves nothing behind and holds no lock', async () => {
+    const a = await account('dry')
+    const rows = [row(a.email, { code: 'D 1' }), row(a.email, { code: 'D 2' })]
+    expect(await importCourses(pool(), rows, NOW, { dryRun: true })).toMatchObject({ added: 2, dryRun: true })
+    expect(await count(a.id)).toBe(0)
+    // A real add straight afterwards must not wait on a lock left behind.
+    expect(await createPgCourseStore(pool()).add(a.id, { code: 'D 3', title: 't', season: 'Fall', year: 2026, programme: '' })).toBe('added')
+  })
+
+  it('matches the account email ignoring case and spaces, and never touches another account', async () => {
+    const a = await account('case')
+    const b = await account('other')
+    const r = await importCourses(pool(), [row(`  ${a.email.toUpperCase()} `, { code: 'C 1' })], NOW)
+    expect(r.added).toBe(1)
+    expect(await count(a.id)).toBe(1)
+    expect(await count(b.id)).toBe(0)
+  })
+
+  it('imported courses count toward the limit of 60 and the rest are reported as limit', async () => {
+    const a = await account('limit')
+    const rows = Array.from({ length: 63 }, (_, i) => row(a.email, { code: `L ${i}` }))
+    expect(await importCourses(pool(), rows, NOW)).toMatchObject({ added: 60, limit: 3 })
+    expect(await count(a.id)).toBe(60)
+  })
+
+  it('imported courses cannot be removed by hand, typed ones still can', async () => {
+    const a = await account('rm')
+    await importCourses(pool(), [row(a.email, { code: 'RM 1' })], NOW)
+    const store = createPgCourseStore(pool())
+    await store.add(a.id, { code: 'RM 2', title: 't', season: 'Fall', year: 2026, programme: '' })
+    const list = await store.list(a.id)
+    const imported = list.find((c) => c.source === 'import')!
+    const typed = list.find((c) => c.source === 'manual')!
+    expect(await store.remove(a.id, imported.id)).toBe(false)
+    expect(await store.remove(a.id, typed.id)).toBe(true)
+  })
+
+  it('refuses a non-array and a file with too many rows, and writes nothing', async () => {
+    await expect(importCourses(pool(), { not: 'an array' }, NOW)).rejects.toThrow()
+    await expect(importCourses(pool(), new Array(5001).fill({}), NOW)).rejects.toThrow()
+  })
+
+  it('a database failure part-way rolls the whole file back', async () => {
+    const a = await account('fail')
+    await pool().query(`alter table "course_taught" add constraint "tmp_fail_check" check ("code" <> 'BOOM 1')`)
+    try {
+      await expect(importCourses(pool(), [row(a.email, { code: 'OK 1' }), row(a.email, { code: 'BOOM 1' })], NOW)).rejects.toThrow()
+      expect(await count(a.id)).toBe(0)
+    } finally {
+      await pool().query(`alter table "course_taught" drop constraint "tmp_fail_check"`)
+    }
+  })
+
+  it('the shipped sample file passes every rule: all rows load for matching accounts, the repeat-looking row is a different semester', async () => {
+    const fs = await import('node:fs')
+    const sample = JSON.parse(fs.readFileSync(new URL('../../../scripts/sample-data/courses.sample.json', import.meta.url), 'utf8')) as Array<{ email: string }>
+    const emails = [...new Set(sample.map((r) => r.email))]
+    for (const [i, e] of emails.entries()) await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true) on conflict do nothing`, [`samplefile-${i}-${tag}`, `Sample ${i}`, e])
+    const report = await importCourses(pool(), sample, NOW, { dryRun: true })
+    expect(report).toMatchObject({ added: sample.length, duplicate: 0, limit: 0, rejected: [] })
+    await pool().query(`delete from "user" where "id" like $1`, [`samplefile-%-${tag}`])
   })
 })

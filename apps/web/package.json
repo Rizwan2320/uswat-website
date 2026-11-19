@@ -29,7 +29,8 @@
     "dictionary:build": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/data-dictionary.ts",
     "test:unit": "vitest run --config ./vitest.config.mts tests/unit",
     "identity:migrate": "tsx scripts/identity-migrate.ts",
-    "identity:purge": "tsx scripts/identity-purge.ts"
+    "identity:purge": "tsx scripts/identity-purge.ts",
+    "identity:courses-import": "tsx scripts/courses-import.ts"
   },
   "dependencies": {
     "@better-auth/passkey": "1.7.18",
@@ -47,6 +48,7 @@
     "@payloadcms/plugin-search": "3.93.0",
     "@payloadcms/plugin-seo": "3.93.0",
     "@payloadcms/richtext-lexical": "3.93.0",
+    "@payloadcms/storage-vercel-blob": "3.93.0",
     "@payloadcms/ui": "3.93.0",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-label": "^2.0.2",

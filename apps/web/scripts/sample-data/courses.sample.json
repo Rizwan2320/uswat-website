@@ -1,0 +1,9 @@
+[
+  { "email": "sample.faculty1@example.invalid", "code": "SAM 101", "title": "Sample Introduction to Physics", "season": "Fall", "year": 2026, "programme": "Sample BS Physics" },
+  { "email": "sample.faculty1@example.invalid", "code": "SAM 205", "title": "Sample Optics Laboratory", "season": "Fall", "year": 2026, "programme": "Sample BS Physics" },
+  { "email": "sample.faculty1@example.invalid", "code": "SAM 101", "title": "Sample Introduction to Physics", "season": "Spring", "year": 2026, "programme": "Sample BS Physics" },
+  { "email": "sample.faculty2@example.invalid", "code": "SAM 110", "title": "Sample Programming Fundamentals", "season": "Fall", "year": 2026, "programme": "Sample BS Computer Science" },
+  { "email": "sample.faculty2@example.invalid", "code": "SAM 320", "title": "Sample Databases", "season": "Spring", "year": 2027, "programme": "Sample BS Computer Science" },
+  { "email": "sample.faculty3@example.invalid", "code": "SAM 150", "title": "Sample Academic Writing", "season": "Fall", "year": 2026, "programme": "" },
+  { "email": "sample.faculty3@example.invalid", "code": "SAM 260", "title": "نمونہ ادبی مطالعہ", "season": "Spring", "year": 2026, "programme": "Sample BS Urdu" }
+]

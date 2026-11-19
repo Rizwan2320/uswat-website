@@ -2,6 +2,7 @@ import type { TaskConfig } from 'payload'
 
 import { LIFECYCLE_CRON, LIFECYCLE_QUEUE } from './schedule'
 import { runLifecycleSweep } from './sweep'
+import { pruneSweepHistory } from './sweepHistory'
 
 /**
  * Hourly (see schedule.ts): publish what is scheduled, archive what has expired, mark overdue
@@ -19,6 +20,7 @@ export const lifecycleSweepTask: TaskConfig<'lifecycleSweep'> = {
   outputSchema: [{ name: 'report', type: 'json' }],
   handler: async ({ req }) => {
     const report = await runLifecycleSweep(req.payload)
+    await pruneSweepHistory(req.payload)
     return { output: { report: report as unknown as Record<string, unknown> } }
   },
 }
