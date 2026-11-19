@@ -42,12 +42,12 @@
   {
     "id": "R8 a crafted add carrying another account id is refused",
     "ok": true,
-    "note": "0:{\"a\":\"$@1\",\"f\":\"\",\"q\":\"\",\"i\":false,\"b\":\"Sgs-ST8SMc1G-pjJ5-nQ3\"} 1:{\"ok\":false,\"error\":\"invalid\",\"errors\":{\"form\":\"unkn"
+    "note": "0:{\"a\":\"$@1\",\"f\":\"\",\"q\":\"\",\"i\":false,\"b\":\"nidyzNJWBsDrU5nyDbXE4\"} 1:{\"ok\":false,\"error\":\"invalid\",\"errors\":{\"form\":\"unkn"
   },
   {
     "id": "R9 a crafted remove of B's course is refused and B's course is unchanged",
     "ok": true,
-    "note": "0:{\"a\":\"$@1\",\"f\":\"\",\"q\":\"\",\"i\":false,\"b\":\"Sgs-ST8SMc1G-pjJ5-nQ3\"} 1:{\"ok\":false,\"error\":\"n | rows 1"
+    "note": "0:{\"a\":\"$@1\",\"f\":\"\",\"q\":\"\",\"i\":false,\"b\":\"nidyzNJWBsDrU5nyDbXE4\"} 1:{\"ok\":false,\"error\":\"n | rows 1"
   },
   {
     "id": "R10 a malformed id is refused as invalid",
@@ -68,5 +68,15 @@
     "id": "R13 the sixty-first course is refused with the limit message",
     "ok": true,
     "note": "limit"
+  },
+  {
+    "id": "R14 the import command: a dry run counts the rows without storing them, the real run loads them, the second run adds nothing (every row is then a repeat)",
+    "ok": true,
+    "note": "dry 7, real 7, again 0/7"
+  },
+  {
+    "id": "R15 imported courses show an Imported tag and no Remove button; Urdu title kept",
+    "ok": true,
+    "note": "items 2, tags 2, remove buttons 0"
   }
 ]

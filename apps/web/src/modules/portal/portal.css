@@ -76,3 +76,4 @@
 .course-semester { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
 .course-semester .portal-field { min-width: 0; }
 .course-semester .portal-field > input, .course-semester .portal-field > select { box-sizing: border-box; min-height: 4.4rem; }
+.portal-tag { display: inline-block; font-family: var(--stack-nav); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; border: 1px solid var(--forest); color: var(--forest); border-radius: 999px; padding: 1px 10px; margin-inline-start: 10px; vertical-align: middle; }

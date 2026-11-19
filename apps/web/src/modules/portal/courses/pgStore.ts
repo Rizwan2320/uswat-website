@@ -5,10 +5,25 @@
 import type pg from 'pg'
 
 import { LIMITS } from './rules'
-import type { AddOutcome, Course, CourseStore } from './types'
+import type { AddOutcome, Course, CourseInput, CourseStore } from './types'
 
 type Row = { id: string; code: string; title: string; season: Course['season']; year: number; programme: string; source: Course['source'] }
 const SEASON_ORDER = `case "season" when 'Winter' then 4 when 'Fall' then 3 when 'Summer' then 2 else 1 end`
+
+/**
+ * Inserts one course inside a transaction the caller has opened. Takes the per-account advisory lock (held to the end of the
+ * transaction), checks the limit, and skips a repeat of the same code and semester. Shared by the page and the import step.
+ */
+export async function insertCourseTx(client: pg.PoolClient, accountId: string, c: CourseInput, source: Course['source']): Promise<AddOutcome> {
+  await client.query(`select pg_advisory_xact_lock(hashtext($1))`, [`course_taught:${accountId}`])
+  const n = await client.query<{ n: number }>(`select count(*)::int as n from "course_taught" where "userId" = $1`, [accountId])
+  if (n.rows[0].n >= LIMITS.perAccount) return 'limit'
+  const r = await client.query(
+    `insert into "course_taught" ("userId","code","title","season","year","programme","source") values ($1,$2,$3,$4,$5,$6,$7) on conflict ("userId","code","season","year") do nothing`,
+    [accountId, c.code, c.title, c.season, c.year, c.programme, source],
+  )
+  return r.rowCount === 1 ? 'added' : 'duplicate'
+}
 
 export function createPgCourseStore(pool: pg.Pool): CourseStore {
   return {
@@ -23,18 +38,9 @@ export function createPgCourseStore(pool: pg.Pool): CourseStore {
       const client = await pool.connect()
       try {
         await client.query('begin')
-        await client.query(`select pg_advisory_xact_lock(hashtext($1))`, [`course_taught:${accountId}`])
-        const n = await client.query<{ n: number }>(`select count(*)::int as n from "course_taught" where "userId" = $1`, [accountId])
-        if (n.rows[0].n >= LIMITS.perAccount) {
-          await client.query('rollback')
-          return 'limit'
-        }
-        const r = await client.query(
-          `insert into "course_taught" ("userId","code","title","season","year","programme") values ($1,$2,$3,$4,$5,$6) on conflict ("userId","code","season","year") do nothing`,
-          [accountId, c.code, c.title, c.season, c.year, c.programme],
-        )
-        await client.query('commit')
-        return r.rowCount === 1 ? 'added' : 'duplicate'
+        const outcome = await insertCourseTx(client, accountId, c, 'manual')
+        await client.query(outcome === 'limit' ? 'rollback' : 'commit')
+        return outcome
       } catch (e) {
         await client.query('rollback')
         throw e

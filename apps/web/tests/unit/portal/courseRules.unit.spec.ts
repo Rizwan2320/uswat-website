@@ -37,7 +37,7 @@ describe('validateCourse', () => {
   })
   it('refuses other keys and non-objects', () => {
     expect(validateCourse(good({ userId: 'u2' }), NOW)).toEqual({ ok: false, errors: { form: 'unknown' } })
-    expect(validateCourse(good({ source: 'odoo' }), NOW)).toEqual({ ok: false, errors: { form: 'unknown' } })
+    expect(validateCourse(good({ source: 'import' }), NOW)).toEqual({ ok: false, errors: { form: 'unknown' } })
     for (const v of [null, 'x', 3, [], undefined]) expect(validateCourse(v, NOW).ok).toBe(false)
   })
   it('strips control and direction-override characters', () => {

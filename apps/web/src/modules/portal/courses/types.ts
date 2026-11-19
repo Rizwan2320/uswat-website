@@ -1,9 +1,9 @@
 export const SEASONS = ['Spring', 'Summer', 'Fall', 'Winter'] as const
 export type Season = (typeof SEASONS)[number]
 
-/** A course the person teaches. `source` tells hand entries from a later read-only feed (Odoo, after approval, ADR-0006). */
+/** A course the person teaches. `source` tells hand entries from an imported record (an uploaded file, loaded by the import step). */
 export type CourseInput = { code: string; title: string; season: Season; year: number; programme: string }
-export type Course = CourseInput & { id: string; source: 'manual' | 'odoo' }
+export type Course = CourseInput & { id: string; source: 'manual' | 'import' }
 
 export type AddOutcome = 'added' | 'duplicate' | 'limit'
 
