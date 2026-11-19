@@ -23,7 +23,7 @@ export default async function CvPage({ searchParams }: { searchParams: Promise<{
   return (
     <Shell email={email} wide>
       <div className="cv-tools">
-        <h1>{COPY.cv.title}</h1>
+        <h2>{COPY.cv.title}</h2>
         <p>{COPY.cv.intro}</p>
         <nav aria-label={COPY.cv.layoutLabel} className="cv-layouts">
           {TEMPLATES.map((t) => (
