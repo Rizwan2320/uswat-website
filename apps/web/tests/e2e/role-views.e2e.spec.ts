@@ -115,3 +115,28 @@ test('editor: can delete their own empty draft, but a published page cannot be d
   const still = await fetch(`${BASE}/api/pages/${fx.page.id}`)
   expect(still.status).toBe(200)
 })
+
+// Operations section (slice 3t, P3t-c): the three roles that run the site see it; everyone else does not.
+for (const who of ['admin', 'siteManager', 'auditor'] as const) {
+  test(`${who}: sees the Operations section on the admin home`, async ({ page }) => {
+    const errors: string[] = []
+    page.on('console', (m) => {
+      if (m.type() === 'error') errors.push(m.text())
+    })
+    await signIn(page, fx[who])
+    const ops = page.getByRole('region', { name: 'Operations' })
+    await expect(ops).toBeVisible({ timeout: 30_000 })
+    await expect(ops.getByTestId('operations-sweep')).toContainText('Automatic upkeep')
+    await expect(ops.getByTestId('operations-offices')).toContainText('Work waiting, by office')
+    await expect(ops.getByTestId('operations-other')).toContainText('Images without alt text')
+    expect(errors.filter((e) => !/favicon|Failed to load resource/i.test(e))).toEqual([])
+  })
+}
+
+for (const who of ['editor', 'approver', 'contributor'] as const) {
+  test(`${who}: does not see the Operations section`, async ({ page }) => {
+    await signIn(page, fx[who])
+    await expect(page.getByRole('region', { name: 'Your work' })).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByRole('region', { name: 'Operations' })).toHaveCount(0)
+  })
+}

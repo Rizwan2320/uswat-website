@@ -502,3 +502,11 @@ P3 agent (slice 3a), own entry:
 - Touches the main agent's `NewsEvents` component (first card no longer shows the NIIBS photo for every story; "view all" goes to `/news` when news come from the CMS) and the home `revalidate` (3600 to 300). Please look at those two edits.
 - Not run: production build, e2e, Lighthouse.
 - Also open: #58 (office pages, rebased on `main`), #60 (data dictionary). #43, #51, #56 were integrated by the main agent in the merges of 165b6eb.
+
+## P3 slice 3t (2026-11-19, branch `p3/operations-3t`, from `main`)
+- Built: a read-only **Operations** section on the admin home, under the editor dashboard, for platform admin, site manager and auditor only. It shows whether the automatic upkeep (the hourly sweep) ran (on schedule, late after 3 hours, failed, or never), what the last run did, the last 24 hours, work waiting by office (drafts, in review, needs a fresh check, ending within 14 days), and images without alt text. It says plainly that last import, broken links and snapshots are not recorded in the CMS, so they are not shown.
+- Behind it: finished sweep runs are now kept (`jobs.deleteJobOnComplete: false`) and the sweep deletes its own runs older than 30 days (PROPOSED, `SWEEP_HISTORY_DAYS`). Rules in `src/governance/operations.ts` (pure, unit-tested); panel in `src/admin/OperationsPanel/`. Brief `docs/briefs/p3t-operations-panel.md`; predictions P3t-a to d with actuals.
+- No migration (Payload: "No schema changes detected"). No new dependency. English only, like the editor dashboard.
+- Result: typecheck and lint clean, 821 unit and integration tests pass (new: 16 + 3 unit, 6 integration), build passes, 25 browser tests pass (6 new: three roles see it, three do not), screenshot checked.
+- Not run: the full Playwright suite in one go (it stops on an import error in `legacy-redirects.e2e.spec.ts`, not changed here; I ran the three admin specs one by one), visual snapshots, the live site and the real scheduler (the GitHub Action runs against the demo only after a merge).
+- Note for the owner: the section can only show runs once the scheduler is calling the site with the right `CRON_SECRET`; until then it says "has not run yet", which is the point.

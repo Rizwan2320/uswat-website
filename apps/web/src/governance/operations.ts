@@ -123,9 +123,12 @@ const ago = (fromIso: string, now: Date): string => {
 
 /** Pure: what the recent sweep rows say about whether the upkeep is working. */
 export function summarizeSweeps(jobs: JobRow[], now: Date, lateAfterHours = SWEEP_LATE_AFTER_HOURS): SweepSummary {
+  // A run that claims to have finished in the future (more than ten minutes ahead, to allow for
+  // clock differences) cannot be trusted to say anything about now, so it is left out.
+  const latest = now.getTime() + 10 * 60_000
   const runs = jobs
     .map(toRun)
-    .filter((r): r is SweepRun => r !== null)
+    .filter((r): r is SweepRun => r !== null && Date.parse(r.at) <= latest)
     .sort((a, b) => b.at.localeCompare(a.at))
   const last = runs[0] ?? null
   const lastGood = runs.find((r) => !r.failed) ?? null

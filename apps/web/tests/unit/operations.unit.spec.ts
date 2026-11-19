@@ -76,6 +76,11 @@ describe('summarizeSweeps', () => {
     expect(s.last?.reportReadable).toBe(false)
     expect(s.state).toBe('ok')
   })
+  it('ignores a run dated in the future instead of reporting it as "just now"', () => {
+    const future = run(-48)
+    expect(summarizeSweeps([future], NOW).state).toBe('never')
+    expect(summarizeSweeps([future, run(2)], NOW).message).toContain('2 hours ago')
+  })
   it('counts skipped records', () => {
     const rep = report({ skipped: [{ id: 1, action: 'publish', reason: 'Not verified' }] })
     expect(summarizeSweeps([run(1, {}, rep)], NOW).last24h.skipped).toBe(1)
