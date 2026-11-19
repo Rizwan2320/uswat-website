@@ -10,6 +10,9 @@ import { randomBytes } from 'node:crypto'
 import { applySeeds } from '../../../scripts/import/seeds/apply'
 import { applyArticleSeeds } from '../../../scripts/import/seeds/articles'
 import { applyContactSeeds } from '../../../scripts/import/seeds/contacts'
+import { renderPng } from './renderPng'
+import { applyMediaSeeds } from '../../../scripts/import/seeds/media'
+import { applyPageSeeds } from '../../../scripts/import/seeds/pages'
 import { assertLocalDatabase, type Cms } from '../../../scripts/import/writer'
 
 async function main() {
@@ -38,8 +41,10 @@ async function main() {
   const res = await applySeeds(payload as unknown as Cms, { user: { ...user, collection: 'users' } })
   const actor = { user: { ...user, collection: 'users' } }
   const contacts = await applyContactSeeds(payload as unknown as Cms, actor)
-  const articles = await applyArticleSeeds(payload as unknown as Cms, actor)
-  console.log(JSON.stringify({ ...res, contacts, articles }))
+  const media = await applyMediaSeeds(payload as unknown as Cms, actor, renderPng)
+  const articles = await applyArticleSeeds(payload as unknown as Cms, actor, Date.now(), media.ids)
+  const pages = await applyPageSeeds(payload as unknown as Cms, actor)
+  console.log(JSON.stringify({ ...res, contacts, media: { created: media.created, unchanged: media.unchanged }, articles, pages }))
 }
 
 main().then(() => process.exit(0), (e) => {

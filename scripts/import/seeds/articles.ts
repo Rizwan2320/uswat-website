@@ -9,6 +9,7 @@ import { textToLexical } from '../writer'
 import { SAMPLE_OWNER_OFFICE, sampleSource } from './data'
 import type { SeedActor } from './apply'
 import { addResults, emptyResult, loadBySource, seedRecord, type FlowResult, type SeedState } from './flow'
+import { PDF_ADDRESS, placeholderImages } from './placeholders'
 
 type Coll = 'posts' | 'notices' | 'events' | 'jobs' | 'tenders'
 type Role = 'current' | 'attachment' | 'closed' | 'long' | 'today' | 'draft-1' | 'draft-2' | 'review-1' | 'review-2'
@@ -122,11 +123,24 @@ export const meritLists: MeritSeed[] = [
   { slug: 'sample-merit-list-review', title: 'Sample merit list: waiting for review', cycle: 'Sample Spring', programme: 'Sample Programme B', state: 'in_review', documents: ['Sample merit list (PDF)'] },
 ]
 
+/** The first published record of each kind and the one with a file get a placeholder hero image, so the pickers have content. */
+function hero(a: ArticleSeed, media: Map<string, number | string>): number | string | undefined {
+  if (a.state !== 'published' || (a.role !== 'current' && a.role !== 'attachment')) return undefined
+  return media.get(placeholderImages[a.role === 'current' ? 0 : 1].name)
+}
+
 const DAY = 86_400_000
-const SAMPLE_FILE = (slug: string) => `https://sample.invalid/files/${slug}.pdf`
+/** The one generated placeholder PDF, served from the site itself (a path on this site is a valid attachment address). */
+const SAMPLE_FILE = (_slug: string) => PDF_ADDRESS
 const iso = (now: number, days: number) => new Date(now + days * DAY).toISOString()
 
-export async function applyArticleSeeds(cms: Cms, actor: SeedActor, now = Date.now()): Promise<FlowResult> {
+export async function applyArticleSeeds(
+  cms: Cms,
+  actor: SeedActor,
+  now = Date.now(),
+  /** Media ids by placeholder file name (from applyMediaSeeds); the published records with a file get one as hero image. */
+  media: Map<string, number | string> = new Map(),
+): Promise<FlowResult> {
   let out = emptyResult()
   const tagIds = new Map<string, number | string>()
 
@@ -156,6 +170,7 @@ export async function applyArticleSeeds(cms: Cms, actor: SeedActor, now = Date.n
         ...(collection === 'posts' ? { content: lexical(a.body) } : { excerpt: a.excerpt, body: lexical(a.body) }),
         ...(collection === 'events' ? { startsAt: iso(now, a.startsDays ?? 0), venue: 'Sample Hall' } : {}),
         ...(a.attachment && collection !== 'posts' ? { attachments: [{ label: a.attachment, url: SAMPLE_FILE(a.slug) }] } : {}),
+        ...(hero(a, media) !== undefined ? { heroImage: hero(a, media) } : {}),
       }
       // News (posts) keeps one title in every language, so its Urdu case is the Urdu title itself.
       if (collection === 'posts' && a.urdu) data.title = a.urdu.title
