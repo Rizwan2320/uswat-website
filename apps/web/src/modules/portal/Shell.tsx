@@ -15,6 +15,7 @@ export default function Shell({ email, wide, children }: { email?: string | null
             <Link href="/portal">{COPY.nav.home}</Link>
             <Link href="/portal/profile">{COPY.nav.profile}</Link>
             <Link href="/portal/publications">{COPY.nav.publications}</Link>
+            <Link href="/portal/courses">{COPY.nav.courses}</Link>
             <Link href="/portal/security">{COPY.nav.security}</Link>
             <SignOutButton />
           </nav>
