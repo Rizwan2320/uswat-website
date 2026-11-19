@@ -116,7 +116,7 @@ test('editor: can delete their own empty draft, but a published page cannot be d
   expect(still.status).toBe(200)
 })
 
-// Operations section (slice 3t, P3t-c): the three roles that run the site see it; everyone else does not.
+// Operations section (slice 3v, P3v-c): the three roles that run the site see it; everyone else does not.
 for (const who of ['admin', 'siteManager', 'auditor'] as const) {
   test(`${who}: sees the Operations section on the admin home`, async ({ page }) => {
     const errors: string[] = []

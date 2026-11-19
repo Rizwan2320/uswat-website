@@ -1,5 +1,5 @@
 /**
- * The Operations section of the admin home (slice 3t): is the automatic upkeep running, and what
+ * The Operations section of the admin home (slice 3v): is the automatic upkeep running, and what
  * is waiting, by office. Read-only. The rules are pure functions so they are unit-tested; the
  * loader at the bottom reads the database.
  *

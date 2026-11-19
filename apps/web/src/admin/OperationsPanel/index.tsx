@@ -6,7 +6,7 @@ import { OperationsView } from './OperationsView'
 
 /**
  * Shown on the admin home page under the editor dashboard, for platform admin, site manager and
- * auditor only (slice 3t). Read-only. Anyone else gets nothing, and the data is not loaded.
+ * auditor only (slice 3v). Read-only. Anyone else gets nothing, and the data is not loaded.
  */
 export default async function OperationsPanel({ payload, user }: ServerProps) {
   if (!user) return null

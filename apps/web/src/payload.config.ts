@@ -47,7 +47,7 @@ const built = buildConfig({
       // Feel free to delete this at any time. Simply remove the line below.
       beforeLogin: ['@/components/BeforeLogin'],
       // The editor dashboard (CMS-09): my drafts, review queue, expiring soon, stale, needs alt.
-      // Operations (3t): sweep status and work by office, for admin, site manager and auditor only.
+      // Operations (3v): sweep status and work by office, for admin, site manager and auditor only.
       beforeDashboard: ['@/admin/EditorDashboard', '@/admin/OperationsPanel'],
     },
     importMap: {

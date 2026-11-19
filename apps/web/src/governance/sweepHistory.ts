@@ -1,5 +1,5 @@
 /**
- * Keeps the sweep's own run history short (slice 3t). Payload's job rows are the history: with
+ * Keeps the sweep's own run history short (slice 3v). Payload's job rows are the history: with
  * `deleteJobOnComplete: false` each run stays, with `completedAt`, `hasError` and the report.
  * This removes `lifecycleSweep` runs older than SWEEP_HISTORY_DAYS. It touches no other task and
  * never a run from the last day, so a clock mistake cannot empty the history.

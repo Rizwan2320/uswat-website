@@ -1,4 +1,4 @@
-# P3 slice 3t: Operations section on the admin dashboard
+# P3 slice 3v: Operations section on the admin dashboard
 
 **Branch:** `p3/operations-3t`, from `main`. **Lane:** `src/governance`, `src/admin`, `payload.config.ts`, tests, docs. **No schema change, no migration.**
 
