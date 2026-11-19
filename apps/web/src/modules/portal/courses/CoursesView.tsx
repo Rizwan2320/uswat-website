@@ -95,11 +95,12 @@ export default function CoursesView({ courses, sampleMode, defaultYear }: { cour
 
       <section className="portal-card" aria-labelledby={`${uid}-list`} data-testid="course-list">
         <h2 id={`${uid}-list`} style={{ marginTop: 0 }}>{C.listTitle(courses.length)}</h2>
+        {courses.some((c) => c.source === 'import') ? <p className="hint">{C.importedHelp}</p> : null}
         {courses.length === 0 ? <p>{C.empty}</p> : (
           <ul className="pub-list">
             {courses.map((c) => (
               <li key={c.id} className="pub-item" data-testid="course-item">
-                <strong dir="auto">{c.code} · {c.title}</strong>
+                <strong dir="auto">{c.code} · {c.title}{c.source === 'import' ? <span className="portal-tag">{C.imported}</span> : null}</strong>
                 <span className="pub-meta">{C.semester(C.seasons[c.season] ?? c.season, c.year)}{c.programme ? ` · ${c.programme}` : ''}</span>
                 {c.source === 'manual' ? (
                   <div className="pub-actions">

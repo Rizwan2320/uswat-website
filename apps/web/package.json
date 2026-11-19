@@ -29,7 +29,8 @@
     "dictionary:build": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/data-dictionary.ts",
     "test:unit": "vitest run --config ./vitest.config.mts tests/unit",
     "identity:migrate": "tsx scripts/identity-migrate.ts",
-    "identity:purge": "tsx scripts/identity-purge.ts"
+    "identity:purge": "tsx scripts/identity-purge.ts",
+    "identity:courses-import": "tsx scripts/courses-import.ts"
   },
   "dependencies": {
     "@better-auth/passkey": "1.7.18",

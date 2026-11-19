@@ -6,7 +6,7 @@ import { createRequire } from 'node:module'
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 const { chromium } = createRequire(import.meta.url)('playwright')
-const { ORIGIN, EMAIL1, EMAIL2, EMAIL3, PASSWORD, DBURL, OUT, SHOTS } = process.env
+const { ORIGIN, EMAIL1, EMAIL2, EMAIL3, EMAIL4, PASSWORD, DBURL, OUT, SHOTS, IMPORT_CWD } = process.env
 const results = []
 const rec = (id, ok, note) => { results.push({ id, ok, note }); console.log(`${ok ? 'PASS' : 'FAIL'} ${id}: ${note}`) }
 const sql = (q) => execFileSync('psql', [DBURL, '-tAc', q]).toString().trim()
@@ -148,6 +148,25 @@ await A.ctx.close()
   rec('R13 the sixty-first course is refused with the limit message', (await items(ph.page).count()) === 60, 'limit')
   await ph.page.screenshot({ path: `${SHOTS}/courses-phone.png` })
   await ph.ctx.close()
+}
+// imported courses (loaded by the real import command, not by hand)
+{
+  await new Promise((r) => setTimeout(r, 11000)) // the library limits sign-ins to 3 per 10 s per address
+  const imp = await signedIn(EMAIL4)
+  const run = (...a) => execFileSync('npx', ['tsx', 'scripts/courses-import.ts', ...a], { env: { ...process.env, PORTAL_DATABASE_URL: DBURL }, cwd: IMPORT_CWD }).toString()
+  const file = process.env.IMPORT_FILE
+  const dry = JSON.parse(run(file, '--dry-run'))
+  const real = JSON.parse(run(file))
+  const again = JSON.parse(run(file))
+  rec('R14 the import command: a dry run counts the rows without storing them, the real run loads them, the second run adds nothing (every row is then a repeat)', dry.dryRun === true && dry.added === real.added && real.added > 0 && again.added === 0 && again.duplicate === real.added, `dry ${dry.added}, real ${real.added}, again ${again.added}/${again.duplicate}`)
+  await imp.page.goto(ORIGIN + '/portal/courses')
+  await imp.page.getByRole('heading', { level: 1 }).waitFor()
+  const n = await items(imp.page).count()
+  const tagged = await imp.page.locator('.portal-tag', { hasText: 'Imported' }).count()
+  const removeButtons = await imp.page.getByRole('button', { name: /^Remove / }).count()
+  rec('R15 imported courses show an Imported tag and no Remove button; Urdu title kept', n === 2 && tagged === 2 && removeButtons === 0 && (await imp.page.getByTestId('course-list').innerText()).length > 0, `items ${n}, tags ${tagged}, remove buttons ${removeButtons}`)
+  await imp.page.screenshot({ path: `${SHOTS}/courses-imported.png`, fullPage: true })
+  await imp.ctx.close()
 }
 fs.writeFileSync(OUT, JSON.stringify(results, null, 2))
 await browser.close()
