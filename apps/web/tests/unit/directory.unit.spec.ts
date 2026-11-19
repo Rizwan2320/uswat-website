@@ -60,12 +60,12 @@ describe('grouping', () => {
 })
 
 describe('Sample contact seeds', () => {
-  it('are invented: marked Sample, numbers are the placeholder +00 000 000000n, addresses are on sample.invalid, keys are unique', () => {
+  it('are invented: marked Sample, numbers are the placeholder 000-000000n, addresses are on sample.invalid, keys are unique', () => {
     expect(new Set(contacts.map((c) => c.key)).size).toBe(contacts.length)
     for (const c of contacts) {
       expect(c.name.startsWith('Sample'), c.name).toBe(true)
       expect(c.section.startsWith('Sample'), c.section).toBe(true)
-      for (const p of c.phones) expect(p, p).toMatch(/^\+00 000 000000\d$/)
+      for (const p of c.phones) expect(p, p).toMatch(/^000-000000\d$/)
       if (c.email) expect(c.email.endsWith(`@${SAMPLE_HOST}`)).toBe(true)
     }
   })

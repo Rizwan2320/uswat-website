@@ -38,8 +38,10 @@ export const facultyGroups: FacultyGroupSeed[] = [
 ]
 
 export const campuses: CampusSeed[] = [
-  { slug: 'sample-main-campus', name: 'Sample Main Campus' },
-  { slug: 'sample-second-campus', name: 'Sample Second Campus' },
+  // Slugs are the ones the route map expects for /campuses/{slug}; the names are Sample.
+  { slug: 'main', name: 'Sample Main Campus' },
+  { slug: 'sangota', name: 'Sample Sangota Campus' },
+  { slug: 'women', name: 'Sample Women Campus' },
 ]
 
 export const people: PersonSeed[] = Array.from({ length: 10 }, (_, i) => {
@@ -84,7 +86,7 @@ export const departments: DepartmentSeed[] = [
   dept('business-administration', 'Business Administration', 'sample-faculty-of-social-and-management-sciences', 'sample-person-08'),
 ]
 
-const prog = (level: string, subject: string, deptSlug: string, years: number, campus = 'sample-main-campus'): ProgrammeSeed => ({
+const prog = (level: string, subject: string, deptSlug: string, years: number, campus = 'main'): ProgrammeSeed => ({
   slug: `sample-${level.toLowerCase()}-${subject.toLowerCase().replaceAll(' ', '-')}`,
   name: `Sample ${level} ${subject}`,
   department: `sample-department-of-${deptSlug}`,
@@ -98,12 +100,12 @@ export const programmes: ProgrammeSeed[] = [
   prog('MS', 'Physics', 'physics', 2),
   prog('BS', 'Chemistry', 'chemistry', 4),
   prog('BS', 'Computer Science', 'computer-science', 4),
-  prog('MS', 'Computer Science', 'computer-science', 2, 'sample-second-campus'),
+  prog('MS', 'Computer Science', 'computer-science', 2, 'sangota'),
   prog('PhD', 'Computer Science', 'computer-science', 3),
   prog('BS', 'Mathematics', 'mathematics', 4),
   prog('BS', 'English', 'english', 4),
   prog('MA', 'English', 'english', 2),
-  prog('BS', 'History', 'history', 4, 'sample-second-campus'),
+  prog('BS', 'History', 'history', 4, 'sangota'),
   prog('BS', 'Economics', 'economics', 4),
   prog('MS', 'Economics', 'economics', 2),
   prog('BBA', 'Business Administration', 'business-administration', 4),

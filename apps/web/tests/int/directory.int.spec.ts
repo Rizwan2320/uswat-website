@@ -48,7 +48,7 @@ describe('contact directory', () => {
     const actor = { user: { ...(admin as unknown as Record<string, unknown>), collection: 'users' } }
     await applyContactSeeds(payload as unknown as Cms, actor)
     const second = await applyContactSeeds(payload as unknown as Cms, actor)
-    expect(second).toEqual({ created: 0, published: 0, unchanged: contacts.length })
+    expect(second).toEqual({ created: 0, published: 0, inReview: 0, drafts: 0, unchanged: contacts.length })
     const sample = (await listContacts()).filter((e) => e.sample && e.name.startsWith('Sample'))
     expect(sample.length).toBeGreaterThanOrEqual(contacts.length)
     expect(sample.every((e) => e.phones.every((p) => p.href === null) && e.emailHref === null)).toBe(true)

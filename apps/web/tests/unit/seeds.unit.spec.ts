@@ -9,13 +9,14 @@ const all = Object.entries(rows).flatMap(([c, rs]) => rs.map((r) => ({ c, ...r }
 describe('Sample seed data', () => {
   it('has the planned counts', () => {
     expect(Object.fromEntries(Object.entries(rows).map(([c, r]) => [c, r.length]))).toEqual({
-      faculties: 3, campuses: 2, people: 10, offices: 4, departments: 8, programmes: 14,
+      faculties: 3, campuses: 3, people: 10, offices: 4, departments: 8, programmes: 14,
     })
   })
   it('labels every record Sample and gives it a sample.invalid source', () => {
     for (const r of all) {
       expect(r.name.startsWith('Sample'), r.name).toBe(true)
-      expect(r.slug.startsWith('sample-'), r.slug).toBe(true)
+      // Campuses keep the slugs the route map expects (main, sangota, women); their names and source say Sample.
+      if (r.c !== 'campuses') expect(r.slug.startsWith('sample-'), r.slug).toBe(true)
       expect(sampleSource(r.c, r.slug)).toContain(`https://${SAMPLE_HOST}/seed/`)
     }
     expect(SAMPLE_OWNER_OFFICE.startsWith('Sample')).toBe(true)
