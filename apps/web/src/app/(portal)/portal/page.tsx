@@ -17,6 +17,7 @@ export default async function PortalHome() {
       <p><Link className="portal-link" href="/portal/profile">{COPY.home.profileLink}</Link></p>
       <p><Link className="portal-link" href="/portal/publications">{COPY.home.publicationsLink}</Link></p>
       <p><Link className="portal-link" href="/portal/courses">{COPY.home.coursesLink}</Link></p>
+      <p><Link className="portal-link" href="/portal/cv">{COPY.home.cvLink}</Link></p>
       <p><Link className="portal-link" href="/portal/security">{COPY.home.securityLink}</Link></p>
     </Shell>
   )
