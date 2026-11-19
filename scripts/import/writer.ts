@@ -33,6 +33,38 @@ export function assertLocalDatabase(url: string | undefined): void {
     throw new Error(`Refusing to write: database host "${host}" is not this machine`)
 }
 
+/** The three variables that matter are VERCEL_ENV, SEED_SAMPLE_ON_PREVIEW and SEED_ALLOWED_DB_HOST. */
+export type SeedEnv = Record<string, string | undefined>
+
+/**
+ * Where Sample seeds may write (ADR-0026). A database on this machine is allowed (as `assertLocalDatabase`). A hosted
+ * database is allowed only when ALL of these hold: `VERCEL_ENV` is `preview`, `SEED_SAMPLE_ON_PREVIEW` is exactly
+ * `true`, and the database host equals `SEED_ALLOWED_DB_HOST`. A production build (`VERCEL_ENV=production`) is
+ * refused whatever else is set, even for a local address. Returns which route was taken; throws with the reason.
+ * `assertLocalDatabase` itself is unchanged for every other caller.
+ */
+export function assertSeedTarget(url: string | undefined, env: SeedEnv): 'local' | 'preview' {
+  if (env.VERCEL_ENV === 'production') throw new Error('Refusing to seed: this is a production build (VERCEL_ENV=production)')
+  try {
+    assertLocalDatabase(url)
+    return 'local'
+  } catch (localError) {
+    if (!url) throw localError
+  }
+  let host = ''
+  try {
+    host = new URL(url as string).hostname.toLowerCase()
+  } catch {
+    throw new Error('Refusing to seed: DATABASE_URL is not a valid address')
+  }
+  if (env.VERCEL_ENV !== 'preview') throw new Error(`Refusing to seed a hosted database: VERCEL_ENV is "${env.VERCEL_ENV ?? ''}", not "preview"`)
+  if (env.SEED_SAMPLE_ON_PREVIEW !== 'true') throw new Error('Refusing to seed a hosted database: SEED_SAMPLE_ON_PREVIEW is not "true"')
+  const allowed = env.SEED_ALLOWED_DB_HOST?.trim().toLowerCase()
+  if (!allowed) throw new Error('Refusing to seed a hosted database: SEED_ALLOWED_DB_HOST is not set')
+  if (host !== allowed) throw new Error(`Refusing to seed a hosted database: host "${host}" is not the allowed preview host`)
+  return 'preview'
+}
+
 export function textToLexical(text: string) {
   const paragraph = (t: string) => ({
     type: 'paragraph',
