@@ -3,6 +3,8 @@
 export const DEPARTMENTS_PATH = '/academics/departments'
 export const PROGRAMMES_PATH = '/academics/programmes'
 export const OFFICES_PATH = '/administration'
+export const CAMPUSES_PATH = '/campuses'
+export const ACADEMICS_PATH = '/academics'
 export const LIST_REVALIDATE_SECONDS = 300
 
 export type Doc = Record<string, unknown> & { id: number | string }

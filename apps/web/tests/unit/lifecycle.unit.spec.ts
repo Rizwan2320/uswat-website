@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   currentWhere,
+  defaultReviewDueAt,
   dueAction,
   reviewQueueWhere,
   type LifecycleRecord,
@@ -114,5 +115,18 @@ describe('reviewQueueWhere', () => {
     expect(w.or).toHaveLength(3)
     expect(JSON.stringify(w)).toContain('"importer","watcher"')
     expect(JSON.stringify(w)).toContain('stale')
+  })
+})
+
+describe('defaultReviewDueAt (3s, proposed values)', () => {
+  const now = '2026-11-09T10:00:00.000Z'
+  it('gives standard 180 days and low 365 days, and nothing for High impact or an unknown risk', () => {
+    expect(defaultReviewDueAt('standard', now)).toBe('2027-05-08T10:00:00.000Z')
+    expect(defaultReviewDueAt('low', now)).toBe('2027-11-09T10:00:00.000Z')
+    expect(defaultReviewDueAt('high_impact', now)).toBeNull()
+    expect(defaultReviewDueAt('whatever', now)).toBeNull()
+  })
+  it('returns null for a time it cannot read', () => {
+    expect(defaultReviewDueAt('standard', 'not a date')).toBeNull()
   })
 })

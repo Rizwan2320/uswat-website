@@ -273,6 +273,7 @@ export interface Page {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -381,6 +382,7 @@ export interface Post {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -622,6 +624,7 @@ export interface ArticleTag {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -1065,6 +1068,7 @@ export interface AffiliatedCollege {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -1132,6 +1136,7 @@ export interface ContactDirectory {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -1212,6 +1217,7 @@ export interface MeritList {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -1344,6 +1350,7 @@ export interface Notice {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -1478,6 +1485,7 @@ export interface Event {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -1610,6 +1618,7 @@ export interface Job {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -1742,6 +1751,7 @@ export interface Tender {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -1809,6 +1819,7 @@ export interface Faculty {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -1906,6 +1917,7 @@ export interface Department {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -1994,6 +2006,7 @@ export interface Person {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -2113,6 +2126,7 @@ export interface Office {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -2187,6 +2201,7 @@ export interface Programme {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -2255,6 +2270,7 @@ export interface Campus {
      */
     verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
     verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
     /**
      * The date someone should re-check this. Needed to publish a high-impact record.
      */
@@ -2746,6 +2762,7 @@ export interface PagesSelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;
@@ -2882,6 +2899,7 @@ export interface PostsSelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;
@@ -3067,6 +3085,7 @@ export interface AffiliatedCollegesSelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;
@@ -3104,6 +3123,7 @@ export interface ArticleTagsSelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;
@@ -3142,6 +3162,7 @@ export interface ContactDirectorySelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;
@@ -3181,6 +3202,7 @@ export interface MeritListsSelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;
@@ -3233,6 +3255,7 @@ export interface NoticesSelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;
@@ -3287,6 +3310,7 @@ export interface EventsSelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;
@@ -3339,6 +3363,7 @@ export interface JobsSelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;
@@ -3391,6 +3416,7 @@ export interface TendersSelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;
@@ -3423,6 +3449,7 @@ export interface FacultiesSelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;
@@ -3473,6 +3500,7 @@ export interface DepartmentsSelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;
@@ -3512,6 +3540,7 @@ export interface ProgrammesSelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;
@@ -3567,6 +3596,7 @@ export interface OfficesSelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;
@@ -3600,6 +3630,7 @@ export interface CampusesSelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;
@@ -3652,6 +3683,7 @@ export interface PeopleSelect<T extends boolean = true> {
         source?: T;
         verificationStatus?: T;
         verifiedAt?: T;
+        verifiedBy?: T;
         reviewDueAt?: T;
         riskClass?: T;
         publishAt?: T;

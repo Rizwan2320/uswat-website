@@ -83,4 +83,6 @@ You can delete a **draft that was never published**, if it belongs to your offic
 
 Anything that has been sent for review, approved, published or archived cannot be deleted by editors, approvers or contributors. To remove something that was published, ask an approver to archive it (it then leaves the public pages and search), or ask a platform administrator to delete it. Site managers can delete these too, except High impact items.
 
+Nobody can delete an item that other items still use. For example, a department that people or programmes point to cannot be deleted; the message says how many of what. Remove those links first, or archive the item instead.
+
 The **Delete** button can appear on items you are not allowed to delete. The system refuses the delete and says why; nothing is removed.

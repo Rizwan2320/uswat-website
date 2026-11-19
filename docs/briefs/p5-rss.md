@@ -1,0 +1,9 @@
+# Brief: RSS feeds for the article types (agent 4, 2026-11-18)
+
+- **Objective.** `/{news,notices,events,jobs,tenders}/feed.xml`: an RSS 2.0 feed of the newest published, current records of each type. The plan lists "listings with filters and RSS" under P5 (RSS is on its cut list, so this is small and self-contained).
+- **Paths touched.** New `apps/web/src/site/feeds/{rss,collect}.ts` and five one-line route files under `app/(site)/(cms)/{type}/feed.xml/route.ts`; `listingMetadata` gains a feed link (`alternates.types`) so readers can discover it; a unit test; docs.
+- **Rules kept.** Reads are anonymous (`overrideAccess: false`, `draft: false`), so a draft is never returned. Records whose source is on `sample.invalid` are left out, as in the sitemaps. Feed text is escaped and control characters are stripped. No collection, schema, token or route-map change; no new dependency (the XML is a plain string builder).
+- **Risks.** (1) A static `feed.xml` segment wins over `[slug]`, so a record slug cannot be `feed.xml`; slugs have no dot, so none can clash. (2) Feeds are cached 300 s under the tag `list:{type}`, the same bound as the lists, until the post types get revalidation hooks. (3) The site is `noindex`; feeds are public and unauthenticated like the pages. (4) The feed link text stays English until Urdu is supplied.
+- **Not here.** Full body text in the feed (rich text needs a serializer; the feed carries title, link, date and excerpt, which is what notices, events, jobs and tenders have; News has no excerpt field so its items carry the title only). A combined feed.
+- **Tests.** Unit: escaping, dates, structure. Integration: published and current only, no draft, no Sample. Run the real route against the dev server and parse the XML with a parser.
+- **Gate.** None of its own; part of G5 "FR" listings.
