@@ -104,3 +104,12 @@ describe('list items', () => {
     expect(toItem(TYPES.jobs, { ...doc, governance: { expireAt: '2026-11-01T00:00:00Z' } }, NOW).closed).toBe(true)
   })
 })
+
+describe('Sample flag on list items', () => {
+  const base = { id: 1, title: 'T', slug: 't' }
+  it('is set only for a record whose source is on sample.invalid', () => {
+    expect(toItem(TYPES.notices, { ...base, governance: { source: 'https://sample.invalid/seed/notices/t' } }, NOW).sample).toBe(true)
+    expect(toItem(TYPES.notices, { ...base, governance: { source: 'https://uswat.edu.pk/x' } }, NOW).sample).toBe(false)
+    expect(toItem(TYPES.notices, base, NOW).sample).toBe(false)
+  })
+})
