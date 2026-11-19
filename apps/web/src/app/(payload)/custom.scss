@@ -10,3 +10,88 @@ html[lang='ur'],
 html[lang='ur'] body {
   overflow-x: clip;
 }
+
+/*
+ * The admin looks like the website (slice 3u, docs/briefs/p3u-admin-look.md).
+ *
+ * Colours come from the site's design tokens (src/design/tokens.css, imported below), never copied.
+ * Payload's own defaults live in the `payload-default` layer, so plain rules here win. Light mode
+ * gets a forest-and-ivory scale; dark mode keeps Payload's dark surfaces and takes only the fonts
+ * and the green accent, because the website has no dark theme.
+ */
+@import '../../design/tokens.css';
+@import '@fontsource/lato/400.css';
+@import '@fontsource/lato/700.css';
+@import '@fontsource/poppins/500.css';
+@import '@fontsource/poppins/600.css';
+@import '@fontsource-variable/playfair-display';
+@import '@fontsource-variable/noto-nastaliq-urdu';
+
+:root {
+  // The site's families, by name (site.css sets the same names for the public pages).
+  --admin-serif: 'Playfair Display Variable', Georgia, 'Times New Roman', serif;
+  --admin-sans: 'Lato', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --admin-nav: 'Poppins', 'Lato', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --admin-urdu: 'Noto Nastaliq Urdu Variable', 'Noto Naskh Arabic', 'Lato', serif;
+
+  --font-body: var(--admin-sans);
+
+  // Payload's accent scale (links, focus ring, selected states) is blue by default. Here it runs from
+  // a pale tint of the site's soft green (50) through that green (500) to the deep forest (950).
+  // Both themes use the same scale; Payload flips the direction for dark mode.
+  @each $step, $pct in (50: 6, 100: 12, 150: 22, 200: 32, 250: 44, 300: 56, 350: 68, 400: 80, 450: 90) {
+    --color-success-#{$step}: color-mix(in srgb, var(--forest-soft) #{$pct * 1%}, white);
+  }
+  --color-success-500: var(--forest-soft);
+  @each $step, $pct in (550: 12, 600: 26, 650: 40, 700: 54, 750: 66, 800: 78, 850: 88, 900: 94, 950: 100) {
+    --color-success-#{$step}: color-mix(in srgb, var(--forest-deep) #{$pct * 1%}, var(--forest-soft));
+  }
+}
+
+// Light mode: greys become forest-tinted. 0 is the page (ivory), 1000 is the forest itself. The middle
+// steps climb quickly so mid-grey text (placeholders, help text, labels on tinted buttons) reaches 4.5:1
+// even on the 10 to 15 percent tints (the first pass at 62 percent for step 500 measured 3.34:1, and
+// inactive tab names at 55 percent measured 2.75:1). Steps 350 and up are therefore all text tones.
+html[data-theme='light'] {
+  @each $step, $pct in (
+    0: 0, 50: 5, 100: 10, 150: 15, 200: 20, 250: 27, 300: 34, 350: 72, 400: 73, 450: 74, 500: 76,
+    550: 79, 600: 83, 650: 87, 700: 90, 750: 93, 800: 95, 850: 97, 900: 98, 950: 99, 1000: 100
+  ) {
+    --color-base-#{$step}: color-mix(in srgb, var(--forest) #{$pct * 1%}, var(--ivory));
+  }
+}
+
+// Type: Playfair for headings, Poppins for buttons and navigation, Lato for everything else.
+h1,
+h2,
+.doc-header__title,
+.dashboard__label {
+  font-family: var(--admin-serif);
+}
+.btn,
+.nav__link,
+.nav-group__toggle,
+.nav__toggler {
+  font-family: var(--admin-nav);
+}
+
+// Urdu keeps the site's Nastaliq face. Nastaliq needs more line height than Latin type.
+html[lang='ur'] {
+  --font-body: var(--admin-urdu);
+  --admin-serif: var(--admin-urdu);
+  --admin-nav: var(--admin-urdu);
+}
+html[lang='ur'] body {
+  line-height: 1.9;
+}
+
+// Payload's own dark-mode "Locale:" label is grey on grey at 3.38:1; one step lighter passes.
+html[data-theme='dark'] .localizer-button__label {
+  color: var(--theme-elevation-700);
+}
+
+// Inactive tab names are dimmed to half strength by Payload, which reads at 2.75:1 on ivory. Three
+// quarters strength is still visibly quieter than the active tab (which also has the underline).
+.tabs-field__tab-button:not(.tabs-field__tab-button--active) {
+  opacity: 0.78;
+}

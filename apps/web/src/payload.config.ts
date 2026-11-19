@@ -43,14 +43,21 @@ const dirname = path.dirname(filename)
 const built = buildConfig({
   admin: {
     components: {
-      // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
-      // Feel free to delete this at any time. Simply remove the line below.
+      // The message above the sign-in form.
       beforeLogin: ['@/components/BeforeLogin'],
+      // The university crest and name on the sign-in page and in the menu (slice 3u).
+      graphics: { Icon: '@/admin/Brand/Icon', Logo: '@/admin/Brand/Logo' },
       // The editor dashboard (CMS-09): my drafts, review queue, expiring soon, stale, needs alt.
       beforeDashboard: ['@/admin/EditorDashboard'],
     },
     importMap: {
       baseDir: path.resolve(dirname),
+    },
+    // The browser tab (slice 3u).
+    meta: {
+      titleSuffix: ' | University of Swat CMS',
+      description: 'Content management for the University of Swat website.',
+      icons: [{ rel: 'icon', type: 'image/png', url: '/images/crest.png' }],
     },
     user: Users.slug,
     livePreview: {
