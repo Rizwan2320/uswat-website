@@ -544,7 +544,7 @@ P3 agent (slice 3a), own entry:
 - Not run: production build, e2e, Lighthouse.
 - Also open: #58 (office pages, rebased on `main`), #60 (data dictionary). #43, #51, #56 were integrated by the main agent in the merges of 165b6eb.
 
-## P3 slice 3t (2026-11-19, branch `p3/operations-3t`, from `main`)
+## P3 slice 3v, Operations panel (2026-11-19, branch `p3/operations-3t`, the branch name kept; the main agent's slice 3t is media storage, from `main`)
 - Built: a read-only **Operations** section on the admin home, under the editor dashboard, for platform admin, site manager and auditor only. It shows whether the automatic upkeep (the hourly sweep) ran (on schedule, late after 3 hours, failed, or never), what the last run did, the last 24 hours, work waiting by office (drafts, in review, needs a fresh check, ending within 14 days), and images without alt text. It says plainly that last import, broken links and snapshots are not recorded in the CMS, so they are not shown.
 - Behind it: finished sweep runs are now kept (`jobs.deleteJobOnComplete: false`) and the sweep deletes its own runs older than 30 days (PROPOSED, `SWEEP_HISTORY_DAYS`). Rules in `src/governance/operations.ts` (pure, unit-tested); panel in `src/admin/OperationsPanel/`. Brief `docs/briefs/p3t-operations-panel.md`; predictions P3t-a to d with actuals.
 - No migration (Payload: "No schema changes detected"). No new dependency. English only, like the editor dashboard.

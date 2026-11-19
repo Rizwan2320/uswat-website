@@ -1,5 +1,5 @@
 // @vitest-environment node
-/** P3t-b: the Operations loader on a real database. Who may see it, and that the office tally reads draft versions. */
+/** P3v-b: the Operations loader on a real database. Who may see it, and that the office tally reads draft versions. */
 import type { Payload } from 'payload'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
@@ -79,7 +79,7 @@ describe('loadOperations', () => {
     expect(['ok', 'late', 'failed']).toContain(ops?.sweep.state)
   })
 
-  it('answers quickly with a small number of records (P3t-b: under one second)', async () => {
+  it('answers quickly with a small number of records (P3v-b: under one second)', async () => {
     const t0 = performance.now()
     await loadOperations(payload, users.platformAdmin)
     const ms = performance.now() - t0

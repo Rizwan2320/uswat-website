@@ -1,5 +1,5 @@
 // @vitest-environment node
-/** P3t-a: finished sweep runs are kept, and only old runs of the sweep task are pruned. */
+/** P3v-a: finished sweep runs are kept, and only old runs of the sweep task are pruned. */
 import type { Payload } from 'payload'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
