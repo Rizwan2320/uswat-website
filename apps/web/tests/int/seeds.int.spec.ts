@@ -39,7 +39,7 @@ describe('applySeeds', () => {
     await applySeeds(cms, actor)
     const before = Object.fromEntries(await Promise.all(Object.keys(seedRows()).map(async (c) => [c, await versions(c)])))
     const second = await applySeeds(cms, actor)
-    expect(second).toMatchObject({ created: 0, linked: 0, published: 0, unchanged: 41 })
+    expect(second).toMatchObject({ created: 0, linked: 0, published: 0, unchanged: 42 })
     for (const [c, rows] of Object.entries(seedRows())) {
       expect((await count(c)).totalDocs, c).toBe(rows.length)
       expect(await versions(c), c).toBe(before[c])

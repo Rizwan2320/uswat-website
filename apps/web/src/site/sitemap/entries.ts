@@ -1,4 +1,3 @@
-import { isSample } from '../organisation/shape'
 
 /* Pure side of the content sitemap: which collection lives where, and how a record becomes an entry. */
 
@@ -26,13 +25,13 @@ export const absolute = (base: string, path: string) => `${base.replace(/\/+$/, 
 type Doc = Record<string, unknown>
 
 /**
- * One entry per published record that has a slug. A record whose source is on sample.invalid is invented
- * data and is left out, so a demo database never advertises Sample pages to a crawler.
+ * One entry per published record that has a slug. Sample records are included: with no real data the demo site is
+ * all Sample, and the whole site stays `noindex` until launch (the pages themselves carry the Sample label).
  */
 export function toEntries(base: string, path: string, docs: Doc[], now: string): Entry[] {
   return docs.flatMap((d) => {
     const slug = typeof d.slug === 'string' ? d.slug : ''
-    if (!slug || isSample({ id: 0, ...d })) return []
+    if (!slug) return []
     return [{ loc: absolute(base, `${path}/${encodeURIComponent(slug)}`), lastmod: typeof d.updatedAt === 'string' ? d.updatedAt : now }]
   })
 }

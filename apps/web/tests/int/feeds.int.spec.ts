@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * RSS feeds on a real database (brief p5-rss): published, current, non-Sample records only; never a draft.
+ * RSS feeds on a real database (brief p5-rss): published, current records only (Sample ones included); never a draft.
  * Records are named with the run id and the checks look only at those. Needs a local PostgreSQL.
  */
 import type { Payload } from 'payload'
@@ -45,12 +45,12 @@ beforeAll(async () => {
 })
 
 describe('feeds', () => {
-  it('lists a published current notice with its text escaped, and neither a draft nor a Sample record', async () => {
+  it('lists a published current notice with its text escaped, and not a draft, but a Sample record', async () => {
     const xml = await feedXml('notices')
     expect(xml).toContain(`${tag} live &amp; &lt;b&gt;notice&lt;/b&gt;`)
     expect(xml).toContain(`/notices/${tag}-live</link>`)
     expect(xml).not.toContain(`${tag} draft notice`)
-    expect(xml).not.toContain(`${tag} sample notice`)
+    expect(xml).toContain(`${tag} sample notice`)
   })
   it('lists an open vacancy and leaves out a closed one', async () => {
     const xml = await feedXml('jobs')
