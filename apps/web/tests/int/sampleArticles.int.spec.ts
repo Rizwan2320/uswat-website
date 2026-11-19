@@ -37,7 +37,9 @@ describe('Sample article pack', () => {
     expect(second).toMatchObject({ created: 0, published: 0, inReview: 0, drafts: 0 })
     const versionsAfter = await Promise.all(ARTICLE_COLLECTIONS.map(async (c) => (await payload.countVersions({ collection: c })).totalDocs))
     expect(versionsAfter).toEqual(versionsBefore)
-  })
+    // The first run walks about 45 records through the real workflow (several versions each); the default 5 s
+    // limit is too short on a busy machine and made the next tests fail too (CI on #85).
+  }, 120_000)
 
   it('shows anonymous readers only the published rows, in every collection', async () => {
     for (const c of ARTICLE_COLLECTIONS) {
