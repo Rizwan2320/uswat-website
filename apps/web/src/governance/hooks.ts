@@ -16,6 +16,7 @@ import {
 
 import { hashContent, stableStringify } from './hash'
 import { checkDelete, evaluateSave, type RecordState } from './policy'
+import { describeUse, findReferences } from './references'
 import {
   actorFromRequest,
   normalizeOffice,
@@ -171,9 +172,21 @@ export const governanceBeforeChange =
       riskClass: values.risk,
       pinned: values.pinned,
       ownerOffice: normalizeOffice(merged.ownerOffice) || null,
+      // A person's date always wins; the default fills a gap only when going live without one (3s).
+      reviewDueAt: values.reviewDueAt ?? merged.reviewDueAt ?? null,
       verifiedAt:
         values.verification === 'verified'
           ? (values.verifiedAt ?? prevGov?.verifiedAt ?? null)
+          : null,
+      // Who verified: the signed-in reviewer when it becomes Verified in this save, kept while it
+      // stays Verified, cleared when verification is reset. Never taken from the request.
+      verifiedBy:
+        values.verification === 'verified'
+          ? values.verifiedAt
+            ? actor.kind === 'user'
+              ? actor.id
+              : null
+            : (idOf(prevGov?.verifiedBy) ?? null)
           : null,
       // Set by the system only; a person cannot claim a record came from an importer.
       origin: system ? origin : pick<Origin>(ORIGINS, prevGov?.origin, 'editor'),
@@ -219,4 +232,16 @@ export const governanceBeforeDelete: CollectionBeforeDeleteHook = async ({
   }
   const denial = checkDelete(actorFromRequest(req), toRecordState(latest.governance), everPublished)
   if (denial) throw new APIError(denial.message, denial.httpStatus, { code: denial.code }, true)
+
+  // Integrity, not permission: nobody, administrators included, may delete a record that other
+  // records still use. Checked after the permission test so counts go only to people who may delete.
+  const used = await findReferences(req.payload, collection.slug, id, req)
+  if (used.length > 0) {
+    throw new APIError(
+      `This cannot be deleted because it is still used by ${describeUse(used)}. Remove those links first, or archive this item instead.`,
+      409,
+      { code: 'IN_USE', used },
+      true,
+    )
+  }
 }

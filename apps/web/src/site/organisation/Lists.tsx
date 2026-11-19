@@ -7,39 +7,46 @@ import { departmentHref, groupBy, programmeHref, type DepartmentCard, type Progr
 
 /* T3 index (departments, grouped by faculty group) and the programmes index (grouped by department). */
 
-export function DepartmentsIndex({ departments }: { departments: DepartmentCard[] }) {
+/** Departments under their faculty group; shared by the departments index and the Academics landing. */
+export function DepartmentGroups({ departments }: { departments: DepartmentCard[] }) {
   const groups = groupBy(departments, (d) => ({ id: d.groupId, label: d.groupName }))
+  return groups.length === 0 ? (
+    <p className={styles.empty}>
+      <T k="No departments are published yet." />
+    </p>
+  ) : (
+    <>
+      {groups.map((g) => (
+        <section key={g.id} className={styles.group} aria-labelledby={`g-${g.id}`}>
+          <h2 id={`g-${g.id}`} className={styles.groupTitle}>
+            {g.label}
+          </h2>
+          <ul className={styles.grid}>
+            {g.items.map((d) => (
+              <li key={d.id} className={styles.card}>
+                <h3 className={styles.cardTitle}>
+                  <a className={styles.cardLink} href={departmentHref(d.slug)}>
+                    {d.name}
+                  </a>
+                </h3>
+                {d.summary ? <p className={styles.excerpt}>{d.summary}</p> : null}
+                {d.sample ? <SamplePill /> : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </>
+  )
+}
+
+export function DepartmentsIndex({ departments }: { departments: DepartmentCard[] }) {
   return (
     <>
       <PageHeader title="Departments" crumbs={[{ label: 'Home', href: '/' }, { label: 'Academics', href: '/academics' }, { label: 'Departments' }]} />
       <div className="container">
         <div className={styles.wrap}>
-          {groups.length === 0 ? (
-            <p className={styles.empty}>
-              <T k="No departments are published yet." />
-            </p>
-          ) : (
-            groups.map((g) => (
-              <section key={g.id} className={styles.group} aria-labelledby={`g-${g.id}`}>
-                <h2 id={`g-${g.id}`} className={styles.groupTitle}>
-                  {g.label}
-                </h2>
-                <ul className={styles.grid}>
-                  {g.items.map((d) => (
-                    <li key={d.id} className={styles.card}>
-                      <h3 className={styles.cardTitle}>
-                        <a className={styles.cardLink} href={departmentHref(d.slug)}>
-                          {d.name}
-                        </a>
-                      </h3>
-                      {d.summary ? <p className={styles.excerpt}>{d.summary}</p> : null}
-                      {d.sample ? <SamplePill /> : null}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))
-          )}
+          <DepartmentGroups departments={departments} />
         </div>
       </div>
     </>

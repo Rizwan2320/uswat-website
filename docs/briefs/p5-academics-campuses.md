@@ -1,0 +1,10 @@
+# Brief: Academics landing and campus pages (T2), agent 4, 2026-11-18
+
+- **Objective.** `/academics` (every published department under its faculty group, and the way on to all programmes) and `/campuses/{slug}` (name, address and link when entered, and the programmes taught there). The route map sends 7 old department addresses with no page of their own to `/academics/` and the 3 campus pages to `/campuses/{main,sangota,women}`.
+- **Paths touched.** `apps/web/src/site/organisation/*` (a `DepartmentGroups` component split out of the departments index; `Landing.tsx` new; queries, routes, shape), two route files under `app/(site)/(cms)/academics/page.tsx` and `campuses/[slug]/page.tsx`, tests, docs.
+- **Risks.**
+  1. `/academics` now has its own page. A Pages record with the slug `academics` would be shadowed by it (a static route wins over the Pages `[slug]`). None exists on `main`; if the owner wants Pages-authored landings later, delete `academics/page.tsx`.
+  2. A campus address is shown only if the Registrar has entered one (the Campuses collection says addresses are disputed: Odigram or Charbagh). The page invents none; the campus slugs the route map expects (`main`, `sangota`, `women`) must be the slugs of the real records, which is the data pack's job.
+  3. Interface words ("Academics", "See all programmes", "Address", "Programmes at this campus", "Map or web page") stay English until Urdu is supplied (ADR 0008).
+- **Not here.** The other section landings (About, Research, Campus Life, Admissions): no verified landing content exists, and their addresses are Pages the owner writes. A `/campuses` index (no address in the route map). Departments page list is unchanged.
+- **Tests.** Integration: a published campus served with address and link; a draft campus not served with draft mode on and no login; programmes at a campus lists published ones only. Browser: `/academics`, a campus, a 404 campus and `/academics/departments` at 1440 and 390 px, both directions; axe at 1440 and 390 px.

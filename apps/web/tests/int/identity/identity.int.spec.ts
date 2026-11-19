@@ -24,6 +24,10 @@ import { closeIdentityPool, getIdentityPool } from '@/modules/identity/db'
 import { loadFactors } from '@/modules/identity/factors'
 import { createAuthHandlers, type AuthLike } from '@/modules/identity/handlers'
 import { migrateDown, migrateUp } from '@/modules/identity/migrate'
+import { EMPTY_EDIT, createSampleProfileStore } from '@/modules/portal/profile/sampleStore'
+import type { ProfileEdit } from '@/modules/portal/profile/types'
+import { createPgPublicationStore } from '@/modules/portal/publications/pgStore'
+import type { Candidate } from '@/modules/portal/publications/types'
 
 const DB = process.env.IDENTITY_TEST_DATABASE_URL
 const ORIGIN = 'http://localhost:3999'
@@ -61,7 +65,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -1005,5 +1009,238 @@ describe.skipIf(!DB)('purge of expired identity rows (FP-10)', () => {
     await session(20 * 60 * MIN, 19 * 60 * MIN)
     await purgeExpired(pool, NOW)
     expect(await Promise.all(['user', 'account', 'passkey', 'recovery_code', 'twoFactor'].map(count))).toEqual(before)
+  })
+})
+
+describe.skipIf(!DB)('faculty profile draft store (FP-11), sample adapter on real PostgreSQL', () => {
+  const pool = () => getIdentityPool(DB!)
+  const store = () => createSampleProfileStore(pool())
+  const edit = (over: Partial<ProfileEdit> = {}): ProfileEdit => ({ ...EMPTY_EDIT, bio: { en: 'Hello', ur: 'سلام' }, researchInterests: ['optics'], ...over })
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  async function account(tag: string): Promise<{ id: string; email: string }> {
+    const id = `profile-${tag}-${Math.random().toString(36).slice(2, 8)}`
+    const email = `${id}@example.invalid`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Sample ${tag}`, email])
+    return { id, email }
+  }
+
+  it('a new account loads a sample profile with nothing saved', async () => {
+    const a = await account('new')
+    const l = await store().load(a)
+    expect(l.status).toBe('none')
+    expect(l.updatedAt).toBeNull()
+    expect(l.profile.sample).toBe(true)
+    expect(l.profile.email).toBe(a.email)
+    expect(l.profile.name.en).toBe('Sample new')
+    expect(l.profile.visibility).toEqual({ email: 'hidden', photo: 'hidden' })
+  })
+
+  it('save then load round-trips every editable field, Urdu included', async () => {
+    const a = await account('round')
+    const e = edit({ orcid: '0000-0002-1825-0097', officeHours: 'Mon 10-12', visibility: { email: 'public', photo: 'internal' } })
+    expect(await store().saveDraft(a.id, e)).toBe(true)
+    const l = await store().load(a)
+    expect(l.status).toBe('draft')
+    expect(l.updatedAt).toBeGreaterThan(0)
+    expect(l.profile.bio.ur).toBe('سلام')
+    expect(l.profile).toMatchObject(e)
+  })
+
+  it('saving twice keeps one row per account and the later edit wins', async () => {
+    const a = await account('twice')
+    await store().saveDraft(a.id, edit({ officeLocation: 'first' }))
+    await store().saveDraft(a.id, edit({ officeLocation: 'second' }))
+    expect((await pool().query(`select count(*)::int as n from "profile_draft" where "userId" = $1`, [a.id])).rows[0].n).toBe(1)
+    expect((await store().load(a)).profile.officeLocation).toBe('second')
+  })
+
+  it("one account's draft never appears in or changes another's", async () => {
+    const a = await account('A')
+    const b = await account('B')
+    await store().saveDraft(a.id, edit({ officeLocation: 'A only' }))
+    expect((await store().load(b)).profile.officeLocation).toBe('')
+    expect((await store().load(b)).status).toBe('none')
+    await store().saveDraft(b.id, edit({ officeLocation: 'B only' }))
+    expect((await store().load(a)).profile.officeLocation).toBe('A only')
+    expect(await store().submit(b.id)).toBe(true)
+    expect((await store().load(a)).status).toBe('draft')
+  })
+
+  it('submit needs a draft, locks editing, and only withdraw reopens it', async () => {
+    const a = await account('submit')
+    expect(await store().submit(a.id)).toBe(false) // nothing to submit
+    await store().saveDraft(a.id, edit({ officeLocation: 'kept' }))
+    expect(await store().submit(a.id)).toBe(true)
+    expect(await store().submit(a.id)).toBe(false) // already submitted
+    expect(await store().saveDraft(a.id, edit({ officeLocation: 'sneaky' }))).toBe(false)
+    const locked = await store().load(a)
+    expect(locked.status).toBe('submitted')
+    expect(locked.profile.officeLocation).toBe('kept')
+    expect(await store().withdraw(a.id)).toBe(true)
+    expect(await store().withdraw(a.id)).toBe(false) // not submitted any more
+    expect(await store().saveDraft(a.id, edit({ officeLocation: 'changed' }))).toBe(true)
+    expect((await store().load(a)).profile.officeLocation).toBe('changed')
+  })
+
+  it('withdraw does nothing for an account with no draft', async () => {
+    expect(await store().withdraw((await account('nodraft')).id)).toBe(false)
+  })
+
+  it('the fixed fields come from the sample seed and cannot be changed by saving', async () => {
+    const a = await account('fixed')
+    // A stored edit that (wrongly) carried high-impact keys must not override them on load.
+    await pool().query(`insert into "profile_draft" ("userId","edit","status") values ($1,$2,'draft')`, [a.id, JSON.stringify({ ...EMPTY_EDIT, designation: { en: 'Vice Chancellor', ur: '' }, department: 'Elsewhere', sample: false })])
+    const l = await store().load(a)
+    expect(l.profile.designation.en).toBe('Lecturer (sample)')
+    expect(l.profile.department).toBe('Sample Department')
+    expect(l.profile.sample).toBe(true)
+  })
+
+  it('deleting the account deletes its draft', async () => {
+    const a = await account('cascade')
+    await store().saveDraft(a.id, edit())
+    await pool().query(`delete from "user" where "id" = $1`, [a.id])
+    expect((await pool().query(`select count(*)::int as n from "profile_draft" where "userId" = $1`, [a.id])).rows[0].n).toBe(0)
+  })
+
+  it('the table refuses an unknown status and a draft for a missing account', async () => {
+    const a = await account('check')
+    await expect(pool().query(`insert into "profile_draft" ("userId","edit","status") values ($1,'{}','published')`, [a.id])).rejects.toThrow()
+    await expect(pool().query(`insert into "profile_draft" ("userId","edit","status") values ('nobody','{}','draft')`)).rejects.toThrow()
+  })
+})
+
+describe.skipIf(!DB)('publication candidates (FP-12, FPR-05), PostgreSQL store', () => {
+  const pool = () => getIdentityPool(DB!)
+  const store = () => createPgPublicationStore(pool())
+  const work = (over: Partial<Candidate> = {}): Candidate => ({ title: 'Sample paper one', year: 2022, venue: 'Journal', doi: '10.5555/one', authors: ['A. Sample'], ...over })
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  async function account(tag: string): Promise<string> {
+    const id = `pub-${tag}-${Math.random().toString(36).slice(2, 8)}`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Sample ${tag}`, `${id}@example.invalid`])
+    return id
+  }
+  const ids = async (a: string, status: 'pending' | 'claimed' | 'rejected' | 'duplicate') => (await store().list(a))[status].map((w) => w.id)
+
+  it('harvesting the same works twice adds nothing the second time', async () => {
+    const a = await account('twice')
+    const works = [work(), work({ title: 'Sample paper two', doi: '' })]
+    expect(await store().addCandidates(a, works, true)).toEqual({ added: 2, alreadyKnown: 0 })
+    expect(await store().addCandidates(a, works, true)).toEqual({ added: 0, alreadyKnown: 2 })
+    expect((await store().list(a)).pending).toHaveLength(2)
+  })
+
+  it('a no-DOI copy with the same title and year is one work, whichever arrives first', async () => {
+    const a = await account('order1')
+    await store().addCandidates(a, [work({ doi: '' }), work({ title: 'SAMPLE paper — one!', doi: '10.5555/one' })], true)
+    expect((await store().list(a)).pending).toHaveLength(1)
+    const b = await account('order2')
+    await store().addCandidates(b, [work({ title: 'SAMPLE paper — one!', doi: '10.5555/one' }), work({ doi: '' })], true)
+    expect((await store().list(b)).pending).toHaveLength(1)
+  })
+
+  it('the same DOI under a different title is one work; the same title in another year is two', async () => {
+    const a = await account('keys')
+    await store().addCandidates(a, [work(), work({ title: 'Completely different title' })], true)
+    expect((await store().list(a)).pending).toHaveLength(1)
+    await store().addCandidates(a, [work({ doi: '', year: 2023 })], true)
+    expect((await store().list(a)).pending).toHaveLength(2)
+  })
+
+  it('a rejected work does not come back when harvested again (and neither does a claimed one)', async () => {
+    const a = await account('reject')
+    await store().addCandidates(a, [work(), work({ title: 'Two', doi: '10.5555/two' })], true)
+    const [first, second] = (await store().list(a)).pending
+    expect(await store().reject(a, first.id)).toBe(true)
+    expect(await store().claim(a, second.id)).toBe(true)
+    expect(await store().addCandidates(a, [work(), work({ title: 'Two', doi: '10.5555/two' })], true)).toEqual({ added: 0, alreadyKnown: 2 })
+    expect((await store().list(a)).pending).toHaveLength(0)
+    expect(await ids(a, 'rejected')).toEqual([first.id])
+  })
+
+  it('only a pending work can be claimed or rejected, once', async () => {
+    const a = await account('once')
+    await store().addCandidates(a, [work()], true)
+    const [w] = (await store().list(a)).pending
+    expect(await store().claim(a, w.id)).toBe(true)
+    expect(await store().claim(a, w.id)).toBe(false)
+    expect(await store().reject(a, w.id)).toBe(false)
+    expect(await ids(a, 'claimed')).toEqual([w.id])
+  })
+
+  it('duplicate needs a claimed target of the same account, and not the work itself', async () => {
+    const a = await account('dup')
+    await store().addCandidates(a, [work(), work({ title: 'Two', doi: '10.5555/two' }), work({ title: 'Three', doi: '10.5555/three' })], true)
+    const [x, y, z] = (await store().list(a)).pending
+    expect(await store().markDuplicate(a, y.id, x.id)).toBe(false) // target still pending
+    expect(await store().claim(a, x.id)).toBe(true)
+    expect(await store().markDuplicate(a, x.id, x.id)).toBe(false) // itself
+    expect(await store().markDuplicate(a, y.id, x.id)).toBe(true)
+    expect(await store().markDuplicate(a, y.id, x.id)).toBe(false) // no longer pending
+    expect(await store().reject(a, z.id)).toBe(true)
+    expect(await store().markDuplicate(a, z.id, x.id)).toBe(false) // rejected, not pending
+    const listed = (await store().list(a)).duplicate
+    expect(listed.map((d) => [d.id, d.duplicateOf])).toEqual([[y.id, x.id]])
+  })
+
+  it("one account cannot see or decide another's works, or point a duplicate at another's claim", async () => {
+    const a = await account('A')
+    const b = await account('B')
+    await store().addCandidates(a, [work()], true)
+    await store().addCandidates(b, [work({ title: 'Mine', doi: '10.5555/mine' })], true)
+    const [aw] = (await store().list(a)).pending
+    const [bw] = (await store().list(b)).pending
+    expect(await store().claim(b, aw.id)).toBe(false)
+    expect(await store().reject(b, aw.id)).toBe(false)
+    expect((await store().list(b)).pending.map((w) => w.id)).toEqual([bw.id])
+    expect(await store().claim(a, aw.id)).toBe(true)
+    expect(await store().markDuplicate(b, bw.id, aw.id)).toBe(false)
+    expect(await ids(a, 'pending')).toEqual([])
+    expect(await ids(b, 'pending')).toEqual([bw.id])
+  })
+
+  it('the same work can belong to two different accounts', async () => {
+    const a = await account('shareA')
+    const b = await account('shareB')
+    expect((await store().addCandidates(a, [work()], true)).added).toBe(1)
+    expect((await store().addCandidates(b, [work()], true)).added).toBe(1)
+  })
+
+  it('keeps Urdu text and the sample flag, and lists newest year first', async () => {
+    const a = await account('urdu')
+    await store().addCandidates(a, [work({ title: 'نمونہ مقالہ', doi: '', year: 2023, authors: ['اے نمونہ'] }), work({ year: 2019, title: 'Older', doi: '' })], true)
+    const { pending } = await store().list(a)
+    expect(pending.map((w) => w.year)).toEqual([2023, 2019])
+    expect(pending[0]).toMatchObject({ title: 'نمونہ مقالہ', authors: ['اے نمونہ'], sample: true, doi: '' })
+  })
+
+  it('a failed batch stores nothing (one transaction)', async () => {
+    const a = await account('atomic')
+    await expect(store().addCandidates(a, [work(), { ...work({ title: 'Bad', doi: '' }), year: 'x' as unknown as number }], true)).rejects.toThrow()
+    expect((await store().list(a)).pending).toHaveLength(0)
+  })
+
+  it('deleting the account deletes its works; the table refuses an unknown status', async () => {
+    const a = await account('cascade')
+    await store().addCandidates(a, [work()], true)
+    await expect(pool().query(`update "publication_candidate" set "status" = 'published' where "userId" = $1`, [a])).rejects.toThrow()
+    await pool().query(`delete from "user" where "id" = $1`, [a])
+    expect((await pool().query(`select count(*)::int as n from "publication_candidate" where "userId" = $1`, [a])).rows[0].n).toBe(0)
   })
 })
