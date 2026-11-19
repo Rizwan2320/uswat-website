@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import CvDocument from '../../../src/modules/portal/cv/CvDocument'
 import { buildCv, formatDate, isTemplate, TEMPLATES, type CvInput } from '../../../src/modules/portal/cv/build'
-import { cvWordHtml } from '../../../src/modules/portal/cv/wordHtml'
+import { cvBodyHtml, cvWordHtml } from '../../../src/modules/portal/cv/wordHtml'
 import { EMPTY_EDIT } from '../../../src/modules/portal/profile/sampleStore'
 import type { Profile } from '../../../src/modules/portal/profile/types'
 
@@ -136,5 +136,19 @@ describe('the Word file', () => {
     expect(w).toContain('<style>')
     expect(w).toContain('Dr Sample')
     expect(w).toContain('Generated on 19 November 2026.')
+  })
+  it('is exactly the same markup as the page for every layout and for full, empty, hostile and public-email inputs', () => {
+    const hostile = '<b>x</b> & "q" \'s\''
+    const cases: CvInput[] = [
+      input(),
+      input({ profile: profile({ bio: { en: '', ur: '' }, researchInterests: [], officeLocation: '', officeHours: '', orcid: '', scholarUrl: '', cvLink: '' }), claimedWorks: [], courses: [] }),
+      input({ profile: profile({ bio: { en: hostile, ur: hostile }, officeLocation: hostile }), claimedWorks: [work(hostile, 2020)] as CvInput['claimedWorks'], courses: [{ ...course('X 1', 'Fall', 2026), title: hostile, programme: hostile }] }),
+      input({ profile: profile({ visibility: { email: 'public', photo: 'hidden' } }) }),
+    ]
+    for (const [n, i] of cases.entries()) {
+      for (const t of TEMPLATES) {
+        expect(cvBodyHtml(buildCv(i, t, NOW)), `case ${n} ${t}`).toBe(html(i, t))
+      }
+    }
   })
 })
