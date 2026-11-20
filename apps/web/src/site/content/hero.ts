@@ -32,7 +32,7 @@ if (hero.lines.map((l) => l.text + (l.accent ?? '')).join(' ') !== site.tagline)
 export const heroSlides: HeroSlide[] = [
   {
     image: images.heroSlides[0]!,
-    primary: { label: 'Explore Programs', href: `${U}/faculty/`, icon: 'cap' },
+    primary: { label: 'Explore Programs', href: '/academics', icon: 'cap' },
     secondary: { label: 'Admissions Fall 2026', href: `${U}/2026/10/undergraduate-admissions-fall-2026-phase-ii/`, icon: 'document' },
   },
   {
@@ -47,18 +47,18 @@ export const heroSlides: HeroSlide[] = [
   },
   {
     image: images.heroSlides[3]!,
-    primary: { label: 'Campus Life', href: `${U}/maincampus/`, icon: 'people' },
+    primary: { label: 'Campus Life', href: '/campuses/main', icon: 'people' },
     secondary: { label: 'Student Services', href: `${U}/campus-management-system-uswat/`, icon: 'document' },
   },
   {
     image: images.heroSlides[4]!,
-    primary: { label: 'Latest News', href: `${U}/category/latestnews/`, icon: 'document' },
-    secondary: { label: 'Upcoming Events', href: `${U}/category/events/`, icon: 'calendar' },
+    primary: { label: 'Latest News', href: '/news', icon: 'document' },
+    secondary: { label: 'Upcoming Events', href: '/events', icon: 'calendar' },
   },
   {
     image: images.heroSlides[5]!,
-    primary: { label: 'About University', href: `${U}/about-university/`, icon: 'book' },
-    secondary: { label: 'Main Campus', href: `${U}/maincampus/`, icon: 'people' },
+    primary: { label: 'About University', href: '/about', icon: 'book' },
+    secondary: { label: 'Main Campus', href: '/campuses/main', icon: 'people' },
   },
   {
     image: images.heroSlides[6]!,

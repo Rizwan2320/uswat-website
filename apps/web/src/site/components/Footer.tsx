@@ -4,6 +4,7 @@ import { T } from './I18n'
 import { FacebookIcon, LinkedinIcon, MailIcon, PhoneIcon, PinIcon, TiktokIcon, YoutubeIcon } from './icons'
 import { Crest } from './Logo'
 import NewsletterForm from './NewsletterForm'
+import SiteLink from './SiteLink'
 import styles from './Footer.module.css'
 
 const social = { facebook: FacebookIcon, youtube: YoutubeIcon, linkedin: LinkedinIcon, tiktok: TiktokIcon }
@@ -41,14 +42,14 @@ export default async function Footer() {
         <nav aria-label="Quick links">
           <h2 className={styles.h}><T k="Quick Links" /></h2>
           <ul className={styles.links}>
-            {footerQuick.map((l) => (<li key={l.label}><a href={l.href} rel="noopener noreferrer">{l.label}</a></li>))}
+            {footerQuick.map((l) => (<li key={l.label}><SiteLink href={l.href}>{l.label}</SiteLink></li>))}
           </ul>
         </nav>
 
         <nav aria-label="Useful links">
           <h2 className={styles.h}><T k="Useful Links" /></h2>
           <ul className={styles.links}>
-            {footerUseful.map((l) => (<li key={l.label}><a href={l.href} rel="noopener noreferrer">{l.label}</a></li>))}
+            {footerUseful.map((l) => (<li key={l.label}><SiteLink href={l.href}>{l.label}</SiteLink></li>))}
           </ul>
         </nav>
 
