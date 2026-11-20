@@ -1,6 +1,6 @@
 # Brief FP-16: department reviewer queue (FP-03 reviewer half, FPR-04, PJ4; competition tier)
 
-Branch `fp/review-queue`, from main. Independent of PR #104 (security centre). Date 2026-11-20.
+Branch `fp/review-queue`, stacked on `fp/security-centre` (PR #104): migration numbering continues from its 0010. Merge #104 first. Date 2026-11-20.
 
 ## Objective
 Today a faculty member can save a draft and press "send for review", and nothing happens next. This slice builds the other half: a department reviewer sees the submitted changes in their department, compares them with what is published, and approves them or sends them back with a reason. Until approval, the published version does not change (FPR-04). Journey PJ4: edit bio, submit, reviewer approves, the published version updates. All on Sample data.
