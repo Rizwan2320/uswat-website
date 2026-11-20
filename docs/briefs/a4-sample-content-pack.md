@@ -20,6 +20,8 @@ Missing: News posts, Notices, Events, Jobs, Tenders, Merit lists, article tags, 
 5. Numbers (counts, fees, dates) are invented and carry the Sample label. Do not copy a real figure from the university's site.
 6. Urdu text is a draft and says so wherever it shows (ADR-0008).
 
+**Exception (owner, relayed by the user 2026-11-20): the home page keeps its owner-supplied real content.** The rules above apply to the seeded pack (CMS rows, media, pages, accounts), not to the static home sections in `apps/web/src/site/content/` (Vice Chancellor's name, portrait and message, the hero photographs, the statistics, the footer phone and email). Those stay as supplied, each with its own source note. Everything the Sample pack adds stays Sample. This means a visitor can see real people's faces and a real name on the home page next to Sample articles; the Sample note on article and list pages is what tells them apart.
+
 ## Spread of states (this is the point of the pack)
 For each of News, Notices, Events, Jobs and Tenders include at least: published and current; published and **closed or past** (shows the closed state and drops out of "latest"); one with an attachment; one with a very long title; one in Urdu; and, **left unpublished on purpose**, two in draft and two in review, so the approver and editor have real work in the test. Events also need one in the future and one today. Add one item that is linked to a department and one to an office. Keep the existing rule that seeds publish through the real workflow (draft, review, approved, verified, published by a `platformAdmin` actor), except the deliberately unpublished ones.
 
