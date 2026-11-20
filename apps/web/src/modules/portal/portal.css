@@ -24,6 +24,7 @@
 .portal-btn:hover { background: var(--forest-soft); }
 .portal-btn[disabled] { opacity: 0.6; cursor: not-allowed; }
 .portal-btn.secondary { background: transparent; color: var(--forest); }
+a.portal-btn { display: inline-flex; align-items: center; box-sizing: border-box; text-decoration: none; }
 .portal-link { color: var(--maroon); text-underline-offset: 3px; }
 .portal-link:hover { color: var(--maroon-deep); }
 .portal-error, .portal-notice { border-radius: 10px; padding: 12px 14px; margin: 14px 0; border: 2px solid; }
