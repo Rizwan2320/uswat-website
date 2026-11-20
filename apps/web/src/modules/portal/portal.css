@@ -105,6 +105,15 @@ a.portal-btn { display: inline-flex; align-items: center; box-sizing: border-box
 .cv-trust { font-size: 0.85rem; font-style: italic; margin: 6px 0 0; }
 .cv-cover { background: var(--ivory-deep); border-radius: 10px; padding: 4px 14px; margin: 14px 0; font-size: 0.95rem; }
 .cv-pre { white-space: pre-wrap; }
+/* Reviewer queue (FP-16) */
+.portal-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.portal-compare th[scope="row"] { width: 22%; }
+.portal-compare td { width: 39%; overflow-wrap: anywhere; }
+.portal-compare td[data-col="before"] { background: var(--ivory); }
+@media (max-width: 520px) {
+  .portal-compare { font-size: 0.85rem; }
+  .portal-compare th, .portal-compare td { padding: 6px 4px; }
+}
 .cv-table { width: 100%; border-collapse: collapse; }
 .cv-table th, .cv-table td { border: 1px solid var(--ivory-deep); padding: 6px 10px; text-align: start; vertical-align: top; }
 .cv-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
