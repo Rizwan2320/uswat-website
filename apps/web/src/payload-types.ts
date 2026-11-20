@@ -312,6 +312,10 @@ export interface Post {
   id: number;
   title: string;
   heroImage?: (number | null) | Media;
+  /**
+   * One or two sentences shown in lists.
+   */
+  excerpt?: string | null;
   content: {
     root: {
       type: string;
@@ -327,6 +331,30 @@ export interface Post {
     };
     [k: string]: unknown;
   };
+  /**
+   * PDFs and other files, added as links.
+   */
+  attachments?:
+    | {
+        /**
+         * Say what the file is, for example "Fee schedule 2026 (PDF)".
+         */
+        label: string;
+        /**
+         * Where the file is, starting with https://
+         */
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Set this when the news belongs to one department, so it shows on that department’s page. Leave empty for university-wide news.
+   */
+  department?: (number | null) | Department;
+  /**
+   * The address of the page on the old site. Used to match records on re-import and to redirect.
+   */
+  legacyUrl?: string | null;
   /**
    * Other posts readers may want next.
    */
@@ -559,6 +587,416 @@ export interface FolderInterface {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "departments".
+ */
+export interface Department {
+  id: number;
+  name: string;
+  /**
+   * Leave ticked and the address follows the title. Untick it to type your own.
+   */
+  generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
+  slug: string;
+  /**
+   * The address of the page on the old site. Used to match records on re-import and to redirect.
+   */
+  legacyUrl?: string | null;
+  facultyGroup?: (number | null) | Faculty;
+  summary?: string | null;
+  vision?: string | null;
+  mission?: string | null;
+  head?: (number | null) | Person;
+  /**
+   * PDFs and other files, as links.
+   */
+  documents?:
+    | {
+        /**
+         * Say what the file is, for example "Prospectus 2026 (PDF)".
+         */
+        label: string;
+        /**
+         * Where the file is, starting with https://
+         */
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Published office or department addresses.
+   */
+  emails?:
+    | {
+        email: string;
+        id?: string | null;
+      }[]
+    | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
+    /**
+     * The date someone should re-check this. Needed to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
+    publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faculties".
+ */
+export interface Faculty {
+  id: number;
+  name: string;
+  /**
+   * Leave ticked and the address follows the title. Untick it to type your own.
+   */
+  generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
+  slug: string;
+  /**
+   * The label on the old site menu. Used to match records on re-import.
+   */
+  legacyKey?: string | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
+    /**
+     * The date someone should re-check this. Needed to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
+    publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
+  /**
+   * The first account ever created becomes platform admin.
+   */
+  role?: ('platformAdmin' | 'siteManager' | 'approver' | 'editor' | 'contributor' | 'auditor') | null;
+  /**
+   * Offices this person works for (matched against a record's owner office). Stored lower-case.
+   */
+  offices?: string[] | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "people".
+ */
+export interface Person {
+  id: number;
+  name: string;
+  /**
+   * Leave ticked and the address follows the title. Untick it to type your own.
+   */
+  generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
+  slug: string;
+  designation?: string | null;
+  department?: (number | null) | Department;
+  office?: (number | null) | Office;
+  details?: string | null;
+  /**
+   * Shown publicly only when its visibility is Public.
+   */
+  email?: string | null;
+  photo?: (number | null) | Media;
+  cvLink?: string | null;
+  publications?:
+    | {
+        title: string;
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  facultyStatus?: ('current' | 'former' | 'emeritus') | null;
+  /**
+   * Who may see each personal detail. Hidden unless set otherwise.
+   */
+  visibility?: {
+    email?: ('hidden' | 'internal' | 'public') | null;
+    photo?: ('hidden' | 'internal' | 'public') | null;
+  };
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
+    /**
+     * The date someone should re-check this. Needed to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
+    publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "offices".
+ */
+export interface Office {
+  id: number;
+  name: string;
+  /**
+   * Leave ticked and the address follows the title. Untick it to type your own.
+   */
+  generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
+  slug: string;
+  /**
+   * The address of the page on the old site. Used to match records on re-import and to redirect.
+   */
+  legacyUrl?: string | null;
+  /**
+   * For example "Directorates".
+   */
+  group?: string | null;
+  text?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  head?: (number | null) | Person;
+  hours?: string | null;
+  phones?:
+    | {
+        number: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Published office or department addresses.
+   */
+  emails?:
+    | {
+        email: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * PDFs and other files, as links.
+   */
+  documents?:
+    | {
+        /**
+         * Say what the file is, for example "Prospectus 2026 (PDF)".
+         */
+        label: string;
+        /**
+         * Where the file is, starting with https://
+         */
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
+    /**
+     * The date someone should re-check this. Needed to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
+    publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
 export interface Category {
@@ -656,41 +1094,6 @@ export interface ArticleTag {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  name?: string | null;
-  /**
-   * The first account ever created becomes platform admin.
-   */
-  role?: ('platformAdmin' | 'siteManager' | 'approver' | 'editor' | 'contributor' | 'auditor') | null;
-  /**
-   * Offices this person works for (matched against a record's owner office). Stored lower-case.
-   */
-  offices?: string[] | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  resetPasswordRequestedAt?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1786,381 +2189,6 @@ export interface Tender {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "faculties".
- */
-export interface Faculty {
-  id: number;
-  name: string;
-  /**
-   * Leave ticked and the address follows the title. Untick it to type your own.
-   */
-  generateSlug?: boolean | null;
-  /**
-   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
-   */
-  slug: string;
-  /**
-   * The label on the old site menu. Used to match records on re-import.
-   */
-  legacyKey?: string | null;
-  governance?: {
-    /**
-     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
-     */
-    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
-    /**
-     * The office accountable for this record (for example "Registrar"). Required to publish.
-     */
-    ownerOffice?: string | null;
-    /**
-     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
-     */
-    source?: string | null;
-    /**
-     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
-     */
-    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
-    verifiedAt?: string | null;
-    verifiedBy?: (number | null) | User;
-    /**
-     * The date someone should re-check this. Needed to publish a high-impact record.
-     */
-    reviewDueAt?: string | null;
-    /**
-     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
-     */
-    riskClass?: ('low' | 'standard' | 'high_impact') | null;
-    /**
-     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
-     */
-    publishAt?: string | null;
-    /**
-     * Optional. After this time the item is archived and no longer shown.
-     */
-    expireAt?: string | null;
-    origin?: ('editor' | 'importer' | 'watcher') | null;
-    contentHash?: string | null;
-    sourceContentHash?: string | null;
-    collectedAt?: string | null;
-    /**
-     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
-     */
-    pinned?: boolean | null;
-    createdBy?: (number | null) | User;
-  };
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "departments".
- */
-export interface Department {
-  id: number;
-  name: string;
-  /**
-   * Leave ticked and the address follows the title. Untick it to type your own.
-   */
-  generateSlug?: boolean | null;
-  /**
-   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
-   */
-  slug: string;
-  /**
-   * The address of the page on the old site. Used to match records on re-import and to redirect.
-   */
-  legacyUrl?: string | null;
-  facultyGroup?: (number | null) | Faculty;
-  summary?: string | null;
-  vision?: string | null;
-  mission?: string | null;
-  head?: (number | null) | Person;
-  /**
-   * PDFs and other files, as links.
-   */
-  documents?:
-    | {
-        /**
-         * Say what the file is, for example "Prospectus 2026 (PDF)".
-         */
-        label: string;
-        /**
-         * Where the file is, starting with https://
-         */
-        url: string;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Published office or department addresses.
-   */
-  emails?:
-    | {
-        email: string;
-        id?: string | null;
-      }[]
-    | null;
-  governance?: {
-    /**
-     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
-     */
-    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
-    /**
-     * The office accountable for this record (for example "Registrar"). Required to publish.
-     */
-    ownerOffice?: string | null;
-    /**
-     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
-     */
-    source?: string | null;
-    /**
-     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
-     */
-    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
-    verifiedAt?: string | null;
-    verifiedBy?: (number | null) | User;
-    /**
-     * The date someone should re-check this. Needed to publish a high-impact record.
-     */
-    reviewDueAt?: string | null;
-    /**
-     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
-     */
-    riskClass?: ('low' | 'standard' | 'high_impact') | null;
-    /**
-     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
-     */
-    publishAt?: string | null;
-    /**
-     * Optional. After this time the item is archived and no longer shown.
-     */
-    expireAt?: string | null;
-    origin?: ('editor' | 'importer' | 'watcher') | null;
-    contentHash?: string | null;
-    sourceContentHash?: string | null;
-    collectedAt?: string | null;
-    /**
-     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
-     */
-    pinned?: boolean | null;
-    createdBy?: (number | null) | User;
-  };
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "people".
- */
-export interface Person {
-  id: number;
-  name: string;
-  /**
-   * Leave ticked and the address follows the title. Untick it to type your own.
-   */
-  generateSlug?: boolean | null;
-  /**
-   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
-   */
-  slug: string;
-  designation?: string | null;
-  department?: (number | null) | Department;
-  office?: (number | null) | Office;
-  details?: string | null;
-  /**
-   * Shown publicly only when its visibility is Public.
-   */
-  email?: string | null;
-  photo?: (number | null) | Media;
-  cvLink?: string | null;
-  publications?:
-    | {
-        title: string;
-        url?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  facultyStatus?: ('current' | 'former' | 'emeritus') | null;
-  /**
-   * Who may see each personal detail. Hidden unless set otherwise.
-   */
-  visibility?: {
-    email?: ('hidden' | 'internal' | 'public') | null;
-    photo?: ('hidden' | 'internal' | 'public') | null;
-  };
-  governance?: {
-    /**
-     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
-     */
-    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
-    /**
-     * The office accountable for this record (for example "Registrar"). Required to publish.
-     */
-    ownerOffice?: string | null;
-    /**
-     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
-     */
-    source?: string | null;
-    /**
-     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
-     */
-    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
-    verifiedAt?: string | null;
-    verifiedBy?: (number | null) | User;
-    /**
-     * The date someone should re-check this. Needed to publish a high-impact record.
-     */
-    reviewDueAt?: string | null;
-    /**
-     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
-     */
-    riskClass?: ('low' | 'standard' | 'high_impact') | null;
-    /**
-     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
-     */
-    publishAt?: string | null;
-    /**
-     * Optional. After this time the item is archived and no longer shown.
-     */
-    expireAt?: string | null;
-    origin?: ('editor' | 'importer' | 'watcher') | null;
-    contentHash?: string | null;
-    sourceContentHash?: string | null;
-    collectedAt?: string | null;
-    /**
-     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
-     */
-    pinned?: boolean | null;
-    createdBy?: (number | null) | User;
-  };
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "offices".
- */
-export interface Office {
-  id: number;
-  name: string;
-  /**
-   * Leave ticked and the address follows the title. Untick it to type your own.
-   */
-  generateSlug?: boolean | null;
-  /**
-   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
-   */
-  slug: string;
-  /**
-   * The address of the page on the old site. Used to match records on re-import and to redirect.
-   */
-  legacyUrl?: string | null;
-  /**
-   * For example "Directorates".
-   */
-  group?: string | null;
-  text?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  head?: (number | null) | Person;
-  hours?: string | null;
-  phones?:
-    | {
-        number: string;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Published office or department addresses.
-   */
-  emails?:
-    | {
-        email: string;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * PDFs and other files, as links.
-   */
-  documents?:
-    | {
-        /**
-         * Say what the file is, for example "Prospectus 2026 (PDF)".
-         */
-        label: string;
-        /**
-         * Where the file is, starting with https://
-         */
-        url: string;
-        id?: string | null;
-      }[]
-    | null;
-  governance?: {
-    /**
-     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
-     */
-    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
-    /**
-     * The office accountable for this record (for example "Registrar"). Required to publish.
-     */
-    ownerOffice?: string | null;
-    /**
-     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
-     */
-    source?: string | null;
-    /**
-     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
-     */
-    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
-    verifiedAt?: string | null;
-    verifiedBy?: (number | null) | User;
-    /**
-     * The date someone should re-check this. Needed to publish a high-impact record.
-     */
-    reviewDueAt?: string | null;
-    /**
-     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
-     */
-    riskClass?: ('low' | 'standard' | 'high_impact') | null;
-    /**
-     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
-     */
-    publishAt?: string | null;
-    /**
-     * Optional. After this time the item is archived and no longer shown.
-     */
-    expireAt?: string | null;
-    origin?: ('editor' | 'importer' | 'watcher') | null;
-    contentHash?: string | null;
-    sourceContentHash?: string | null;
-    collectedAt?: string | null;
-    /**
-     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
-     */
-    pinned?: boolean | null;
-    createdBy?: (number | null) | User;
-  };
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "programmes".
  */
 export interface Programme {
@@ -2185,6 +2213,10 @@ export interface Programme {
   eligibility?: string | null;
   curriculumUrl?: string | null;
   feeLink?: string | null;
+  /**
+   * Where applicants start their application (the admissions portal page for this programme). Leave empty to hide the Apply button.
+   */
+  applyUrl?: string | null;
   governance?: {
     /**
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
@@ -2871,7 +2903,17 @@ export interface FormBlockSelect<T extends boolean = true> {
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
   heroImage?: T;
+  excerpt?: T;
   content?: T;
+  attachments?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  department?: T;
+  legacyUrl?: T;
   relatedPosts?: T;
   categories?: T;
   tags?: T;
@@ -3536,6 +3578,7 @@ export interface ProgrammesSelect<T extends boolean = true> {
   eligibility?: T;
   curriculumUrl?: T;
   feeLink?: T;
+  applyUrl?: T;
   governance?:
     | T
     | {

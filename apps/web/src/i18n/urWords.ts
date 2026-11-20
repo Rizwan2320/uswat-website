@@ -266,6 +266,8 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
 
   // --- Organisation, academics, people, directory
   'Head of department': 'شعبے کا سربراہ',
+  'Set this when the news belongs to one department, so it shows on that department’s page. Leave empty for university-wide news.':
+    'جب خبر کسی ایک شعبے سے متعلق ہو تو یہ منتخب کریں، تاکہ وہ اس شعبے کے صفحے پر نظر آئے۔ پوری جامعہ کی خبروں کے لیے خالی چھوڑ دیں۔',
   'Head of office': 'دفتر کا سربراہ',
   Vision: 'وژن',
   Mission: 'مشن',
@@ -275,6 +277,9 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   Eligibility: 'اہلیت',
   'Curriculum PDF': 'نصاب کی PDF',
   'Fee information link': 'فیس کی معلومات کا لنک',
+  'Apply link': 'درخواست دینے کا لنک',
+  'Where applicants start their application (the admissions portal page for this programme). Leave empty to hide the Apply button.':
+    'جہاں امیدوار اس پروگرام کے لیے درخواست شروع کرتے ہیں (داخلہ پورٹل کا صفحہ)۔ "درخواست دیں" کا بٹن چھپانے کے لیے خالی چھوڑ دیں۔',
   Sector: 'سیکٹر',
   'Affiliation year': 'الحاق کا سال',
   'As the university lists it. Together with the number, this identifies the college.':
