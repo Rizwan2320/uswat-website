@@ -34,6 +34,16 @@ describe('admin menu by role', () => {
     expect(hiddenFor(hidden, null)).toBe(true)
   })
 
+  it('Users is also in the menu for a head of an office (slice 3hod), and only when they hold an office', () => {
+    const hidden = payload.collections.users.config.admin?.hidden
+    const as = (role: string, offices: string[]) =>
+      typeof hidden === 'function' &&
+      Boolean(hidden({ user: { id: 1, collection: 'users', role, offices } }))
+    expect(as('approver', ['registrar'])).toBe(false)
+    expect(as('approver', [])).toBe(true)
+    for (const role of ['editor', 'contributor']) expect(as(role, ['registrar']), role).toBe(true)
+  })
+
   it.each(GLOBALS)('%s is in the menu only for admins, site managers and the auditor', (slug) => {
     const hidden = payload.config.globals.find((g) => g.slug === slug)?.admin?.hidden
     for (const role of ROLES)
