@@ -30,12 +30,22 @@
   }
 }
 
+// Payload puts the icon in a box of its own size: 16px in the breadcrumb, 18px elsewhere. A fixed 36px image in
+// that box was cut off by its neighbours. The box is made a real size and the image fills it.
+.step-nav__home,
+.step-nav .step-nav__home {
+  flex-shrink: 0;
+  height: 32px;
+  width: 32px;
+}
+
 .brand-icon {
   aspect-ratio: 1;
   border-radius: 50%;
+  display: block;
   flex-shrink: 0;
-  height: 36px;
+  height: 100%;
   max-width: none;
   object-fit: contain;
-  width: 36px;
+  width: 100%;
 }

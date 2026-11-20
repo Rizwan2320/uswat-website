@@ -12,6 +12,7 @@ import { isSample } from '../organisation/shape'
 import styles from './Articles.module.css'
 import { TYPES, type ArticleType } from './config'
 import { formatDate, formatDateTime, isClosed } from './format'
+import { heroFigure } from './hero'
 import type { ListItem } from './queries'
 
 /* T5 article: one layout for all five types. News stored as `posts` keeps its text in `content`; the others use `body`. */
@@ -28,6 +29,7 @@ export default function ArticlePage({ type, doc, now, others }: { type: ArticleT
   const stub = doc.bodyStatus === 'stub' || !body
   const closed = isClosed(gov, now)
   const sample = isSample({ id: 0, ...doc })
+  const hero = heroFigure(doc)
   const attachments = cfg.hasAttachments && Array.isArray(doc.attachments) ? (doc.attachments as { id?: string; label?: string; url?: string }[]) : []
   const files = attachments.flatMap((a) => {
     const href = safeHref(a.url)
@@ -57,6 +59,13 @@ export default function ArticlePage({ type, doc, now, others }: { type: ArticleT
       <article className="container">
         <div className={styles.article}>
           {sample ? <SampleNote /> : null}
+          {hero ? (
+            <figure className={styles.hero}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- the file is served by Payload; width and height keep the page from jumping */}
+              <img src={hero.src} alt={hero.alt} width={hero.width ?? undefined} height={hero.height ?? undefined} fetchPriority="high" decoding="async" />
+              {hero.credit ? <figcaption>{hero.credit}</figcaption> : null}
+            </figure>
+          ) : null}
           {facts.length ? (
             <ul className={styles.facts}>
               {facts.map((f) => (

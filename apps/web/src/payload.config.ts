@@ -61,6 +61,10 @@ const built = buildConfig({
       icons: [{ rel: 'icon', type: 'image/png', url: '/images/crest.png' }],
     },
     user: Users.slug,
+    // Light only. The public site has no dark theme and the admin must look like it (owner decision, 2026-11-20).
+    theme: 'light',
+    // The built-in picture, not Gravatar: no email hash is sent to a third party and no broken image shows offline.
+    avatar: 'default',
     livePreview: {
       breakpoints: [
         {

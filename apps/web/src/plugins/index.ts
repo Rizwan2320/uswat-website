@@ -13,6 +13,7 @@ import { hiddenFromEditors } from '@/governance/adminMenu'
 import { searchFields } from '@/search/fieldOverrides'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
 import { mediaStoragePlugin } from './mediaStorage'
+import { revalidateGoverned } from './revalidateOnChange'
 
 import { Page, Post } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
@@ -113,6 +114,8 @@ export const plugins: Plugin[] = [
   }),
   // Media in Vercel Blob when BLOB_READ_WRITE_TOKEN is set, local folder otherwise (slice 3t, ADR-0014).
   mediaStoragePlugin(),
+  // The public site refreshes when governed content changes (slice 3w).
+  revalidateGoverned,
   // Urdu words for labels and descriptions (slice 3r). After every plugin that adds fields, before the English fill.
   urduLabels,
   // Must stay last: it copies the English words the plugins above added into Urdu.
