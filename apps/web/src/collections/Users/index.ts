@@ -1,9 +1,34 @@
-import { APIError, type CollectionConfig, type PayloadRequest } from 'payload'
+import {
+  APIError,
+  type Access,
+  type CollectionConfig,
+  type PayloadRequest,
+  type Where,
+} from 'payload'
 
 import { auditAfterLogin } from '../../governance/audit'
 import { isPlatformAdmin } from '../../governance/access'
-import { hiddenFromEditors } from '../../governance/adminMenu'
+import { hiddenFromUsers } from '../../governance/adminMenu'
 import { actorFromRequest, normalizeOffice, ROLE_LABELS, ROLES } from '../../governance/roles'
+import {
+  checkTeamCreate,
+  checkTeamDelete,
+  checkTeamUpdate,
+  managesTeam,
+  teamOffices,
+  type TeamDenial,
+} from '../../governance/teamAccess'
+
+const teamError = (d: TeamDenial) => new APIError(d.message, 403, { code: d.code }, true)
+
+/** The people a head manages: Editors and Contributors who share one of the head's offices. */
+const teamWhere = (offices: string[]): Where => ({
+  and: [{ role: { in: ['editor', 'contributor'] } }, { offices: { in: offices } }],
+})
+
+/** A platform admin, or a head who holds at least one office (the hooks hold the real limits). */
+const adminOrHead = ({ req }: { req: PayloadRequest }): boolean =>
+  isPlatformAdmin(req) || managesTeam(actorFromRequest(req))
 
 const lastAdminError = () =>
   new APIError(
@@ -28,11 +53,17 @@ export const Users: CollectionConfig = {
   access: {
     // Everyone with an account can open the admin. What they can do there is decided per collection.
     admin: ({ req }) => Boolean(req.user),
-    create: ({ req }) => isPlatformAdmin(req),
-    delete: ({ req }) => isPlatformAdmin(req),
+    // A platform admin, or a head of an office (slice 3hod): the hooks below hold the head's limits.
+    create: adminOrHead,
+    delete: (({ req }) => {
+      const actor = actorFromRequest(req)
+      if (actor.kind !== 'user') return false
+      if (actor.role === 'platformAdmin') return true
+      return managesTeam(actor) ? teamWhere(teamOffices(actor)) : false
+    }) as Access,
     // Staff directory is not public or shared: admins, site managers and auditors see everyone;
-    // everyone else sees only their own account.
-    read: ({ req }) => {
+    // a head sees their own team and themselves; everyone else sees only their own account.
+    read: (({ req }) => {
       const actor = actorFromRequest(req)
       if (actor.kind !== 'user') return false
       if (
@@ -41,22 +72,27 @@ export const Users: CollectionConfig = {
         actor.role === 'auditor'
       )
         return true
+      if (managesTeam(actor))
+        return { or: [{ id: { equals: actor.id } }, teamWhere(teamOffices(actor))] }
       return { id: { equals: actor.id } }
-    },
-    // Own account, or a platform admin. Role and offices are further limited by field access.
-    update: ({ req }) => {
+    }) as Access,
+    // Own account, a platform admin, or (for a head) their team. Role and offices are further
+    // limited by field access and by the hooks below.
+    update: (({ req }) => {
       const actor = actorFromRequest(req)
       if (actor.kind !== 'user') return false
       if (actor.role === 'platformAdmin') return true
+      if (managesTeam(actor))
+        return { or: [{ id: { equals: actor.id } }, teamWhere(teamOffices(actor))] }
       return { id: { equals: actor.id } }
-    },
+    }) as Access,
   },
   admin: {
     defaultColumns: ['name', 'email', 'role'],
     useAsTitle: 'name',
     group: 'Administration',
     // Everyone can still reach their own account from the avatar at the top right.
-    hidden: hiddenFromEditors,
+    hidden: hiddenFromUsers,
   },
   auth: true,
   fields: [
@@ -67,17 +103,20 @@ export const Users: CollectionConfig = {
       defaultValue: 'contributor',
       options: ROLES.map((value) => ({ value, label: ROLE_LABELS[value] })),
       saveToJWT: true,
-      access: { update: ({ req }) => isPlatformAdmin(req) },
-      admin: { description: 'The first account ever created becomes platform admin.' },
+      access: { update: adminOrHead },
+      admin: {
+        description:
+          'The first account ever created becomes platform admin. A head of an office may set Editor or Contributor for their own team.',
+      },
     },
     {
       name: 'offices',
       type: 'text',
       hasMany: true,
-      access: { update: ({ req }) => isPlatformAdmin(req) },
+      access: { update: adminOrHead },
       admin: {
         description:
-          "Offices this person works for (matched against a record's owner office). Stored lower-case.",
+          "Offices this person works for (matched against a record's owner office). Stored lower-case. A head of an office can add or take away only their own offices.",
       },
       hooks: {
         beforeValidate: [
@@ -106,10 +145,22 @@ export const Users: CollectionConfig = {
             })
             if (totalDocs === 0) return { ...data, role: 'platformAdmin' }
           }
+          if (!trusted && managesTeam(actor)) {
+            const result = checkTeamCreate(actor, data)
+            if (!result.ok) throw teamError(result)
+            return { ...data, role: result.role, offices: result.offices }
+          }
           return trusted ? data : { ...data, role: 'contributor', offices: [] }
         }
 
-        // Update. Role and offices are only ever changed by a platform admin or the system.
+        // Update. Role and offices are changed by a platform admin or the system, or, for a team
+        // member, by their head within the limits of teamAccess.ts.
+        const own = actor.kind === 'user' && String(actor.id) === String(originalDoc?.id)
+        if (!trusted && !own && managesTeam(actor)) {
+          const result = checkTeamUpdate(actor, originalDoc ?? {}, data)
+          if (!result.ok) throw teamError(result)
+          return { ...data, role: result.role, offices: result.offices }
+        }
         const next = { ...data }
         if (!trusted) {
           next.role = originalDoc?.role
@@ -132,6 +183,11 @@ export const Users: CollectionConfig = {
         })
         if (doc.role === 'platformAdmin' && (await otherAdmins(req, id)) === 0)
           throw lastAdminError()
+        const actor = actorFromRequest(req)
+        if (actor.kind === 'user' && actor.role !== 'platformAdmin') {
+          const denial = checkTeamDelete(actor, doc)
+          if (denial) throw teamError(denial)
+        }
       },
     ],
   },
