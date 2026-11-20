@@ -2213,6 +2213,10 @@ export interface Programme {
   eligibility?: string | null;
   curriculumUrl?: string | null;
   feeLink?: string | null;
+  /**
+   * Where applicants start their application (the admissions portal page for this programme). Leave empty to hide the Apply button.
+   */
+  applyUrl?: string | null;
   governance?: {
     /**
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
@@ -3574,6 +3578,7 @@ export interface ProgrammesSelect<T extends boolean = true> {
   eligibility?: T;
   curriculumUrl?: T;
   feeLink?: T;
+  applyUrl?: T;
   governance?:
     | T
     | {
