@@ -8,7 +8,7 @@ export const COPY = {
   sampleBanner: 'Sample portal for demonstration. It is not the university’s system and holds no real records.',
   skipLink: 'Skip to the main content',
   signOut: 'Sign out',
-  nav: { home: 'Home', profile: 'Profile', publications: 'Publications', courses: 'Courses', security: 'Security' },
+  nav: { home: 'Home', profile: 'Profile', publications: 'Publications', courses: 'Courses', cv: 'CV', security: 'Security' },
 
   signIn: {
     sharedLabel: 'This is a shared computer',
@@ -39,6 +39,7 @@ export const COPY = {
     profileLink: 'Edit your profile',
     publicationsLink: 'Review your publications',
     coursesLink: 'List the courses you teach',
+    cvLink: 'Make your CV',
   },
 
   enrol: {
@@ -221,6 +222,38 @@ export const COPY = {
       nothing: 'That course was already removed, or is not yours to remove. Reload the page.',
       generic: 'Something went wrong. Please try again in a moment.',
     } as Record<string, string>,
+  },
+
+  cv: {
+    title: 'Your CV',
+    intro: 'Your CV is built from what is in this portal: your profile, the publications you claimed and your courses. Pick a layout, then save it as a PDF or download it for Word.',
+    layoutLabel: 'Layout',
+    layouts: { university: 'University layout', hec: 'HEC-style layout' } as Record<string, string>,
+    layoutNote: {
+      university: 'University layout: a profile-first CV.',
+      hec: 'HEC-style layout: a generic academic layout, not the official HEC form. Sample layout only.',
+    } as Record<string, string>,
+    print: 'Print or save as PDF',
+    printHelp: 'In the print window, choose "Save as PDF" as the destination.',
+    word: 'Download for Word',
+    wordHelp: 'Opens in Word. It is a web page saved as a Word file, not a native .docx.',
+    sampleLabel: 'Sample CV: built from demonstration data',
+    coverTitle: 'About this CV',
+    generatedOn: (d: string) => `Generated on ${d}.`,
+    unverifiedNote: 'Parts of this CV are not yet verified by the university. Each section says how far it can be trusted.',
+    trust: {
+      university: 'Set by the university (sample data in this demonstration).',
+      self: 'Entered by you. Not yet verified.',
+      claimed: 'Claimed by you. Not yet reviewed.',
+    } as Record<string, string>,
+    emailLabel: 'Email', nameLabel: 'Name', designationLabel: 'Designation', departmentLabel: 'Department',
+    personal: 'Personal details', profileSummary: 'Profile', about: 'About', interests: 'Research interests', contact: 'Contact and identifiers',
+    officeLocation: 'Office', officeHours: 'Office hours', orcid: 'ORCID iD', scholar: 'Google Scholar', cvLink: 'CV link',
+    publications: 'Publications', noPublications: 'No claimed publications yet.',
+    courses: 'Courses taught', noCourses: 'No courses listed yet.',
+    colCode: 'Code', colTitle: 'Title', colSemester: 'Semester', colProgramme: 'Programme',
+    emailHidden: 'Your email address is left out because it is not set to Public in your profile.',
+    errors: { session: 'Your session ended. Sign in again to continue.' },
   },
 
   security: {

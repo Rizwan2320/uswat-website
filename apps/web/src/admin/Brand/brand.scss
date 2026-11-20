@@ -1,0 +1,51 @@
+.brand-logo {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: center;
+
+  &__crest {
+    border-radius: 50%;
+    height: 72px;
+    width: 72px;
+  }
+
+  &__name {
+    color: var(--theme-text);
+    display: block;
+    font-family: var(--admin-serif);
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  &__sub {
+    color: var(--theme-elevation-600);
+    display: block;
+    font-family: var(--admin-nav);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+}
+
+// Payload puts the icon in a box of its own size: 16px in the breadcrumb, 18px elsewhere. A fixed 36px image in
+// that box was cut off by its neighbours. The box is made a real size and the image fills it.
+.step-nav__home,
+.step-nav .step-nav__home {
+  flex-shrink: 0;
+  height: 32px;
+  width: 32px;
+}
+
+.brand-icon {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: block;
+  flex-shrink: 0;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  width: 100%;
+}

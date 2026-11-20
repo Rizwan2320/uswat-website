@@ -29,6 +29,8 @@ import type { ProfileEdit } from '@/modules/portal/profile/types'
 import { createPgPublicationStore } from '@/modules/portal/publications/pgStore'
 import type { Candidate } from '@/modules/portal/publications/types'
 import { importCourses } from '@/modules/portal/courses/importer'
+import { buildCv } from '@/modules/portal/cv/build'
+import { loadCvInput } from '@/modules/portal/cv/data'
 import { createPgCourseStore } from '@/modules/portal/courses/pgStore'
 import { LIMITS as COURSE_LIMITS } from '@/modules/portal/courses/rules'
 import type { CourseInput } from '@/modules/portal/courses/types'
@@ -1448,5 +1450,54 @@ describe.skipIf(!DB)('course import from a file (FP-30), PostgreSQL', () => {
     const report = await importCourses(pool(), sample, NOW, { dryRun: true })
     expect(report).toMatchObject({ added: sample.length, duplicate: 0, limit: 0, rejected: [] })
     await pool().query(`delete from "user" where "id" like $1`, [`samplefile-%-${tag}`])
+  })
+})
+
+describe.skipIf(!DB)('CV data for one account (FP-20), PostgreSQL', () => {
+  const pool = () => getIdentityPool(DB!)
+  const NOW = Date.UTC(2026, 10, 19)
+  const tag = Math.random().toString(36).slice(2, 7)
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  async function account(name: string): Promise<{ id: string; email: string }> {
+    const id = `cv-${name}-${tag}`
+    const email = `${id}@example.invalid`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Sample ${name}`, email])
+    return { id, email }
+  }
+  const work = (title: string, doi: string): Candidate => ({ title, year: 2022, venue: 'Journal', doi, authors: ['A. Sample'] })
+
+  it('a CV holds the account’s claimed works and courses, and never pending, rejected, duplicate or another account’s records', async () => {
+    const a = await account('a')
+    const b = await account('b')
+    const pubs = createPgPublicationStore(pool())
+    await pubs.addCandidates(a.id, [work('Claimed A', '10.5555/ca'), work('Pending A', '10.5555/pa'), work('Rejected A', '10.5555/ra'), work('Duplicate A', '10.5555/da')], true)
+    await pubs.addCandidates(b.id, [work('Claimed B', '10.5555/cb')], true)
+    const byTitle = async (id: string, t: string) => (await pubs.list(id)).pending.find((w) => w.title === t)!.id
+    const claimedA = await byTitle(a.id, 'Claimed A')
+    await pubs.claim(a.id, claimedA)
+    await pubs.reject(a.id, await byTitle(a.id, 'Rejected A'))
+    await pubs.markDuplicate(a.id, await byTitle(a.id, 'Duplicate A'), claimedA)
+    await pubs.claim(b.id, await byTitle(b.id, 'Claimed B'))
+    const courses = createPgCourseStore(pool())
+    await courses.add(a.id, { code: 'A 1', title: 'A course', season: 'Fall', year: 2026, programme: '' })
+    await courses.add(b.id, { code: 'B 1', title: 'B course', season: 'Fall', year: 2026, programme: '' })
+
+    const cv = buildCv(await loadCvInput(pool(), a), 'university', NOW)
+    expect(cv.publications.map((p) => p.title)).toEqual(['Claimed A'])
+    expect(cv.courses.map((c) => c.code)).toEqual(['A 1'])
+    const text = JSON.stringify(cv)
+    for (const other of ['Claimed B', 'Pending A', 'Rejected A', 'Duplicate A', 'B course', b.email]) expect(text).not.toContain(other)
+    expect(cv.header.email).toBeNull() // visibility defaults to hidden
+    const cvB = buildCv(await loadCvInput(pool(), b), 'hec', NOW)
+    expect(cvB.publications.map((p) => p.title)).toEqual(['Claimed B'])
+    expect(JSON.stringify(cvB)).not.toContain('Claimed A')
   })
 })

@@ -39,6 +39,8 @@ import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/
 import { default as default_4529283dca8362b5da6f08c8ffdcca47 } from '@/admin/EditorDashboard'
 import { default as default_863eb3608bebacc1a1477f963275ec98 } from '@/admin/OperationsPanel'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
+import { default as default_5b1c0a7e2d9f4a63b8e1c4d27a9f3e10 } from '@/admin/Brand/Icon'
+import { default as default_9e4d2c8a1b7f4e55a3c6d0f1b2a8c734 } from '@/admin/Brand/Logo'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -114,5 +116,7 @@ export const importMap = {
   '@/admin/EditorDashboard#default': default_4529283dca8362b5da6f08c8ffdcca47,
   '@/admin/OperationsPanel#default': default_863eb3608bebacc1a1477f963275ec98,
   '@/components/BeforeLogin#default': default_8a7ab0eb7ab5c511aba12e68480bfe5e,
+  '@/admin/Brand/Icon#default': default_5b1c0a7e2d9f4a63b8e1c4d27a9f3e10,
+  '@/admin/Brand/Logo#default': default_9e4d2c8a1b7f4e55a3c6d0f1b2a8c734,
   '@payloadcms/next/rsc#CollectionCards': CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1,
 }

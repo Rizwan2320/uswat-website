@@ -23,6 +23,7 @@ import {
   type PayloadRequest,
 } from 'payload'
 
+import { refreshPublic } from '../plugins/revalidateOnChange'
 import { writeAudit } from './audit'
 import { toRecordState } from './hooks'
 import { dueAction, type LifecycleAction } from './lifecycle'
@@ -266,6 +267,9 @@ async function archiveOrMark(
       },
       context,
     )
+    // The write above skips collection hooks, so the public lists must be told here, or an archived
+    // item would stay in a cached list until the time bound ran out (slice 3w).
+    if (!context.disableRevalidate) refreshPublic(collection, doc.id, payload.logger)
     if (action === 'archive') out.archived++
     else out.markedStale++
   } catch (e) {
