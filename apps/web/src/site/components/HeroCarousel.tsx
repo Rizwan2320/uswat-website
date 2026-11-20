@@ -8,6 +8,7 @@ import {
   DoubleChevronRightIcon, PauseIcon, PeopleIcon, PlayIcon,
 } from './icons'
 import SafeImage from './SafeImage'
+import SiteLink from './SiteLink'
 import styles from './HeroCarousel.module.css'
 
 const AUTOPLAY_MS = 7000
@@ -127,12 +128,12 @@ export default function HeroCarousel({ content, slides }: { content: HeroContent
               const active = i === index
               return (
                 <div key={s.primary.label} className={styles.ctas} data-active={active ? '' : undefined} inert={!active}>
-                  <a className="btn btn--gold" href={s.primary.href} rel="noopener noreferrer">
+                  <SiteLink className="btn btn--gold" href={s.primary.href}>
                     <P /> {s.primary.label} <ArrowRightIcon className="btn-arrow" />
-                  </a>
-                  <a className="btn btn--outline-light" href={s.secondary.href} rel="noopener noreferrer">
+                  </SiteLink>
+                  <SiteLink className="btn btn--outline-light" href={s.secondary.href}>
                     <S /> {s.secondary.label} <ArrowRightIcon className="btn-arrow" />
-                  </a>
+                  </SiteLink>
                 </div>
               )
             })}
