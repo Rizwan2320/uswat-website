@@ -1,5 +1,6 @@
 import { T } from '../components/I18n'
 import PageHeader from '../components/kit/PageHeader'
+import { SampleNote, SamplePill } from '../organisation/SamplePill'
 import Pagination from '../components/kit/Pagination'
 
 import styles from './Articles.module.css'
@@ -82,6 +83,8 @@ export default function ListingPage({
             ) : null}
           </div>
 
+          {listing.items.some((it) => it.sample) ? <SampleNote /> : null}
+
           {listing.items.length ? (
             <ul className={styles.list}>
               {listing.items.map((it) => (
@@ -97,6 +100,7 @@ export default function ListingPage({
                     ))}
                   </p>
                   {it.excerpt ? <p className={styles.excerpt}>{it.excerpt}</p> : null}
+                  {it.sample ? <SamplePill /> : null}
                   {it.closed && params.view === 'current' ? (
                     <span className={styles.pill}>
                       <T k="Closed" />

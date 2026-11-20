@@ -16,9 +16,9 @@ describe('sitemap entries', () => {
       { loc: 'https://x.example/notices/c', lastmod: now },
     ])
   })
-  it('leaves out a record without a slug and a Sample record', () => {
+  it('leaves out a record without a slug, and keeps a Sample record (the demo site is all Sample)', () => {
     const e = toEntries('https://x.example', '/notices', [{ slug: '' }, { updatedAt: now }, { slug: 'sample', governance: { source: 'https://sample.invalid/seed/x' } }, { slug: 'real', governance: { source: 'https://uswat.edu.pk/x' } }], now)
-    expect(e.map((x) => x.loc)).toEqual(['https://x.example/notices/real'])
+    expect(e.map((x) => x.loc)).toEqual(['https://x.example/notices/sample', 'https://x.example/notices/real'])
   })
   it('covers every public record type and list page, each address without a trailing slash', () => {
     expect(CONTENT_SOURCES.map((s) => s.collection)).toEqual(['notices', 'events', 'jobs', 'tenders', 'departments', 'programmes', 'offices'])

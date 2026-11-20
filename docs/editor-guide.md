@@ -34,7 +34,7 @@ After you sign in, the first page shows what needs you. Click any title to open 
 Open **Pages**, pick the page and change it; it saves by itself as a draft. The public page does not change until an approver publishes your edit. You can restore an older version from the **Versions** tab.
 
 ### 3. Add an image
-1. In a page or notice, choose an image, or open **Media** and upload one (JPEG, PNG, WebP or AVIF, up to 8 MB).
+1. In a page or notice, choose an image, or open **Media** and upload one (JPEG, PNG, WebP or AVIF). The rule allows up to 8 MB, but on the online demo keep images under 4 MB: the host refuses anything bigger in one go (ADR-0014).
 2. **Alt text is required.** Write what the picture shows in one short sentence, for someone who cannot see it. Do not start with "image of".
 3. You cannot record the image's rights yourself. An approver does that. An image with unknown rights cannot appear on a published page.
 4. If the same file is already in the library, the system tells you which one to use.

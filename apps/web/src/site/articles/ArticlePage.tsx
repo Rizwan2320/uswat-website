@@ -6,6 +6,8 @@ import { safeHref } from '@/utilities/safeHref'
 import { T } from '../components/I18n'
 import PageHeader from '../components/kit/PageHeader'
 import Prose from '../components/kit/Prose'
+import { SampleNote } from '../organisation/SamplePill'
+import { isSample } from '../organisation/shape'
 
 import styles from './Articles.module.css'
 import { TYPES, type ArticleType } from './config'
@@ -25,6 +27,7 @@ export default function ArticlePage({ type, doc, now, others }: { type: ArticleT
   const body = doc[cfg.bodyField] as DefaultTypedEditorState | null | undefined
   const stub = doc.bodyStatus === 'stub' || !body
   const closed = isClosed(gov, now)
+  const sample = isSample({ id: 0, ...doc })
   const attachments = cfg.hasAttachments && Array.isArray(doc.attachments) ? (doc.attachments as { id?: string; label?: string; url?: string }[]) : []
   const files = attachments.flatMap((a) => {
     const href = safeHref(a.url)
@@ -53,6 +56,7 @@ export default function ArticlePage({ type, doc, now, others }: { type: ArticleT
       />
       <article className="container">
         <div className={styles.article}>
+          {sample ? <SampleNote /> : null}
           {facts.length ? (
             <ul className={styles.facts}>
               {facts.map((f) => (

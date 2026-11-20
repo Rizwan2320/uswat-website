@@ -7,8 +7,8 @@
  */
 import { randomBytes } from 'node:crypto'
 
-import { applySeeds } from '../../../scripts/import/seeds/apply'
-import { applyContactSeeds } from '../../../scripts/import/seeds/contacts'
+import { applyAllSeeds } from '../../../scripts/import/seeds/all'
+import { renderPng } from './renderPng'
 import { assertLocalDatabase, type Cms } from '../../../scripts/import/writer'
 
 async function main() {
@@ -34,10 +34,8 @@ async function main() {
       },
     })) as unknown as Record<string, unknown>
   }
-  const res = await applySeeds(payload as unknown as Cms, { user: { ...user, collection: 'users' } })
-  const actor = { user: { ...user, collection: 'users' } }
-  const contacts = await applyContactSeeds(payload as unknown as Cms, actor)
-  console.log(JSON.stringify({ ...res, contacts }))
+  const res = await applyAllSeeds(payload as unknown as Cms, { user: { ...user, collection: 'users' } }, renderPng)
+  console.log(JSON.stringify(res))
 }
 
 main().then(() => process.exit(0), (e) => {

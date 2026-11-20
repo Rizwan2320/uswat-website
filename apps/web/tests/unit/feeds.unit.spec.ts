@@ -54,8 +54,8 @@ describe('feed item', () => {
       description: 'Apply now.',
     })
   })
-  it('leaves out a Sample record and a record without a title or slug', () => {
-    expect(toFeedItem('notices', { ...real, governance: { source: 'https://sample.invalid/seed/notices/a' } }, base)).toBeNull()
+  it('keeps a Sample record, and leaves out a record without a title or slug', () => {
+    expect(toFeedItem('notices', { ...real, governance: { source: 'https://sample.invalid/seed/notices/a' } }, base)?.title).toBe('Admissions open')
     expect(toFeedItem('notices', { ...real, slug: '' }, base)).toBeNull()
     expect(toFeedItem('notices', { ...real, title: '' }, base)).toBeNull()
   })
