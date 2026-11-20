@@ -1,16 +1,18 @@
 import type { NavItem } from './types'
 
 /* Mockup labels (the redesign keeps them) with real uswat.edu.pk destinations from the public site's menu.
-   Source: https://uswat.edu.pk/ navigation, crawled 2026-11-06. No internal <Link> points at a route that does not exist yet. */
+   Source: https://uswat.edu.pk/ navigation, crawled 2026-11-06. Where this site now has its own page for an entry (academics, campuses, news,
+   notices, events, jobs, tenders, about, contact directory) the entry points there, so a visitor stays on the site; the rest still
+   point at the official page and are marked `external`. No internal <Link> points at a route that does not exist (a test checks). */
 const U = 'https://uswat.edu.pk'
 
 export const nav: NavItem[] = [
   { label: 'Home', href: '/' },
   {
     label: 'Academics',
-    href: `${U}/faculty/`,
-    external: true,
+    href: '/academics',
     children: [
+      { label: 'All faculties and programmes', href: '/academics', icon: 'cap' },
       { label: 'Faculty of Allied Health Sciences', href: `${U}/faculty/`, external: true, icon: 'heart' },
       { label: 'Computer and Software Technology', href: `${U}/department-of-computer-and-software-technology/`, external: true, icon: 'laptop' },
       { label: 'Management & Commerce', href: `${U}/department-of-management-commerce/`, external: true, icon: 'trending' },
@@ -61,11 +63,10 @@ export const nav: NavItem[] = [
   },
   {
     label: 'Campus Life',
-    href: `${U}/maincampus/`,
-    external: true,
+    href: '/campuses/main',
     children: [
-      { label: 'Main Campus', href: `${U}/maincampus/`, external: true, icon: 'building' },
-      { label: 'Women Campus', href: `${U}/women-campus/`, external: true, icon: 'people' },
+      { label: 'Main Campus', href: '/campuses/main', icon: 'building' },
+      { label: 'Women Campus', href: '/campuses/women', icon: 'people' },
       { label: 'Hunerkada', href: `${U}/hunerkada-center-for-excellence/`, external: true, icon: 'palette' },
       { label: 'Youth Development Centre', href: `${U}/kamyab-jawan-markaz/`, external: true, icon: 'trending' },
       { label: 'Campus TV', href: 'https://www.youtube.com/@Campus_Tv_UoS', external: true, icon: 'video' },
@@ -73,21 +74,22 @@ export const nav: NavItem[] = [
   },
   {
     label: 'News & Events',
-    href: `${U}/category/latestnews/`,
-    external: true,
+    href: '/news',
     children: [
-      { label: 'Latest News', href: `${U}/category/latestnews/`, external: true, icon: 'newspaper' },
-      { label: 'Announcements', href: `${U}/category/announcements/`, external: true, icon: 'megaphone' },
-      { label: 'Events', href: `${U}/category/events/`, external: true, icon: 'calendar' },
+      { label: 'Latest News', href: '/news', icon: 'newspaper' },
+      { label: 'Announcements', href: '/notices', icon: 'megaphone' },
+      { label: 'Events', href: '/events', icon: 'calendar' },
+      { label: 'Jobs', href: '/jobs', icon: 'clipboard' },
+      { label: 'Tenders', href: '/tenders', icon: 'document' },
       { label: 'Press Releases', href: `${U}/press-release/`, external: true, icon: 'document' },
     ],
   },
   {
     label: 'About',
-    href: `${U}/about-university/`,
-    external: true,
+    href: '/about',
     children: [
-      { label: 'About University', href: `${U}/about-university/`, external: true, icon: 'building' },
+      { label: 'About University', href: '/about', icon: 'building' },
+      { label: 'Contact Directory', href: '/contact/directory', icon: 'people' },
       { label: 'Vice Chancellor’s Message', href: `${U}/vice-chancellors-message-2/`, external: true, icon: 'person' },
       { label: 'Affiliated Colleges', href: `${U}/public-sector-affiliated-colleges/`, external: true, icon: 'cap' },
       { label: 'Alumni Association', href: `${U}/alumni/`, external: true, icon: 'people' },
@@ -107,17 +109,17 @@ export const applyLink = {
 }
 
 export const footerQuick: { label: string; href: string }[] = [
-  { label: 'About Us', href: `${U}/about-university/` },
-  { label: 'Academics', href: `${U}/faculty/` },
+  { label: 'About Us', href: '/about' },
+  { label: 'Academics', href: '/academics' },
   { label: 'Admissions', href: 'https://cms1.uswat.edu.pk/admission/program/list' },
   { label: 'Research', href: `${U}/oric-2/` },
-  { label: 'Campus Life', href: `${U}/maincampus/` },
+  { label: 'Campus Life', href: '/campuses/main' },
 ]
 
 export const footerUseful: { label: string; href: string }[] = [
-  { label: 'News & Events', href: `${U}/category/latestnews/` },
+  { label: 'News & Events', href: '/news' },
   { label: 'Student Services', href: `${U}/campus-management-system-uswat/` },
   { label: 'Faculty Resources', href: `${U}/e-office/` },
   { label: 'Library', href: `${U}/central-library-office/` },
-  { label: 'Contact Us', href: `${U}/contact-list/` },
+  { label: 'Contact Us', href: '/contact/directory' },
 ]
