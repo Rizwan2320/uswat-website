@@ -9,7 +9,14 @@ export const metadata = { title: COPY.signIn.title }
 export default async function SignInPage({ searchParams }: { searchParams: Promise<{ reason?: string }> }) {
   await requirePortalPage('/portal/sign-in')
   const { reason } = await searchParams
-  const notice = reason === 'expired' ? COPY.signIn.expired : reason === 'second-factor' ? COPY.signIn.needSecondFactor : null
+  const notices: Record<string, string> = {
+    expired: COPY.signIn.expired,
+    'second-factor': COPY.signIn.needSecondFactor,
+    'signed-out-everywhere': COPY.signIn.signedOutEverywhere,
+    'not-me': COPY.signIn.notMe,
+    'not-me-no-alert': COPY.signIn.notMeNoAlert,
+  }
+  const notice = reason && Object.hasOwn(notices, reason) ? notices[reason] : null
   return (
     <Shell>
       <h1>{COPY.signIn.title}</h1>

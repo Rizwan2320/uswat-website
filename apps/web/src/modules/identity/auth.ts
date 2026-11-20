@@ -21,6 +21,8 @@ import { recoveryPlugin } from './recoveryPlugin'
 import { createRecoveryService } from './recoveryService'
 import { createPgAttemptStore, createPgRecoveryStore } from './recoveryStore'
 import { createPgReplayStore } from './replayStore'
+import { createPgAlertStore, createPgEventStore } from './securityEvents'
+import { securityEventPlugin } from './securityEventPlugin'
 import { sessionAssurancePlugin } from './sessionAssurancePlugin'
 import { totpReplayPlugin } from './totpReplayPlugin'
 
@@ -40,6 +42,9 @@ export function createPortalAuth(config: EnabledConfig) {
     advanced: {
       useSecureCookies: false,
       cookiePrefix: '__Host-portal',
+      // The same header our own throttle and security log read (clientAddress), so a session row, the log and the rate
+      // limit all see one address. Vercel sets x-real-ip itself; the library's default would read only x-forwarded-for.
+      ipAddress: { ipAddressHeaders: ['x-real-ip', 'x-forwarded-for'] },
       defaultCookieAttributes: { secure: true, httpOnly: true, sameSite: 'lax', path: '/' },
     },
     plugins: [
@@ -55,6 +60,7 @@ export function createPortalAuth(config: EnabledConfig) {
         backupCodeOptions: { amount: 0 },
       }),
       totpReplayPlugin(createPgReplayStore(pool)),
+      securityEventPlugin(createPgEventStore(pool), createPgAlertStore(pool)),
       sessionAssurancePlugin(createPgAssuranceStore(pool), createPgSharedStore(pool)),
       recoveryPlugin(
         createRecoveryService({ recovery: createPgRecoveryStore(pool), attempts: createPgAttemptStore(pool) }),

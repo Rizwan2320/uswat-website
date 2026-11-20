@@ -33,6 +33,7 @@
     "test:unit": "vitest run --config ./vitest.config.mts tests/unit",
     "identity:migrate": "tsx scripts/identity-migrate.ts",
     "identity:purge": "tsx scripts/identity-purge.ts",
+    "identity:alerts": "tsx scripts/identity-alerts.ts",
     "identity:courses-import": "tsx scripts/courses-import.ts"
   },
   "dependencies": {

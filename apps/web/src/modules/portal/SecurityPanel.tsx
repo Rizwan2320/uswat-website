@@ -5,10 +5,10 @@ import { authClient, go, postJson } from './client'
 import { COPY } from './copy'
 import { mapAuthError } from './errors'
 import Field from './Field'
-import { canDeletePasskey, describeDevice, formatWhen } from './securityRules'
+import { canDeletePasskey, describeDevice, describeEvent, formatWhen, networkLabel, sessionNetwork, type EventView } from './securityRules'
 
-type Passkey = { id: string; name?: string | null; createdAt?: string | Date | null }
-type SessionRow = { token: string; userAgent?: string | null; createdAt?: string | Date | null }
+type Passkey = { id: string; name?: string | null; createdAt?: string | Date | null; deviceType?: string | null; backedUp?: boolean | null }
+type SessionRow = { token: string; userAgent?: string | null; ipAddress?: string | null; createdAt?: string | Date | null }
 const C = COPY.security
 
 /** Step-up (AUTH-09): prove the second factor again. A passkey makes a new session; a code proves it in place. */
@@ -61,11 +61,13 @@ export default function SecurityPanel({
   hasPasskey,
   fresh,
   recoveryCodesRemaining,
+  events,
 }: {
   totpVerified: boolean
   hasPasskey: boolean
   fresh: boolean
   recoveryCodesRemaining: number
+  events: EventView[]
 }) {
   const [passkeys, setPasskeys] = useState<Passkey[] | null>(null)
   const [sessions, setSessions] = useState<SessionRow[] | null>(null)
@@ -109,6 +111,19 @@ export default function SecurityPanel({
     }
   }
 
+  /** Sign out everywhere / This wasn't me. On success every session is gone, so go to sign-in with a notice. */
+  async function protect(path: string, reason: 'signed-out-everywhere' | 'not-me') {
+    setBusy(true); setError(null); setStatus(null)
+    try {
+      const res = await postJson(path, {})
+      if (res.status !== 200) { setError(C.actionFailed); setBusy(false); return }
+      go(`/portal/sign-in?reason=${reason === 'not-me' && res.body?.alerted === false ? 'not-me-no-alert' : reason}`)
+    } catch {
+      setError(C.actionFailed)
+      setBusy(false)
+    }
+  }
+
   const keepsFactor = canDeletePasskey({ passkeys: passkeys?.length ?? 0, totpVerified })
   const others = (sessions ?? []).filter((s) => s.token !== currentToken)
 
@@ -125,7 +140,7 @@ export default function SecurityPanel({
           <ul>
             {passkeys.map((p, i) => (
               <li key={p.id}>
-                {p.name || `Passkey ${i + 1}`}{p.createdAt ? <> · {C.passkeyAdded} {formatWhen(p.createdAt)}</> : null}{' '}
+                {p.name || `Passkey ${i + 1}`}{p.createdAt ? <> · {C.passkeyAdded} {formatWhen(p.createdAt)}</> : null} · {p.deviceType === 'multiDevice' || p.backedUp ? C.passkeySynced : C.passkeyDeviceOnly}{' '}
                 {keepsFactor && fresh ? (
                   <button
                     type="button"
@@ -182,7 +197,7 @@ export default function SecurityPanel({
             <li>{C.thisDevice}</li>
             {others.map((s) => (
               <li key={s.token}>
-                {describeDevice(s.userAgent)}{s.createdAt ? <> · {C.startedAt} {formatWhen(s.createdAt)}</> : null}{' '}
+                {describeDevice(s.userAgent)} · {C.network} {sessionNetwork(s.ipAddress)}{s.createdAt ? <> · {C.startedAt} {formatWhen(s.createdAt)}</> : null}{' '}
                 <button type="button" className="portal-btn secondary" disabled={busy} aria-label={`${C.revoke}: ${describeDevice(s.userAgent)}`} onClick={() => void act(C.done, () => authClient().revokeSession({ token: s.token }))}>
                   {C.revoke}
                 </button>
@@ -194,6 +209,59 @@ export default function SecurityPanel({
         {others.length > 0 ? (
           <button type="button" className="portal-btn" disabled={busy} onClick={() => void act(C.done, () => authClient().revokeOtherSessions())}>{C.revokeOthers}</button>
         ) : null}
+        <p className="hint">{C.networkNote}</p>
+      </section>
+
+      <section className="portal-card" aria-labelledby="ev-h" data-testid="security-events">
+        <h2 id="ev-h">{C.eventsTitle}</h2>
+        <p>{C.eventsIntro}</p>
+        {events.length === 0 ? <p>{C.eventsNone}</p> : (
+          <div className="portal-table-wrap">
+            <table className="portal-table">
+              <caption className="portal-visually-hidden">{C.eventsCaption}</caption>
+              <thead>
+                <tr><th scope="col">{C.colWhen}</th><th scope="col">{C.colWhat}</th><th scope="col">{C.colNetwork}</th><th scope="col">{C.colResult}</th></tr>
+              </thead>
+              <tbody>
+                {events.map((e) => {
+                  const d = describeEvent(e.type, e.outcome)
+                  return (
+                    <tr key={e.id}>
+                      <td>{formatWhen(e.at)}</td>
+                      <td>{d.text}</td>
+                      <td>{networkLabel(e.ipPrefix)}</td>
+                      <td>{d.failed ? C.resultFailed : C.resultOk}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {events.length >= 50 ? <p className="hint">{C.eventsLimit(50)}</p> : null}
+      </section>
+
+      <section className="portal-card" aria-labelledby="wr-h">
+        <h2 id="wr-h">{C.wrongTitle}</h2>
+        <p>{C.everywhereHelp}</p>
+        <button
+          type="button"
+          className="portal-btn secondary"
+          disabled={busy}
+          onClick={() => { if (window.confirm(C.everywhereConfirm)) void protect('/security/sign-out-everywhere', 'signed-out-everywhere') }}
+        >
+          {busy ? C.working : C.everywhere}
+        </button>
+        <p>{C.notMeHelp}</p>
+        <button
+          type="button"
+          className="portal-btn danger"
+          disabled={busy}
+          onClick={() => { if (window.confirm(C.notMeConfirm)) void protect('/security/not-me', 'not-me') }}
+        >
+          {busy ? C.working : C.notMe}
+        </button>
+        <p className="hint">{C.notMeNote}</p>
       </section>
     </>
   )

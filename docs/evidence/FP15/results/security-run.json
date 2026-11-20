@@ -1,0 +1,142 @@
+[
+  {
+    "id": "R0 signed out, the security page sends the visitor to sign-in",
+    "ok": true,
+    "note": "http://localhost:3040/portal/sign-in"
+  },
+  {
+    "id": "R1 signed out, \"This wasn't me\" and \"Sign out everywhere\" are refused",
+    "ok": true,
+    "note": "status 401"
+  },
+  {
+    "id": "R2 the activity list shows what enrolment did, newest first (codes, passkey added, password accepted)",
+    "ok": true,
+    "note": "positions 227 < 292 < 348"
+  },
+  {
+    "id": "R3 the network is shown as a prefix (203.0.113.x), never the full address",
+    "ok": true,
+    "note": "prefix only"
+  },
+  {
+    "id": "R4 the table has a caption and column headers, and each row a When, What, Network and Result",
+    "ok": true,
+    "note": "4 headers, 1 caption"
+  },
+  {
+    "id": "R5 each passkey says whether it is synced or on this device only",
+    "ok": true,
+    "note": "My passkey · Added 20 Nov 2026, 11:46 · This device only"
+  },
+  {
+    "id": "R6 the second device appears in \"Devices signed in\" with its browser and network",
+    "ok": true,
+    "note": "sessions 2"
+  },
+  {
+    "id": "R7 the second device's passkey sign-in is in the activity list with its own network",
+    "ok": true,
+    "note": "logged"
+  },
+  {
+    "id": "R8 cancelling the confirmation leaves every session alone",
+    "ok": true,
+    "note": "dialog \"Sign out of every device, including this one?\""
+  },
+  {
+    "id": "R9 cancelling \"This wasn't me\" raises no alert and ends nothing",
+    "ok": true,
+    "note": "no alert"
+  },
+  {
+    "id": "R10 both buttons work from the keyboard (Enter on the focused button opens the confirmation)",
+    "ok": true,
+    "note": "dialog \"Sign out of every device, including this one?\""
+  },
+  {
+    "id": "R11 a request from another site cannot press \"This wasn't me\" for the person",
+    "ok": true,
+    "note": "status 403"
+  },
+  {
+    "id": "R12 sign out everywhere lands on sign-in with a clear notice",
+    "ok": true,
+    "note": "notice shown"
+  },
+  {
+    "id": "R13 the other device is signed out too, and the account has no sessions left",
+    "ok": true,
+    "note": "sessions 0"
+  },
+  {
+    "id": "R14 no alert is raised by a plain sign out everywhere",
+    "ok": true,
+    "note": "event logged, no alert"
+  },
+  {
+    "id": "R15 the old cookie is dead: the security page sends the first device to sign-in",
+    "ok": true,
+    "note": "http://localhost:3040/portal/sign-in"
+  },
+  {
+    "id": "R16 after signing back in the list shows the sign out, the new passkey sign-ins and the wrong password, the last one marked Failed",
+    "ok": true,
+    "note": "history kept"
+  },
+  {
+    "id": "R17 a wrong password is logged once for a known account",
+    "ok": true,
+    "note": "rows 1"
+  },
+  {
+    "id": "R18 PJ8: \"This wasn't me\" lands on sign-in and says the administrator has been alerted",
+    "ok": true,
+    "note": "notice shown"
+  },
+  {
+    "id": "R19 PJ8: every other device is signed out and the account has no sessions",
+    "ok": true,
+    "note": "sessions 0"
+  },
+  {
+    "id": "R20 PJ8: exactly one open alert for this account, with the network prefix, is shown by the alerts command",
+    "ok": true,
+    "note": "[{\"ip\":\"203.0.113.0/24\"}]"
+  },
+  {
+    "id": "R21 the alert can be acknowledged once and then no longer lists",
+    "ok": true,
+    "note": "{\"acknowledged\":true}"
+  },
+  {
+    "id": "R22 the \"This wasn't me\" press is in the history after signing back in",
+    "ok": true,
+    "note": "logged"
+  },
+  {
+    "id": "R23 at 390 px the page does not scroll sideways",
+    "ok": true,
+    "note": "scrollWidth 390, innerWidth 390"
+  },
+  {
+    "id": "R23b at 390 px all four columns fit without scrolling inside the table (the Result column is not hidden)",
+    "ok": true,
+    "note": "table scrollWidth 316, visible 316"
+  },
+  {
+    "id": "R24 every stored network is a /24 prefix; no full address is in the log",
+    "ok": true,
+    "note": "non-prefix rows 0"
+  },
+  {
+    "id": "R25 another account sees only its own history",
+    "ok": true,
+    "note": "isolation"
+  },
+  {
+    "id": "R26 events are logged for the sign-in itself, so a signed-in person never sees an empty list",
+    "ok": true,
+    "note": "rows exist"
+  }
+]

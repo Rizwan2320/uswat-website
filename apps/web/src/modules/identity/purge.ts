@@ -9,6 +9,7 @@ import type pg from 'pg'
 import { ABSOLUTE_MS, IDLE_MS, SHARED_IDLE_MS } from './sessionLifetime'
 import { DECAY_MS } from './signInThrottle'
 import { LOCK_WINDOW_MS } from './recoveryService'
+import { EVENT_RETENTION_MS } from './securityEvents'
 import { REPLAY_WINDOW_MS } from './totpReplay'
 
 export type PurgeCounts = {
@@ -17,6 +18,7 @@ export type PurgeCounts = {
   signInFailures: number
   recoveryAttempts: number
   totpReplays: number
+  securityEvents: number
 }
 
 const at = (now: number, agoMs: number) => new Date(now - agoMs)
@@ -49,6 +51,7 @@ export async function purgeExpired(pool: pg.Pool, now: number, opts: { dryRun?: 
       signInFailures: await run('delete from "signin_failure"', '"lastFailureAt" < $1', [at(now, DECAY_MS)], '"signin_failure"'),
       recoveryAttempts: await run('delete from "recovery_attempt"', '"windowStart" <= $1', [at(now, LOCK_WINDOW_MS)], '"recovery_attempt"'),
       totpReplays: await run('delete from "totp_replay"', '"usedAt" <= $1', [at(now, REPLAY_WINDOW_MS)], '"totp_replay"'),
+      securityEvents: await run('delete from "security_event"', '"at" < $1', [at(now, EVENT_RETENTION_MS)], '"security_event"'),
     }
     await client.query(opts.dryRun ? 'rollback' : 'commit')
     return counts

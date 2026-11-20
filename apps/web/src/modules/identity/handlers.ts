@@ -4,6 +4,7 @@
  * `getAuth` and `loadFactors` are injected and called lazily, so importing this file opens no
  * connection and, with the portal off, no auth object is ever built.
  */
+import { clientAddress as addressOf } from './clientAddress'
 import { readPortalConfig } from './config'
 import { AUTH_BASE, decide, classifyPath, type FactorState } from './gate'
 import { readSessionState, type SessionLookup } from './sessionState'
@@ -32,6 +33,8 @@ export type HandlerDeps = {
   touchSession: (sessionId: string, now: number) => Promise<void>
   /** Progressive delay on password sign-in (ABU-01). */
   signInThrottle: SignInThrottle
+  /** Logs a failed password attempt for a known account (FP-51). Errors are ignored by the caller. */
+  recordSignInFailure?: (email: string, address: string) => Promise<void>
 }
 
 const SIGN_IN = `${AUTH_BASE}/sign-in/email`
@@ -39,12 +42,7 @@ const SIGN_IN = `${AUTH_BASE}/sign-in/email`
 const RECOVERY_SIGN_IN = `${AUTH_BASE}/recovery/sign-in`
 
 /** Client address as Vercel passes it. Only a counter key: a wrong value weakens the per-address delay, nothing else. */
-function clientAddress(req: Request): string {
-  const real = req.headers.get('x-real-ip')
-  if (real) return real.trim()
-  const fwd = req.headers.get('x-forwarded-for')
-  return fwd ? (fwd.split(',')[0] ?? '').trim() || 'unknown' : 'unknown'
-}
+const clientAddress = (req: Request): string => addressOf(req.headers)
 
 /** The email in a sign-in body, read from a clone so the library still gets the body. '' if unreadable. */
 async function signInEmail(req: Request): Promise<string> {
@@ -82,7 +80,10 @@ export function createAuthHandlers(deps: HandlerDeps) {
     const res = await deps.getAuth().handler(req)
     // 401 is a wrong password or unknown email; 200 means the password was right (a session, or the second-factor step).
     // Anything else (the library's own 429, a 400, a 500) says nothing about the password.
-    if (res.status === 401) await deps.signInThrottle.failed(target, Date.now()).catch(() => {})
+    if (res.status === 401) {
+      await deps.signInThrottle.failed(target, Date.now()).catch(() => {})
+      if (target.email) await deps.recordSignInFailure?.(target.email, target.address).catch(() => {})
+    }
     else if (res.status === 200 && target.email) await deps.signInThrottle.succeeded(target).catch(() => {})
     return res
   }
