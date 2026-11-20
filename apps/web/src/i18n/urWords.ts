@@ -277,6 +277,9 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   Eligibility: 'اہلیت',
   'Curriculum PDF': 'نصاب کی PDF',
   'Fee information link': 'فیس کی معلومات کا لنک',
+  'Apply link': 'درخواست دینے کا لنک',
+  'Where applicants start their application (the admissions portal page for this programme). Leave empty to hide the Apply button.':
+    'جہاں امیدوار اس پروگرام کے لیے درخواست شروع کرتے ہیں (داخلہ پورٹل کا صفحہ)۔ "درخواست دیں" کا بٹن چھپانے کے لیے خالی چھوڑ دیں۔',
   Sector: 'سیکٹر',
   'Affiliation year': 'الحاق کا سال',
   'As the university lists it. Together with the number, this identifies the college.':
