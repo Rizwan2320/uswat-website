@@ -7,7 +7,7 @@ import { notFound, redirect } from 'next/navigation'
 
 import type { FactorState } from '../identity/gate'
 import { portalDeps } from './deps'
-import { accountFrom, guardPage } from './pageGuard'
+import { accountFrom, guardPage, reviewerFrom } from './pageGuard'
 
 export async function requirePortalPage(pathname: string): Promise<{ userId: string | null; email: string | null; strong: boolean; factors: FactorState | null; fresh: boolean }> {
   const result = await guardPage({ env: process.env, ...portalDeps }, await headers(), pathname, Date.now())
@@ -24,4 +24,9 @@ export async function requirePortalPage(pathname: string): Promise<{ userId: str
 export async function strongAccount(pathname: string): Promise<{ id: string; email: string } | null> {
   const result = await guardPage({ env: process.env, ...portalDeps }, await headers(), pathname, Date.now())
   return accountFrom(result)
+}
+
+/** For reviewer actions: the signed-in account's id and whether its second factor is fresh. Same guard, same rules as `strongAccount`. */
+export async function strongReviewer(pathname: string): Promise<{ id: string; fresh: boolean } | null> {
+  return reviewerFrom(await guardPage({ env: process.env, ...portalDeps }, await headers(), pathname, Date.now()))
 }
