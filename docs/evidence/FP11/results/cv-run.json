@@ -1,0 +1,107 @@
+[
+  {
+    "id": "R0 a signed-out visitor to the CV page is sent to sign-in",
+    "ok": true,
+    "note": "http://localhost:3040/portal/sign-in"
+  },
+  {
+    "id": "R1 a signed-out request for the Word file gets 401 and no CV content",
+    "ok": true,
+    "note": "status 401, body \"Not signed in\""
+  },
+  {
+    "id": "R2 one h1 on the page (the CV name), the Sample label, and the university layout by default",
+    "ok": true,
+    "note": "h1 \"Sample User\""
+  },
+  {
+    "id": "R3 claimed works are listed newest first; pending and rejected are not",
+    "ok": true,
+    "note": "order and exclusions checked"
+  },
+  {
+    "id": "R4 courses are listed newest semester first",
+    "ok": true,
+    "note": "Spring 2026 before Fall 2025"
+  },
+  {
+    "id": "R5 the email is not on the CV until the profile makes it Public, and the page says why",
+    "ok": true,
+    "note": "hidden by default"
+  },
+  {
+    "id": "R6 the header and every section carry a trust note",
+    "ok": true,
+    "note": "3 notes, 2 sections"
+  },
+  {
+    "id": "R7 the HEC-style layout shows the same works in a numbered list, courses in a table with headers, and says it is not the official form",
+    "ok": true,
+    "note": "ol items 2"
+  },
+  {
+    "id": "R7b an unknown layout value falls back to the university layout",
+    "ok": true,
+    "note": "fallback"
+  },
+  {
+    "id": "R8 once the profile makes the email Public it appears on the CV",
+    "ok": true,
+    "note": "email shown"
+  },
+  {
+    "id": "R9 the Word file: 200, application/msword, attachment named cv-hec.doc, no-store, nosniff",
+    "ok": true,
+    "note": "200 application/msword; charset=utf-8 attachment; filename=\"cv-hec.doc\""
+  },
+  {
+    "id": "R10 the Word body is a full HTML document with the claimed works, the courses and the sample label, and without pending works",
+    "ok": true,
+    "note": "2756 bytes"
+  },
+  {
+    "id": "R11 an unknown layout for the Word file is refused with 400",
+    "ok": true,
+    "note": "status 400"
+  },
+  {
+    "id": "R12 the Download for Word link saves cv-hec.doc",
+    "ok": true,
+    "note": "cv-hec.doc"
+  },
+  {
+    "id": "R13-university PDF: print hides the header, banner and tools; tagged; text extractable; page count",
+    "ok": true,
+    "note": "hidden true,true,true, tagged true, pages 1"
+  },
+  {
+    "id": "R13-hec PDF: print hides the header, banner and tools; tagged; text extractable; page count",
+    "ok": true,
+    "note": "hidden true,true,true, tagged true, pages 2"
+  },
+  {
+    "id": "R14-university at 390 px the page does not scroll sideways",
+    "ok": true,
+    "note": "scrollWidth 390, innerWidth 390"
+  },
+  {
+    "id": "R14-hec at 390 px the page does not scroll sideways",
+    "ok": true,
+    "note": "scrollWidth 390, innerWidth 390"
+  },
+  {
+    "id": "R15 another account sees only its own works and courses, never the first account's",
+    "ok": true,
+    "note": "isolation"
+  },
+  {
+    "id": "R16 the other account's Word file is also its own",
+    "ok": true,
+    "note": "isolation in the Word route"
+  },
+  {
+    "id": "R17 with nothing claimed and no courses the CV says so instead of showing empty headings",
+    "ok": true,
+    "note": "empty states"
+  }
+]
