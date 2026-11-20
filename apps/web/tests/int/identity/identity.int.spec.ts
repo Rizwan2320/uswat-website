@@ -1883,6 +1883,13 @@ describe.skipIf(!DB)('department reviewer queue (FP-16, FPR-04, PJ4), PostgreSQL
       expect(q[0]).toMatchObject({ name: 'Sample a', firstPublication: true, changes: 1 })
       expect(q[1]!.changes).toBe(2)
     })
+    it('a decision is allowed across a difference of case in the department name, as the list is', async () => {
+      const d = dept()
+      const rev = await account('rev', d, true)
+      const b = await account('b', d.toUpperCase())
+      const r = await submitted(b)
+      expect(await reviews().decide(rev.id, { subjectId: b.id, rev: r, decision: 'approved', note: null }, NOW)).toBe('ok')
+    })
     it('a non-reviewer, a person with a department only, and a role without a department all see nothing', async () => {
       const d = dept()
       const plain = await account('plain', d)
