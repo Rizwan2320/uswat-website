@@ -8,7 +8,7 @@ For staff who write and publish content in the University of Swat CMS. Plain wor
 | --- | --- |
 | Contributor | Start a draft. You can see and change only your own drafts. |
 | Editor | Write and edit content for your office, and send it for review. You cannot publish. |
-| Approver | Review content for your office, approve it, mark it as verified, and publish it. Also the only role (with site manager and platform admin) who can change an image after it is uploaded and record its rights. |
+| Approver | Review content for your office, approve it, mark it as verified, and publish it. Also the only role (with site manager and platform admin) who can change an image after it is uploaded and record its rights. As head of an office you also manage your own team (see below). |
 | Site manager | Everything an approver does for all offices, plus menus, redirects and forms. |
 | Platform admin | Everything, plus user accounts. |
 | Auditor | Read content and the audit log. Cannot change anything. |
@@ -64,6 +64,16 @@ The message names the problem. The common ones:
 | Needs a "Take down on" date | Notices and similar items must say when they stop being shown. |
 
 The blue **Publish changes** button is visible to editors too, but only an approver's press will work; yours will be refused with one of the messages above. Your work always saves as a draft, even with these problems. They only stop **publishing**.
+
+## If you are the head of an office: your team
+
+As an approver you can add and manage the **Editors and Contributors of your own office**, under **Users** in the menu. You see only your own team there, not the whole staff list.
+
+- **Add a person:** Users, Create New. Give a name, an email and a first password, and tell the person the password yourself (there is no email invitation yet); they can change it from their own account. Leave the role as Contributor or pick Editor. If you hold one office, it is filled in for you; if you hold more than one, choose which.
+- **Change a role:** open the person and switch between Editor and Contributor.
+- **Take your office off a person:** remove it from their list of offices. A person must keep at least one office; to remove someone completely, delete their account. You can delete an account only if the person works for none but your offices.
+- **What you cannot do:** make anyone an Approver, Site Manager or Admin; give or take an office that is not yours; touch anyone outside your office; change anyone's name, email or password (ask the IT Directorate); change your own role or offices.
+- Every one of these actions is recorded with your name.
 
 ## What is recorded
 
