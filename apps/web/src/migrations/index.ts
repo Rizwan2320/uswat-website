@@ -8,6 +8,7 @@ import * as migration_20261111_014816_p3f_media_rules from './20261111_014816_p3
 import * as migration_20261111_102441_p3h_seo_search_redirects from './20261111_102441_p3h_seo_search_redirects';
 import * as migration_20261118_014656_p3s_verified_by from './20261118_014656_p3s_verified_by';
 import * as migration_20261119_021305_p3t_media_storage_fields from './20261119_021305_p3t_media_storage_fields';
+import * as migration_20261120_015808_p3x_post_fields from './20261120_015808_p3x_post_fields';
 
 export const migrations = [
   {
@@ -58,6 +59,11 @@ export const migrations = [
   {
     up: migration_20261119_021305_p3t_media_storage_fields.up,
     down: migration_20261119_021305_p3t_media_storage_fields.down,
-    name: '20261119_021305_p3t_media_storage_fields'
+    name: '20261119_021305_p3t_media_storage_fields',
+  },
+  {
+    up: migration_20261120_015808_p3x_post_fields.up,
+    down: migration_20261120_015808_p3x_post_fields.down,
+    name: '20261120_015808_p3x_post_fields'
   },
 ];

@@ -16,7 +16,8 @@ import {
   governedReadVersions,
   governedUpdate,
 } from '../../governance/access'
-import { withGovernance } from '../../governance/fields'
+import { safeHrefValidate, withGovernance } from '../../governance/fields'
+import { legacyUrlField } from '../governedCollection'
 import { Banner } from '../../blocks/Banner/config'
 import { Code } from '../../blocks/Code/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
@@ -92,6 +93,13 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
                 relationTo: 'media',
               },
               {
+                // Not localized, like the title and the text: News keeps one language per record.
+                name: 'excerpt',
+                label: 'Short summary',
+                type: 'textarea',
+                admin: { description: 'One or two sentences shown in lists.' },
+              },
+              {
                 name: 'content',
                 type: 'richText',
                 editor: lexicalEditor({
@@ -109,11 +117,48 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
                 label: false,
                 required: true,
               },
+              {
+                name: 'attachments',
+                type: 'array',
+                admin: { description: 'PDFs and other files, added as links.' },
+                fields: [
+                  {
+                    name: 'label',
+                    label: 'Link text',
+                    type: 'text',
+                    required: true,
+                    admin: {
+                      description: 'Say what the file is, for example "Fee schedule 2026 (PDF)".',
+                    },
+                  },
+                  {
+                    name: 'url',
+                    label: 'Web address',
+                    type: 'text',
+                    required: true,
+                    validate: safeHrefValidate,
+                    admin: { description: 'Where the file is, starting with https://' },
+                  },
+                ],
+              },
             ],
             label: 'Content',
           },
           {
             fields: [
+              {
+                name: 'department',
+                label: 'Department',
+                type: 'relationship',
+                relationTo: 'departments',
+                index: true,
+                admin: {
+                  position: 'sidebar',
+                  description:
+                    'Set this when the news belongs to one department, so it shows on that department’s page. Leave empty for university-wide news.',
+                },
+              },
+              legacyUrlField,
               {
                 name: 'relatedPosts',
                 label: 'Related posts',
@@ -278,5 +323,9 @@ export const Posts: CollectionConfig<'posts'> = withGovernance(
     'authors',
     'slug',
     'bodyStatus',
+    'excerpt',
+    'attachments',
+    'department',
+    'legacyUrl',
   ],
 )

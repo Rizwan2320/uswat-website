@@ -266,6 +266,8 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
 
   // --- Organisation, academics, people, directory
   'Head of department': 'شعبے کا سربراہ',
+  'Set this when the news belongs to one department, so it shows on that department’s page. Leave empty for university-wide news.':
+    'جب خبر کسی ایک شعبے سے متعلق ہو تو یہ منتخب کریں، تاکہ وہ اس شعبے کے صفحے پر نظر آئے۔ پوری جامعہ کی خبروں کے لیے خالی چھوڑ دیں۔',
   'Head of office': 'دفتر کا سربراہ',
   Vision: 'وژن',
   Mission: 'مشن',
