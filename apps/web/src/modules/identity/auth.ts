@@ -21,6 +21,8 @@ import { recoveryPlugin } from './recoveryPlugin'
 import { createRecoveryService } from './recoveryService'
 import { createPgAttemptStore, createPgRecoveryStore } from './recoveryStore'
 import { createPgReplayStore } from './replayStore'
+import { createPgAlertStore, createPgEventStore } from './securityEvents'
+import { securityEventPlugin } from './securityEventPlugin'
 import { sessionAssurancePlugin } from './sessionAssurancePlugin'
 import { totpReplayPlugin } from './totpReplayPlugin'
 
@@ -55,6 +57,7 @@ export function createPortalAuth(config: EnabledConfig) {
         backupCodeOptions: { amount: 0 },
       }),
       totpReplayPlugin(createPgReplayStore(pool)),
+      securityEventPlugin(createPgEventStore(pool), createPgAlertStore(pool)),
       sessionAssurancePlugin(createPgAssuranceStore(pool), createPgSharedStore(pool)),
       recoveryPlugin(
         createRecoveryService({ recovery: createPgRecoveryStore(pool), attempts: createPgAttemptStore(pool) }),

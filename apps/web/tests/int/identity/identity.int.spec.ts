@@ -6,7 +6,7 @@
  */
 import { symmetricDecrypt } from 'better-auth/crypto'
 import pg from 'pg'
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { totpAt } from '../../helpers/totp'
 import { readPortalConfig } from '@/modules/identity/config'
@@ -18,12 +18,14 @@ import { createPgSessionStore } from '@/modules/identity/sessionStore'
 import { purgeExpired } from '@/modules/identity/purge'
 import { evaluateSession } from '@/modules/identity/sessionLifetime'
 import { createPgSharedStore } from '@/modules/identity/sharedStore'
+import { createPgAlertStore, createPgEventStore, EVENT_RETENTION_MS, FAILURE_COALESCE_MS, RECENT_LIMIT } from '@/modules/identity/securityEvents'
 import { createSignInThrottle } from '@/modules/identity/signInThrottle'
 import { createPgThrottleStore } from '@/modules/identity/signInThrottleStore'
 import { closeIdentityPool, getIdentityPool } from '@/modules/identity/db'
 import { loadFactors } from '@/modules/identity/factors'
 import { createAuthHandlers, type AuthLike } from '@/modules/identity/handlers'
 import { migrateDown, migrateUp } from '@/modules/identity/migrate'
+import { portalDeps } from '@/modules/portal/deps'
 import { EMPTY_EDIT, createSampleProfileStore } from '@/modules/portal/profile/sampleStore'
 import type { ProfileEdit } from '@/modules/portal/profile/types'
 import { createPgPublicationStore } from '@/modules/portal/publications/pgStore'
@@ -69,7 +71,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -1448,5 +1450,320 @@ describe.skipIf(!DB)('course import from a file (FP-30), PostgreSQL', () => {
     const report = await importCourses(pool(), sample, NOW, { dryRun: true })
     expect(report).toMatchObject({ added: sample.length, duplicate: 0, limit: 0, rejected: [] })
     await pool().query(`delete from "user" where "id" like $1`, [`samplefile-%-${tag}`])
+  })
+})
+
+describe.skipIf(!DB)('security centre (FP-51, PJ8), PostgreSQL and the real library', () => {
+  let auth: PortalAuth
+  let h: ReturnType<typeof createAuthHandlers>
+  let pool: pg.Pool
+  let seq = 0
+  const MIN = 60_000
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+    const config = readPortalConfig(env)
+    if (!config.enabled) throw new Error(`config: ${config.reason}`)
+    // portalDeps reads these when called; the real recordSignInFailure is what the app uses.
+    for (const [k, v] of Object.entries(env)) vi.stubEnv(k, v as string)
+    auth = createPortalAuth(config)
+    pool = getIdentityPool(config.databaseUrl)
+    h = createAuthHandlers({
+      env,
+      getAuth: () => auth as unknown as AuthLike,
+      loadFactors: (id) => loadFactors(pool, id),
+      isStrongSession: (id) => createPgAssuranceStore(pool).isStrong(id),
+      lastVerifiedAt: (id) => createPgAssuranceStore(pool).lastVerifiedAt(id),
+      endSession: (id) => createPgSessionStore(pool).end(id),
+      touchSession: (id, now) => createPgSessionStore(pool).touch(id, now),
+      signInThrottle: createSignInThrottle({ store: createPgThrottleStore(pool) }),
+      recordSignInFailure: portalDeps.recordSignInFailure,
+    })
+  })
+  afterAll(async () => {
+    vi.unstubAllEnvs()
+    await closeIdentityPool()
+  })
+
+  class Jar {
+    readonly ip = `198.20.${Math.floor(++seq / 250)}.${(seq % 250) + 1}`
+    private c = new Map<string, string>()
+    header() {
+      return [...this.c].map(([k, v]) => `${k}=${v}`).join('; ')
+    }
+    absorb(res: Response) {
+      for (const line of res.headers.getSetCookie()) {
+        const [pair] = line.split(';')
+        const i = pair!.indexOf('=')
+        const name = pair!.slice(0, i)
+        const val = pair!.slice(i + 1)
+        if (val === '' || /max-age=0/i.test(line)) this.c.delete(name)
+        else this.c.set(name, val)
+      }
+    }
+  }
+  async function call(jar: Jar, method: 'GET' | 'POST', path: string, body?: unknown) {
+    const res = await h[method](
+      new Request(`${BASE}${path}`, {
+        method,
+        headers: { 'content-type': 'application/json', origin: ORIGIN, cookie: jar.header(), 'x-real-ip': jar.ip },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      }),
+    )
+    jar.absorb(res)
+    return res
+  }
+  const prefixOf = (jar: Jar) => `${jar.ip.split('.').slice(0, 3).join('.')}.0/24`
+
+  /** A user with a confirmed authenticator app and one strong session (jar). `secret` makes more sessions. */
+  async function userWithTotp(label = 'sec') {
+    const email = `${label}-${Date.now()}-${++seq}@example.test`
+    const made = await auth.api.signUpEmail({ body: { email, password: PASSWORD, name: 'Sample Security' } })
+    await pool.query(`delete from "session" where "userId" = $1`, [made.user.id])
+    const jar = new Jar()
+    await call(jar, 'POST', '/sign-in/email', { email, password: PASSWORD })
+    const enable = (await (await call(jar, 'POST', '/two-factor/enable', { password: PASSWORD })).json()) as { totpURI: string }
+    const secret = new URL(enable.totpURI).searchParams.get('secret') ?? ''
+    expect((await call(jar, 'POST', '/two-factor/verify-totp', { code: totpAt(secret, Date.now() - 30_000) })).status).toBe(200)
+    return { email, userId: made.user.id, secret, jar }
+  }
+  /** A second strong session for the same account (a different "device"), using the current TOTP window. */
+  async function secondDevice(u: { email: string; secret: string }) {
+    const jar = new Jar()
+    await call(jar, 'POST', '/sign-in/email', { email: u.email, password: PASSWORD })
+    expect((await call(jar, 'POST', '/two-factor/verify-totp', { code: totpAt(u.secret, Date.now()) })).status).toBe(200)
+    return jar
+  }
+  const events = (userId: string) => createPgEventStore(pool).recent(userId)
+  const types = async (userId: string) => (await events(userId)).map((e) => `${e.type}:${e.outcome}`)
+  const alive = async (jar: Jar) => (await call(jar, 'GET', '/get-session')).status === 200
+  const rowCount = async (table: string, userId: string) => (await pool.query(`select count(*)::int as n from "${table}" where "userId" = $1`, [userId])).rows[0].n as number
+
+  async function twoUsers() {
+    const a = await userWithTotp('a')
+    const b = await userWithTotp('b')
+    return { a, b }
+  }
+
+  describe('the event store', () => {
+    it('returns the last 50, newest first, for the asked account only', async () => {
+      const { a, b } = await twoUsers()
+      const store = createPgEventStore(pool)
+      await pool.query(`delete from "security_event" where "userId" in ($1,$2)`, [a.userId, b.userId])
+      const base = Date.now() - 100 * MIN
+      for (let i = 0; i < 60; i++) await store.record({ userId: a.userId, type: 'sign-in-passkey', outcome: 'success', ipPrefix: `10.0.${i}.0/24` }, base + i * 1000)
+      for (let i = 0; i < 3; i++) await store.record({ userId: b.userId, type: 'sign-in-passkey', outcome: 'success', ipPrefix: '192.0.2.0/24' }, base + i * 1000)
+      const rows = await store.recent(a.userId)
+      expect(rows).toHaveLength(RECENT_LIMIT)
+      expect(rows[0]!.ipPrefix).toBe('10.0.59.0/24')
+      expect(rows[49]!.ipPrefix).toBe('10.0.10.0/24')
+      for (let i = 1; i < rows.length; i++) expect(rows[i - 1]!.at.getTime()).toBeGreaterThan(rows[i]!.at.getTime())
+      expect(rows.some((r) => r.ipPrefix === '192.0.2.0/24')).toBe(false)
+      expect(await store.recent(b.userId)).toHaveLength(3)
+      expect(await store.recent(a.userId, 5)).toHaveLength(5)
+      expect(await store.recent(a.userId, 500)).toHaveLength(RECENT_LIMIT)
+      expect(await store.recent(a.userId, -3)).toHaveLength(1)
+      expect(await store.recent('nobody')).toEqual([])
+    })
+
+    it('records a failed password attempt at most once in ten minutes per account; other types and other accounts are not held back', async () => {
+      const { a, b } = await twoUsers()
+      const store = createPgEventStore(pool)
+      await pool.query(`delete from "security_event" where "userId" in ($1,$2)`, [a.userId, b.userId])
+      const t0 = Date.now()
+      const fail = (u: string, at: number) => store.record({ userId: u, type: 'sign-in-failed', outcome: 'failure', ipPrefix: null }, at)
+      await fail(a.userId, t0)
+      await fail(a.userId, t0 + FAILURE_COALESCE_MS - 1)
+      expect(await rowCount('security_event', a.userId)).toBe(1)
+      await fail(a.userId, t0 + FAILURE_COALESCE_MS)
+      expect(await rowCount('security_event', a.userId)).toBe(2)
+      await fail(b.userId, t0 + 1)
+      expect(await rowCount('security_event', b.userId)).toBe(1)
+      await store.record({ userId: a.userId, type: 'sign-in-passkey', outcome: 'success', ipPrefix: null }, t0 + FAILURE_COALESCE_MS + 1)
+      expect(await rowCount('security_event', a.userId)).toBe(3)
+    })
+
+    it('the database refuses an unknown type or outcome and an over-long prefix; the store refuses an unknown type', async () => {
+      const { a } = await twoUsers()
+      const raw = (type: string, outcome: string, prefix: string | null) =>
+        pool.query(`insert into "security_event" ("userId","type","outcome","ipPrefix") values ($1,$2,$3,$4)`, [a.userId, type, outcome, prefix])
+      await expect(raw('made-up', 'success', null)).rejects.toThrow()
+      await expect(raw('not-me', 'maybe', null)).rejects.toThrow()
+      await expect(raw('not-me', 'success', 'x'.repeat(46))).rejects.toThrow()
+      await expect(raw('not-me', 'success', null)).resolves.toBeDefined()
+      await expect(createPgEventStore(pool).record({ userId: a.userId, type: 'made-up' as never, outcome: 'success', ipPrefix: null }, Date.now())).rejects.toThrow()
+    })
+
+    it('events and alerts go with the account', async () => {
+      const { a } = await twoUsers()
+      await createPgEventStore(pool).record({ userId: a.userId, type: 'not-me', outcome: 'success', ipPrefix: null }, Date.now())
+      await createPgAlertStore(pool).raise(a.userId, null, Date.now())
+      expect(await rowCount('security_event', a.userId)).toBeGreaterThan(0)
+      await pool.query(`delete from "user" where "id" = $1`, [a.userId])
+      expect(await rowCount('security_event', a.userId)).toBe(0)
+      expect(await rowCount('security_alert', a.userId)).toBe(0)
+    })
+  })
+
+  describe('events recorded by the real library', () => {
+    it('password accepted and authenticator confirmed are logged with the network prefix, never the full address', async () => {
+      const u = await userWithTotp('ev')
+      const got = await events(u.userId)
+      expect(got.map((e) => e.type).sort()).toEqual(['sign-in-authenticator', 'sign-in-password'])
+      for (const e of got) {
+        expect(e.outcome).toBe('success')
+        expect(e.ipPrefix).toBe(prefixOf(u.jar))
+      }
+      const all = (await pool.query<{ p: string | null }>(`select "ipPrefix" as p from "security_event"`)).rows.map((r) => r.p)
+      for (const p of all) expect(p === null || /^\d+\.\d+\.\d+\.0\/24$|::\/48$/.test(p)).toBe(true)
+    })
+
+    it('a second device signing in with the authenticator is logged as such', async () => {
+      const u = await userWithTotp('ev2')
+      await secondDevice(u)
+      const t = await types(u.userId)
+      expect(t.filter((x) => x === 'sign-in-authenticator:success')).toHaveLength(2)
+      // Only the first password sign-in made a session (before the authenticator was added). Afterwards a
+      // password alone makes no session, so it is not a sign-in event: the authenticator step is.
+      expect(t.filter((x) => x === 'sign-in-password:success')).toHaveLength(1)
+    })
+
+    it('issuing recovery codes and signing in with one are logged', async () => {
+      const u = await userWithTotp('ev3')
+      const issued = await call(u.jar, 'POST', '/recovery/issue', {})
+      expect(issued.status).toBe(200)
+      const code = ((await issued.json()) as { codes: string[] }).codes[0]!
+      const fresh = new Jar()
+      expect((await call(fresh, 'POST', '/recovery/sign-in', { email: u.email, password: PASSWORD, code })).status).toBe(200)
+      const t = await types(u.userId)
+      expect(t).toContain('recovery-codes-issued:success')
+      expect(t).toContain('sign-in-recovery:success')
+    })
+
+    it('a wrong password is logged as a failure once per ten minutes for a known account, and not at all for an unknown address', async () => {
+      const u = await userWithTotp('ev4')
+      const before = (await pool.query(`select count(*)::int as n from "security_event"`)).rows[0].n as number
+      const j = new Jar()
+      expect((await call(j, 'POST', '/sign-in/email', { email: u.email, password: 'wrong wrong wrong wrong' })).status).toBe(401)
+      const j2 = new Jar()
+      expect((await call(j2, 'POST', '/sign-in/email', { email: u.email.toUpperCase(), password: 'wrong again wrong again' })).status).toBe(401)
+      const failures = (await events(u.userId)).filter((e) => e.type === 'sign-in-failed')
+      expect(failures).toHaveLength(1)
+      expect(failures[0]).toMatchObject({ outcome: 'failure', ipPrefix: prefixOf(j) })
+      const mid = (await pool.query(`select count(*)::int as n from "security_event"`)).rows[0].n as number
+      expect(mid).toBe(before + 1)
+      expect((await call(new Jar(), 'POST', '/sign-in/email', { email: `nobody-${Date.now()}@example.test`, password: 'wrong wrong wrong wrong' })).status).toBe(401)
+      expect((await pool.query(`select count(*)::int as n from "security_event"`)).rows[0].n).toBe(mid)
+    })
+  })
+
+  describe('Sign out everywhere', () => {
+    it('ends every session of this account, including the one that asked, and nobody else’s', async () => {
+      const { a, b } = await twoUsers()
+      const phone = await secondDevice(a)
+      expect(await alive(a.jar)).toBe(true)
+      expect(await alive(phone)).toBe(true)
+      const res = await call(a.jar, 'POST', '/security/sign-out-everywhere', {})
+      expect(res.status).toBe(200)
+      expect(res.headers.get('cache-control')).toBe('no-store')
+      expect(a.jar.header()).not.toContain('session_token')
+      expect(await alive(phone)).toBe(false)
+      expect(await rowCount('session', a.userId)).toBe(0)
+      expect(await alive(b.jar)).toBe(true)
+      expect(await rowCount('session', b.userId)).toBe(1)
+      expect(await types(a.userId)).toContain('sign-out-everywhere:success')
+      expect(await rowCount('security_alert', a.userId)).toBe(0)
+    })
+
+    it('is refused without a session, and for a session with no second factor', async () => {
+      expect((await call(new Jar(), 'POST', '/security/sign-out-everywhere', {})).status).toBe(401)
+      const weak = `weak-${Date.now()}@example.test`
+      await auth.api.signUpEmail({ body: { email: weak, password: PASSWORD, name: 'Sample Weak' } })
+      const j = new Jar()
+      await call(j, 'POST', '/sign-in/email', { email: weak, password: PASSWORD })
+      expect((await call(j, 'POST', '/security/sign-out-everywhere', {})).status).toBe(403)
+    })
+  })
+
+  describe('PJ8: This wasn’t me', () => {
+    it('ends every session of this account, raises one alert, logs it, and touches nobody else', async () => {
+      const { a, b } = await twoUsers()
+      const phone = await secondDevice(a)
+      const res = await call(a.jar, 'POST', '/security/not-me', {})
+      expect(res.status).toBe(200)
+      expect(await res.json()).toEqual({ ok: true, alerted: true })
+      expect(await alive(phone)).toBe(false)
+      expect(await rowCount('session', a.userId)).toBe(0)
+      expect(await alive(b.jar)).toBe(true)
+      expect(await types(a.userId)).toContain('not-me:success')
+      const open = await createPgAlertStore(pool).listOpen()
+      const mine = open.filter((x) => x.userId === a.userId)
+      expect(mine).toHaveLength(1)
+      expect(mine[0]).toMatchObject({ email: a.email, ipPrefix: prefixOf(a.jar) })
+      expect(open.some((x) => x.userId === b.userId)).toBe(false)
+    })
+
+    it('is refused without a session or with a password-only session, and then raises nothing', async () => {
+      const before = (await createPgAlertStore(pool).listOpen()).length
+      expect((await call(new Jar(), 'POST', '/security/not-me', {})).status).toBe(401)
+      const weak = `weak2-${Date.now()}@example.test`
+      await auth.api.signUpEmail({ body: { email: weak, password: PASSWORD, name: 'Sample Weak' } })
+      const j = new Jar()
+      await call(j, 'POST', '/sign-in/email', { email: weak, password: PASSWORD })
+      expect((await call(j, 'POST', '/security/not-me', {})).status).toBe(403)
+      expect((await createPgAlertStore(pool).listOpen()).length).toBe(before)
+    })
+
+    it('the same account can raise it again after signing back in, and each press is its own alert', async () => {
+      const a = await userWithTotp('again')
+      expect((await call(a.jar, 'POST', '/security/not-me', {})).status).toBe(200)
+      const back = await secondDevice({ email: a.email, secret: a.secret })
+      expect((await call(back, 'POST', '/security/not-me', {})).status).toBe(200)
+      expect(await rowCount('security_alert', a.userId)).toBe(2)
+    })
+  })
+
+  describe('the alert queue', () => {
+    it('lists open alerts oldest first, acknowledges each once, and ignores a malformed or unknown id', async () => {
+      const a = await userWithTotp('q')
+      const store = createPgAlertStore(pool)
+      const id1 = await store.raise(a.userId, '203.0.113.0/24', Date.now() - 2 * MIN)
+      const id2 = await store.raise(a.userId, null, Date.now() - MIN)
+      const open = (await store.listOpen()).filter((x) => x.userId === a.userId).map((x) => x.id)
+      expect(open).toEqual([id1, id2])
+      expect(await store.acknowledge(id1, Date.now())).toBe(true)
+      expect(await store.acknowledge(id1, Date.now())).toBe(false)
+      expect((await store.listOpen()).filter((x) => x.userId === a.userId).map((x) => x.id)).toEqual([id2])
+      expect(await store.acknowledge('not-a-uuid', Date.now())).toBe(false)
+      expect(await store.acknowledge('00000000-0000-0000-0000-000000000000', Date.now())).toBe(false)
+      expect(await store.acknowledge("x'; drop table security_alert; --", Date.now())).toBe(false)
+      expect((await pool.query(`select count(*)::int as n from "security_alert"`)).rows[0].n).toBeGreaterThan(0)
+    })
+
+    it('the database ties the status to the acknowledgement time', async () => {
+      const a = await userWithTotp('q2')
+      await expect(pool.query(`insert into "security_alert" ("userId","reason","status") values ($1,'not-me','acknowledged')`, [a.userId])).rejects.toThrow()
+      await expect(pool.query(`insert into "security_alert" ("userId","reason") values ($1,'something-else')`, [a.userId])).rejects.toThrow()
+    })
+  })
+
+  describe('purge', () => {
+    it('removes events past the retention and keeps those just inside it; alerts are never purged', async () => {
+      const a = await userWithTotp('p')
+      const NOW = Date.now()
+      await pool.query(`delete from "security_event" where "userId" = $1`, [a.userId])
+      const store = createPgEventStore(pool)
+      await store.record({ userId: a.userId, type: 'not-me', outcome: 'success', ipPrefix: null }, NOW - EVENT_RETENTION_MS - 1000)
+      await store.record({ userId: a.userId, type: 'sign-in-passkey', outcome: 'success', ipPrefix: null }, NOW - EVENT_RETENTION_MS + 1000)
+      await createPgAlertStore(pool).raise(a.userId, null, NOW - EVENT_RETENTION_MS - 1000)
+      const dry = await purgeExpired(pool, NOW, { dryRun: true })
+      expect(dry.securityEvents).toBeGreaterThanOrEqual(1)
+      expect(await rowCount('security_event', a.userId)).toBe(2)
+      const counts = await purgeExpired(pool, NOW)
+      expect(counts.securityEvents).toBe(dry.securityEvents)
+      expect(await types(a.userId)).toEqual(['sign-in-passkey:success'])
+      expect(await rowCount('security_alert', a.userId)).toBe(1)
+    })
   })
 })
