@@ -20,7 +20,7 @@ describe('ipPrefix: only a coarse network is ever kept', () => {
   ])('%s -> %s', (input, expected) => {
     expect(ipPrefix(input)).toBe(expected)
   })
-  it.each(['', 'unknown', 'not an ip', '999.1.1.1', '1.2.3', '1.2.3.4.5', '2001:db8::g', '1::2::3', null, undefined])('%s -> null', (input) => {
+  it.each(['', 'unknown', 'not an ip', '999.1.1.1', '1.2.3', '1.2.3.4.5', '01.2.3.4', '1.2.3.256', '2001:db8::g', '2001:db8::1g', '1::2::3', '12345::1', '1:2:3:4:5:6:7:8:9', '1:2:3:4:5:6:7', '1:2:3:4:5:6:7:8::', '::ffff:1.2.3.256', '::ffff:1.2.3', ':::', '2001:db8:', ':1', null, undefined])('%s -> null', (input) => {
     expect(ipPrefix(input as string | null | undefined)).toBeNull()
   })
   it('never returns more than the prefix: the last byte or the last 80 bits are not in the result', () => {
