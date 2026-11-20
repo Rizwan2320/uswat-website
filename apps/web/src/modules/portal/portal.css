@@ -88,7 +88,7 @@ a.portal-btn { display: inline-flex; align-items: center; box-sizing: border-box
 .cv { background: #fff; border: 1px solid var(--ivory-deep); border-radius: var(--radius); padding: 28px; overflow-wrap: anywhere; }
 .cv h1 { margin: 0 0 4px; }
 .cv h2 { font-size: 1.25rem; border-bottom: 2px solid var(--forest); padding-bottom: 4px; margin: 22px 0 8px; }
-.cv-sample { font-family: var(--stack-nav); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--maroon-deep, #6b1d1d); margin: 0 0 6px; }
+.cv-sample { font-family: var(--stack-nav); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--maroon-deep); margin: 0 0 6px; }
 .cv-name-ur { margin: 0 0 6px; font-size: 1.2rem; }
 .cv-trust { font-size: 0.85rem; font-style: italic; margin: 6px 0 0; }
 .cv-cover { background: var(--ivory-deep); border-radius: 10px; padding: 4px 14px; margin: 14px 0; font-size: 0.95rem; }
