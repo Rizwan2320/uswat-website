@@ -10,6 +10,7 @@ import { SAMPLE_OWNER_OFFICE, sampleSource } from './data'
 import type { SeedActor } from './apply'
 import { addResults, emptyResult, loadBySource, seedRecord, type FlowResult, type SeedState } from './flow'
 import { PDF_ADDRESS, placeholderImages } from './placeholders'
+import { runPool, SEQUENTIAL, withoutDeadline, type Run } from './pool'
 
 type Coll = 'posts' | 'notices' | 'events' | 'jobs' | 'tenders'
 type Role = 'current' | 'attachment' | 'closed' | 'long' | 'today' | 'draft-1' | 'draft-2' | 'review-1' | 'review-2'
@@ -140,50 +141,55 @@ export async function applyArticleSeeds(
   now = Date.now(),
   /** Media ids by placeholder file name (from applyMediaSeeds); the published records with a file get one as hero image. */
   media: Map<string, number | string> = new Map(),
+  run: Run = SEQUENTIAL,
 ): Promise<FlowResult> {
   let out = emptyResult()
   const tagIds = new Map<string, number | string>()
 
   const existingTags = await loadBySource(cms, 'article-tags')
-  for (const t of tags) {
+  // Tags are never cut short by the deadline: an article written without its tag would keep that gap forever.
+  await runPool(tags, withoutDeadline(run), async (t) => {
     const source = sampleSource('article-tags', t.slug)
     tagIds.set(
       t.slug,
       await seedRecord(cms, actor, existingTags, { collection: 'article-tags', source, state: 'published', data: { name: t.name, slug: t.slug, governance: { ownerOffice: SAMPLE_OWNER_OFFICE, source } } }, out),
     )
-  }
+  })
 
-  for (const collection of ARTICLE_COLLECTIONS) {
-    const existing = await loadBySource(cms, collection)
-    for (const a of articleSeeds().filter((x) => x.collection === collection)) {
-      const source = sampleSource(collection, a.slug)
-      const lexical = (text: string) => textToLexical(text)
-      const governance: Record<string, unknown> = { ownerOffice: SAMPLE_OWNER_OFFICE, source }
-      const expiry = a.collection === 'events' ? (a.startsDays ?? 0) + 4 / 24 : a.closesDays
-      if (expiry !== undefined) governance.expireAt = iso(now, expiry)
-      const data: Record<string, unknown> = {
-        title: a.title,
-        slug: a.slug,
-        publishedAt: iso(now, a.publishedDays),
-        tags: a.tags.map((s) => tagIds.get(s)).filter((id) => id !== undefined),
-        governance,
-        ...(collection === 'posts' ? { content: lexical(a.body) } : { excerpt: a.excerpt, body: lexical(a.body) }),
-        ...(collection === 'events' ? { startsAt: iso(now, a.startsDays ?? 0), venue: 'Sample Hall' } : {}),
-        ...(a.attachment && collection !== 'posts' ? { attachments: [{ label: a.attachment, url: SAMPLE_FILE(a.slug) }] } : {}),
-        ...(hero(a, media) !== undefined ? { heroImage: hero(a, media) } : {}),
-      }
-      // News (posts) keeps one title in every language, so its Urdu case is the Urdu title itself.
-      if (collection === 'posts' && a.urdu) data.title = a.urdu.title
-      const ur =
-        a.urdu && collection !== 'posts'
-          ? { title: a.urdu.title, excerpt: a.urdu.excerpt, body: lexical(a.urdu.body) }
-          : undefined
-      await seedRecord(cms, actor, existing, { collection, source, state: a.state, data, ...(ur ? { ur } : {}) }, out)
+  // Every article is independent of the others (the tags and media they point at already exist), so all five
+  // collections share one pool.
+  const existingByCollection = new Map<string, Awaited<ReturnType<typeof loadBySource>>>()
+  await runPool(ARTICLE_COLLECTIONS, withoutDeadline(run), async (c) => void existingByCollection.set(c, await loadBySource(cms, c)))
+  await runPool(articleSeeds(), run, async (a) => {
+    const collection = a.collection
+    const existing = existingByCollection.get(collection)!
+    const source = sampleSource(collection, a.slug)
+    const lexical = (text: string) => textToLexical(text)
+    const governance: Record<string, unknown> = { ownerOffice: SAMPLE_OWNER_OFFICE, source }
+    const expiry = a.collection === 'events' ? (a.startsDays ?? 0) + 4 / 24 : a.closesDays
+    if (expiry !== undefined) governance.expireAt = iso(now, expiry)
+    const data: Record<string, unknown> = {
+      title: a.title,
+      slug: a.slug,
+      publishedAt: iso(now, a.publishedDays),
+      tags: a.tags.map((s) => tagIds.get(s)).filter((id) => id !== undefined),
+      governance,
+      ...(collection === 'posts' ? { content: lexical(a.body) } : { excerpt: a.excerpt, body: lexical(a.body) }),
+      ...(collection === 'events' ? { startsAt: iso(now, a.startsDays ?? 0), venue: 'Sample Hall' } : {}),
+      ...(a.attachment && collection !== 'posts' ? { attachments: [{ label: a.attachment, url: SAMPLE_FILE(a.slug) }] } : {}),
+      ...(hero(a, media) !== undefined ? { heroImage: hero(a, media) } : {}),
     }
-  }
+    // News (posts) keeps one title in every language, so its Urdu case is the Urdu title itself.
+    if (collection === 'posts' && a.urdu) data.title = a.urdu.title
+    const ur =
+      a.urdu && collection !== 'posts'
+        ? { title: a.urdu.title, excerpt: a.urdu.excerpt, body: lexical(a.urdu.body) }
+        : undefined
+    await seedRecord(cms, actor, existing, { collection, source, state: a.state, data, ...(ur ? { ur } : {}) }, out)
+  })
 
   const existingMerit = await loadBySource(cms, 'merit-lists')
-  for (const m of meritLists) {
+  await runPool(meritLists, run, async (m) => {
     const source = sampleSource('merit-lists', m.slug)
     await seedRecord(
       cms,
@@ -203,6 +209,6 @@ export async function applyArticleSeeds(
       },
       out,
     )
-  }
+  })
   return addResults(emptyResult(), out)
 }
