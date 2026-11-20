@@ -7,6 +7,8 @@
  * A record that is already published is never touched, so a second run writes nothing.
  */
 import type { Cms } from '../writer'
+
+import { runPool, SEQUENTIAL, withoutDeadline, type Run } from './pool'
 import { textToLexical } from '../writer'
 
 import {
@@ -35,7 +37,7 @@ export function seedRows(): Record<Coll, { slug: string; name: string }[]> {
   return { faculties: facultyGroups, campuses, people, offices, departments, programmes }
 }
 
-export async function applySeeds(cms: Cms, actor: SeedActor): Promise<SeedResult> {
+export async function applySeeds(cms: Cms, actor: SeedActor, run: Run = SEQUENTIAL): Promise<SeedResult> {
   const as = (): Args => ({ user: actor.user, overrideAccess: false, context: CONTEXT })
   const result: SeedResult = { created: 0, linked: 0, published: 0, unchanged: 0 }
   const ids = new Map<string, Id>() // `${collection}/${slug}` -> id
@@ -74,38 +76,48 @@ export async function applySeeds(cms: Cms, actor: SeedActor): Promise<SeedResult
     result.created++
   }
 
-  // 2. Create drafts (no links yet, except those that only point at records created before them).
-  for (const r of facultyGroups) await make('faculties', r, {})
-  for (const r of campuses) await make('campuses', r, {})
-  for (const r of people)
-    await make('people', r, {
-      designation: r.designation,
-      details: r.details,
-      email: r.email,
-      visibility: { email: r.emailPublic ? 'public' : 'hidden', photo: 'hidden' },
-    })
-  for (const r of offices)
-    await make('offices', r, {
-      group: r.group,
-      hours: r.hours,
-      text: textToLexical(`Sample page text for ${r.name}. Invented, for layout testing.`),
-      ...(r.email ? { emails: [{ email: r.email }] } : {}),
-    })
+  // 2. Create drafts (no links yet, except those that only point at records created before them). Records of one
+  //    stage do not depend on each other, so a stage runs a few at a time; the next stage needs this one's ids.
+  //    The organisation data is never cut short by the deadline: a department without its head would be wrong.
+  const org = withoutDeadline(run)
+  const stage = (jobs: (() => Promise<void>)[]) => runPool(jobs, org, (job) => job())
+  await stage([
+    ...facultyGroups.map((r) => () => make('faculties', r, {})),
+    ...campuses.map((r) => () => make('campuses', r, {})),
+    ...people.map((r) => () =>
+      make('people', r, {
+        designation: r.designation,
+        details: r.details,
+        email: r.email,
+        visibility: { email: r.emailPublic ? 'public' : 'hidden', photo: 'hidden' },
+      }),
+    ),
+    ...offices.map((r) => () =>
+      make('offices', r, {
+        group: r.group,
+        hours: r.hours,
+        text: textToLexical(`Sample page text for ${r.name}. Invented, for layout testing.`),
+        ...(r.email ? { emails: [{ email: r.email }] } : {}),
+      }),
+    ),
+  ])
   const id = (c: Coll, slug: string) => ids.get(`${c}/${slug}`) as Id
-  for (const r of departments)
-    await make('departments', r, {
-      summary: r.summary,
-      facultyGroup: id('faculties', r.facultyGroup),
-      head: id('people', r.head),
-    })
-  for (const r of programmes)
-    await make('programmes', r, {
-      level: r.level,
-      duration: r.duration,
-      eligibility: 'Sample eligibility text. Invented, not a real requirement.',
-      department: id('departments', r.department),
-      campus: id('campuses', r.campus),
-    })
+  await stage(
+    departments.map((r) => () =>
+      make('departments', r, { summary: r.summary, facultyGroup: id('faculties', r.facultyGroup), head: id('people', r.head) }),
+    ),
+  )
+  await stage(
+    programmes.map((r) => () =>
+      make('programmes', r, {
+        level: r.level,
+        duration: r.duration,
+        eligibility: 'Sample eligibility text. Invented, not a real requirement.',
+        department: id('departments', r.department),
+        campus: id('campuses', r.campus),
+      }),
+    ),
+  )
 
   // 3. Link people to their department and office (drafts only).
   const link = async (c: Coll, slug: string, data: Args) => {
@@ -117,17 +129,19 @@ export async function applySeeds(cms: Cms, actor: SeedActor): Promise<SeedResult
     await cms.update({ collection: c, id: id(c, slug), draft: true, data, ...as() })
     result.linked++
   }
-  for (const d of departments) await link('people', d.head, { department: id('departments', d.slug) })
-  for (const o of offices) await link('people', o.head, { office: id('offices', o.slug) })
-  for (const o of offices) await link('offices', o.slug, { head: id('people', o.head) })
+  // Each loop touches different records (a test checks that the heads are distinct), and the loops run one after another.
+  await stage(departments.map((d) => () => link('people', d.head, { department: id('departments', d.slug) })))
+  await stage(offices.map((o) => () => link('people', o.head, { office: id('offices', o.slug) })))
+  await stage(offices.map((o) => () => link('offices', o.slug, { head: id('people', o.head) })))
 
   // 4. Publish: draft, in review, approved and verified, published.
+  // Collections go one after another (a department is published after its head), the rows of one collection together.
   for (const c of COLLECTIONS) {
-    for (const row of seedRows()[c]) {
+    await runPool(seedRows()[c], org, async (row) => {
       const key = `${c}/${row.slug}`
       if (states.get(key)?.published) {
         result.unchanged++
-        continue
+        return
       }
       const target = id(c, row.slug)
       const step = (data: Args) => cms.update({ collection: c, id: target, draft: true, data, ...as() })
@@ -135,7 +149,7 @@ export async function applySeeds(cms: Cms, actor: SeedActor): Promise<SeedResult
       await step({ governance: { status: 'approved', verificationStatus: 'verified', reviewDueAt: REVIEW_DUE } })
       await cms.update({ collection: c, id: target, data: { _status: 'published' }, ...as() })
       result.published++
-    }
+    })
   }
   return result
 }

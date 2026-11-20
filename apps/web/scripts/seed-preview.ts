@@ -6,6 +6,7 @@
  * ever prints the refusal); on this machine it exits 1. Nothing here prints a password.
  */
 import { applyAllSeeds } from '../../../scripts/import/seeds/all'
+import { runFromEnv } from '../../../scripts/import/seeds/pool'
 import { assertSeedTarget, type Cms } from '../../../scripts/import/writer'
 
 import { ACCOUNTS, ensureAccounts } from './seed-accounts'
@@ -24,7 +25,7 @@ async function main(): Promise<void> {
       console.log(JSON.stringify({ seeded: false, reason: `${owner} does not exist (set SEED_PASSWORD_OWNER)`, accounts }))
       return
     }
-    const seeds = await applyAllSeeds(payload as unknown as Cms, { user: { ...user, collection: 'users' } }, renderPng)
+    const seeds = await applyAllSeeds(payload as unknown as Cms, { user: { ...user, collection: 'users' } }, renderPng, Date.now(), runFromEnv(process.env))
     console.log(JSON.stringify({ seeded: true, route, accounts, seeds }))
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e)
