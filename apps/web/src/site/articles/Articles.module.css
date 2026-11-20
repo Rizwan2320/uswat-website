@@ -24,6 +24,9 @@
 .empty { padding: 36px 8px; text-align: center; color: var(--text); }
 
 .article { max-width: 760px; margin-inline: auto; padding-block: var(--section-y); }
+.hero { margin: 0 0 22px; }
+.hero img { display: block; width: 100%; height: auto; border-radius: var(--radius); background: var(--ivory-deep); }
+.hero figcaption { margin-top: 8px; font-size: 0.85rem; color: var(--text); overflow-wrap: anywhere; }
 .facts { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 0 0 18px; padding: 0; list-style: none; font-weight: 600; color: var(--maroon); }
 .notice { margin: 0 0 20px; padding: 12px 16px; border-radius: 12px; background: var(--ivory-deep); border-inline-start: 4px solid var(--maroon); color: var(--forest); font-weight: 600; }
 .stub { margin: 0 0 20px; padding: 12px 16px; border-radius: 12px; background: #fff; border: 1px dashed rgb(0 59 23 / 0.3); color: var(--text); }
