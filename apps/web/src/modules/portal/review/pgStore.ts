@@ -4,6 +4,7 @@
  */
 import type pg from 'pg'
 
+import { pickEditable } from '../profile/sampleStore'
 import type { ProfileEdit } from '../profile/types'
 import { compareEdits, isSubjectId } from './rules'
 import type { DecideInput, DecideOutcome, Publisher, QueueItem, ReviewDetail, ReviewStore } from './types'
@@ -55,7 +56,7 @@ export function createPgReviewStore(pool: pg.Pool, publish: Publisher = samplePu
         name: r.name,
         submittedAt: r.updatedAt.getTime(),
         rev: r.rev,
-        changes: compareEdits(r.before, r.after).length,
+        changes: compareEdits(r.before && pickEditable(r.before), pickEditable(r.after)).length,
         firstPublication: r.before === null,
       }))
     },
@@ -74,8 +75,8 @@ export function createPgReviewStore(pool: pg.Pool, publish: Publisher = samplePu
         department: r.department,
         rev: r.rev,
         submittedAt: r.updatedAt.getTime(),
-        before: r.before,
-        after: r.after,
+        before: r.before && pickEditable(r.before),
+        after: pickEditable(r.after),
         sample: true,
       }
       return detail
@@ -110,14 +111,15 @@ export function createPgReviewStore(pool: pg.Pool, publish: Publisher = samplePu
         }
         const before = (await client.query<{ edit: ProfileEdit }>(`select "edit" from "profile_published" where "userId" = $1 for update`, [input.subjectId])).rows[0]?.edit ?? null
         const at = new Date(now)
-        if (input.decision === 'approved') await publish(client, { subjectId: input.subjectId, edit: d.edit, reviewerId, at })
+        const edit = pickEditable(d.edit)
+        if (input.decision === 'approved') await publish(client, { subjectId: input.subjectId, edit, reviewerId, at })
         await client.query(
           `update "profile_draft" set "status" = 'draft', "rev" = "rev" + 1, "updatedAt" = $2, "reviewNote" = $3 where "userId" = $1`,
           [input.subjectId, at, input.decision === 'changes-requested' ? input.note : null],
         )
         await client.query(
           `insert into "profile_review" ("userId", "reviewerId", "decision", "note", "before", "after", "at") values ($1, $2, $3, $4, $5, $6, $7)`,
-          [input.subjectId, reviewerId, input.decision, input.decision === 'changes-requested' ? input.note : null, before === null ? null : JSON.stringify(before), JSON.stringify(d.edit), at],
+          [input.subjectId, reviewerId, input.decision, input.decision === 'changes-requested' ? input.note : null, before === null ? null : JSON.stringify(pickEditable(before)), JSON.stringify(edit), at],
         )
         await client.query('commit')
         return 'ok'
