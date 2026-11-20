@@ -9,6 +9,7 @@ import { T, useI18n } from './I18n'
 import { ArrowRightIcon, ChevronDownIcon, CloseIcon, MenuIcon } from './icons'
 import { NavIcon } from './navIcons'
 import MobileDrawer from './MobileDrawer'
+import SiteLink from './SiteLink'
 import styles from './NavMenu.module.css'
 
 /* Desktop: links with disclosure dropdowns (two columns of icon rows plus an "Explore All" row; the panel hangs under the
@@ -106,19 +107,19 @@ export default function NavMenu({ items, apply }: { items: NavItem[]; apply: Nav
                       <ul key={c} className={styles.col}>
                         {col.map((child) => (
                           <li key={child.label}>
-                            <a href={child.href} rel="noopener noreferrer" onClick={close}>
+                            <SiteLink href={child.href} onClick={close}>
                               <span className={styles.ico}><NavIcon name={child.icon} /></span>
                               <span>{child.label}</span>
-                            </a>
+                            </SiteLink>
                           </li>
                         ))}
                       </ul>
                     ))}
                   </div>
                   {item.noExplore ? null : (
-                    <a className={styles.all} href={item.href} rel="noopener noreferrer" onClick={close}>
+                    <SiteLink className={styles.all} href={item.href} onClick={close}>
                       <span><T k="Explore All" /> <T k={item.label} /></span> <ArrowRightIcon className="flip" />
-                    </a>
+                    </SiteLink>
                   )}
                 </div>
               </li>

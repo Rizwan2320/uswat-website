@@ -15,3 +15,14 @@ export const hiddenFromEditors = ({ user }: { user?: unknown }): boolean => {
   const actor = actorFromUser(user as { id: string | number; role?: unknown })
   return actor.kind !== 'user' || !SETTINGS_ROLES.includes(actor.role)
 }
+
+/**
+ * Users is the one settings area a head of an office also sees (slice 3hod): scoped to their own team
+ * by the collection's access rule, so the screen is theirs, not the whole staff directory.
+ */
+export const hiddenFromUsers = ({ user }: { user?: unknown }): boolean => {
+  if (!user) return true
+  if (!hiddenFromEditors({ user })) return false
+  const actor = actorFromUser(user as { id: string | number; role?: unknown; offices?: unknown })
+  return !(actor.kind === 'user' && actor.role === 'approver' && actor.offices.length > 0)
+}

@@ -8,6 +8,7 @@ import type { Cms } from '../writer'
 import { SAMPLE_HOST, SAMPLE_OWNER_OFFICE, sampleSource } from './data'
 import type { SeedActor } from './apply'
 import { emptyResult, loadBySource, seedRecord, type FlowResult } from './flow'
+import { runPool, SEQUENTIAL, type Run } from './pool'
 
 export type ContactSeed = { key: string; section: string; name: string; hours?: string; phones: string[]; email?: string }
 
@@ -20,10 +21,10 @@ export const contacts: ContactSeed[] = [
   { key: 'sample-contact-06', section: 'Sample Services', name: 'Sample Library', hours: 'Sample hours, Monday to Saturday', phones: [], email: `library.with.a.very.long.sample.address.to.test.wrapping@${SAMPLE_HOST}` },
 ]
 
-export async function applyContactSeeds(cms: Cms, actor: SeedActor): Promise<FlowResult> {
+export async function applyContactSeeds(cms: Cms, actor: SeedActor, run: Run = SEQUENTIAL): Promise<FlowResult> {
   const out = emptyResult()
   const existing = await loadBySource(cms, 'contact-directory')
-  for (const c of contacts) {
+  await runPool(contacts, run, async (c) => {
     const source = sampleSource('contact-directory', c.key)
     await seedRecord(
       cms,
@@ -44,6 +45,6 @@ export async function applyContactSeeds(cms: Cms, actor: SeedActor): Promise<Flo
       },
       out,
     )
-  }
+  })
   return out
 }

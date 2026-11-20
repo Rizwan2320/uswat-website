@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Link as NavLink, NavItem } from '../content/types'
 import { T, useI18n } from './I18n'
 import { ArrowRightIcon, ChevronDownIcon, CloseIcon } from './icons'
+import SiteLink from './SiteLink'
 import styles from './MobileDrawer.module.css'
 
 /* Full-height drawer built on <dialog>: focus trap and Esc come from the platform; body scroll is locked while open.
@@ -57,7 +58,7 @@ export default function MobileDrawer({
               <ul id={`m-sub-${i}`} className={styles.sub} hidden={expanded !== i}>
                 {item.children.map((c) => (
                   <li key={c.label}>
-                    <a href={c.href} rel="noopener noreferrer">{c.label}</a>
+                    <SiteLink href={c.href} onClick={onClose}>{c.label}</SiteLink>
                   </li>
                 ))}
               </ul>

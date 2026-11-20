@@ -29,7 +29,10 @@ for (const who of ['contributor', 'editor', 'approver', 'financeEditor'] as cons
     await signIn(page, fx[who])
     await page.waitForTimeout(2000)
     const items = await menu(page)
-    for (const s of SETTINGS) expect(items, `${who} should not see ${s}`).not.toContain(s)
+    // A head of an office (approver) also sees Users, scoped to their own team (slice 3hod).
+    const hidden = who === 'approver' ? SETTINGS.filter((s) => s !== 'Users') : SETTINGS
+    for (const s of hidden) expect(items, `${who} should not see ${s}`).not.toContain(s)
+    if (who === 'approver') expect(items).toContain('Users')
     for (const s of ['Pages', 'Media', 'Notices', 'Events', 'People']) expect(items).toContain(s)
   })
 }

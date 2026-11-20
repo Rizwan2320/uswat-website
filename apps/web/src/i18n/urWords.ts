@@ -253,19 +253,21 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
 
   // --- Users and roles
   Role: 'کردار',
-  'The first account ever created becomes platform admin.':
-    'سب سے پہلا بننے والا اکاؤنٹ خود بخود پلیٹ فارم ایڈمن بن جاتا ہے۔',
+  'The first account ever created becomes platform admin. A head of an office may set Editor or Contributor for their own team.':
+    'سب سے پہلا بننے والا اکاؤنٹ خود بخود پلیٹ فارم ایڈمن بن جاتا ہے۔ دفتر کا سربراہ اپنی ٹیم کے لیے ایڈیٹر یا کنٹری بیوٹر مقرر کر سکتا ہے۔',
   'Platform Admin (IT Directorate)': 'پلیٹ فارم ایڈمن (آئی ٹی ڈائریکٹوریٹ)',
   'Site Manager (central web office)': 'سائٹ مینیجر (مرکزی ویب دفتر)',
   'Approver (head of an office)': 'منظور کنندہ (دفتر کا سربراہ)',
   'Editor (department staff)': 'مدیر (شعبے کا عملہ)',
   'Contributor (any staff, drafts only)': 'معاون (کوئی بھی عملہ، صرف مسودے)',
   'Auditor (read only)': 'آڈیٹر (صرف پڑھنے کے لیے)',
-  "Offices this person works for (matched against a record's owner office). Stored lower-case.":
-    'وہ دفاتر جن کے لیے یہ شخص کام کرتا ہے (ریکارڈ کے ذمہ دار دفتر سے ملائے جاتے ہیں)۔ چھوٹے حروف میں محفوظ ہوتے ہیں۔',
+  "Offices this person works for (matched against a record's owner office). Stored lower-case. A head of an office can add or take away only their own offices.":
+    'وہ دفاتر جن کے لیے یہ شخص کام کرتا ہے (ریکارڈ کے ذمہ دار دفتر سے ملائے جاتے ہیں)۔ چھوٹے حروف میں محفوظ ہوتے ہیں۔ دفتر کا سربراہ صرف اپنے دفاتر شامل یا ختم کر سکتا ہے۔',
 
   // --- Organisation, academics, people, directory
   'Head of department': 'شعبے کا سربراہ',
+  'Set this when the news belongs to one department, so it shows on that department’s page. Leave empty for university-wide news.':
+    'جب خبر کسی ایک شعبے سے متعلق ہو تو یہ منتخب کریں، تاکہ وہ اس شعبے کے صفحے پر نظر آئے۔ پوری جامعہ کی خبروں کے لیے خالی چھوڑ دیں۔',
   'Head of office': 'دفتر کا سربراہ',
   Vision: 'وژن',
   Mission: 'مشن',
@@ -275,6 +277,9 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   Eligibility: 'اہلیت',
   'Curriculum PDF': 'نصاب کی PDF',
   'Fee information link': 'فیس کی معلومات کا لنک',
+  'Apply link': 'درخواست دینے کا لنک',
+  'Where applicants start their application (the admissions portal page for this programme). Leave empty to hide the Apply button.':
+    'جہاں امیدوار اس پروگرام کے لیے درخواست شروع کرتے ہیں (داخلہ پورٹل کا صفحہ)۔ "درخواست دیں" کا بٹن چھپانے کے لیے خالی چھوڑ دیں۔',
   Sector: 'سیکٹر',
   'Affiliation year': 'الحاق کا سال',
   'As the university lists it. Together with the number, this identifies the college.':

@@ -47,7 +47,13 @@ const COLLECTIONS: Record<string, Rule> = {
   offices: governed,
   campuses: governed,
   people: governed,
-  users: { create: ['platformAdmin'], delete: ['platformAdmin'], update: [...ROLES] },
+  // A head (approver) may create and delete within their own team: the hooks hold the limits (slice 3hod,
+  // tests/int/governance.team.int.spec.ts).
+  users: {
+    create: ['platformAdmin', 'approver'],
+    delete: ['platformAdmin', 'approver'],
+    update: [...ROLES],
+  },
   'audit-logs': {
     read: ['platformAdmin', 'siteManager', 'auditor'],
     create: NOBODY,

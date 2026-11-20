@@ -9,6 +9,7 @@ import { textToLexical } from '../writer'
 import { SAMPLE_OWNER_OFFICE, sampleSource } from './data'
 import type { SeedActor } from './apply'
 import { emptyResult, loadBySource, seedRecord, type FlowResult } from './flow'
+import { runPool, SEQUENTIAL, type Run } from './pool'
 
 export type PageSeed = { slug: string; title: string; text: string }
 
@@ -20,10 +21,10 @@ export const pages: PageSeed[] = [
   { slug: 'accessibility', title: 'Sample Accessibility page', text: `${NOT_REAL}\n\nThis is not the university's accessibility statement. The real statement will be supplied by the university and checked before launch.` },
 ]
 
-export async function applyPageSeeds(cms: Cms, actor: SeedActor, now = Date.now()): Promise<FlowResult> {
+export async function applyPageSeeds(cms: Cms, actor: SeedActor, now = Date.now(), run: Run = SEQUENTIAL): Promise<FlowResult> {
   const out = emptyResult()
   const existing = await loadBySource(cms, 'pages')
-  for (const p of pages) {
+  await runPool(pages, run, async (p) => {
     const source = sampleSource('pages', p.slug)
     await seedRecord(
       cms,
@@ -44,6 +45,6 @@ export async function applyPageSeeds(cms: Cms, actor: SeedActor, now = Date.now(
       },
       out,
     )
-  }
+  })
   return out
 }

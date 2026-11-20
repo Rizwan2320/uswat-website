@@ -8,6 +8,7 @@
 import { randomBytes } from 'node:crypto'
 
 import { applyAllSeeds } from '../../../scripts/import/seeds/all'
+import { runFromEnv, SEQUENTIAL } from '../../../scripts/import/seeds/pool'
 import { renderPng } from './renderPng'
 import { assertLocalDatabase, type Cms } from '../../../scripts/import/writer'
 
@@ -34,7 +35,7 @@ async function main() {
       },
     })) as unknown as Record<string, unknown>
   }
-  const res = await applyAllSeeds(payload as unknown as Cms, { user: { ...user, collection: 'users' } }, renderPng)
+  const res = await applyAllSeeds(payload as unknown as Cms, { user: { ...user, collection: 'users' } }, renderPng, Date.now(), process.env.SEED_CONCURRENCY ? runFromEnv(process.env) : SEQUENTIAL)
   console.log(JSON.stringify(res))
 }
 
