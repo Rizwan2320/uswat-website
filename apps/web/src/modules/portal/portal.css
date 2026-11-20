@@ -67,6 +67,8 @@ a.portal-btn { display: inline-flex; align-items: center; box-sizing: border-box
 .portal-fixed dd { margin: 0; }
 .portal-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
 .portal-preview { background: #fff; border: 2px solid var(--forest); border-radius: var(--radius); padding: 20px; }
+.portal-previews { display: grid; gap: 16px; }
+@media (min-width: 900px) { .portal-previews .portal-preview { position: static; } }
 .portal-preview h2 { margin-top: 0; }
 .portal-preview h3 { font-family: var(--stack-serif, Georgia, serif); color: var(--forest); margin: 4px 0; font-size: 1.3rem; }
 .portal-preview .role { margin: 0 0 12px; }

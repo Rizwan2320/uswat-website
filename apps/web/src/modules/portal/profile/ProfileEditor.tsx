@@ -222,7 +222,7 @@ export default function ProfileEditor({ initial }: { initial: LoadedProfile }) {
           </div>
         </form>
       </div>
-      <div>
+      <div className="portal-previews">
         <PublicPreview preview={preview} />
         {published ? (
           <PublicPreview preview={published} heading={C.publishedNowTitle} idSuffix="-published" testId="published-now" help={`${C.publishedNowHelp} ${C.publishedAt} ${new Date(initial.publishedAt ?? 0).toISOString().slice(0, 10)}.`} />
