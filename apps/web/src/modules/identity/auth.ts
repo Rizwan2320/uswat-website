@@ -42,6 +42,9 @@ export function createPortalAuth(config: EnabledConfig) {
     advanced: {
       useSecureCookies: false,
       cookiePrefix: '__Host-portal',
+      // The same header our own throttle and security log read (clientAddress), so a session row, the log and the rate
+      // limit all see one address. Vercel sets x-real-ip itself; the library's default would read only x-forwarded-for.
+      ipAddress: { ipAddressHeaders: ['x-real-ip', 'x-forwarded-for'] },
       defaultCookieAttributes: { secure: true, httpOnly: true, sameSite: 'lax', path: '/' },
     },
     plugins: [

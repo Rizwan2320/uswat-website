@@ -30,6 +30,11 @@
 .portal-table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
 .portal-table th, .portal-table td { text-align: start; padding: 8px 10px; border-bottom: 1px solid var(--ivory-deep); vertical-align: top; }
 .portal-table th { font-family: var(--stack-nav); color: var(--forest); }
+@media (max-width: 520px) {
+  /* All four columns must stay visible: the Result column carries the Failed marker. */
+  .portal-table { font-size: 0.85rem; }
+  .portal-table th, .portal-table td { padding: 6px 4px; }
+}
 .portal-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .portal-link { color: var(--maroon); text-underline-offset: 3px; }
 .portal-link:hover { color: var(--maroon-deep); }

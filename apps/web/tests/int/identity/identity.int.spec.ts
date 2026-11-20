@@ -1619,6 +1619,14 @@ describe.skipIf(!DB)('security centre (FP-51, PJ8), PostgreSQL and the real libr
       for (const p of all) expect(p === null || /^\d+\.\d+\.\d+\.0\/24$|::\/48$/.test(p)).toBe(true)
     })
 
+    it('the session row carries the same address header as the log, so the sessions list and the log agree', async () => {
+      const u = await userWithTotp('ip')
+      const rows = (await pool.query<{ ipAddress: string | null }>(`select "ipAddress" from "session" where "userId" = $1`, [u.userId])).rows
+      expect(rows).toHaveLength(1)
+      expect(rows[0]!.ipAddress).toBe(u.jar.ip)
+      expect(prefixOf(u.jar)).toBe((await events(u.userId))[0]!.ipPrefix)
+    })
+
     it('a second device signing in with the authenticator is logged as such', async () => {
       const u = await userWithTotp('ev2')
       await secondDevice(u)
