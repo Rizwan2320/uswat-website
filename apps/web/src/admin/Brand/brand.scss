@@ -1,0 +1,41 @@
+.brand-logo {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: center;
+
+  &__crest {
+    border-radius: 50%;
+    height: 72px;
+    width: 72px;
+  }
+
+  &__name {
+    color: var(--theme-text);
+    display: block;
+    font-family: var(--admin-serif);
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  &__sub {
+    color: var(--theme-elevation-600);
+    display: block;
+    font-family: var(--admin-nav);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+}
+
+.brand-icon {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  flex-shrink: 0;
+  height: 36px;
+  max-width: none;
+  object-fit: contain;
+  width: 36px;
+}
