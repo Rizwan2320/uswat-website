@@ -1,0 +1,165 @@
+{
+  "at": "2026-11-20T18:11:45.782Z",
+  "results": [
+    {
+      "id": "R0 the operator command refuses a reviewer grant before a department is set",
+      "ok": true,
+      "note": "{\"command\":\"grant-reviewer\",\"result\":\"no-department\"}"
+    },
+    {
+      "id": "R1 and refuses an unknown account",
+      "ok": true,
+      "note": "{\"command\":\"set-department\",\"result\":\"no-account\"}"
+    },
+    {
+      "id": "R2 departments and the two reviewer roles are set, and the list shows them",
+      "ok": true,
+      "note": "5 accounts, 2 reviewers"
+    },
+    {
+      "id": "R3 three faculty members submitted from the profile screen",
+      "ok": true,
+      "note": "three submitted"
+    },
+    {
+      "id": "R4 only a reviewer sees the Review link on the home page",
+      "ok": true,
+      "note": "reviewers yes, faculty no"
+    },
+    {
+      "id": "R5 a faculty member who is not a reviewer gets \"not found\" for the queue",
+      "ok": true,
+      "note": "status 404"
+    },
+    {
+      "id": "R6 each reviewer sees only their own department (case ignored), oldest first",
+      "ok": true,
+      "note": "cs rows 5, physics rows 4"
+    },
+    {
+      "id": "R7 Computer Science sees two profiles, Physics sees one, nobody sees their own",
+      "ok": true,
+      "note": "2 and 1"
+    },
+    {
+      "id": "R8 the oldest submission is listed first",
+      "ok": true,
+      "note": "/portal/review/hEJPCKFXGqArhykADchj1xYDNBwQFYWV"
+    },
+    {
+      "id": "R9 another department's profile, one's own, a stranger and malformed ids all answer 404",
+      "ok": true,
+      "note": "404,404,404,404,404"
+    },
+    {
+      "id": "R10 a colleague who is not a reviewer cannot open a profile either",
+      "ok": true,
+      "note": "status 404"
+    },
+    {
+      "id": "R11 hostile text is shown as text: no script ran and no element was made",
+      "ok": true,
+      "note": "__pwn undefined, injected 0"
+    },
+    {
+      "id": "R12 the Urdu text is marked right-to-left and Urdu",
+      "ok": true,
+      "note": "1"
+    },
+    {
+      "id": "R13 first publication: only fields with content are listed, \"nothing published\" on the left",
+      "ok": true,
+      "note": "bioEn,bioUr,officeHours"
+    },
+    {
+      "id": "R14 the page says nothing has been published yet",
+      "ok": true,
+      "note": "notice shown"
+    },
+    {
+      "id": "R15 asking for changes without a note is refused beside the field, and nothing is saved",
+      "ok": true,
+      "note": "inline error, no log"
+    },
+    {
+      "id": "R16 with a note it goes back to the owner and the list says so",
+      "ok": true,
+      "note": "logged with the actor 1"
+    },
+    {
+      "id": "R17 that profile left the queue",
+      "ok": true,
+      "note": "one left"
+    },
+    {
+      "id": "R18 the owner sees the note, in the same line breaks, above the form, and can edit again",
+      "ok": true,
+      "note": "note shown"
+    },
+    {
+      "id": "R19 the owner sees that nothing is published yet",
+      "ok": true,
+      "note": "no published copy"
+    },
+    {
+      "id": "R20 resubmitting clears the note",
+      "ok": true,
+      "note": "cleared"
+    },
+    {
+      "id": "R21 Approve works from the keyboard and publishes the approved text (sample)",
+      "ok": true,
+      "note": "published \"Hello, a clean bio.\""
+    },
+    {
+      "id": "R22 the owner sees \"Published now\" with the approved version, and a status of draft",
+      "ok": true,
+      "note": "preview shown"
+    },
+    {
+      "id": "R23 the log has the actor, before and after for both decisions, in order",
+      "ok": true,
+      "note": "two entries"
+    },
+    {
+      "id": "R24 deciding on a profile taken back meanwhile is refused with a clear message and a way back",
+      "ok": true,
+      "note": "The faculty member changed or took back this profile after y"
+    },
+    {
+      "id": "R25 the buttons are disabled after that, and nothing was published or logged",
+      "ok": true,
+      "note": "nothing written"
+    },
+    {
+      "id": "R26 with a recent confirmation the buttons are enabled",
+      "ok": true,
+      "note": "enabled"
+    },
+    {
+      "id": "R27 if the confirmation ran out after the page loaded, the decision is refused and nothing is written",
+      "ok": true,
+      "note": "refused"
+    },
+    {
+      "id": "R28 reloading shows why the buttons are off, with a link to confirm",
+      "ok": true,
+      "note": "notice and link"
+    },
+    {
+      "id": "R29 once confirmed again the decision goes through",
+      "ok": true,
+      "note": "approved"
+    },
+    {
+      "id": "R30 at 390 px the queue and the comparison do not scroll sideways",
+      "ok": true,
+      "note": "queue 390,390, detail 390,390"
+    },
+    {
+      "id": "R31 after the role is revoked the queue and a profile answer 404 and the link is gone, without signing out",
+      "ok": true,
+      "note": "404, 404"
+    }
+  ]
+}
