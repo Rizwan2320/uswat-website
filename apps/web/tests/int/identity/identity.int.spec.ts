@@ -36,6 +36,8 @@ import { importCourses } from '@/modules/portal/courses/importer'
 import { createPgCourseStore } from '@/modules/portal/courses/pgStore'
 import { LIMITS as COURSE_LIMITS } from '@/modules/portal/courses/rules'
 import type { CourseInput } from '@/modules/portal/courses/types'
+import { createPgReviewStore } from '@/modules/portal/review/pgStore'
+import { createPgRoleStore } from '@/modules/portal/review/roles'
 
 const DB = process.env.IDENTITY_TEST_DATABASE_URL
 const ORIGIN = 'http://localhost:3999'
@@ -1824,5 +1826,336 @@ describe.skipIf(!DB)('CV data for one account (FP-20), PostgreSQL', () => {
     const cvB = buildCv(await loadCvInput(pool(), b), 'hec', NOW)
     expect(cvB.publications.map((p) => p.title)).toEqual(['Claimed B'])
     expect(JSON.stringify(cvB)).not.toContain('Claimed A')
+  })
+})
+
+describe.skipIf(!DB)('department reviewer queue (FP-16, FPR-04, PJ4), PostgreSQL', () => {
+  const pool = () => getIdentityPool(DB!)
+  const profiles = () => createSampleProfileStore(pool())
+  const reviews = () => createPgReviewStore(pool())
+  const roles = () => createPgRoleStore(pool())
+  const edit = (over: Partial<ProfileEdit> = {}): ProfileEdit => ({ ...EMPTY_EDIT, bio: { en: 'Hello', ur: '' }, ...over })
+  const NOW = Date.UTC(2026, 10, 20, 12)
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  async function account(tag: string, dept?: string, reviewer = false): Promise<{ id: string; email: string }> {
+    const id = `rv-${tag}-${Math.random().toString(36).slice(2, 8)}`
+    const email = `${id}@example.invalid`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Sample ${tag}`, email])
+    if (dept) await roles().setDepartment(email, dept)
+    if (reviewer) expect(await roles().grantReviewer(email)).toBe('ok')
+    return { id, email }
+  }
+  /** A faculty member in `dept` with a submitted draft; returns the revision that was submitted. */
+  async function submitted(a: { id: string; email: string }, e: ProfileEdit = edit()): Promise<number> {
+    expect(await profiles().saveDraft(a.id, e)).toBe(true)
+    expect(await profiles().submit(a.id)).toBe(true)
+    return (await pool().query<{ rev: number }>(`select "rev" from "profile_draft" where "userId" = $1`, [a.id])).rows[0]!.rev
+  }
+  const dept = () => `Dept ${Math.random().toString(36).slice(2, 8)}`
+  const logCount = async (id: string) => (await pool().query(`select count(*)::int as n from "profile_review" where "userId" = $1`, [id])).rows[0].n as number
+  const statusOf = async (id: string) => (await pool().query(`select "status","rev","reviewNote" from "profile_draft" where "userId" = $1`, [id])).rows[0] as { status: string; rev: number; reviewNote: string | null }
+
+  describe('who sees what', () => {
+    it('lists only submitted drafts from the reviewer’s own department, oldest first, never the reviewer’s own', async () => {
+      const d = dept()
+      const rev = await account('rev', d, true)
+      const a = await account('a', d)
+      const b = await account('b', d.toUpperCase()) // department names compare without case
+      const draftOnly = await account('draft', d)
+      const other = await account('other', dept())
+      const noDept = await account('nodept')
+      await submitted(a)
+      await submitted(b, edit({ officeHours: 'Mon' }))
+      expect(await profiles().saveDraft(draftOnly.id, edit())).toBe(true)
+      await submitted(other)
+      await submitted(noDept)
+      await submitted(rev)
+      const q = await reviews().listQueue(rev.id)
+      expect(q.map((i) => i.subjectId)).toEqual([a.id, b.id])
+      expect(q[0]).toMatchObject({ name: 'Sample a', firstPublication: true, changes: 1 })
+      expect(q[1]!.changes).toBe(2)
+    })
+    it('a non-reviewer, a person with a department only, and a role without a department all see nothing', async () => {
+      const d = dept()
+      const plain = await account('plain', d)
+      const a = await account('a', d)
+      await submitted(a)
+      expect(await reviews().isReviewer(plain.id)).toBe(false)
+      expect(await reviews().listQueue(plain.id)).toEqual([])
+      expect(await reviews().load(plain.id, a.id)).toBeNull()
+      const orphan = await account('orphan')
+      await pool().query(`insert into "reviewer_role" ("userId") values ($1)`, [orphan.id])
+      expect(await reviews().isReviewer(orphan.id)).toBe(false)
+      expect(await reviews().listQueue(orphan.id)).toEqual([])
+    })
+    it('opening one draft answers null the same way for another department, oneself, a draft, a stranger and a malformed id (IDOR)', async () => {
+      const d = dept()
+      const rev = await account('rev', d, true)
+      const mine = await account('mine', d)
+      const draft = await account('draft', d)
+      const other = await account('other', dept())
+      await submitted(mine)
+      await profiles().saveDraft(draft.id, edit())
+      await submitted(other)
+      await submitted(rev)
+      const ok = await reviews().load(rev.id, mine.id)
+      expect(ok).toMatchObject({ subjectId: mine.id, department: d, before: null, sample: true })
+      expect(ok!.after.bio.en).toBe('Hello')
+      for (const id of [other.id, rev.id, draft.id, 'no-such-person', '../x', "a' or '1'='1", '']) expect(await reviews().load(rev.id, id)).toBeNull()
+    })
+  })
+
+  describe('decisions', () => {
+    it('approve publishes the sample edit, returns the draft to its owner, bumps the revision and logs actor and difference', async () => {
+      const d = dept()
+      const rev = await account('rev', d, true)
+      const f = await account('f', d)
+      const r1 = await submitted(f, edit({ bio: { en: 'First', ur: '' } }))
+      expect(await reviews().decide(rev.id, { subjectId: f.id, rev: r1, decision: 'approved', note: null }, NOW)).toBe('ok')
+      const after = await statusOf(f.id)
+      expect(after).toEqual({ status: 'draft', rev: r1 + 1, reviewNote: null })
+      const l = await profiles().load(f)
+      expect(l.published!.bio.en).toBe('First')
+      expect(l.publishedAt).toBe(NOW)
+      expect(l.profile.department).toBe(d)
+      const log = (await pool().query(`select * from "profile_review" where "userId" = $1`, [f.id])).rows
+      expect(log).toHaveLength(1)
+      expect(log[0]).toMatchObject({ reviewerId: rev.id, decision: 'approved', note: null, before: null })
+      expect(log[0].after.bio.en).toBe('First')
+      // Second round: the log keeps what was published before.
+      const r2 = await submitted(f, edit({ bio: { en: 'Second', ur: '' } }))
+      expect((await reviews().listQueue(rev.id))[0]).toMatchObject({ firstPublication: false, changes: 1 })
+      expect(await reviews().decide(rev.id, { subjectId: f.id, rev: r2, decision: 'approved', note: null }, NOW + 1000)).toBe('ok')
+      expect((await profiles().load(f)).published!.bio.en).toBe('Second')
+      const second = (await pool().query(`select "before","after" from "profile_review" where "userId" = $1 order by "at" desc limit 1`, [f.id])).rows[0]
+      expect(second.before.bio.en).toBe('First')
+      expect(second.after.bio.en).toBe('Second')
+    })
+    it('asking for changes keeps the published edit, stores the note for the owner, and resubmitting clears it', async () => {
+      const d = dept()
+      const rev = await account('rev', d, true)
+      const f = await account('f', d)
+      const r1 = await submitted(f, edit({ bio: { en: 'Draft', ur: '' } }))
+      expect(await reviews().decide(rev.id, { subjectId: f.id, rev: r1, decision: 'changes-requested', note: 'Please shorten the bio.' }, NOW)).toBe('ok')
+      const l = await profiles().load(f)
+      expect(l).toMatchObject({ status: 'draft', reviewNote: 'Please shorten the bio.', published: null, publishedAt: null })
+      expect((await pool().query(`select 1 from "profile_published" where "userId" = $1`, [f.id])).rowCount).toBe(0)
+      expect((await pool().query(`select "decision","note" from "profile_review" where "userId" = $1`, [f.id])).rows).toEqual([{ decision: 'changes-requested', note: 'Please shorten the bio.' }])
+      await profiles().saveDraft(f.id, edit({ bio: { en: 'Short', ur: '' } }))
+      expect((await profiles().load(f)).reviewNote).toBe('Please shorten the bio.')
+      await profiles().submit(f.id)
+      expect((await profiles().load(f)).reviewNote).toBeNull()
+    })
+    it('a decision applies once: the same revision cannot be decided twice', async () => {
+      const d = dept()
+      const rev = await account('rev', d, true)
+      const f = await account('f', d)
+      const r = await submitted(f)
+      expect(await reviews().decide(rev.id, { subjectId: f.id, rev: r, decision: 'approved', note: null }, NOW)).toBe('ok')
+      expect(await reviews().decide(rev.id, { subjectId: f.id, rev: r, decision: 'approved', note: null }, NOW)).toBe('stale')
+      expect(await reviews().decide(rev.id, { subjectId: f.id, rev: r + 1, decision: 'approved', note: null }, NOW)).toBe('stale')
+      expect(await logCount(f.id)).toBe(1)
+    })
+    it('a draft withdrawn, changed and sent again cannot be decided at the revision the reviewer saw', async () => {
+      const d = dept()
+      const rev = await account('rev', d, true)
+      const f = await account('f', d)
+      const seen = await submitted(f, edit({ bio: { en: 'Looked fine', ur: '' } }))
+      expect(await profiles().withdraw(f.id)).toBe(true)
+      expect(await reviews().decide(rev.id, { subjectId: f.id, rev: seen, decision: 'approved', note: null }, NOW)).toBe('stale')
+      await profiles().saveDraft(f.id, edit({ bio: { en: 'Swapped after review', ur: '' } }))
+      await profiles().submit(f.id)
+      expect(await reviews().decide(rev.id, { subjectId: f.id, rev: seen, decision: 'approved', note: null }, NOW)).toBe('stale')
+      expect(await logCount(f.id)).toBe(0)
+      expect((await pool().query(`select 1 from "profile_published" where "userId" = $1`, [f.id])).rowCount).toBe(0)
+      expect((await statusOf(f.id)).status).toBe('submitted')
+    })
+    it('rev goes up on every save, submit and withdraw', async () => {
+      const f = await account('f', dept())
+      await profiles().saveDraft(f.id, edit())
+      const r0 = (await statusOf(f.id)).rev
+      await profiles().saveDraft(f.id, edit({ officeHours: 'x' }))
+      await profiles().submit(f.id)
+      await profiles().withdraw(f.id)
+      expect((await statusOf(f.id)).rev).toBe(r0 + 3)
+    })
+  })
+
+  describe('refusals leave no trace', () => {
+    async function untouched(f: { id: string }, r: number) {
+      expect(await logCount(f.id)).toBe(0)
+      expect((await pool().query(`select 1 from "profile_published" where "userId" = $1`, [f.id])).rowCount).toBe(0)
+      expect(await statusOf(f.id)).toMatchObject({ status: 'submitted', rev: r, reviewNote: null })
+    }
+    it('another department’s reviewer, a plain colleague, oneself, a role without a department and a stranger are all forbidden', async () => {
+      const d = dept()
+      const f = await account('f', d)
+      const r = await submitted(f)
+      const otherReviewer = await account('other', dept(), true)
+      const colleague = await account('colleague', d)
+      const orphan = await account('orphan')
+      await pool().query(`insert into "reviewer_role" ("userId") values ($1)`, [orphan.id])
+      for (const who of [otherReviewer.id, colleague.id, orphan.id, f.id, 'no-such-user']) {
+        expect(await reviews().decide(who, { subjectId: f.id, rev: r, decision: 'approved', note: null }, NOW)).toBe('forbidden')
+      }
+      await untouched(f, r)
+    })
+    it('a reviewer cannot approve their own profile, even when they submitted it', async () => {
+      const d = dept()
+      const rev = await account('rev', d, true)
+      const r = await submitted(rev)
+      expect(await reviews().decide(rev.id, { subjectId: rev.id, rev: r, decision: 'approved', note: null }, NOW)).toBe('forbidden')
+      await untouched(rev, r)
+    })
+    it('a revoked reviewer is forbidden immediately', async () => {
+      const d = dept()
+      const rev = await account('rev', d, true)
+      const f = await account('f', d)
+      const r = await submitted(f)
+      expect(await roles().revokeReviewer(rev.email)).toBe('ok')
+      expect(await reviews().decide(rev.id, { subjectId: f.id, rev: r, decision: 'approved', note: null }, NOW)).toBe('forbidden')
+      await untouched(f, r)
+    })
+    it('a reviewer moved to another department loses access to the old one', async () => {
+      const d = dept()
+      const rev = await account('rev', d, true)
+      const f = await account('f', d)
+      const r = await submitted(f)
+      await roles().setDepartment(rev.email, dept())
+      expect(await reviews().decide(rev.id, { subjectId: f.id, rev: r, decision: 'approved', note: null }, NOW)).toBe('forbidden')
+      expect(await reviews().listQueue(rev.id)).toEqual([])
+      await untouched(f, r)
+    })
+    it('a failure while publishing rolls back the whole decision', async () => {
+      const d = dept()
+      const rev = await account('rev', d, true)
+      const f = await account('f', d)
+      const r = await submitted(f)
+      const broken = createPgReviewStore(pool(), async () => {
+        throw new Error('publisher down')
+      })
+      await expect(broken.decide(rev.id, { subjectId: f.id, rev: r, decision: 'approved', note: null }, NOW)).rejects.toThrow('publisher down')
+      await untouched(f, r)
+      // The connection went back to the pool clean: a normal decision still works.
+      expect(await reviews().decide(rev.id, { subjectId: f.id, rev: r, decision: 'approved', note: null }, NOW)).toBe('ok')
+    })
+    it('hostile stored text is carried as data and extra keys in a stored edit are never published', async () => {
+      const d = dept()
+      const rev = await account('rev', d, true)
+      const f = await account('f', d)
+      const r = await submitted(f)
+      await pool().query(`update "profile_draft" set "edit" = $2 where "userId" = $1`, [f.id, JSON.stringify({ ...edit({ bio: { en: '<script>alert(1)</script>', ur: '' } }), designation: { en: 'Vice Chancellor', ur: '' }, department: 'Elsewhere' })])
+      expect(await reviews().decide(rev.id, { subjectId: f.id, rev: r, decision: 'approved', note: null }, NOW)).toBe('ok')
+      const pub = (await pool().query(`select "edit" from "profile_published" where "userId" = $1`, [f.id])).rows[0].edit
+      expect(Object.keys(pub).sort()).toEqual(Object.keys(EMPTY_EDIT).sort())
+      expect(pub.bio.en).toBe('<script>alert(1)</script>')
+      const logged = (await pool().query(`select "after" from "profile_review" where "userId" = $1`, [f.id])).rows[0].after
+      expect(Object.keys(logged).sort()).toEqual(Object.keys(EMPTY_EDIT).sort())
+    })
+  })
+
+  describe('concurrency', () => {
+    it('two reviewers deciding the same draft at once: one succeeds, one is stale, one log entry', async () => {
+      const d = dept()
+      const r1 = await account('r1', d, true)
+      const r2 = await account('r2', d, true)
+      const f = await account('f', d)
+      const rv = await submitted(f)
+      const results = await Promise.all([
+        reviews().decide(r1.id, { subjectId: f.id, rev: rv, decision: 'approved', note: null }, NOW),
+        reviews().decide(r2.id, { subjectId: f.id, rev: rv, decision: 'changes-requested', note: 'No' }, NOW),
+      ])
+      expect([...results].sort()).toEqual(['ok', 'stale'])
+      expect(await logCount(f.id)).toBe(1)
+      const published = (await pool().query(`select 1 from "profile_published" where "userId" = $1`, [f.id])).rowCount
+      const decision = (await pool().query(`select "decision" from "profile_review" where "userId" = $1`, [f.id])).rows[0].decision
+      expect(published).toBe(decision === 'approved' ? 1 : 0)
+    })
+    it('the owner withdrawing while a reviewer approves: either the approval lands and the withdraw is refused, or the reverse', async () => {
+      for (let i = 0; i < 8; i++) {
+        const d = dept()
+        const rev = await account('rev', d, true)
+        const f = await account('f', d)
+        const rv = await submitted(f)
+        const [decided, withdrew] = await Promise.all([
+          reviews().decide(rev.id, { subjectId: f.id, rev: rv, decision: 'approved', note: null }, NOW),
+          profiles().withdraw(f.id),
+        ])
+        // Never both: an approved edit must not also have been taken back.
+        expect(decided === 'ok' && withdrew).toBe(false)
+        expect(decided === 'ok' || withdrew).toBe(true)
+        expect(await logCount(f.id)).toBe(decided === 'ok' ? 1 : 0)
+      }
+    })
+  })
+
+  describe('the log', () => {
+    it('is append-only: rows cannot be rewritten, but clearing the reviewer when their account goes is allowed', async () => {
+      const d = dept()
+      const rev = await account('rev', d, true)
+      const f = await account('f', d)
+      const r = await submitted(f)
+      await reviews().decide(rev.id, { subjectId: f.id, rev: r, decision: 'changes-requested', note: 'Original' }, NOW)
+      for (const sql of [
+        `update "profile_review" set "note" = 'Rewritten' where "userId" = $1`,
+        `update "profile_review" set "decision" = 'approved', "note" = null where "userId" = $1`,
+        `update "profile_review" set "after" = '{}' where "userId" = $1`,
+        `update "profile_review" set "at" = now() where "userId" = $1`,
+        `update "profile_review" set "reviewerId" = "userId" where "userId" = $1`,
+      ]) await expect(pool().query(sql, [f.id])).rejects.toThrow(/append-only/)
+      expect((await pool().query(`select "note","reviewerId" from "profile_review" where "userId" = $1`, [f.id])).rows[0]).toEqual({ note: 'Original', reviewerId: rev.id })
+      await pool().query(`delete from "user" where "id" = $1`, [rev.id])
+      expect((await pool().query(`select "note","reviewerId" from "profile_review" where "userId" = $1`, [f.id])).rows[0]).toEqual({ note: 'Original', reviewerId: null })
+    })
+    it('the database itself refuses a note-less change request, a note on an approval, and an unknown decision', async () => {
+      const f = await account('f', dept())
+      const ins = (decision: string, note: string | null) => pool().query(`insert into "profile_review" ("userId","decision","note","after") values ($1,$2,$3,'{}')`, [f.id, decision, note])
+      await expect(ins('changes-requested', null)).rejects.toThrow()
+      await expect(ins('approved', 'x')).rejects.toThrow()
+      await expect(ins('rejected', 'x')).rejects.toThrow()
+      await expect(ins('changes-requested', 'x'.repeat(501))).rejects.toThrow()
+    })
+    it('deleting the faculty member removes their draft, published edit, department and log with them', async () => {
+      const d = dept()
+      const rev = await account('rev', d, true)
+      const f = await account('f', d)
+      const r = await submitted(f)
+      await reviews().decide(rev.id, { subjectId: f.id, rev: r, decision: 'approved', note: null }, NOW)
+      await pool().query(`delete from "user" where "id" = $1`, [f.id])
+      for (const t of ['profile_draft', 'profile_published', 'profile_review', 'account_department']) {
+        expect((await pool().query(`select 1 from "${t}" where "userId" = $1`, [f.id])).rowCount).toBe(0)
+      }
+    })
+  })
+
+  describe('roles (operator command)', () => {
+    it('sets a tidy department, needs one before granting, and lists who is who', async () => {
+      const a = await account('a')
+      expect(await roles().grantReviewer(a.email)).toBe('no-department')
+      expect(await roles().setDepartment(a.email, '  Computer   Science ')).toBe('ok')
+      expect(await roles().setDepartment(a.email.toUpperCase(), 'Computer Science')).toBe('ok')
+      expect(await roles().grantReviewer(a.email)).toBe('ok')
+      expect(await roles().grantReviewer(a.email)).toBe('ok')
+      const row = (await roles().list()).find((r) => r.email === a.email)
+      expect(row).toEqual({ email: a.email, department: 'Computer Science', reviewer: true })
+      expect(await roles().revokeReviewer(a.email)).toBe('ok')
+      expect(await roles().revokeReviewer(a.email)).toBe('not-reviewer')
+    })
+    it('refuses unknown accounts and unusable departments without writing anything', async () => {
+      expect(await roles().setDepartment('nobody@example.invalid', 'X')).toBe('no-account')
+      expect(await roles().grantReviewer('nobody@example.invalid')).toBe('no-account')
+      expect(await roles().revokeReviewer('nobody@example.invalid')).toBe('no-account')
+      const a = await account('a')
+      for (const bad of ['', '   ', 'x'.repeat(81), 'a\u202Eb']) expect(await roles().setDepartment(a.email, bad)).toBe('invalid')
+      expect((await pool().query(`select 1 from "account_department" where "userId" = $1`, [a.id])).rowCount).toBe(0)
+    })
   })
 })
