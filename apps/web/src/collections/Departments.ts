@@ -45,7 +45,8 @@ export const Departments = governedCollection({
       index: true,
       admin: {
         position: 'sidebar',
-        description: 'Departments are listed from the lowest number up. Leave empty to list it last.',
+        description:
+          'Departments are listed from the lowest number up. Leave empty to list it last.',
       },
     },
     {
@@ -58,15 +59,27 @@ export const Departments = governedCollection({
           'The words and pictures of the department page. Plain text only: no links, no formatting. Leave a part empty to leave that section out of the page.',
       },
       fields: [
-        line('shortName', { label: 'Short name', maxLength: 40, description: 'For example "DCST".' }),
+        line('shortName', {
+          label: 'Short name',
+          maxLength: 40,
+          description: 'For example "DCST".',
+        }),
         line('tagline', { label: 'Tagline', description: 'One short line under the name.' }),
         paragraph('intro', {
           label: 'Introduction',
           maxLength: 300,
           description: 'One or two sentences at the top. Keep it different from About.',
         }),
-        pictureField('heroImage', 'Main picture', 'The large picture at the top. It needs alt text in the media library.'),
-        pictureField('campusPhoto', 'Campus photo', 'A photograph of the department building. It needs alt text.'),
+        pictureField(
+          'heroImage',
+          'Main picture',
+          'The large picture at the top. It needs alt text in the media library.',
+        ),
+        pictureField(
+          'campusPhoto',
+          'Campus photo',
+          'A photograph of the department building. It needs alt text.',
+        ),
         paragraphsField('about', 'About the department', 4),
         iconTitledList('highlights', {
           label: 'Highlights',
