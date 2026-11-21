@@ -20,8 +20,10 @@ export type PersonSeed = {
   email: string
   /** Only one Sample person shows an email in public, so a template can show both cases. */
   emailPublic?: boolean
+  /** Department slug; only set for people shown on a department page. */
+  department?: string
 }
-export type DepartmentSeed = { slug: string; name: string; facultyGroup: string; head: string; summary: string }
+export type DepartmentSeed = { slug: string; name: string; facultyGroup: string; head: string; summary: string; vision?: string; mission?: string; emails?: string[] }
 export type ProgrammeSeed = {
   slug: string
   name: string
@@ -29,6 +31,7 @@ export type ProgrammeSeed = {
   campus: string
   level: string
   duration: string
+  eligibility?: string
 }
 
 export const facultyGroups: FacultyGroupSeed[] = [
@@ -38,10 +41,10 @@ export const facultyGroups: FacultyGroupSeed[] = [
 ]
 
 export const campuses: CampusSeed[] = [
-  // Slugs are the ones the route map expects for /campuses/{slug}; the names are Sample.
-  { slug: 'main', name: 'Sample Main Campus' },
-  { slug: 'sangota', name: 'Sample Sangota Campus' },
-  { slug: 'women', name: 'Sample Women Campus' },
+  // Slugs are the ones the route map expects for /campuses/{slug}. The campus names are the university's own.
+  { slug: 'main', name: 'Main Campus' },
+  { slug: 'sangota', name: 'Sangota Campus' },
+  { slug: 'women', name: 'Women Campus' },
 ]
 
 export const people: PersonSeed[] = Array.from({ length: 10 }, (_, i) => {
@@ -59,6 +62,13 @@ export const people: PersonSeed[] = Array.from({ length: 10 }, (_, i) => {
     ...(i === 0 ? { emailPublic: true } : {}),
   }
 })
+
+/** Faculty of the Department of Computer and Software Technologies, so its page has a people section. Placeholder names. */
+const dcstPeople: PersonSeed[] = ['Professor', 'Associate Professor', 'Assistant Professor', 'Lecturer'].map((designation, i) => {
+  const n = String(11 + i)
+  return { slug: `sample-person-${n}`, name: `Sample Person ${n}`, designation, details: 'Sample directory entry. Not a real person.', email: `person${n}@${SAMPLE_HOST}`, department: 'dcst' }
+})
+people.push(...dcstPeople)
 
 export const offices: OfficeSeed[] = [
   { slug: 'sample-registrars-office', name: "Sample Registrar's Office", group: 'Directorates', hours: 'Sample hours, Monday to Friday', email: `registrar@${SAMPLE_HOST}`, head: 'sample-person-09' },
@@ -78,7 +88,15 @@ const dept = (slug: string, subject: string, facultyGroup: string, head: string)
 export const departments: DepartmentSeed[] = [
   dept('physics', 'Physics', 'sample-faculty-of-sciences', 'sample-person-01'),
   dept('chemistry', 'Chemistry', 'sample-faculty-of-sciences', 'sample-person-02'),
-  dept('computer-science', 'Computer Science', 'sample-faculty-of-sciences', 'sample-person-03'),
+  {
+    slug: 'dcst',
+    name: 'Department of Computer and Software Technologies',
+    facultyGroup: 'sample-faculty-of-sciences',
+    head: 'sample-person-03',
+    summary:
+      'The Department of Computer and Software Technologies (DCST) teaches computer science, software engineering, information technology, data science and artificial intelligence.',
+    emails: [`dcst@${SAMPLE_HOST}`],
+  },
   dept('mathematics', 'Mathematics', 'sample-faculty-of-sciences', 'sample-person-04'),
   dept('english', 'English', 'sample-faculty-of-arts-and-humanities', 'sample-person-05'),
   dept('history', 'History', 'sample-faculty-of-arts-and-humanities', 'sample-person-06'),
@@ -92,16 +110,25 @@ const prog = (level: string, subject: string, deptSlug: string, years: number, c
   department: `sample-department-of-${deptSlug}`,
   campus,
   level,
-  duration: `Sample duration, ${years} years`,
+  duration: `${years} years`,
+})
+
+const dcstProg = (subject: string): ProgrammeSeed => ({
+  slug: `bs-${subject.toLowerCase().replaceAll(' ', '-')}`,
+  name: `BS ${subject}`,
+  department: 'dcst',
+  campus: 'main',
+  level: 'BS',
+  duration: '4 years',
+  eligibility:
+    'Intermediate (HSSC) with Mathematics, or an equivalent qualification. The merit criteria are announced with each intake.',
 })
 
 export const programmes: ProgrammeSeed[] = [
+  ...['Computer Science', 'Software Engineering', 'Information Technology', 'Data Science', 'Artificial Intelligence'].map(dcstProg),
   prog('BS', 'Physics', 'physics', 4),
   prog('MS', 'Physics', 'physics', 2),
   prog('BS', 'Chemistry', 'chemistry', 4),
-  prog('BS', 'Computer Science', 'computer-science', 4),
-  prog('MS', 'Computer Science', 'computer-science', 2, 'sangota'),
-  prog('PhD', 'Computer Science', 'computer-science', 3),
   prog('BS', 'Mathematics', 'mathematics', 4),
   prog('BS', 'English', 'english', 4),
   prog('MA', 'English', 'english', 2),

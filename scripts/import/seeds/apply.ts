@@ -95,6 +95,9 @@ export async function applySeeds(cms: Cms, actor: SeedActor): Promise<SeedResult
   for (const r of departments)
     await make('departments', r, {
       summary: r.summary,
+      ...(r.vision ? { vision: r.vision } : {}),
+      ...(r.mission ? { mission: r.mission } : {}),
+      ...(r.emails ? { emails: r.emails.map((email) => ({ email })) } : {}),
       facultyGroup: id('faculties', r.facultyGroup),
       head: id('people', r.head),
     })
@@ -102,7 +105,7 @@ export async function applySeeds(cms: Cms, actor: SeedActor): Promise<SeedResult
     await make('programmes', r, {
       level: r.level,
       duration: r.duration,
-      eligibility: 'Sample eligibility text. Invented, not a real requirement.',
+      eligibility: r.eligibility ?? 'Sample eligibility text. Invented, not a real requirement.',
       department: id('departments', r.department),
       campus: id('campuses', r.campus),
     })
@@ -118,6 +121,7 @@ export async function applySeeds(cms: Cms, actor: SeedActor): Promise<SeedResult
     result.linked++
   }
   for (const d of departments) await link('people', d.head, { department: id('departments', d.slug) })
+  for (const p of people) if (p.department) await link('people', p.slug, { department: id('departments', p.department) })
   for (const o of offices) await link('people', o.head, { office: id('offices', o.slug) })
   for (const o of offices) await link('offices', o.slug, { head: id('people', o.head) })
 

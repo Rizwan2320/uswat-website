@@ -39,7 +39,7 @@ describe('applySeeds', () => {
     await applySeeds(cms, actor)
     const before = Object.fromEntries(await Promise.all(Object.keys(seedRows()).map(async (c) => [c, await versions(c)])))
     const second = await applySeeds(cms, actor)
-    expect(second).toMatchObject({ created: 0, linked: 0, published: 0, unchanged: 42 })
+    expect(second).toMatchObject({ created: 0, linked: 0, published: 0, unchanged: 48 })
     for (const [c, rows] of Object.entries(seedRows())) {
       expect((await count(c)).totalDocs, c).toBe(rows.length)
       expect(await versions(c), c).toBe(before[c])
@@ -54,10 +54,10 @@ describe('applySeeds', () => {
       expect(d.head.name, d.slug).toMatch(/^Sample Person/)
     }
     const progs = await anon('programmes')
-    expect(progs.totalDocs).toBe(14)
+    expect(progs.totalDocs).toBe(16)
     for (const p of progs.docs as unknown as { department: { name: string }; campus: { name: string } }[]) {
-      expect(p.department.name).toMatch(/^Sample Department/)
-      expect(p.campus.name).toMatch(/^Sample .*Campus/)
+      expect(p.department.name).toMatch(/^(Sample )?Department/)
+      expect(p.campus.name).toMatch(/Campus$/)
     }
     const heads = (await anon('people')).docs as unknown as { slug: string; department?: { name: string } | null }[]
     expect(heads.find((p) => p.slug === 'sample-person-01')?.department?.name).toBe('Sample Department of Physics')
@@ -65,7 +65,7 @@ describe('applySeeds', () => {
 
   it('hides a hidden email from anonymous readers and shows the one public email', async () => {
     const docs = (await anon('people')).docs as unknown as { slug: string; email?: string | null }[]
-    expect(docs).toHaveLength(10)
+    expect(docs).toHaveLength(14)
     const shown = docs.filter((p) => p.email)
     expect(shown.map((p) => p.slug)).toEqual(['sample-person-01'])
     expect(shown[0].email).toBe(`person01@${SAMPLE_HOST}`)
