@@ -43,6 +43,7 @@ export type PolicyCode =
   | 'SOURCE_REQUIRED'
   | 'UNPUBLISH_FORBIDDEN'
   | 'NOT_YOUR_DRAFT'
+  | 'SELF_APPROVAL'
   | 'DELETE_FORBIDDEN'
   | 'EXPIRY_REQUIRED'
 
@@ -297,9 +298,20 @@ function evaluateCreate(input: SaveInput): SaveOutcome {
   return { ok: true, values, notes }
 }
 
+/**
+ * Four eyes (owner decision, 2026-11-21): nobody approves an item they created themselves, whatever
+ * their role. A person with no author (an import) and the system are not affected.
+ */
+const SELF_APPROVAL = deny(
+  'SELF_APPROVAL',
+  'You created this item, so you cannot approve it. Send it for review and ask another approver.',
+)
+
 function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
   const { actor, publishing, prev, next, contentChanged, now } = input
   const notes: string[] = []
+  const wroteIt =
+    isUser(actor) && prev.createdBy != null && String(prev.createdBy) === String(actor.id)
 
   // Scope is judged on the latest saved state of the record (`prev`), not on the published
   // row: draft saves never touch the published row, so database-level filters see stale data.
@@ -384,6 +396,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
       if (approve) return approve
       const publish = checkTransition(actor, scope, 'approved', 'published')
       if (publish) return publish
+      if (wroteIt) return SELF_APPROVAL // after the role checks, so a role that may not approve is told that first
     } else {
       const move = checkTransition(actor, scope, prev.status, target)
       if (move) return move
@@ -447,6 +460,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
     if (requested !== effectivePrev) {
       const move = checkTransition(actor, scope, effectivePrev, requested)
       if (move) return move
+      if (requested === 'approved' && wroteIt) return SELF_APPROVAL
     } else if (
       !reviewer &&
       contentChanged &&

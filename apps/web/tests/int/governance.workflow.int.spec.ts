@@ -241,7 +241,8 @@ describe('CMS-03 editorial workflow', () => {
   it('missing owner or source blocks publishing', async () => {
     const noSource = await approved({ source: null })
     expect(await refusal(() => publish(approver, noSource.id))).toBe('SOURCE_REQUIRED')
-    const noOwner = await create(admin, { ownerOffice: null })
+    // The site manager wrote it (an item with no office), so the platform admin approves (3aa: not your own work).
+    const noOwner = await create(manager, { ownerOffice: null })
     await move(admin, noOwner.id, { status: 'approved', verificationStatus: 'verified' })
     expect(await refusal(() => publish(admin, noOwner.id))).toBe('OWNER_REQUIRED')
   })
@@ -320,7 +321,7 @@ describe('CMS-03 editorial workflow', () => {
   })
 
   it('a site manager can approve and publish a standard record', async () => {
-    const p = await create(manager, { ownerOffice: 'Registrar' })
+    const p = await create(editor, { ownerOffice: 'Registrar' })
     await move(manager, p.id, { status: 'approved', verificationStatus: 'verified' })
     expect((await publish(manager, p.id)).governance?.status).toBe('published')
   })
@@ -427,5 +428,46 @@ describe('CMS-03 editorial workflow', () => {
     expect(byApprover.status, JSON.stringify(byApprover.body)).toBe(200)
     expect(await publicRead(p.id)).toBeUndefined()
     expect((await mainRow(p.id)).governance?.status).toBe('draft')
+  })
+})
+
+describe('four eyes (slice 3aa): nobody approves what they created', () => {
+  it('refuses approving your own item with SELF_APPROVAL, whatever the role, and allows a second person', async () => {
+    for (const [who, label] of [
+      [approver, 'approver'],
+      [manager, 'site manager'],
+      [admin, 'platform admin'],
+    ] as const) {
+      const own = await create(who, { ownerOffice: 'Registrar' })
+      expect(
+        await refusal(() => move(who, own.id, { status: 'approved' })),
+        `${label}: draft to approved`,
+      ).toBe('SELF_APPROVAL')
+      await move(who, own.id, { status: 'in_review' })
+      expect(
+        await refusal(() =>
+          move(who, own.id, { status: 'approved', verificationStatus: 'verified' }),
+        ),
+        `${label}: in review to approved`,
+      ).toBe('SELF_APPROVAL')
+      expect(
+        await refusal(() =>
+          publish(who, own.id, { status: 'approved', verificationStatus: 'verified' }),
+        ),
+        `${label}: approve and publish in one save`,
+      ).toBe('SELF_APPROVAL')
+      // A different reviewer can approve it, and then the author may publish it.
+      const other = who === admin ? manager : admin
+      await move(other, own.id, { status: 'approved', verificationStatus: 'verified' })
+      expect((await publish(who, own.id)).governance?.status).toBe('published')
+    }
+  })
+
+  it('does not tell a role that may not approve anything about self approval: the role message comes first', async () => {
+    const mine = await create(editor)
+    await move(editor, mine.id, { status: 'in_review' })
+    expect(await refusal(() => move(editor, mine.id, { status: 'approved' }))).toBe(
+      'TRANSITION_FORBIDDEN',
+    )
   })
 })

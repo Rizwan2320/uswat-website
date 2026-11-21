@@ -27,7 +27,7 @@ const DAY = 86_400_000
 const iso = (ms: number) => new Date(ms).toISOString()
 
 let payload: Payload
-let editor: User, approver: User
+let editor: User, approver: User, approver2: User
 
 const gov = (extra: Record<string, unknown> = {}) => ({
   ownerOffice: 'Registrar',
@@ -85,8 +85,9 @@ async function toLive(slug: Slug, extra = {}, g: Record<string, unknown> = {}) {
 describe('post types', () => {
   beforeAll(async () => {
     payload = await getTestPayload()
-    ;[editor, approver] = await Promise.all([
+    ;[editor, approver, approver2] = await Promise.all([
       makeUser(payload, 'editor', ['Registrar']),
+      makeUser(payload, 'approver', ['Registrar']),
       makeUser(payload, 'approver', ['Registrar']),
     ])
   })
@@ -191,7 +192,8 @@ describe('post types', () => {
       // Only a reviewer can pin, so the approver creates this one.
       const pinned = await create('notices', approver, { publishedAt: old }, { pinned: true })
       await step('notices', approver, pinned.id, { status: 'in_review' })
-      await step('notices', approver, pinned.id, {
+      // A second approver approves and publishes it: nobody approves their own work (3aa).
+      await step('notices', approver2, pinned.id, {
         status: 'approved',
         verificationStatus: 'verified',
       })
@@ -199,7 +201,7 @@ describe('post types', () => {
         collection: 'notices',
         id: pinned.id,
         data: { _status: 'published', governance: {} } as never,
-        ...as(approver),
+        ...as(approver2),
       })
 
       const ids = [recent.id, aged.id, withEnd.id, pinned.id]

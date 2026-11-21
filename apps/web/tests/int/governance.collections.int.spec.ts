@@ -127,7 +127,8 @@ describe.each(Object.keys(factories) as Slug[])('governed collection: %s', (slug
   })
 
   it('needs an owner office and a source to publish', async () => {
-    const noSource = await create(admin, { source: null })
+    // The editor wrote it: nobody approves their own work (3aa), so the platform admin approves.
+    const noSource = await create(editor, { source: null })
     await update(admin, noSource.id, { status: 'approved', verificationStatus: 'verified' })
     expect(
       await refusal(() => update(admin, noSource.id, {}, { _status: 'published' }, false)),
