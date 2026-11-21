@@ -26,7 +26,8 @@ const make = (extra: Record<string, unknown> = {}) =>
     collection: 'programmes',
     draft: true,
     data: { name: uniq('programme'), governance: gov(), ...extra } as never,
-    ...as(editor),
+    // Only a platform admin creates programmes (owner decision, 2026-11-21); the editor works on them after.
+    ...as(admin),
   }) as Promise<Prog>
 
 /** Draft > in review (editor) > approved and verified (admin): the route the workflow requires. */

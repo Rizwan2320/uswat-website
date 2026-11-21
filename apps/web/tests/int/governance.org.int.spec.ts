@@ -19,15 +19,17 @@ type Slug = 'faculties' | 'departments' | 'programmes' | 'offices' | 'campuses' 
 const SLUGS: Slug[] = ['faculties', 'departments', 'programmes', 'offices', 'campuses', 'people']
 
 let payload: Payload
-let editor: User, approver: User
+let editor: User, approver: User, admin: User
 
 const gov = () => ({ ownerOffice: 'Registrar', source: 'https://example.test/source' })
+// Departments and programmes are created by a platform admin only (owner decision, 2026-11-21).
+const adminCreates: Slug[] = ['departments', 'programmes']
 const create = (slug: Slug, user: User, extra: Record<string, unknown> = {}) =>
   payload.create({
     collection: slug,
     draft: true,
     data: { name: uniq(slug), ...extra, governance: gov() } as never,
-    ...as(user),
+    ...as(adminCreates.includes(slug) ? admin : user),
   }) as Promise<{ id: number; governance?: Record<string, unknown> }>
 const step = (slug: Slug, user: User, id: number, governance: Record<string, unknown>) =>
   payload.update({
@@ -55,9 +57,10 @@ const anon = { overrideAccess: false, user: null } as const
 describe('organisation collections', () => {
   beforeAll(async () => {
     payload = await getTestPayload()
-    ;[editor, approver] = await Promise.all([
+    ;[editor, approver, admin] = await Promise.all([
       makeUser(payload, 'editor', ['Registrar']),
       makeUser(payload, 'approver', ['Registrar']),
+      makeUser(payload, 'platformAdmin'),
     ])
   })
 
