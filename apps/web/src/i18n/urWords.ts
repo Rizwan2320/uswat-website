@@ -434,6 +434,53 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   'Topics the department works on. Up to 6.': 'جن موضوعات پر شعبہ کام کرتا ہے، زیادہ سے زیادہ 6۔',
   'Where graduates work. Up to 8.': 'فارغ التحصیل افراد کہاں کام کرتے ہیں، زیادہ سے زیادہ 8۔',
   'Where the department is on campus.': 'کیمپس میں شعبہ کہاں ہے۔',
+  // --- Programme page content (slice 3ae)
+  'Programmes are listed on the department page from the lowest number up. Leave empty to list it last.':
+    'پروگرام شعبے کے صفحے پر کم سے کم نمبر سے شروع ہو کر دکھائے جاتے ہیں۔ آخر میں دکھانے کے لیے خالی چھوڑ دیں۔',
+  'The words and pictures of the programme page. Plain text only: no links, no formatting. Leave a part empty to leave that section out of the page.':
+    'پروگرام کے صفحے کے الفاظ اور تصاویر۔ صرف سادہ متن: نہ روابط، نہ فارمیٹنگ۔ کسی حصے کو صفحے سے نکالنے کے لیے اسے خالی چھوڑ دیں۔',
+  'For example "BS CS".': 'مثال کے طور پر "BS CS"۔',
+  'One or two sentences for the card on the department page.':
+    'شعبے کے صفحے پر کارڈ کے لیے ایک یا دو جملے۔',
+  'Card picture': 'کارڈ کی تصویر',
+  'The small picture on the department page card. It needs alt text.':
+    'شعبے کے صفحے کے کارڈ پر چھوٹی تصویر۔ اس کا متبادل متن ضروری ہے۔',
+  'Overview picture': 'جائزے کی تصویر',
+  'The light picture beside the overview. It needs alt text.':
+    'جائزے کے ساتھ ہلکی تصویر۔ اس کا متبادل متن ضروری ہے۔',
+  'About the programme': 'پروگرام کے بارے میں',
+  'Learning outcomes': 'سیکھنے کے نتائج',
+  'What a graduate can do, one line each, up to 8.':
+    'فارغ التحصیل کیا کر سکتا ہے، ہر ایک ایک سطر میں، زیادہ سے زیادہ 8۔',
+  Outcome: 'نتیجہ',
+  Outcomes: 'نتائج',
+  'Why study this': 'یہ کیوں پڑھیں',
+  'Short reasons to choose the programme. Up to 6.':
+    'پروگرام چننے کی مختصر وجوہات۔ زیادہ سے زیادہ 6۔',
+  Reason: 'وجہ',
+  Tracks: 'ٹریکس',
+  'Areas a student can specialise in. Up to 6.':
+    'وہ شعبے جن میں طالب علم مہارت حاصل کر سکتا ہے۔ زیادہ سے زیادہ 6۔',
+  Track: 'ٹریک',
+  Skills: 'مہارتیں',
+  'Groups of skills students gain, up to 6.':
+    'طلبہ کو حاصل ہونے والی مہارتوں کے گروہ، زیادہ سے زیادہ 6۔',
+  'Skill group': 'مہارتوں کا گروہ',
+  'Skill groups': 'مہارتوں کے گروہ',
+  'Group name': 'گروہ کا نام',
+  'Up to 8.': 'زیادہ سے زیادہ 8۔',
+  'Curriculum by semester': 'سمسٹر وار نصاب',
+  'One row for each semester: its year (1 to 6) and term (1 or 2), then the course names. Up to 12 rows.':
+    'ہر سمسٹر کے لیے ایک قطار: اس کا سال (1 سے 6) اور ٹرم (1 یا 2)، پھر کورسز کے نام۔ زیادہ سے زیادہ 12 قطاریں۔',
+  Semester: 'سمسٹر',
+  Semesters: 'سمسٹرز',
+  Year: 'سال',
+  'Year of study, 1 to 6.': 'تعلیمی سال، 1 سے 6۔',
+  Term: 'ٹرم',
+  'First semester': 'پہلا سمسٹر',
+  'Second semester': 'دوسرا سمسٹر',
+  Courses: 'کورسز',
+  'Course names, up to 8.': 'کورسز کے نام، زیادہ سے زیادہ 8۔',
 }
 
 /**
