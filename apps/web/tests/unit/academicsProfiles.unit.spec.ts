@@ -37,8 +37,8 @@ describe('department and discipline profiles', () => {
 
   it('names pictures that exist and describes the informative ones', () => {
     const all: Art[] = []
-    for (const p of departmentProfiles) all.push(p.hero, ...p.labs.map((l) => l.art))
-    for (const d of disciplineProfiles) all.push(d.hero, d.tile, d.figure)
+    for (const p of departmentProfiles) all.push(p.hero, p.banner, ...p.labs.map((l) => l.art))
+    for (const d of disciplineProfiles) all.push(d.hero, d.banner, d.tile, d.figure)
     for (const src of arts(all)) expect(existsSync(pub(src)), src).toBe(true)
     for (const d of disciplineProfiles) expect(d.tile.alt.length, d.slug).toBeGreaterThan(10)
   })

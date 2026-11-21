@@ -8,3 +8,8 @@ export function art(key: ArtKey, kind: keyof typeof SIZE, alt = ''): Art {
   const [width, height] = SIZE[kind]
   return { src: `/images/academics/${key}-${kind}.svg`, alt, width, height }
 }
+
+/** The banner shown at the top of a page: public/images/academics/banner-<key>.webp. `alt` repeats the words in the picture. */
+export function banner(key: ArtKey, alt: string): Art {
+  return { src: `/images/academics/banner-${key}.webp`, alt, width: 1672, height: 941 }
+}
