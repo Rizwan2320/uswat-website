@@ -26,14 +26,18 @@ A coloured line at the top of every item says in plain words where it stands and
 | Platform admin | As approver, for everything | As approver | As approver | As approver |
 | Auditor | Read only | Read only | Read only | Read only |
 
+**Send back** asks the approver to type what the editor must fix; it cannot be empty. The editor sees it on the item ("Sent back: ...") and under **Sent back to me**, and it clears when the editor sends the item for review again. The note is a convenience on screen, not a rule: the system does not refuse a send-back without one if it is done by another route.
+
 **Publish changes** only appears for roles that may publish. Editors and contributors never see it. If an item belongs to another office, an editor or approver sees it read only. Nobody sees two people's work at once without warning: if a colleague had the item open a moment ago, Payload asks whether to **Take over**.
 
 ## Your dashboard
 
 After you sign in, the first page shows what needs you. Click any title to open it.
 
+- **Sent back to me** (editors, contributors): your approver sent these back with a reason. The reason is on the item. Fix it and press **Send for review** again.
 - **My drafts:** things you started and have not sent for review.
-- **Waiting for review** (approvers): items sent for review, drafts brought in by the importer, and live items past their review date.
+- **I sent for review** (editors, contributors): waiting for your approver.
+- **Waiting for review** (approvers, shown first): items sent for review, drafts brought in by the importer, and live items past their review date.
 - **Expiring soon:** items that end within 14 days.
 - **Needs a fresh check** (approvers): live items whose review date has passed. Check the facts, then set **Fact-check** to **Verified** again.
 - **Images without alt text** (approvers): add a short description.

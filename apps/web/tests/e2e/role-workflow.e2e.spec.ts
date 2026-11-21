@@ -24,7 +24,9 @@ const open = async (page: Page, id: string | number, collection = 'notices') => 
 /** Payload locks a document for a few minutes after someone had it open; the approver may take over. */
 const takeOverIfLocked = async (page: Page) => {
   const take = page.locator('dialog#document-locked').getByRole('button', { name: /Take over/i })
-  if (await take.isVisible().catch(() => false)) await take.click()
+  // The prompt appears a moment after the page loads, and only if the other person had it open.
+  const shown = await take.waitFor({ state: 'visible', timeout: 6_000 }).then(() => true, () => false)
+  if (shown) await take.click()
 }
 const bar = (page: Page) => page.getByRole('region', { name: 'Item status' })
 const btn = (page: Page, name: string) => page.getByRole('button', { name, exact: true })
@@ -72,7 +74,7 @@ test('auditor: read only banner and no buttons', async ({ page }) => {
   await shot(page, 'auditor-read-only')
 })
 
-test('whole path: editor sends, approver approves and verifies, approver publishes', async ({
+test('whole path: editor sends, approver sends back with a note, editor fixes and sends again, approver publishes', async ({
   browser,
 }) => {
   const ed = await browser.newPage()
@@ -92,15 +94,43 @@ test('whole path: editor sends, approver approves and verifies, approver publish
   await expect(btn(ap, 'Send back')).toBeVisible()
   await expect(btn(ap, 'Publish changes')).toHaveCount(0)
   await shot(ap, 'approver-in-review')
-  await press(ap, 'Mark verified', 'Marked as verified')
-  await press(ap, 'Approve', /Approved\. (Before|An approver|Press)/)
-  await expect(btn(ap, 'Publish changes')).toBeVisible()
-  await shot(ap, 'approver-approved')
-  await btn(ap, 'Publish changes').click()
-  await expect(ap.getByText(/Published|updated successfully/i).first()).toBeVisible({
+
+  // Send back needs a reason: the confirm button stays off until one is typed.
+  await expect(async () => {
+    await btn(ap, 'Send back').click({ timeout: 2_000 })
+    await expect(ap.locator('#workflow-note')).toBeVisible({ timeout: 2_000 })
+  }).toPass({ timeout: 30_000 })
+  await expect(btn(ap, 'Send back')).toBeDisabled()
+  await shot(ap, 'approver-send-back-note')
+  await ap.fill('#workflow-note', 'Please add the date of the meeting.')
+  await btn(ap, 'Send back').click()
+  await expect(bar(ap)).toContainText('Sent back to Draft', { timeout: 30_000 })
+  await ap.close()
+
+  const ed2 = await browser.newPage()
+  await signIn(ed2, fx.editor)
+  await open(ed2, fx.flowNotice.id)
+  await takeOverIfLocked(ed2)
+  await expect(bar(ed2)).toContainText('Sent back: Please add the date of the meeting.')
+  await shot(ed2, 'editor-sees-note')
+  await press(ed2, 'Send for review', 'Sent. Your approver sees it under Waiting for review')
+  await expect(bar(ed2)).not.toContainText('Sent back:')
+  await ed2.close()
+
+  const ap2 = await browser.newPage()
+  await signIn(ap2, fx.approver)
+  await open(ap2, fx.flowNotice.id)
+  await takeOverIfLocked(ap2)
+  await expect(bar(ap2)).toContainText('Waiting for your review')
+  await press(ap2, 'Mark verified', 'Marked as verified')
+  await press(ap2, 'Approve', /Approved\. (Before|An approver|Press)/)
+  await expect(btn(ap2, 'Publish changes')).toBeVisible()
+  await shot(ap2, 'approver-approved')
+  await btn(ap2, 'Publish changes').click()
+  await expect(ap2.getByText(/Published|updated successfully/i).first()).toBeVisible({
     timeout: 30_000,
   })
-  await ap.close()
+  await ap2.close()
 })
 
 test('a refused step leaves the stage as it was and says why', async ({ page }) => {

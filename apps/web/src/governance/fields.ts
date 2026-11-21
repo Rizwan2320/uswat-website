@@ -98,6 +98,18 @@ export const governanceFields: Field[] = [
     },
   },
   {
+    name: 'reviewNote',
+    label: bi('Why it was sent back', 'واپس بھیجنے کی وجہ'),
+    type: 'textarea',
+    admin: {
+      readOnly: true,
+      description: bi(
+        'Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.',
+        'واپس بھیجیں کے بٹن سے بھرا جاتا ہے۔ ایڈیٹر اسے مسودے پر دیکھتا ہے۔ دوبارہ جائزے کے لیے بھیجنے پر صاف ہو جاتا ہے۔',
+      ),
+    },
+  },
+  {
     name: 'ownerOffice',
     label: bi('Owner office', 'ذمہ دار دفتر'),
     type: 'text',

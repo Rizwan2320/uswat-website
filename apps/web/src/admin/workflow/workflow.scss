@@ -69,4 +69,25 @@
       }
     }
   }
+
+  &__note {
+    background: var(--theme-elevation-0);
+    border: 1px solid var(--theme-elevation-200);
+    border-radius: 4px;
+    margin: calc(var(--base) / 2) 0 0;
+    padding: calc(var(--base) / 2);
+    white-space: pre-wrap;
+  }
+
+  &__ask {
+    display: grid;
+    gap: calc(var(--base) / 3);
+    margin-top: calc(var(--base) / 2);
+
+    textarea {
+      font: inherit;
+      padding: 0.5em;
+      width: 100%;
+    }
+  }
 }

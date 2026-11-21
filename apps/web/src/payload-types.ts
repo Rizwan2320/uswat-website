@@ -261,6 +261,10 @@ export interface Page {
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
     ownerOffice?: string | null;
@@ -397,6 +401,10 @@ export interface Post {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -640,6 +648,10 @@ export interface Department {
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
     ownerOffice?: string | null;
@@ -707,6 +719,10 @@ export interface Faculty {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -832,6 +848,10 @@ export interface Person {
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
     ownerOffice?: string | null;
@@ -952,6 +972,10 @@ export interface Office {
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
     ownerOffice?: string | null;
@@ -1051,6 +1075,10 @@ export interface ArticleTag {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -1461,6 +1489,10 @@ export interface AffiliatedCollege {
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
     ownerOffice?: string | null;
@@ -1528,6 +1560,10 @@ export interface ContactDirectory {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -1609,6 +1645,10 @@ export interface MeritList {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -1742,6 +1782,10 @@ export interface Notice {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -1878,6 +1922,10 @@ export interface Event {
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
     ownerOffice?: string | null;
@@ -2010,6 +2058,10 @@ export interface Job {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -2144,6 +2196,10 @@ export interface Tender {
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
     ownerOffice?: string | null;
@@ -2223,6 +2279,10 @@ export interface Programme {
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
     ownerOffice?: string | null;
@@ -2291,6 +2351,10 @@ export interface Campus {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -2792,6 +2856,7 @@ export interface PagesSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -2939,6 +3004,7 @@ export interface PostsSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3127,6 +3193,7 @@ export interface AffiliatedCollegesSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3165,6 +3232,7 @@ export interface ArticleTagsSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3204,6 +3272,7 @@ export interface ContactDirectorySelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3244,6 +3313,7 @@ export interface MeritListsSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3297,6 +3367,7 @@ export interface NoticesSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3352,6 +3423,7 @@ export interface EventsSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3405,6 +3477,7 @@ export interface JobsSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3458,6 +3531,7 @@ export interface TendersSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3491,6 +3565,7 @@ export interface FacultiesSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3542,6 +3617,7 @@ export interface DepartmentsSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3583,6 +3659,7 @@ export interface ProgrammesSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3639,6 +3716,7 @@ export interface OfficesSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3673,6 +3751,7 @@ export interface CampusesSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3726,6 +3805,7 @@ export interface PeopleSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
