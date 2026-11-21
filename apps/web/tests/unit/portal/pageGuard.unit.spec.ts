@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import type { AccountStatus } from '@/modules/identity/accountStatus'
 import type { FactorState } from '@/modules/identity/gate'
 import { accountFrom, guardPage, type GuardDeps } from '@/modules/portal/pageGuard'
 
@@ -12,7 +13,7 @@ const ON = {
 const none: FactorState = { passkeys: 0, totpVerified: false, recoveryCodesRemaining: 0 }
 const passkey: FactorState = { passkeys: 1, totpVerified: false, recoveryCodesRemaining: 0 }
 
-function setup(o: { env?: Record<string, string | undefined>; session?: boolean | 'throw' | 'expired'; factors?: FactorState | 'throw'; strong?: boolean; verifiedAgoMs?: number | null } = {}) {
+function setup(o: { env?: Record<string, string | undefined>; session?: boolean | 'throw' | 'expired'; factors?: FactorState | 'throw'; strong?: boolean; verifiedAgoMs?: number | null; status?: AccountStatus | 'throw' } = {}) {
   const updatedMsAgo = o.session === 'expired' ? 31 * 60_000 : 1_000
   const getSession = vi.fn(async () => {
     if (o.session === 'throw') throw new Error('db down')
@@ -31,6 +32,10 @@ function setup(o: { env?: Record<string, string | undefined>; session?: boolean 
       return o.factors ?? none
     },
     isStrongSession: async () => o.strong ?? false,
+    accountStatus: async () => {
+      if (o.status === 'throw') throw new Error('db down')
+      return o.status ?? 'active'
+    },
     lastVerifiedAt: async () => (o.verifiedAgoMs === null ? null : Date.now() - (o.verifiedAgoMs ?? 1_000)),
     endSession,
     touchSession: async () => {},
@@ -153,5 +158,33 @@ describe('accountFrom (what a server action may act for)', () => {
     expect(accountFrom({ ...ok, email: null })).toBeNull()
     expect(accountFrom({ action: 'notFound' })).toBeNull()
     expect(accountFrom({ action: 'redirect', to: '/portal/sign-in' })).toBeNull()
+  })
+})
+
+describe('account status (FP-17)', () => {
+  const strongDeps = { session: true, strong: true, factors: { passkeys: 1, totpVerified: false, recoveryCodesRemaining: 0 } as FactorState }
+  it('an active account, and one with no status row, renders portal pages as before', async () => {
+    expect(await setup({ ...strongDeps }).run('/portal/profile')).toMatchObject({ action: 'render' })
+  })
+  it('a pending account is sent to the waiting page from every other portal page, and may see the waiting page', async () => {
+    const { run } = setup({ ...strongDeps, status: 'pending-activation' })
+    for (const p of ['/portal', '/portal/profile', '/portal/review', '/portal/security', '/portal/cv']) expect(await run(p), p).toEqual({ action: 'redirect', to: '/portal/pending' })
+    expect(await run('/portal/pending')).toMatchObject({ action: 'render' })
+  })
+  it('a pending account may still enrol and sign out', async () => {
+    const weak = setup({ session: true, strong: false, factors: { passkeys: 0, totpVerified: false, recoveryCodesRemaining: 0 }, status: 'pending-activation' })
+    expect(await weak.run('/portal/enrol')).toMatchObject({ action: 'render' })
+  })
+  it('a suspended or left account is treated as signed out and its session is ended', async () => {
+    for (const status of ['suspended', 'left'] as const) {
+      const { run, endSession } = setup({ ...strongDeps, status })
+      expect(await run('/portal/profile'), status).toEqual({ action: 'redirect', to: '/portal/sign-in' })
+      expect(endSession).toHaveBeenCalledWith('s1')
+    }
+  })
+  it('an unreadable status closes the portal pages (fail closed) without ending the session', async () => {
+    const { run, endSession } = setup({ ...strongDeps, status: 'throw' })
+    expect(await run('/portal/profile')).toEqual({ action: 'notFound' })
+    expect(endSession).not.toHaveBeenCalled()
   })
 })

@@ -6,6 +6,7 @@
  * Our lookup does not refresh the session; activity is recorded with `touchSession`.
  */
 import type { RouteClass, FactorState } from './gate'
+import type { AccountStatus } from './accountStatus'
 import { evaluateSession, shouldTouch } from './sessionLifetime'
 
 export type SessionLookup = {
@@ -21,6 +22,8 @@ export type SessionDeps = {
   }
   loadFactors: (userId: string) => Promise<FactorState>
   isStrongSession: (sessionId: string) => Promise<boolean>
+  /** Required, not optional: a caller that forgets it must not silently let a pending or suspended account in. */
+  accountStatus: (userId: string) => Promise<AccountStatus>
   /** Epoch ms of the last second-factor proof (step-up). Optional so older callers fail closed (not fresh). */
   lastVerifiedAt?: (sessionId: string) => Promise<number | null>
   /** Whether the session was made with "shared computer" (15 minutes idle). Absent means not shared; throwing means shared (stricter). */
@@ -43,6 +46,8 @@ export type SessionState =
       sessionStrong: boolean
       /** Epoch ms of the last second-factor proof; null when unknown. Only read for portal and enrolment paths. */
       verifiedAt: number | null
+      /** 'unknown' when it could not be read (fail closed). Only read for portal and enrolment paths. */
+      accountStatus: AccountStatus | 'unknown'
     }
 
 export async function readSessionState(
@@ -79,7 +84,18 @@ export async function readSessionState(
   let factors: FactorState | null = null
   let sessionStrong = false
   let verifiedAt: number | null = null
+  let accountStatus: AccountStatus | 'unknown' = 'active'
   if (cls === 'portal' || cls === 'enrolment') {
+    try {
+      accountStatus = await deps.accountStatus(found.user.id)
+    } catch {
+      accountStatus = 'unknown'
+    }
+    if (accountStatus === 'suspended' || accountStatus === 'left') {
+      // Treated as signed out, and the session is ended: the same answer as a wrong password, so nothing about the account leaks.
+      await deps.endSession(found.session.id).catch(() => {})
+      return { kind: 'none' }
+    }
     try {
       factors = await deps.loadFactors(found.user.id)
     } catch {
@@ -104,5 +120,6 @@ export async function readSessionState(
     factors,
     sessionStrong,
     verifiedAt,
+    accountStatus,
   }
 }
