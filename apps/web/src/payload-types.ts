@@ -261,6 +261,10 @@ export interface Page {
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
     ownerOffice?: string | null;
@@ -397,6 +401,10 @@ export interface Post {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -634,11 +642,226 @@ export interface Department {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Departments are listed from the lowest number up. Leave empty to list it last.
+   */
+  order?: number | null;
+  /**
+   * The words and pictures of the department page. Plain text only: no links, no formatting. Leave a part empty to leave that section out of the page.
+   */
+  pageContent?: {
+    /**
+     * For example "DCST".
+     */
+    shortName?: string | null;
+    /**
+     * One short line under the name.
+     */
+    tagline?: string | null;
+    /**
+     * One or two sentences at the top. Keep it different from About.
+     */
+    intro?: string | null;
+    /**
+     * The large picture at the top. It needs alt text in the media library.
+     */
+    heroImage?: (number | null) | Media;
+    /**
+     * A photograph of the department building. It needs alt text.
+     */
+    campusPhoto?: (number | null) | Media;
+    /**
+     * Plain paragraphs, up to 4.
+     */
+    about?:
+      | {
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Short reasons to choose the department. Up to 6.
+     */
+    highlights?:
+      | {
+          /**
+           * The small picture drawn beside the title.
+           */
+          icon:
+            | 'code'
+            | 'layers'
+            | 'network'
+            | 'chart'
+            | 'brain'
+            | 'flask'
+            | 'book'
+            | 'briefcase'
+            | 'users'
+            | 'trophy'
+            | 'spark'
+            | 'shield'
+            | 'cloud'
+            | 'phone'
+            | 'search'
+            | 'rocket'
+            | 'globe'
+            | 'cap'
+            | 'gear'
+            | 'database';
+          title?: string | null;
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Laboratories and facilities, up to 6.
+     */
+    labs?:
+      | {
+          title?: string | null;
+          text?: string | null;
+          /**
+           * It needs alt text in the media library.
+           */
+          image?: (number | null) | Media;
+          /**
+           * Equipment or software, up to 6.
+           */
+          tools?: string[] | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Topics the department works on. Up to 6.
+     */
+    researchAreas?:
+      | {
+          /**
+           * The small picture drawn beside the title.
+           */
+          icon:
+            | 'code'
+            | 'layers'
+            | 'network'
+            | 'chart'
+            | 'brain'
+            | 'flask'
+            | 'book'
+            | 'briefcase'
+            | 'users'
+            | 'trophy'
+            | 'spark'
+            | 'shield'
+            | 'cloud'
+            | 'phone'
+            | 'search'
+            | 'rocket'
+            | 'globe'
+            | 'cap'
+            | 'gear'
+            | 'database';
+          title?: string | null;
+          text?: string | null;
+          /**
+           * Keywords, up to 6.
+           */
+          tags?: string[] | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Where graduates work. Up to 8.
+     */
+    careers?:
+      | {
+          /**
+           * The small picture drawn beside the title.
+           */
+          icon:
+            | 'code'
+            | 'layers'
+            | 'network'
+            | 'chart'
+            | 'brain'
+            | 'flask'
+            | 'book'
+            | 'briefcase'
+            | 'users'
+            | 'trophy'
+            | 'spark'
+            | 'shield'
+            | 'cloud'
+            | 'phone'
+            | 'search'
+            | 'rocket'
+            | 'globe'
+            | 'cap'
+            | 'gear'
+            | 'database';
+          title?: string | null;
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Societies, events and support for students. Up to 6.
+     */
+    studentLife?:
+      | {
+          /**
+           * The small picture drawn beside the title.
+           */
+          icon:
+            | 'code'
+            | 'layers'
+            | 'network'
+            | 'chart'
+            | 'brain'
+            | 'flask'
+            | 'book'
+            | 'briefcase'
+            | 'users'
+            | 'trophy'
+            | 'spark'
+            | 'shield'
+            | 'cloud'
+            | 'phone'
+            | 'search'
+            | 'rocket'
+            | 'globe'
+            | 'cap'
+            | 'gear'
+            | 'database';
+          title?: string | null;
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Common questions, up to 12.
+     */
+    faq?:
+      | {
+          question?: string | null;
+          answer?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Where the department is on campus.
+     */
+    location?: string | null;
+    officeHours?: string | null;
+  };
   governance?: {
     /**
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -707,6 +930,10 @@ export interface Faculty {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -832,6 +1059,10 @@ export interface Person {
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
     ownerOffice?: string | null;
@@ -952,6 +1183,10 @@ export interface Office {
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
     ownerOffice?: string | null;
@@ -1051,6 +1286,10 @@ export interface ArticleTag {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -1461,6 +1700,10 @@ export interface AffiliatedCollege {
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
     ownerOffice?: string | null;
@@ -1528,6 +1771,10 @@ export interface ContactDirectory {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -1609,6 +1856,10 @@ export interface MeritList {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -1742,6 +1993,10 @@ export interface Notice {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -1878,6 +2133,10 @@ export interface Event {
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
     ownerOffice?: string | null;
@@ -2010,6 +2269,10 @@ export interface Job {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -2144,6 +2407,10 @@ export interface Tender {
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
     ownerOffice?: string | null;
@@ -2223,6 +2490,10 @@ export interface Programme {
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
     /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
     ownerOffice?: string | null;
@@ -2291,6 +2562,10 @@ export interface Campus {
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
      */
     status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
     /**
      * The office accountable for this record (for example "Registrar"). Required to publish.
      */
@@ -2792,6 +3067,7 @@ export interface PagesSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -2939,6 +3215,7 @@ export interface PostsSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3127,6 +3404,7 @@ export interface AffiliatedCollegesSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3165,6 +3443,7 @@ export interface ArticleTagsSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3204,6 +3483,7 @@ export interface ContactDirectorySelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3244,6 +3524,7 @@ export interface MeritListsSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3297,6 +3578,7 @@ export interface NoticesSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3352,6 +3634,7 @@ export interface EventsSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3405,6 +3688,7 @@ export interface JobsSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3458,6 +3742,7 @@ export interface TendersSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3491,6 +3776,7 @@ export interface FacultiesSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3538,10 +3824,78 @@ export interface DepartmentsSelect<T extends boolean = true> {
         email?: T;
         id?: T;
       };
+  order?: T;
+  pageContent?:
+    | T
+    | {
+        shortName?: T;
+        tagline?: T;
+        intro?: T;
+        heroImage?: T;
+        campusPhoto?: T;
+        about?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        highlights?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              text?: T;
+              id?: T;
+            };
+        labs?:
+          | T
+          | {
+              title?: T;
+              text?: T;
+              image?: T;
+              tools?: T;
+              id?: T;
+            };
+        researchAreas?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              text?: T;
+              tags?: T;
+              id?: T;
+            };
+        careers?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              text?: T;
+              id?: T;
+            };
+        studentLife?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              text?: T;
+              id?: T;
+            };
+        faq?:
+          | T
+          | {
+              question?: T;
+              answer?: T;
+              id?: T;
+            };
+        location?: T;
+        officeHours?: T;
+      };
   governance?:
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3583,6 +3937,7 @@ export interface ProgrammesSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3639,6 +3994,7 @@ export interface OfficesSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3673,6 +4029,7 @@ export interface CampusesSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;
@@ -3726,6 +4083,7 @@ export interface PeopleSelect<T extends boolean = true> {
     | T
     | {
         status?: T;
+        reviewNote?: T;
         ownerOffice?: T;
         source?: T;
         verificationStatus?: T;

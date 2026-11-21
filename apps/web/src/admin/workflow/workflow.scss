@@ -1,0 +1,93 @@
+.workflow-bar {
+  background: var(--theme-elevation-50);
+  border: 1px solid var(--theme-elevation-150);
+  border-inline-start: 4px solid var(--theme-elevation-400);
+  border-radius: 8px;
+  margin: 0 0 var(--base);
+  padding: calc(var(--base) / 2) var(--base);
+
+  &--waiting {
+    border-inline-start-color: var(--color-warning-500, #b7791f);
+  }
+
+  &--ready {
+    border-inline-start-color: var(--color-success-500);
+  }
+
+  &--readonly {
+    border-inline-start-color: var(--theme-elevation-300);
+  }
+
+  &__stage {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6em;
+    margin: 0;
+  }
+
+  &__badge {
+    background: var(--theme-elevation-150);
+    border-radius: 999px;
+    font-size: 0.8em;
+    font-weight: 600;
+    padding: 0.1em 0.7em;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--base) / 2);
+    margin-top: calc(var(--base) / 2);
+  }
+
+  &__button {
+    background: var(--theme-elevation-0);
+    border: 1px solid var(--theme-elevation-800);
+    border-radius: 4px;
+    color: var(--theme-elevation-800);
+    cursor: pointer;
+    font: inherit;
+    padding: 0.4em 1em;
+
+    &:hover:not(:disabled) {
+      background: var(--theme-elevation-100);
+    }
+
+    &:disabled {
+      cursor: wait;
+      opacity: 0.6;
+    }
+
+    &--sendForReview,
+    &--approve {
+      background: var(--theme-elevation-800);
+      color: var(--theme-elevation-0);
+
+      &:hover:not(:disabled) {
+        background: var(--theme-elevation-700);
+      }
+    }
+  }
+
+  &__note {
+    background: var(--theme-elevation-0);
+    border: 1px solid var(--theme-elevation-200);
+    border-radius: 4px;
+    margin: calc(var(--base) / 2) 0 0;
+    padding: calc(var(--base) / 2);
+    white-space: pre-wrap;
+  }
+
+  &__ask {
+    display: grid;
+    gap: calc(var(--base) / 3);
+    margin-top: calc(var(--base) / 2);
+
+    textarea {
+      font: inherit;
+      padding: 0.5em;
+      width: 100%;
+    }
+  }
+}

@@ -9,7 +9,16 @@ import type { Where } from 'payload'
 import { reviewQueueWhere } from './lifecycle'
 import type { Role } from './roles'
 
-export const QUEUE_KEYS = ['myDrafts', 'review', 'expiring', 'stale', 'needsAlt'] as const
+/** In the order a person should read them: what needs them first. */
+export const QUEUE_KEYS = [
+  'review',
+  'sentBack',
+  'myDrafts',
+  'sentByMe',
+  'stale',
+  'expiring',
+  'needsAlt',
+] as const
 export type QueueKey = (typeof QUEUE_KEYS)[number]
 
 /** PROPOSED: "expiring soon" means within 14 days. One constant. */
@@ -20,6 +29,10 @@ const any = (...w: Where[]): Where => ({ or: w })
 
 const REVIEWERS: Role[] = ['platformAdmin', 'siteManager', 'approver']
 const WRITERS: Role[] = [...REVIEWERS, 'editor', 'contributor']
+/** Editors and contributors also get the two lists that follow their own work through review (3aa). */
+const AUTHORS: Role[] = ['editor', 'contributor']
+
+const noNote = (): Where => any({ 'governance.reviewNote': { exists: false } }, { 'governance.reviewNote': { equals: '' } })
 
 export interface QueueSpec {
   key: QueueKey
@@ -37,19 +50,6 @@ export interface QueueSpec {
 
 export const QUEUES: QueueSpec[] = [
   {
-    key: 'myDrafts',
-    title: 'My drafts',
-    help: 'Things you started and have not sent for review yet.',
-    roles: WRITERS,
-    target: 'governed',
-    draft: true,
-    where: ({ userId }) =>
-      all(
-        { 'governance.createdBy': { equals: userId } },
-        { 'governance.status': { equals: 'draft' } },
-      ),
-  },
-  {
     key: 'review',
     title: 'Waiting for review',
     help: 'Submitted by an editor, or brought in by the importer, or past its review date.',
@@ -57,6 +57,64 @@ export const QUEUES: QueueSpec[] = [
     target: 'governed',
     draft: true,
     where: () => reviewQueueWhere(),
+  },
+  {
+    key: 'sentBack',
+    title: 'Sent back to me',
+    help: 'Your approver sent these back with a reason. Open one, fix it and send it again.',
+    roles: AUTHORS,
+    target: 'governed',
+    draft: true,
+    where: ({ userId }) =>
+      all(
+        { 'governance.createdBy': { equals: userId } },
+        { 'governance.status': { equals: 'draft' } },
+        { 'governance.reviewNote': { exists: true } },
+        { 'governance.reviewNote': { not_equals: '' } },
+      ),
+  },
+  {
+    key: 'myDrafts',
+    title: 'My drafts',
+    help: 'Things you started and have not sent for review yet. Items sent back to you are listed above.',
+    roles: WRITERS,
+    target: 'governed',
+    draft: true,
+    where: ({ userId }) =>
+      all(
+        { 'governance.createdBy': { equals: userId } },
+        { 'governance.status': { equals: 'draft' } },
+        noNote(),
+      ),
+  },
+  {
+    key: 'sentByMe',
+    title: 'I sent for review',
+    help: 'Waiting for your approver. You will find it here until it is approved or sent back.',
+    roles: AUTHORS,
+    target: 'governed',
+    draft: true,
+    where: ({ userId }) =>
+      all(
+        { 'governance.createdBy': { equals: userId } },
+        { 'governance.status': { equals: 'in_review' } },
+      ),
+  },
+  {
+    key: 'stale',
+    title: 'Needs a fresh check',
+    help: 'Live pages whose review date has passed. Check the facts and mark them verified again.',
+    roles: REVIEWERS,
+    target: 'governed',
+    draft: false,
+    where: ({ now }) =>
+      all(
+        { 'governance.status': { equals: 'published' } },
+        any(
+          { 'governance.verificationStatus': { equals: 'stale' } },
+          { 'governance.reviewDueAt': { less_than_equal: now.toISOString() } },
+        ),
+      ),
   },
   {
     key: 'expiring',
@@ -76,22 +134,6 @@ export const QUEUES: QueueSpec[] = [
             ).toISOString(),
           },
         },
-      ),
-  },
-  {
-    key: 'stale',
-    title: 'Needs a fresh check',
-    help: 'Live pages whose review date has passed. Check the facts and mark them verified again.',
-    roles: REVIEWERS,
-    target: 'governed',
-    draft: false,
-    where: ({ now }) =>
-      all(
-        { 'governance.status': { equals: 'published' } },
-        any(
-          { 'governance.verificationStatus': { equals: 'stale' } },
-          { 'governance.reviewDueAt': { less_than_equal: now.toISOString() } },
-        ),
       ),
   },
   {
