@@ -767,3 +767,11 @@ P3 agent (slice 3a), own entry:
 - **Findings:** (1) maxRows is enforced on publish, not on a draft save. (2) An icon outside the list only fails at save, by a database error; the admin select cannot send one. (3) Deleting a media file that a department (or any record) still uses is NOT refused: Media is not a governed collection, so the delete guard from slice 3s is never attached to it. Pre-existing; proposed as a small slice (3af), not started.
 - **Hand-off for agent 4 (importer and department pages):** `departments.order`; `departments.pageContent.{shortName, tagline, intro, heroImage, campusPhoto, about[].text, highlights[].{icon,title,text}, careers[], studentLife[], labs[].{title,text,image,tools[]}, researchAreas[].{icon,title,text,tags[]}, faq[].{question,answer}, location, officeHours}`. Localized text fields take `locale=ur`.
 - **Next:** slice 3ae, programme page content (same pattern, admin-only create already holds); then the media delete guard if the owner agrees.
+
+### DCST pages, round four (2026-11-21, branch `p4/real-departments`, prediction A4-v)
+- Banner is now a full-bleed band: image fills it edge to edge (`object-fit: cover`), height `clamp(280px, 31vw, 520px)` (about 40% shorter than before; 423 px at 1366), breadcrumbs overlaid on a dark pill. On phones (≤640 px) it stays 16:9 and uncropped.
+- Card under the banner is 90% wide (was 80%, originally 70%), same height, no longer overlaps the banner.
+- DCST banner picture edited so it reads "Department of Computer and Software Technologies (DCST)" (composited text; faint artefacts possible).
+- Checks run: tsc, eslint, unit tests (720 pass), 36 page loads (no overflow, no axe issues). Not run: production build, e2e, pack integrity test (#94).
+- Next: confirm on the Vercel preview; owner to choose the next department to roll out.
+

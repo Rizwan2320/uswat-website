@@ -13,7 +13,7 @@ export const dcst: DepartmentProfile = {
   intro:
     'Five four-year BS programmes in computing, one shared first year, and laboratory work in every semester.',
   hero: art('dcst', 'hero'),
-  banner: banner('dcst', 'Department of Computer and Software Technology (DCST). Learn, Develop, Innovate.'),
+  banner: banner('dcst', 'Department of Computer and Software Technologies (DCST). Learn, Develop, Innovate.'),
   about: [
     'The Department of Computer and Software Technologies teaches the foundations of computing and the practice of building software. Students learn to design programs, structure data, build and secure networks, and apply machine learning to real problems.',
     'The five programmes share a first-year core, so a student can move between disciplines early on. From the second year each programme goes its own way, with its own courses, laboratories and a final-year project.',

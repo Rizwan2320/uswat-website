@@ -511,24 +511,28 @@ export function CoordinatorNote({ member }: { member: TeamMember }) {
   )
 }
 
-/** The first hero section: breadcrumbs and the page's banner. The title is in the picture, so the h1 holds the picture
-    and its alt text is the title. */
+/** The first hero section: the page's banner fills the whole band edge to edge, with the breadcrumbs over its top edge.
+    The title is in the picture, so the h1 holds the picture and its alt text is the title. On phones the picture is
+    shown whole (16:9) under the breadcrumbs. */
 export function BannerHeader({ banner, crumbs }: { banner: Art; crumbs: Crumb[] }) {
   return (
     <header className={styles.bannerHeader}>
-      <div className="container">
-        <Breadcrumbs items={crumbs} tone="dark" />
-        <h1 className={styles.bannerTitle}>
-          <SafeImage
-            src={banner.src}
-            alt={banner.alt}
-            width={banner.width}
-            height={banner.height}
-            sizes="(max-width: 1160px) 100vw, 1120px"
-            priority
-            className={styles.bannerImg}
-          />
-        </h1>
+      <h1 className={styles.bannerTitle}>
+        <SafeImage
+          src={banner.src}
+          alt={banner.alt}
+          fill
+          sizes="100vw"
+          priority
+          className={styles.bannerImg}
+        />
+      </h1>
+      <div className={styles.bannerCrumbs}>
+        <div className="container">
+          <div className={styles.crumbPill}>
+            <Breadcrumbs items={crumbs} tone="dark" />
+          </div>
+        </div>
       </div>
     </header>
   )
