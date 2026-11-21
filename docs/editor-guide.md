@@ -13,6 +13,21 @@ For staff who write and publish content in the University of Swat CMS. Plain wor
 | Platform admin | Everything, plus user accounts. |
 | Auditor | Read content and the audit log. Cannot change anything. |
 
+### What you see on an item, by role (since slice 3aa)
+
+A coloured line at the top of every item says in plain words where it stands and what happens next. Under it are only the buttons your role may use. You will not see a button that would be refused because of your role. The rules themselves have not changed.
+
+| Role | On a draft | On an item In review | On an Approved item | On a live item |
+| --- | --- | --- | --- | --- |
+| Contributor | Save Draft (your own drafts only). The line says to ask an editor to send it. | Read only | Read only | Read only |
+| Editor | Save Draft, **Send for review** | Read only ("Waiting for the approver"). Changing it sends it back to Draft. | Read only | Save Draft (goes through review again) |
+| Approver (own office) | **Approve** or **Send for review**, **Mark verified** | **Approve**, **Send back**, **Mark verified** | **Publish changes**, **Send back** | **Publish changes** |
+| Site manager | As approver, for every office except High impact items | As approver | As approver | As approver |
+| Platform admin | As approver, for everything | As approver | As approver | As approver |
+| Auditor | Read only | Read only | Read only | Read only |
+
+**Publish changes** only appears for roles that may publish. Editors and contributors never see it. If an item belongs to another office, an editor or approver sees it read only. Nobody sees two people's work at once without warning: if a colleague had the item open a moment ago, Payload asks whether to **Take over**.
+
 ## Your dashboard
 
 After you sign in, the first page shows what needs you. Click any title to open it.
@@ -46,7 +61,7 @@ Open **Pages**, pick the page and change it; it saves by itself as a draft. The 
 4. Jobs, tenders and events cannot leave Draft without a **Take down on** date.
 
 ### 5. Send for review
-In the **Ownership and approval** panel change **Stage** from **Draft** to **In review**. It saves by itself. It appears in your approver's **Waiting for review** list. If an approver sends it back, it returns to **Draft** with your changes kept.
+Press **Send for review** in the coloured line at the top of the item. It saves by itself and the line changes to "Sent. Your approver sees it under Waiting for review." It appears in your approver's **Waiting for review** list. If an approver sends it back, it returns to **Draft** with your changes kept.
 
 ## If the system will not let you publish
 
@@ -63,7 +78,7 @@ The message names the problem. The common ones:
 | Fill in Owner office / "Source of the facts" | These two boxes in **Ownership and approval** are needed before publishing. |
 | Needs a "Take down on" date | Notices and similar items must say when they stop being shown. |
 
-The blue **Publish changes** button is visible to editors too, but only an approver's press will work; yours will be refused with one of the messages above. Your work always saves as a draft, even with these problems. They only stop **publishing**.
+Editors and contributors do not see **Publish changes**; only roles that may publish do. If a step is refused, the message above appears next to it and the item stays where it was. Your work always saves as a draft, even with these problems. They only stop **publishing**.
 
 ## If you are the head of an office: your team
 
