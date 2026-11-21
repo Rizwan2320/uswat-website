@@ -16,7 +16,7 @@ import type { User } from '../../src/payload-types'
 import { as, getTestPayload, makeUser, pageData, refusal } from '../helpers/governance'
 
 let payload: Payload
-let editor: User, approver: User
+let editor: User, approver: User, author: User
 
 const DAY = 24 * 60 * 60 * 1000
 const gov = (extra: Record<string, unknown> = {}) => ({
@@ -32,7 +32,7 @@ async function readyToPublish(governance: Record<string, unknown>, approverOnly 
     collection: 'pages',
     draft: true,
     data: pageData(gov(governance)),
-    ...as(approverOnly ? approver : editor),
+    ...as(approverOnly ? author : editor),
   })) as { id: number }
   if (!approverOnly) await move(editor, p.id, { status: 'in_review' })
   // Note: no reviewDueAt here.
@@ -60,6 +60,8 @@ beforeAll(async () => {
   payload = await getTestPayload()
   editor = await makeUser(payload, 'editor', ['Registrar'])
   approver = await makeUser(payload, 'approver', ['Registrar'])
+  // Nobody approves their own work: the approver-only cases are written by a second person.
+  author = await makeUser(payload, 'approver', ['Registrar'])
 })
 
 describe('default "Check again by" when going live without one', () => {

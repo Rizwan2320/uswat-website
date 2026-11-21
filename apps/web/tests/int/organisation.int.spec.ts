@@ -27,6 +27,7 @@ import { as, getTestPayload, makeUser, run } from '../helpers/governance'
 
 let payload: Payload
 let admin: Awaited<ReturnType<typeof makeUser>>
+let closer: Awaited<ReturnType<typeof makeUser>>
 const tag = `org${run}`
 const noHeaders = new Headers()
 const live = { draftModeOn: false, headers: noHeaders }
@@ -35,10 +36,10 @@ const gov = (name: string) => ({ ownerOffice: 'Registrar', source: `https://${ta
 const create = (collection: string, data: Record<string, unknown>) =>
   payload.create({ collection: collection as never, draft: true, data: data as never, ...as(admin) }) as unknown as Promise<{ id: number }>
 async function publish(collection: string, id: number) {
-  const step = (data: Record<string, unknown>) => payload.update({ collection: collection as never, id, draft: true, data: data as never, ...as(admin) })
+  const step = (data: Record<string, unknown>, who = admin) => payload.update({ collection: collection as never, id, draft: true, data: data as never, ...as(who) })
   await step({ governance: { status: 'in_review' } })
-  await step({ governance: { status: 'approved', verificationStatus: 'verified', reviewDueAt: '2027-12-31T00:00:00.000Z' } })
-  await payload.update({ collection: collection as never, id, data: { _status: 'published' } as never, ...as(admin) })
+  await step({ governance: { status: 'approved', verificationStatus: 'verified', reviewDueAt: '2027-12-31T00:00:00.000Z' } }, closer) // nobody approves their own work
+  await payload.update({ collection: collection as never, id, data: { _status: 'published' } as never, ...as(closer) })
 }
 const mk = async (collection: string, name: string, data: Record<string, unknown> = {}, published = true) => {
   const doc = await create(collection, { name, slug: name.toLowerCase().replaceAll(' ', '-'), generateSlug: false, governance: gov(name.replaceAll(' ', '-')), ...data })
@@ -50,6 +51,7 @@ let group: { id: number }, dept: { id: number }, otherDept: { id: number }, camp
 beforeAll(async () => {
   payload = await getTestPayload()
   admin = await makeUser(payload, 'platformAdmin')
+  closer = await makeUser(payload, 'platformAdmin')
   group = await mk('faculties', `${tag} group`)
   dept = await mk('departments', `${tag} dept`, { facultyGroup: group.id, summary: 'First para\n\nSecond para' })
   otherDept = await mk('departments', `${tag} other dept`, { facultyGroup: group.id })

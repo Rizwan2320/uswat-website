@@ -15,6 +15,7 @@ import { as, getTestPayload, makeUser, uniq } from '../helpers/governance'
 
 let payload: Payload
 let admin: Awaited<ReturnType<typeof makeUser>>
+let closer: Awaited<ReturnType<typeof makeUser>>
 const tag = uniq('dir')
 
 async function make(data: Record<string, unknown>, publish: boolean) {
@@ -25,15 +26,17 @@ async function make(data: Record<string, unknown>, publish: boolean) {
     ...as(admin),
   })) as unknown as { id: number }
   if (!publish) return
-  const step = (d: Record<string, unknown>) => payload.update({ collection: 'contact-directory', id: rec.id, draft: true, data: d as never, ...as(admin) })
+  const step = (d: Record<string, unknown>, who = admin) => payload.update({ collection: 'contact-directory', id: rec.id, draft: true, data: d as never, ...as(who) })
   await step({ governance: { status: 'in_review' } })
-  await step({ governance: { status: 'approved', verificationStatus: 'verified', reviewDueAt: '2027-12-31T00:00:00.000Z' } })
-  await payload.update({ collection: 'contact-directory', id: rec.id, data: { _status: 'published' } as never, ...as(admin) })
+  // Nobody approves their own work: a second platform admin approves and publishes.
+  await step({ governance: { status: 'approved', verificationStatus: 'verified', reviewDueAt: '2027-12-31T00:00:00.000Z' } }, closer)
+  await payload.update({ collection: 'contact-directory', id: rec.id, data: { _status: 'published' } as never, ...as(closer) })
 }
 
 beforeAll(async () => {
   payload = await getTestPayload()
   admin = await makeUser(payload, 'platformAdmin', ['Registrar'])
+  closer = await makeUser(payload, 'platformAdmin', ['Registrar'])
   await make({ section: `${tag} Admin`, name: `${tag} live`, hours: '9 to 5', phones: [{ number: '+92 946 123456' }], email: `a@${tag}.invalid` }, true)
   await make({ section: `${tag} Admin`, name: `${tag} draft` }, false)
 })

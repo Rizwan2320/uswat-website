@@ -27,7 +27,7 @@ export const addResults = (a: FlowResult, b: FlowResult): FlowResult => ({
 
 type Args = Record<string, unknown>
 type Found = { id: number | string; status: string }
-const CONTEXT = { disableRevalidate: true }
+const CONTEXT = { disableRevalidate: true, sampleLoader: true }
 export const REVIEW_DUE = '2027-12-31T00:00:00.000Z'
 
 export async function loadBySource(cms: Cms, collection: string): Promise<Map<string, Found>> {

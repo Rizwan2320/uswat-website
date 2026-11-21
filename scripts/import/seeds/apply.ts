@@ -28,7 +28,7 @@ type Args = Record<string, unknown>
 export type SeedActor = { user: Record<string, unknown> }
 export type SeedResult = { created: number; linked: number; published: number; unchanged: number }
 
-const CONTEXT = { disableRevalidate: true }
+const CONTEXT = { disableRevalidate: true, sampleLoader: true }
 const REVIEW_DUE = '2027-12-31T00:00:00.000Z'
 const COLLECTIONS = ['faculties', 'campuses', 'people', 'offices', 'departments', 'programmes'] as const
 type Coll = (typeof COLLECTIONS)[number]

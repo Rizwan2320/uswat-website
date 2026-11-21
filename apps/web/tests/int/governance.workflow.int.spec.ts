@@ -432,6 +432,30 @@ describe('CMS-03 editorial workflow', () => {
 })
 
 describe('four eyes (slice 3aa): nobody approves what they created', () => {
+  it('a Sample-pack loader run (context.sampleLoader) leaves no author, so the same person may approve; an ordinary request still may not', async () => {
+    const made = (await payload.create({
+      collection: 'pages',
+      draft: true,
+      data: pageData({ ownerOffice: 'Registrar', source: 'https://example.test/source' }),
+      ...as(admin),
+      context: { sampleLoader: true },
+    })) as { id: number; governance?: { createdBy?: unknown } }
+    expect(made.governance?.createdBy ?? null).toBeNull()
+    await move(admin, made.id, { status: 'in_review' })
+    // The loader's own approval goes through.
+    await payload.update({
+      collection: 'pages',
+      id: made.id,
+      draft: true,
+      data: { governance: { status: 'approved', verificationStatus: 'verified' } } as never,
+      ...as(admin),
+      context: { sampleLoader: true },
+    })
+    // An item an ordinary request created is still refused (checked on a new one, same person).
+    const own = await create(admin, { ownerOffice: 'Registrar' })
+    expect(await refusal(() => move(admin, own.id, { status: 'approved' }))).toBe('SELF_APPROVAL')
+  })
+
   it('refuses approving your own item with SELF_APPROVAL, whatever the role, and allows a second person', async () => {
     for (const [who, label] of [
       [approver, 'approver'],

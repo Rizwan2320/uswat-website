@@ -118,6 +118,10 @@ export const governanceBeforeChange =
 
     const actor = actorFromRequest(req)
     const prevGov = (originalDoc?.governance ?? null) as Gov | null
+    // The Sample-pack loaders (scripts, local API only; a REST client cannot set `context`) create and
+    // approve in one run. Their rows count as brought in by an importer: no author, so the
+    // "nobody approves their own work" rule does not apply to them.
+    const loader = req.context?.sampleLoader === true
     const merged: Gov = { ...(prevGov ?? {}), ...((data.governance as Gov | undefined) ?? {}) }
 
     const incomingStatus = data._status ?? originalDoc?._status
@@ -150,7 +154,10 @@ export const governanceBeforeChange =
       publishing,
       unpublishing,
       expiryRequired: options.expiryRequired,
-      prev: operation === 'update' ? toRecordState(prevGov) : null,
+      prev:
+        operation === 'update'
+          ? toRecordState(loader && prevGov ? { ...prevGov, createdBy: null } : prevGov)
+          : null,
       next: toRecordState(merged),
       contentChanged:
         operation === 'create' ? true : contentChanged(data, originalDoc, contentFields),
@@ -195,7 +202,8 @@ export const governanceBeforeChange =
         : (prevGov?.sourceContentHash ?? null),
       collectedAt: system ? (merged.collectedAt ?? null) : (prevGov?.collectedAt ?? null),
       createdBy:
-        idOf(prevGov?.createdBy) ?? (actor.kind === 'user' ? actor.id : idOf(merged.createdBy)),
+        idOf(prevGov?.createdBy) ??
+        (actor.kind === 'user' && !loader ? actor.id : loader ? null : idOf(merged.createdBy)),
       contentHash: hashContent({ ...(originalDoc ?? {}), ...data }, contentFields),
     }
 
