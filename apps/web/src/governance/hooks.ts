@@ -195,6 +195,10 @@ export const governanceBeforeChange =
               : null
             : (idOf(prevGov?.verifiedBy) ?? null)
           : null,
+      // The reviewer's note lives only while the record is a draft that was sent back (slice 3ac):
+      // any other stage clears it, whoever or whatever moved the record.
+      reviewNote:
+        values.status === 'draft' ? (merged.reviewNote ?? prevGov?.reviewNote ?? null) : null,
       // Set by the system only; a person cannot claim a record came from an importer.
       origin: system ? origin : pick<Origin>(ORIGINS, prevGov?.origin, 'editor'),
       sourceContentHash: system

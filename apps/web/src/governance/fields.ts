@@ -22,13 +22,18 @@ import {
 import { publishGuard } from './mediaGuard'
 import { notifyNewDraft } from './notify'
 import {
+  actorFromRequest,
   ORIGINS,
   RISK_CLASSES,
   RISK_LABELS,
+  type Role,
   VERIFICATION_STATUSES,
   WORKFLOW_LABELS,
   WORKFLOW_STATUSES,
 } from './roles'
+
+/** Who may write the reviewer's note: the people who can send something back. */
+const REVIEW_NOTE_ROLES: readonly Role[] = ['platformAdmin', 'siteManager', 'approver']
 
 /**
  * Validator for a link typed into the CMS: it keeps the field's normal rules (required, length)
@@ -101,6 +106,18 @@ export const governanceFields: Field[] = [
     name: 'reviewNote',
     label: bi('Why it was sent back', 'واپس بھیجنے کی وجہ'),
     type: 'textarea',
+    maxLength: 500,
+    // Only a reviewer's save can write the note, so nobody can fake a message from the reviewer
+    // over the API (slice 3ac). The policy hook also clears it whenever the stage is not Draft.
+    access: {
+      update: ({ req }) => {
+        const actor = actorFromRequest(req)
+        return (
+          actor.kind === 'system' ||
+          (actor.kind === 'user' && REVIEW_NOTE_ROLES.includes(actor.role))
+        )
+      },
+    },
     admin: {
       readOnly: true,
       description: bi(
