@@ -22,7 +22,7 @@ export function plainTextProblem(value: unknown): PlainTextProblem | null {
 
 export const PLAIN_TEXT_MESSAGE: Record<PlainTextProblem, string> = {
   html: 'Write plain words here. Remove the HTML tags (the < > parts).',
-  'markdown-link': 'Write plain words here. Remove the [text](address) link; this field cannot hold links.',
-  'web-address':
-    'Write plain words here. Remove the web address; this field cannot hold links.',
+  'markdown-link':
+    'Write plain words here. Remove the [text](address) link; this field cannot hold links.',
+  'web-address': 'Write plain words here. Remove the web address; this field cannot hold links.',
 }
