@@ -19,14 +19,18 @@ A coloured line at the top of every item says in plain words where it stands and
 
 | Role | On a draft | On an item In review | On an Approved item | On a live item |
 | --- | --- | --- | --- | --- |
-| Contributor | Save Draft (your own drafts only). The line says to ask an editor to send it. | Read only | Read only | Read only |
-| Editor | Save Draft, **Send for review** | Read only ("Waiting for the approver"). Changing it sends it back to Draft. | Read only | Save Draft (goes through review again) |
-| Approver (own office) | **Approve** or **Send for review**, **Mark verified** | **Approve**, **Send back**, **Mark verified** | **Publish changes**, **Send back** | **Publish changes** |
+| Contributor | Own drafts only; they save by themselves. The line says to ask an editor to send it. | Read only | Read only | Read only |
+| Editor | Drafts save by themselves. **Send for review** | Read only ("Waiting for the approver"). Changing it sends it back to Draft. | Read only | Changes save as a new draft and go through review again |
+| Approver (own office) | Someone else's draft: nothing to approve yet (it appears under Waiting for review once the author sends it). Your own draft: **Send for review** only. | **Approve**, **Send back**, **Mark verified** | **Publish changes** and **Send back** | **Publish changes** |
 | Site manager | As approver, for every office except High impact items | As approver | As approver | As approver |
 | Platform admin | As approver, for everything | As approver | As approver | As approver |
 | Auditor | Read only | Read only | Read only | Read only |
 
 **Send back** asks the approver to type what the editor must fix; it cannot be empty. The editor sees it on the item ("Sent back: ...") and under **Sent back to me**, and it clears when the editor sends the item for review again. The note is a convenience on screen, not a rule: the system does not refuse a send-back without one if it is done by another route.
+
+**Nobody approves their own work (since phase 3).** If you created an item you cannot approve it, even as platform admin; send it for review and another approver does it. The server refuses it too. Items brought in by the importer have no author, so an approver may approve those.
+
+**Publish changes** now sits inside the coloured status box, next to the other steps, and only appears for roles that may publish and only once the item is Approved (or already live). There is no Publish button at the top of the screen.
 
 **Publish changes** only appears for roles that may publish. Editors and contributors never see it. If an item belongs to another office, an editor or approver sees it read only. Nobody sees two people's work at once without warning: if a colleague had the item open a moment ago, Payload asks whether to **Take over**.
 
