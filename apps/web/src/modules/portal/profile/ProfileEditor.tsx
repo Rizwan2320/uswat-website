@@ -65,6 +65,7 @@ export default function ProfileEditor({ initial }: { initial: LoadedProfile }) {
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v }))
 
   const preview = useMemo(() => buildPreview({ ...initial.profile, ...toEdit(form) }), [initial.profile, form])
+  const published = useMemo(() => (initial.published ? buildPreview({ ...initial.profile, ...initial.published }) : null), [initial.profile, initial.published])
 
   function fail(kind: string, errs?: FieldErrors) {
     setErrors(errs ?? {})
@@ -158,6 +159,13 @@ export default function ProfileEditor({ initial }: { initial: LoadedProfile }) {
         <p>{C.intro}</p>
         {p.sample ? <div className="portal-notice" role="note">{C.sampleNote}</div> : null}
         <p data-testid="profile-status"><strong>{statusText}</strong></p>
+        {initial.reviewNote && status === 'draft' ? (
+          <section className="portal-notice" role="note" aria-labelledby={`${uid}-note`} data-testid="review-note">
+            <h2 id={`${uid}-note`} style={{ marginTop: 0, fontSize: '1.05rem' }}>{C.reviewNoteTitle}</h2>
+            <p style={{ whiteSpace: 'pre-wrap', margin: '4px 0' }}>{initial.reviewNote}</p>
+            <p className="hint" style={{ margin: 0 }}>{C.reviewNoteHelp}</p>
+          </section>
+        ) : null}
 
         <section className="portal-card" aria-labelledby={`${uid}-fixed`}>
           <h2 id={`${uid}-fixed`} style={{ marginTop: 0 }}>{C.fixedTitle}</h2>
@@ -214,7 +222,14 @@ export default function ProfileEditor({ initial }: { initial: LoadedProfile }) {
           </div>
         </form>
       </div>
-      <PublicPreview preview={preview} />
+      <div className="portal-previews">
+        <PublicPreview preview={preview} />
+        {published ? (
+          <PublicPreview preview={published} heading={C.publishedNowTitle} idSuffix="-published" testId="published-now" help={`${C.publishedNowHelp} ${C.publishedAt} ${new Date(initial.publishedAt ?? 0).toISOString().slice(0, 10)}.`} />
+        ) : (
+          <p className="hint" data-testid="published-none">{C.publishedNowNone}</p>
+        )}
+      </div>
     </div>
   )
 }

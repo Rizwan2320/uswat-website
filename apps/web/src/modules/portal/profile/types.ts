@@ -42,6 +42,12 @@ export type LoadedProfile = {
   status: SubmissionStatus
   /** Epoch ms of the last save or submit; null when there is no draft yet. */
   updatedAt: number | null
+  /** What is published for this person now (the last approved edit), or null if nothing has been approved yet. */
+  published: ProfileEdit | null
+  /** Epoch ms of that approval. */
+  publishedAt: number | null
+  /** The reviewer's note when changes were asked for; shown until the person submits again. */
+  reviewNote: string | null
 }
 
 /**

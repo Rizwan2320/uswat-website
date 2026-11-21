@@ -64,3 +64,9 @@ export function accountFrom(result: GuardResult): { id: string; email: string } 
   if (result.action !== 'render' || !result.strong || !result.userId || !result.email) return null
   return { id: result.userId, email: result.email }
 }
+
+/** Like `accountFrom`, plus whether the second factor was proved recently (needed to decide on someone else's profile). */
+export function reviewerFrom(result: GuardResult): { id: string; fresh: boolean } | null {
+  if (result.action !== 'render' || !result.strong || !result.userId) return null
+  return { id: result.userId, fresh: result.fresh }
+}
