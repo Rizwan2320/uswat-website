@@ -12,6 +12,7 @@ export const Programmes = governedCollection({
   singular: 'Programme',
   plural: 'Programmes',
   useAsTitle: 'name',
+  createAdminOnly: true,
   group: 'Organisation',
   defaultColumns: ['name', 'department', 'campus', 'updatedAt'],
   fields: [

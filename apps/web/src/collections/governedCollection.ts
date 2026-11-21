@@ -2,6 +2,7 @@ import type { CollectionConfig, Field } from 'payload'
 
 import {
   governedCreate,
+  governedCreateAdminOnly,
   governedDelete,
   governedRead,
   governedReadVersions,
@@ -21,6 +22,8 @@ export interface GovernedCollectionOptions {
   contentFields: string[]
   /** Needed when a generated database identifier would exceed 63 characters. */
   dbName?: string
+  /** Only a platform admin may create a record (departments and programmes). */
+  createAdminOnly?: boolean
 }
 
 /** Access, drafts and the governance group, the same for every organisation record. */
@@ -36,7 +39,7 @@ export function governedCollection(o: GovernedCollectionOptions): CollectionConf
         group: o.group,
       },
       access: {
-        create: governedCreate,
+        create: o.createAdminOnly ? governedCreateAdminOnly : governedCreate,
         delete: governedDelete,
         read: governedRead,
         readVersions: governedReadVersions,
