@@ -37,7 +37,11 @@ export function createPgStatusStore(pool: pg.Pool): StatusStore {
            on conflict ("userId") do update set "status" = excluded."status"`,
           [userId, status],
         )
-        if (status === 'suspended' || status === 'left') await client.query(`delete from "session" where "userId" = $1`, [userId])
+        if (status === 'suspended' || status === 'left') {
+          await client.query(`delete from "session" where "userId" = $1`, [userId])
+          // Departure revokes every delegation the person gave or holds, the same moment (section 5.6, FP-50).
+          await client.query(`update "delegation" set "revokedAt" = $2 where ("grantorId" = $1 or "delegateId" = $1) and "revokedAt" is null`, [userId, new Date(now)])
+        }
         await client.query('commit')
         return 'ok'
       } catch (e) {

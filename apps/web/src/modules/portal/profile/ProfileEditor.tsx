@@ -54,7 +54,9 @@ function toEdit(f: Form) {
   }
 }
 
-export default function ProfileEditor({ initial }: { initial: LoadedProfile }) {
+/** `forId`: set when a delegate edits the grantor's draft. Only saving is delegated; submitting and withdrawing stay with the owner. */
+export default function ProfileEditor({ initial, forId }: { initial: LoadedProfile; forId?: string }) {
+  const delegated = forId !== undefined
   const uid = useId()
   const [form, setForm] = useState<Form>(() => toForm(initial))
   const [status, setStatus] = useState(initial.status)
@@ -69,7 +71,7 @@ export default function ProfileEditor({ initial }: { initial: LoadedProfile }) {
 
   function fail(kind: string, errs?: FieldErrors) {
     setErrors(errs ?? {})
-    setMessage({ kind: 'error', text: C.actionErrors[kind] ?? C.actionErrors.generic })
+    setMessage({ kind: 'error', text: delegated && kind === 'session' ? COPY.delegation.ended : C.actionErrors[kind] ?? C.actionErrors.generic })
   }
 
   function run(job: () => Promise<void>) {
@@ -85,7 +87,7 @@ export default function ProfileEditor({ initial }: { initial: LoadedProfile }) {
 
   const save = () =>
     run(async () => {
-      const r = await saveProfile(toEdit(form))
+      const r = await saveProfile(toEdit(form), forId)
       if (!r.ok) return fail(r.error, r.errors)
       setErrors({})
       setStatus('draft')
@@ -212,11 +214,11 @@ export default function ProfileEditor({ initial }: { initial: LoadedProfile }) {
           </fieldset>
           <div className="portal-actions">
             {locked ? (
-              <button type="button" className="portal-btn secondary" onClick={withdraw} disabled={pending}>{C.withdraw}</button>
+              delegated ? null : <button type="button" className="portal-btn secondary" onClick={withdraw} disabled={pending}>{C.withdraw}</button>
             ) : (
               <>
                 <button type="submit" className="portal-btn secondary" disabled={pending}>{pending ? C.saving : C.save}</button>
-                <button type="button" className="portal-btn" onClick={submit} disabled={pending}>{C.submit}</button>
+                {delegated ? null : <button type="button" className="portal-btn" onClick={submit} disabled={pending}>{C.submit}</button>}
               </>
             )}
           </div>
