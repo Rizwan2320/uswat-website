@@ -43,6 +43,9 @@ import { createClaimService } from '@/modules/identity/claimService'
 import { createPgInvitationStore, hashToken, INVITATION_TTL_MS, type InvitationStore } from '@/modules/identity/invitations'
 import { createPgRoleStore } from '@/modules/portal/review/roles'
 import { createPgDelegationStore } from '@/modules/portal/delegation/pgStore'
+import { createPgNotificationStore } from '@/modules/portal/notifications/pgStore'
+import { runDigests } from '@/modules/portal/notifications/service'
+import { PERIOD_MS } from '@/modules/portal/notifications/kinds'
 import { resolveAccount } from '@/modules/portal/delegation/resolve'
 import { createCourseService } from '@/modules/portal/courses/service'
 
@@ -82,7 +85,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue', '0012_claim_activation', '0013_delegation'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue', '0012_claim_activation', '0013_delegation', '0014_notifications'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -2751,6 +2754,394 @@ describe.skipIf(!DB)('delegation (FP-18, FP-50), PostgreSQL', () => {
       await profiles.saveDraft(target!.id, { ...EMPTY_EDIT, bio: { en: 'Written by a delegate', ur: '' } } as ProfileEdit)
       const loaded = await profiles.load({ id: a.id, email: a.email })
       expect(loaded.status).toBe('draft')
+    })
+  })
+})
+
+describe.skipIf(!DB)('notification digest and notice log (FP-43, ABU-03), PostgreSQL', () => {
+  const pool = () => getIdentityPool(DB!)
+  const notes = () => createPgNotificationStore(pool())
+  const NOW = Date.UTC(2026, 10, 21, 9)
+  const H = 3_600_000
+  const DAY = 24 * H
+  let seq = 0
+  const person = async (name = 'Person') => {
+    const id = `ntf${Date.now().toString(36)}${++seq}${Math.random().toString(36).slice(2, 8)}`
+    const email = `${id}@example.invalid`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, name, email])
+    return { id, email, name }
+  }
+  const enqueue = (u: string, kind: string, n = 1, ref: string | null = null, at = NOW) => pool().query(`select identity.enqueue_notification($1,$2,$3,$4,$5)`, [u, kind, n, ref, new Date(at)])
+  const waitingCount = async (u: string) => Number((await pool().query(`select count(*) from "notification" where "userId" = $1 and "digestId" is null`, [u])).rows[0].count)
+  const logRows = async (u: string, cls?: string) => (await pool().query(`select * from "notice_log" where "userId" = $1 ${cls ? `and "class" = '${cls}'` : ''} order by "at"`, [u])).rows
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  describe('the database refuses what the code would never send', () => {
+    it('refuses an unknown kind, a bad count and a reference that is not id-shaped', async () => {
+      const a = await person()
+      await expect(enqueue(a.id, 'marketing')).rejects.toThrow()
+      await expect(enqueue(a.id, 'passkey-added')).rejects.toThrow() // a security kind is never queued
+      await expect(enqueue(a.id, 'works-found', 0)).rejects.toThrow()
+      await expect(enqueue(a.id, 'works-found', 1001)).rejects.toThrow()
+      for (const ref of ['Dr Ayesha Khan', 'a@b.org', "x'; drop", 'x'.repeat(65), '']) await expect(enqueue(a.id, 'works-found', 1, ref), ref).rejects.toThrow()
+      await expect(enqueue(a.id, 'works-found', 3, 'a1b2-c3_D4')).resolves.toBeTruthy()
+    })
+    it('refuses a bad cadence, and a digest row with no cadence or an empty or oversized list', async () => {
+      const a = await person()
+      await expect(pool().query(`insert into "notification_pref" ("userId","cadence") values ($1,'hourly')`, [a.id])).rejects.toThrow()
+      const ins = (cls: string, cad: string | null, lines: string) => pool().query(`insert into "notice_log" ("userId","class","cadence","lines") values ($1,$2,$3,$4::jsonb)`, [a.id, cls, cad, lines])
+      await expect(ins('digest', null, '[{"kind":"works-found","count":1}]')).rejects.toThrow()
+      await expect(ins('security', 'daily', '[{"kind":"passkey-added","count":1}]')).rejects.toThrow()
+      await expect(ins('security', null, '[]')).rejects.toThrow()
+      await expect(ins('security', null, '{}')).rejects.toThrow()
+      await expect(ins('security', null, JSON.stringify(Array.from({ length: 31 }, () => ({ kind: 'passkey-added', count: 1 }))))).rejects.toThrow()
+      await expect(ins('other', null, '[{"kind":"x","count":1}]')).rejects.toThrow()
+      await expect(ins('security', null, '[{"kind":"passkey-added","count":1}]')).resolves.toBeTruthy()
+    })
+    it('queues nothing for someone who does not exist', async () => {
+      await enqueue('no-such-person', 'works-found')
+      expect(Number((await pool().query(`select count(*) from "notification" where "userId" = 'no-such-person'`)).rows[0].count)).toBe(0)
+    })
+  })
+
+  describe('preference', () => {
+    it('is daily until set, then follows the choice, and "off" stops queueing without touching what was already queued', async () => {
+      const a = await person()
+      expect(await notes().getCadence(a.id)).toBe('daily')
+      await enqueue(a.id, 'works-found')
+      await notes().setCadence(a.id, 'off', NOW)
+      expect(await notes().getCadence(a.id)).toBe('off')
+      await enqueue(a.id, 'works-found')
+      expect(await waitingCount(a.id)).toBe(1)
+      await notes().setCadence(a.id, 'weekly', NOW)
+      expect(await notes().getCadence(a.id)).toBe('weekly')
+      await enqueue(a.id, 'works-found')
+      expect(await waitingCount(a.id)).toBe(2)
+      await expect(notes().setCadence(a.id, 'hourly' as never, NOW)).rejects.toThrow()
+    })
+  })
+
+  describe('building a digest', () => {
+    it('writes one counted line per kind, marks the items, and leaves other people alone', async () => {
+      const a = await person(), b = await person()
+      await enqueue(a.id, 'works-found', 3, null, NOW - 2 * H)
+      await enqueue(a.id, 'works-found', 2, null, NOW - H)
+      await enqueue(a.id, 'profile-approved', 1, null, NOW - 3 * H)
+      await enqueue(b.id, 'works-found', 1, null, NOW - H)
+      const r = await notes().buildDigest(a.id, NOW)
+      expect(r).toMatchObject({ built: true })
+      const rows = await logRows(a.id, 'digest')
+      expect(rows).toHaveLength(1)
+      expect(rows[0].cadence).toBe('daily')
+      expect(rows[0].lines.map((l: { kind: string; count: number }) => [l.kind, l.count])).toEqual([['profile-approved', 1], ['works-found', 5]])
+      expect(await waitingCount(a.id)).toBe(0)
+      expect(await waitingCount(b.id)).toBe(1)
+      expect(await logRows(b.id)).toEqual([])
+    })
+    it('makes no digest when nothing waits, and none for someone who turned them off', async () => {
+      const a = await person(), b = await person()
+      expect(await notes().buildDigest(a.id, NOW)).toEqual({ built: false, reason: 'nothing' })
+      await enqueue(b.id, 'works-found', 1, null, NOW - H)
+      await notes().setCadence(b.id, 'off', NOW)
+      expect(await notes().buildDigest(b.id, NOW)).toEqual({ built: false, reason: 'off' })
+      expect(await waitingCount(b.id)).toBe(1)
+      expect(await logRows(b.id)).toEqual([])
+    })
+    it('daily: a second run an hour later makes nothing and keeps the new item waiting; one period later makes the next', async () => {
+      const a = await person()
+      await enqueue(a.id, 'works-found', 1, null, NOW - H)
+      expect(await notes().buildDigest(a.id, NOW)).toMatchObject({ built: true })
+      await enqueue(a.id, 'profile-returned', 1, null, NOW + H)
+      expect(await notes().buildDigest(a.id, NOW + 2 * H)).toEqual({ built: false, reason: 'not-due' })
+      expect(await waitingCount(a.id)).toBe(1)
+      expect(await notes().buildDigest(a.id, NOW + DAY - 1)).toEqual({ built: false, reason: 'not-due' })
+      expect(await notes().buildDigest(a.id, NOW + DAY)).toMatchObject({ built: true })
+      expect(await logRows(a.id, 'digest')).toHaveLength(2)
+      expect(await waitingCount(a.id)).toBe(0)
+      // The second digest lists only what is new: the first digest's item is not counted again.
+      expect((await logRows(a.id, 'digest'))[1].lines.map((l: { kind: string; count: number }) => [l.kind, l.count])).toEqual([['profile-returned', 1]])
+    })
+    it('a build waits for anyone else already building for the same person, and only for that person', async () => {
+      const a = await person(), b = await person()
+      await enqueue(a.id, 'works-found', 1, null, NOW - H)
+      await enqueue(b.id, 'works-found', 1, null, NOW - H)
+      const holder = await pool().connect()
+      try {
+        await holder.query('begin')
+        await holder.query(`select pg_advisory_xact_lock(hashtext($1))`, [`digest:${a.id}`])
+        let done = false
+        const waiting = notes().buildDigest(a.id, NOW).then((r) => { done = true; return r })
+        expect(await notes().buildDigest(b.id, NOW)).toMatchObject({ built: true })
+        await new Promise((r) => setTimeout(r, 300))
+        expect(done).toBe(false)
+        await holder.query('rollback')
+        expect(await waiting).toMatchObject({ built: true })
+      } finally {
+        holder.release()
+      }
+    })
+    it('weekly: nothing at six days, a digest at seven', async () => {
+      const a = await person()
+      await notes().setCadence(a.id, 'weekly', NOW)
+      await enqueue(a.id, 'works-found', 1, null, NOW - H)
+      expect(await notes().buildDigest(a.id, NOW)).toMatchObject({ built: true })
+      await enqueue(a.id, 'works-found', 1, null, NOW + H)
+      expect(await notes().buildDigest(a.id, NOW + 6 * DAY)).toEqual({ built: false, reason: 'not-due' })
+      expect(await notes().buildDigest(a.id, NOW + PERIOD_MS.weekly)).toMatchObject({ built: true })
+      expect((await logRows(a.id, 'digest')).map((r) => r.cadence)).toEqual(['weekly', 'weekly'])
+    })
+    it('an item newer than the run is not swept up', async () => {
+      const a = await person()
+      await enqueue(a.id, 'works-found', 1, null, NOW - H)
+      await enqueue(a.id, 'works-found', 1, null, NOW + H)
+      expect(await notes().buildDigest(a.id, NOW)).toMatchObject({ built: true })
+      expect(await waitingCount(a.id)).toBe(1)
+      expect((await logRows(a.id, 'digest'))[0].lines[0].count).toBe(1)
+    })
+    it('two runs at once make one digest, and every item is listed exactly once', async () => {
+      for (let round = 0; round < 6; round++) {
+        const a = await person()
+        for (let i = 0; i < 5; i++) await enqueue(a.id, 'works-found', 1, null, NOW - H)
+        const runs = await Promise.all([notes().buildDigest(a.id, NOW), notes().buildDigest(a.id, NOW), notes().buildDigest(a.id, NOW)])
+        expect(runs.filter((r) => r.built)).toHaveLength(1)
+        const rows = await logRows(a.id, 'digest')
+        expect(rows).toHaveLength(1)
+        expect(rows[0].lines[0].count).toBe(5)
+        expect(await waitingCount(a.id)).toBe(0)
+      }
+    })
+    it('items that arrive while a run is going are either in this digest or still waiting, never both and never lost', async () => {
+      const a = await person()
+      for (let i = 0; i < 4; i++) await enqueue(a.id, 'works-found', 1, null, NOW - H)
+      const arriving = Promise.all(Array.from({ length: 6 }, (_, i) => enqueue(a.id, 'works-found', 1, null, NOW - H + i)))
+      const run = notes().buildDigest(a.id, NOW)
+      await Promise.all([arriving, run])
+      const listed = (await logRows(a.id, 'digest')).reduce((sum, r) => sum + r.lines.reduce((x: number, l: { count: number }) => x + l.count, 0), 0)
+      expect(listed + (await waitingCount(a.id))).toBe(10)
+    })
+    it('the command builds for everyone due, counts only, and a second run builds none', async () => {
+      const a = await person(), b = await person(), c = await person()
+      await enqueue(a.id, 'works-found', 1, null, NOW - H)
+      await enqueue(b.id, 'profile-approved', 1, null, NOW - H)
+      await notes().setCadence(c.id, 'off', NOW)
+      await pool().query(`insert into "notification" ("userId","kind","at") values ($1,'works-found',$2)`, [c.id, new Date(NOW - H)])
+      const first = await runDigests(notes(), NOW)
+      expect(first.built).toBeGreaterThanOrEqual(2)
+      expect(await logRows(a.id, 'digest')).toHaveLength(1)
+      expect(await logRows(b.id, 'digest')).toHaveLength(1)
+      expect(await logRows(c.id)).toEqual([])
+      const second = await runDigests(notes(), NOW + H)
+      expect(second.built).toBe(0)
+      expect(await logRows(a.id, 'digest')).toHaveLength(1)
+    })
+  })
+
+  describe('the log', () => {
+    it('is append-only: no edit of a row, and deleting a person takes their rows with them', async () => {
+      const a = await person()
+      await pool().query(`select identity.log_security_notice($1,'passkey-added',$2)`, [a.id, new Date(NOW)])
+      for (const sql of [`update "notice_log" set "at" = now() where "userId" = $1`, `update "notice_log" set "lines" = '[{"kind":"x","count":1}]' where "userId" = $1`, `update "notice_log" set "userId" = 'x' where "userId" = $1`, `update "notice_log" set "class" = 'digest' where "userId" = $1`]) await expect(pool().query(sql, [a.id]), sql).rejects.toThrow(/append-only/)
+      await enqueue(a.id, 'works-found')
+      await pool().query(`delete from "user" where "id" = $1`, [a.id])
+      for (const t of ['notice_log', 'notification', 'notification_pref']) expect(Number((await pool().query(`select count(*) from "${t}" where "userId" = $1`, [a.id])).rows[0].count), t).toBe(0)
+    })
+    it('a person reads only their own log and waiting list', async () => {
+      const a = await person(), b = await person()
+      await enqueue(a.id, 'works-found', 2)
+      await pool().query(`select identity.log_security_notice($1,'passkey-added',$2)`, [a.id, new Date(NOW)])
+      expect((await notes().log(b.id, 30))).toEqual([])
+      expect((await notes().waiting(b.id))).toEqual([])
+      expect((await notes().waiting(a.id))).toEqual([{ kind: 'works-found', count: 2 }])
+      expect((await notes().log(a.id, 30)).map((e) => [e.class, e.lines[0]!.kind])).toEqual([['security', 'passkey-added']])
+      expect((await notes().log(a.id, 1000)).length).toBe(1)
+    })
+    it('the purge removes items and log rows older than 90 days and nothing newer', async () => {
+      const a = await person()
+      const old = NOW - 91 * DAY, fresh = NOW - 89 * DAY
+      await enqueue(a.id, 'works-found', 1, null, old)
+      await enqueue(a.id, 'works-found', 1, null, fresh)
+      await pool().query(`insert into "notice_log" ("userId","class","at","lines") values ($1,'security',$2,'[{"kind":"passkey-added","count":1}]'), ($1,'security',$3,'[{"kind":"passkey-added","count":1}]')`, [a.id, new Date(old), new Date(fresh)])
+      const dry = await purgeExpired(pool(), NOW, { dryRun: true })
+      expect(dry.notifications).toBeGreaterThanOrEqual(1)
+      expect(await waitingCount(a.id)).toBe(2)
+      await purgeExpired(pool(), NOW)
+      expect(await waitingCount(a.id)).toBe(1)
+      expect(await logRows(a.id)).toHaveLength(1)
+    })
+  })
+
+  describe('security notices are immediate and do not depend on the preference', () => {
+    it('writes a notice in the same statement as the event for the five events that matter, once each', async () => {
+      const a = await person()
+      await notes().setCadence(a.id, 'off', NOW)
+      const events = createPgEventStore(pool())
+      for (const type of ['passkey-added', 'passkey-removed', 'recovery-codes-issued', 'sign-in-recovery', 'sign-out-everywhere'] as const) await events.record({ userId: a.id, type, outcome: 'success', ipPrefix: null }, NOW)
+      const rows = await logRows(a.id, 'security')
+      expect(rows.map((r) => r.lines[0].kind)).toEqual(['passkey-added', 'passkey-removed', 'recovery-codes-issued', 'sign-in-recovery', 'sign-out-everywhere'])
+      expect(rows.every((r) => r.lines.length === 1 && r.lines[0].count === 1 && r.cadence === null)).toBe(true)
+      expect(await waitingCount(a.id)).toBe(0)
+    })
+    it('writes none for ordinary sign-ins, failed attempts, a failed outcome or "not me"', async () => {
+      const a = await person()
+      const events = createPgEventStore(pool())
+      for (const type of ['sign-in-password', 'sign-in-passkey', 'sign-in-authenticator', 'sign-in-failed', 'not-me'] as const) await events.record({ userId: a.id, type, outcome: type === 'sign-in-failed' ? 'failure' : 'success', ipPrefix: null }, NOW)
+      await events.record({ userId: a.id, type: 'passkey-added', outcome: 'failure', ipPrefix: null }, NOW)
+      expect(await logRows(a.id)).toEqual([])
+      expect(Number((await pool().query(`select count(*) from "security_event" where "userId" = $1`, [a.id])).rows[0].count)).toBeGreaterThanOrEqual(5)
+    })
+    it('a digest never holds a security kind, and a security notice never waits for one', async () => {
+      const a = await person()
+      await events_record(a.id)
+      await enqueue(a.id, 'works-found', 1, null, NOW - H)
+      await notes().buildDigest(a.id, NOW)
+      const digest = (await logRows(a.id, 'digest'))[0]
+      expect(digest.lines.map((l: { kind: string }) => l.kind)).toEqual(['works-found'])
+      expect((await logRows(a.id, 'security'))).toHaveLength(1)
+    })
+    async function events_record(id: string) {
+      await createPgEventStore(pool()).record({ userId: id, type: 'passkey-added', outcome: 'success', ipPrefix: null }, NOW - 2 * H)
+    }
+  })
+
+  describe('delegation producers', () => {
+    it('giving access is an immediate security notice for the grantor and a summary line for the delegate only', async () => {
+      const g = await person(), d = await person()
+      const store = createPgDelegationStore(pool())
+      const grant = await store.create(g.id, { delegateId: d.id, sections: ['courses'], days: 5 }, NOW)
+      expect((await logRows(g.id, 'security')).map((r) => r.lines[0].kind)).toEqual(['delegation-given'])
+      expect(await logRows(d.id)).toEqual([])
+      expect(await notes().waiting(d.id)).toEqual([{ kind: 'delegation-received', count: 1 }])
+      expect(await notes().waiting(g.id)).toEqual([])
+      expect(await store.revoke(g.id, grant.id, NOW + H)).toBe(true)
+      expect(await notes().waiting(d.id)).toEqual([{ kind: 'delegation-received', count: 1 }, { kind: 'delegation-ended', count: 1 }])
+      expect(await store.revoke(g.id, grant.id, NOW + H)).toBe(false)
+      expect(await store.revoke(d.id, grant.id, NOW + H)).toBe(false)
+      expect((await notes().waiting(d.id)).find((w) => w.kind === 'delegation-ended')!.count).toBe(1)
+    })
+    it('an authorised change by a delegate is a summary line for the grantor; viewing, a refusal and the grantor’s own work are not', async () => {
+      const g = await person(), d = await person(), x = await person()
+      const store = createPgDelegationStore(pool())
+      await store.create(g.id, { delegateId: d.id, sections: ['courses'], days: 5 }, NOW)
+      await store.authorise(d.id, g.id, 'courses', 'view', NOW)
+      expect(await notes().waiting(g.id)).toEqual([])
+      await store.authorise(d.id, g.id, 'courses', 'addCourse', NOW)
+      await store.authorise(d.id, g.id, 'courses', 'removeCourse', NOW)
+      await store.authorise(d.id, g.id, 'profile', 'saveProfile', NOW)
+      await store.authorise(x.id, g.id, 'courses', 'addCourse', NOW)
+      expect(await notes().waiting(g.id)).toEqual([{ kind: 'delegate-activity', count: 2 }])
+      expect(await notes().waiting(d.id)).toEqual([{ kind: 'delegation-received', count: 1 }])
+      expect(await notes().waiting(x.id)).toEqual([])
+    })
+    it('a grantor who turned digests off gets no delegate-activity items, but still the immediate security notice', async () => {
+      const g = await person(), d = await person()
+      await notes().setCadence(g.id, 'off', NOW)
+      const store = createPgDelegationStore(pool())
+      await store.create(g.id, { delegateId: d.id, sections: ['courses'], days: 5 }, NOW)
+      await store.authorise(d.id, g.id, 'courses', 'addCourse', NOW)
+      expect(await notes().waiting(g.id)).toEqual([])
+      expect((await logRows(g.id, 'security')).map((r) => r.lines[0].kind)).toEqual(['delegation-given'])
+    })
+  })
+
+  describe('review, submission, activation and publications producers', () => {
+    const profiles = () => createSampleProfileStore(pool())
+    const roles = () => createPgRoleStore(pool())
+    const reviews = () => createPgReviewStore(pool())
+    const dept = () => `Dept ${Math.random().toString(36).slice(2, 8)}`
+    const inDept = async (d: string, reviewer = false) => {
+      const p = await person()
+      await roles().setDepartment(p.email, d)
+      if (reviewer) await roles().grantReviewer(p.email)
+      return p
+    }
+    it('submitting a draft queues one line for each reviewer of the department, not the author, not another department', async () => {
+      const d = dept()
+      const author = await inDept(d, true), r1 = await inDept(d, true), r2 = await inDept(d.toUpperCase(), true), other = await inDept(dept(), true), plain = await inDept(d)
+      expect(await profiles().saveDraft(author.id, { ...EMPTY_EDIT, bio: { en: 'Hi', ur: '' } } as ProfileEdit)).toBe(true)
+      expect(await profiles().submit(author.id)).toBe(true)
+      expect(await notes().waiting(r1.id)).toEqual([{ kind: 'review-waiting', count: 1 }])
+      expect(await notes().waiting(r2.id)).toEqual([{ kind: 'review-waiting', count: 1 }])
+      for (const p of [author, other, plain]) expect(await notes().waiting(p.id), p.email).toEqual([])
+      // Submitting again while already submitted changes nothing and queues nothing more.
+      expect(await profiles().submit(author.id)).toBe(false)
+      expect(await notes().waiting(r1.id)).toEqual([{ kind: 'review-waiting', count: 1 }])
+    })
+    it('a submission by someone with no department notifies nobody, and still succeeds', async () => {
+      const lone = await person()
+      expect(await profiles().saveDraft(lone.id, { ...EMPTY_EDIT } as ProfileEdit)).toBe(true)
+      expect(await profiles().submit(lone.id)).toBe(true)
+    })
+    it('a decision queues one line for the author only, and a refused decision queues nothing', async () => {
+      const d = dept()
+      const author = await inDept(d), reviewer = await inDept(d, true), outsider = await inDept(dept(), true)
+      await profiles().saveDraft(author.id, { ...EMPTY_EDIT, bio: { en: 'Hi', ur: '' } } as ProfileEdit)
+      await profiles().submit(author.id)
+      const rev = (await pool().query<{ rev: number }>(`select "rev" from "profile_draft" where "userId" = $1`, [author.id])).rows[0]!.rev
+      expect(await reviews().decide(outsider.id, { subjectId: author.id, rev, decision: 'approved', note: null }, NOW)).not.toBe('ok')
+      expect(await notes().waiting(author.id)).toEqual([])
+      expect(await reviews().decide(reviewer.id, { subjectId: author.id, rev, decision: 'changes-requested', note: 'Please add a photo' }, NOW)).toBe('ok')
+      expect(await notes().waiting(author.id)).toEqual([{ kind: 'profile-returned', count: 1 }])
+      expect(await notes().waiting(reviewer.id)).toEqual([{ kind: 'review-waiting', count: 1 }]) // the decision is the author's news, not the reviewer's
+      await profiles().submit(author.id)
+      const rev2 = (await pool().query<{ rev: number }>(`select "rev" from "profile_draft" where "userId" = $1`, [author.id])).rows[0]!.rev
+      expect(await reviews().decide(reviewer.id, { subjectId: author.id, rev: rev2, decision: 'approved', note: null }, NOW + H)).toBe('ok')
+      expect((await notes().waiting(author.id)).map((w) => w.kind)).toEqual(['profile-approved', 'profile-returned'])
+    })
+    it('the reviewer’s note never reaches the queue or the log', async () => {
+      const d = dept()
+      const author = await inDept(d), reviewer = await inDept(d, true)
+      await profiles().saveDraft(author.id, { ...EMPTY_EDIT, bio: { en: 'My secret biography text', ur: '' } } as ProfileEdit)
+      await profiles().submit(author.id)
+      const rev = (await pool().query<{ rev: number }>(`select "rev" from "profile_draft" where "userId" = $1`, [author.id])).rows[0]!.rev
+      await reviews().decide(reviewer.id, { subjectId: author.id, rev, decision: 'changes-requested', note: 'UNIQUE-NOTE-TEXT-9731' }, NOW)
+      await notes().buildDigest(author.id, NOW + H)
+      const dump = JSON.stringify([(await pool().query(`select * from "notification" where "userId" = $1`, [author.id])).rows, await logRows(author.id)])
+      for (const secret of ['UNIQUE-NOTE-TEXT-9731', 'secret biography', author.email, author.name, reviewer.email]) expect(dump, secret).not.toContain(secret)
+    })
+    it('activating a pending account queues one line for that person; declining queues none', async () => {
+      const d = dept()
+      const head = await inDept(d)
+      await pool().query(`insert into "head_role" ("userId") values ($1)`, [head.id])
+      const mk = async (status: 'activated' | 'declined') => {
+        const p = await inDept(d)
+        await pool().query(`insert into "account_status" ("userId","status") values ($1,'pending-activation')`, [p.id])
+        await pool().query(`insert into "twoFactor" ("id","secret","backupCodes","userId","verified") values ($1,'x','x',$2,true)`, [`tf-${p.id}`, p.id])
+        expect(await createPgActivationStore(pool()).decide(head.id, { subjectId: p.id, decision: status }, NOW)).toBe('ok')
+        return p
+      }
+      const yes = await mk('activated'), no = await mk('declined')
+      expect(await notes().waiting(yes.id)).toEqual([{ kind: 'account-confirmed', count: 1 }])
+      expect(await notes().waiting(no.id)).toEqual([])
+      expect(await notes().waiting(head.id)).toEqual([])
+    })
+    it('finding new works queues one line with the count, nothing for none, and a repeat adds nothing', async () => {
+      const a = await person()
+      const pubs = createPgPublicationStore(pool())
+      const w = (n: number) => ({ title: `Sample work number ${n}`, year: 2024, venue: 'Sample Journal', authors: ['A. Sample'], doi: null })
+      expect(await pubs.addCandidates(a.id, [w(1), w(2), w(3)] as never, true)).toMatchObject({ added: 3 })
+      expect(await notes().waiting(a.id)).toEqual([{ kind: 'works-found', count: 3 }])
+      expect(await pubs.addCandidates(a.id, [w(1), w(2), w(3)] as never, true)).toMatchObject({ added: 0 })
+      expect(await pubs.addCandidates(a.id, [], true)).toMatchObject({ added: 0 })
+      expect(await notes().waiting(a.id)).toEqual([{ kind: 'works-found', count: 3 }])
+    })
+    it('an action that rolls back queues nothing', async () => {
+      const a = await person()
+      const client = await pool().connect()
+      try {
+        await client.query('begin')
+        await client.query(`select identity.enqueue_notification($1,'works-found',1,null,now())`, [a.id])
+        await client.query('rollback')
+      } finally {
+        client.release()
+      }
+      expect(await waitingCount(a.id)).toBe(0)
     })
   })
 })

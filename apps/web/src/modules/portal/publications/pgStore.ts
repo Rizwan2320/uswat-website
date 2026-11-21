@@ -30,6 +30,7 @@ export function createPgPublicationStore(pool: pg.Pool): PublicationStore {
           )
           added += r.rowCount ?? 0
         }
+        if (added > 0) await client.query(`select identity.enqueue_notification($1, 'works-found', $2, null, now())`, [accountId, Math.min(added, 1000)])
         await client.query('commit')
       } catch (e) {
         await client.query('rollback')

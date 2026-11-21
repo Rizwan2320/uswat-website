@@ -31,6 +31,9 @@ export const FAILURE_COALESCE_MS = 10 * 60_000
 /** Events older than this are removed by the purge. A demo choice, not a policy: retention is a data-protection decision for the university. */
 export const EVENT_RETENTION_MS = 180 * 24 * 60 * 60_000
 
+/** Events that also write an immediate notice to the person (FP-43, ABU-03). The names match the notice kinds in portal/notifications/kinds.ts; a test keeps them in step. */
+export const NOTICE_EVENT_TYPES: readonly EventType[] = ['passkey-added', 'passkey-removed', 'recovery-codes-issued', 'sign-in-recovery', 'sign-out-everywhere']
+
 export type NewEvent = { userId: string; type: EventType; outcome: Outcome; ipPrefix: string | null }
 export type SecurityEvent = { id: string; type: EventType; outcome: Outcome; ipPrefix: string | null; at: Date }
 
@@ -51,6 +54,15 @@ export function createPgEventStore(pool: pg.Pool): EventStore {
            select $1,$2,$3,$4,$5
            where not exists (select 1 from "security_event" where "userId" = $1 and "type" = 'sign-in-failed' and "at" > $6)`,
           [e.userId, e.type, e.outcome, e.ipPrefix, at, new Date(now - FAILURE_COALESCE_MS)],
+        )
+        return
+      }
+      if (e.outcome === 'success' && NOTICE_EVENT_TYPES.includes(e.type)) {
+        // The event and its notice are one statement: there is no event without its notice.
+        await pool.query(
+          `with ev as (insert into "security_event" ("userId","type","outcome","ipPrefix","at") values ($1,$2,$3,$4,$5) returning "userId")
+           select identity.log_security_notice(ev."userId", $2, $5) from ev`,
+          [e.userId, e.type, e.outcome, e.ipPrefix, at],
         )
         return
       }

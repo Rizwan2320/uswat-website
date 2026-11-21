@@ -1,0 +1,115 @@
+{
+  "at": "2026-11-21T15:55:41.431Z",
+  "results": [
+    {
+      "id": "N1 right after enrolment, Ayesha’s log already holds the two security notices (passkey added, recovery codes), marked \"sent at once\", with no waiting",
+      "ok": true,
+      "note": "Security notice, sent at once 21 Nov 2026, 15:55 UTC New recovery codes were issued. Security notice, sent at once 21 No"
+    },
+    {
+      "id": "N2 the page says plainly that no email is sent and the log is what would be sent, shows the Sample badge, and says security notices cannot be turned off",
+      "ok": true,
+      "note": "This is a demonstration. No email is sent. The list below is the log of what wou"
+    },
+    {
+      "id": "N3 Ayesha starts on \"once a day\", changes to weekly with the keyboard, saves, and the choice is still there after a reload",
+      "ok": true,
+      "note": "daily → weekly"
+    },
+    {
+      "id": "N4 giving access shows up in Ayesha’s log at once as a security notice, not in her waiting list",
+      "ok": true,
+      "note": "security notice"
+    },
+    {
+      "id": "N5 Bilal has one waiting line that a colleague gave him access, and no notice in his log for it",
+      "ok": true,
+      "note": "A colleague gave you access to part of their page (once)."
+    },
+    {
+      "id": "N6 Bilal only looking at Ayesha’s page adds nothing for her; his change adds one line (\"1 change was made on your behalf by a colleague\"), and the line names nobody",
+      "ok": true,
+      "note": "1 change was made on your behalf by a colleague."
+    },
+    {
+      "id": "N7 when Ayesha sends her profile for review, Bilal (the department’s reviewer) has one waiting line, and Ayesha and Carol have none for it",
+      "ok": true,
+      "note": "A colleague gave you access to part of their page (once). 1 profile is waiting for your review."
+    },
+    {
+      "id": "N8 when Bilal approves, Ayesha has a waiting line \"approved\", and Bilal has none for his own decision",
+      "ok": true,
+      "note": "Your profile changes were approved (once). 1 change was made on your behalf by a colleague."
+    },
+    {
+      "id": "N9 the dry run counts the people with items waiting and writes nothing",
+      "ok": true,
+      "note": "people with items waiting: {\"people\":2}"
+    },
+    {
+      "id": "N10 the command refuses any other argument",
+      "ok": true,
+      "note": "usage: PORTAL_DATABASE_URL=... identity:digest [--dry-run]"
+    },
+    {
+      "id": "N11 the real run builds one digest for each person with items waiting, and prints counts only",
+      "ok": true,
+      "note": "digests: {\"people\":2,\"built\":2,\"skipped\":0}"
+    },
+    {
+      "id": "N12 Ayesha’s log shows one weekly summary with both lines (the change on her behalf, the approval), her waiting list is empty, and the security notices are still there",
+      "ok": true,
+      "note": "Summary (weekly) 21 Nov 2026, 15:55 UTC Your profile changes were approved (once). 1 change was made on your behalf by a colleague."
+    },
+    {
+      "id": "N13 Bilal’s summary is a daily one with his two lines (access given to him, a profile waiting), as one entry, not one message each",
+      "ok": true,
+      "note": "Summary (daily) 21 Nov 2026, 15:55 UTC A colleague gave you access to part of their page (once). 1 profile is waiting for your review."
+    },
+    {
+      "id": "N14 a second run straight away builds nothing, and nobody has more than one summary",
+      "ok": true,
+      "note": "digests: {\"people\":0,\"built\":0,\"skipped\":0}"
+    },
+    {
+      "id": "N15 with the summary turned off, a colleague’s change queues nothing for Ayesha, but a new delegation still appears in her log at once",
+      "ok": true,
+      "note": "waiting 0"
+    },
+    {
+      "id": "N16 Ayesha’s notices page names nobody else and holds no email, note or profile text",
+      "ok": true,
+      "note": "clean"
+    },
+    {
+      "id": "N17 the stored queue and log hold no name, email or profile text",
+      "ok": true,
+      "note": "4561 characters checked"
+    },
+    {
+      "id": "N18 Carol, who did nothing, sees only her own two enrolment notices and nothing waiting",
+      "ok": true,
+      "note": "own notices only"
+    },
+    {
+      "id": "N19 without signing in the page is not shown: the visitor lands on the sign-in page",
+      "ok": true,
+      "note": "/portal/sign-in"
+    },
+    {
+      "id": "N20 the home page and the menu both lead to the notices page",
+      "ok": true,
+      "note": "/portal/notifications"
+    },
+    {
+      "id": "N21 at 390 px the page does not scroll sideways and the radio buttons are at least 24 px",
+      "ok": true,
+      "note": "scroll 390,390, radios 24x24 24x24 24x24"
+    },
+    {
+      "id": "N22 every choice has a label and the group has a legend",
+      "ok": true,
+      "note": "Once a day | Once a week | Not at all (security notices still come at once)"
+    }
+  ]
+}

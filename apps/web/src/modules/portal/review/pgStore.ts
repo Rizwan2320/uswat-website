@@ -121,6 +121,8 @@ export function createPgReviewStore(pool: pg.Pool, publish: Publisher = samplePu
           `insert into "profile_review" ("userId", "reviewerId", "decision", "note", "before", "after", "at") values ($1, $2, $3, $4, $5, $6, $7)`,
           [input.subjectId, reviewerId, input.decision, input.decision === 'changes-requested' ? input.note : null, before === null ? null : JSON.stringify(pickEditable(before)), JSON.stringify(edit), at],
         )
+        // One summary line for the person, queued in this transaction (FP-43): it exists only if the decision does.
+        await client.query(`select identity.enqueue_notification($1, $2, 1, null, $3)`, [input.subjectId, input.decision === 'approved' ? 'profile-approved' : 'profile-returned', at])
         await client.query('commit')
         return 'ok'
       } catch (e) {
