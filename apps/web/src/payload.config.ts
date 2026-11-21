@@ -27,6 +27,7 @@ import { Tenders } from './collections/Tenders'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
+import { HomeContent } from './globals/HomeContent'
 import { Header } from './Header/config'
 import { plugins } from './plugins'
 import { canRunJobs } from './governance/jobAccess'
@@ -145,7 +146,7 @@ const built = buildConfig({
     AuditLogs,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer],
+  globals: [Header, Footer, HomeContent],
   plugins: [...plugins, governancePlugin],
   // Write paths go through REST and the admin only, where draft versus unpublish is visible to
   // the policy hook (docs/adr/0010). Nothing in the site uses GraphQL.

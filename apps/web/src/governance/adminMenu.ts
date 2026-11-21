@@ -15,3 +15,13 @@ export const hiddenFromEditors = ({ user }: { user?: unknown }): boolean => {
   const actor = actorFromUser(user as { id: string | number; role?: unknown })
   return actor.kind !== 'user' || !SETTINGS_ROLES.includes(actor.role)
 }
+
+/**
+ * Areas editors and approvers use but contributors have no part in (slice 3z: the home page content).
+ * Auditors keep it visible, read only.
+ */
+export const hiddenFromContributors = ({ user }: { user?: unknown }): boolean => {
+  if (!user) return true
+  const actor = actorFromUser(user as { id: string | number; role?: unknown })
+  return actor.kind !== 'user' || actor.role === 'contributor'
+}
