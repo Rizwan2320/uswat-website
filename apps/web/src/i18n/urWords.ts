@@ -253,16 +253,16 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
 
   // --- Users and roles
   Role: 'کردار',
-  'The first account ever created becomes platform admin.':
-    'سب سے پہلا بننے والا اکاؤنٹ خود بخود پلیٹ فارم ایڈمن بن جاتا ہے۔',
+  'The first account ever created becomes platform admin. A head of an office may set Editor or Contributor for their own team.':
+    'سب سے پہلا بننے والا اکاؤنٹ خود بخود پلیٹ فارم ایڈمن بن جاتا ہے۔ دفتر کا سربراہ اپنی ٹیم کے لیے ایڈیٹر یا کنٹری بیوٹر مقرر کر سکتا ہے۔',
   'Platform Admin (IT Directorate)': 'پلیٹ فارم ایڈمن (آئی ٹی ڈائریکٹوریٹ)',
   'Site Manager (central web office)': 'سائٹ مینیجر (مرکزی ویب دفتر)',
   'Approver (head of an office)': 'منظور کنندہ (دفتر کا سربراہ)',
   'Editor (department staff)': 'مدیر (شعبے کا عملہ)',
   'Contributor (any staff, drafts only)': 'معاون (کوئی بھی عملہ، صرف مسودے)',
   'Auditor (read only)': 'آڈیٹر (صرف پڑھنے کے لیے)',
-  "Offices this person works for (matched against a record's owner office). Stored lower-case.":
-    'وہ دفاتر جن کے لیے یہ شخص کام کرتا ہے (ریکارڈ کے ذمہ دار دفتر سے ملائے جاتے ہیں)۔ چھوٹے حروف میں محفوظ ہوتے ہیں۔',
+  "Offices this person works for (matched against a record's owner office). Stored lower-case. A head of an office can add or take away only their own offices.":
+    'وہ دفاتر جن کے لیے یہ شخص کام کرتا ہے (ریکارڈ کے ذمہ دار دفتر سے ملائے جاتے ہیں)۔ چھوٹے حروف میں محفوظ ہوتے ہیں۔ دفتر کا سربراہ صرف اپنے دفاتر شامل یا ختم کر سکتا ہے۔',
 
   // --- Organisation, academics, people, directory
   'A landscape photograph at least 1600 pixels wide and under 4 MB. It needs alt text and a recorded rights status in the Media library before you can publish.':

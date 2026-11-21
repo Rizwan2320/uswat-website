@@ -761,11 +761,11 @@ export interface User {
   id: number;
   name?: string | null;
   /**
-   * The first account ever created becomes platform admin.
+   * The first account ever created becomes platform admin. A head of an office may set Editor or Contributor for their own team.
    */
   role?: ('platformAdmin' | 'siteManager' | 'approver' | 'editor' | 'contributor' | 'auditor') | null;
   /**
-   * Offices this person works for (matched against a record's owner office). Stored lower-case.
+   * Offices this person works for (matched against a record's owner office). Stored lower-case. A head of an office can add or take away only their own offices.
    */
   offices?: string[] | null;
   updatedAt: string;
