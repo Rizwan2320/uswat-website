@@ -29,12 +29,15 @@ beforeAll(async () => {
 
 describe('Sample article pack', () => {
   it('creates every state on the first run and nothing on the second', async () => {
-    const first = await applyArticleSeeds(payload as unknown as Cms, actor)
+    // One fixed clock for both runs: the dates in the pack are relative to it, and on a slow runner the first run
+    // takes minutes, so a second `Date.now()` made some rows look changed and rewrote them (the CI flake).
+    const now = Date.now()
+    const first = await applyArticleSeeds(payload as unknown as Cms, actor, now)
     const expectedPublished = seeds.filter((s) => s.state === 'published').length + tags.length + meritLists.filter((m) => m.state === 'published').length
     // A database that already holds the pack (an earlier run) makes the first run "unchanged"; both cases are right.
     expect(first.published + first.unchanged).toBeGreaterThanOrEqual(expectedPublished)
     const versionsBefore = await Promise.all(ARTICLE_COLLECTIONS.map(async (c) => (await payload.countVersions({ collection: c })).totalDocs))
-    const second = await applyArticleSeeds(payload as unknown as Cms, actor)
+    const second = await applyArticleSeeds(payload as unknown as Cms, actor, now)
     expect(second).toMatchObject({ created: 0, published: 0, inReview: 0, drafts: 0 })
     const versionsAfter = await Promise.all(ARTICLE_COLLECTIONS.map(async (c) => (await payload.countVersions({ collection: c })).totalDocs))
     expect(versionsAfter).toEqual(versionsBefore)
