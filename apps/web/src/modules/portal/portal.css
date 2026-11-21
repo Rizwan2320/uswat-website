@@ -107,6 +107,14 @@ a.portal-btn { display: inline-flex; align-items: center; box-sizing: border-box
 .cv-trust { font-size: 0.85rem; font-style: italic; margin: 6px 0 0; }
 .cv-cover { background: var(--ivory-deep); border-radius: 10px; padding: 4px 14px; margin: 14px 0; font-size: 0.95rem; }
 .cv-pre { white-space: pre-wrap; }
+/* Cards for lists whose rows carry long names, addresses and buttons (FP-17): they wrap instead of forcing a sideways scroll. */
+.portal-rows { list-style: none; padding: 0; margin: 16px 0; display: grid; gap: 12px; }
+.portal-rows li { border: 1px solid var(--ivory-deep); border-radius: 8px; padding: 12px 14px; background: #fff; overflow-wrap: anywhere; }
+.portal-row-name { margin: 0 0 6px; font-family: var(--stack-nav); font-weight: 600; color: var(--forest); }
+.portal-row-meta { display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; margin: 0 0 10px; font-size: 0.95rem; }
+.portal-row-meta dt { color: var(--forest); }
+.portal-row-meta dd { margin: 0; }
+@media (max-width: 520px) { .portal-row-meta { grid-template-columns: 1fr; } .portal-row-meta dd { margin-bottom: 4px; } }
 /* Reviewer queue (FP-16) */
 .portal-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .portal-compare th[scope="row"] { width: 22%; }

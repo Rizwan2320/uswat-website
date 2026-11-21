@@ -273,6 +273,9 @@ describe('claim page and account status (FP-17)', () => {
     expect(d('/portal-api/auth/get-session', 'pending-activation')).toEqual({ allow: true })
     expect(d('/portal-api/auth/sign-out', 'pending-activation')).toEqual({ allow: true })
     expect(d('/portal/enrol', 'pending-activation')).toEqual({ allow: true })
+    // The last step of enrolment: the first recovery codes. Nothing else of the library's portal endpoints.
+    expect(d('/portal-api/auth/recovery/issue', 'pending-activation')).toEqual({ allow: true })
+    for (const other of ['/portal-api/auth/recovery/redeem', '/portal-api/auth/passkey/delete-passkey', '/portal-api/auth/two-factor/disable', '/portal-api/auth/security/events']) expect(d(other, 'pending-activation'), other).toMatchObject({ allow: false })
   })
   it('active, and an absent status, change nothing; unknown closes the portal; suspended and left are signed out', () => {
     const d = (accountStatus?: Parameters<typeof decide>[0]['accountStatus']) => decide({ ...base, pathname: '/portal/profile', accountStatus })

@@ -32,21 +32,18 @@ export default async function ActivatePage({ searchParams }: { searchParams: Pro
       {r.items.length === 0 ? (
         <p data-testid="activate-empty">{C.empty}</p>
       ) : (
-        <div className="portal-table-wrap">
-          <table className="portal-table" data-testid="pending-list">
-            <thead><tr><th scope="col">{C.colPerson}</th><th scope="col">{C.colEmail}</th><th scope="col">{C.colWhen}</th><th scope="col"><span className="portal-sr-only">Decision</span></th></tr></thead>
-            <tbody>
-              {r.items.map((i) => (
-                <tr key={i.subjectId}>
-                  <th scope="row">{i.name}</th>
-                  <td>{i.email}</td>
-                  <td><time dateTime={new Date(i.claimedAt).toISOString()}>{when.format(new Date(i.claimedAt))} UTC</time></td>
-                  <td><ActivateButtons subjectId={i.subjectId} name={i.name} fresh={fresh} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ul className="portal-rows" data-testid="pending-list">
+          {r.items.map((i) => (
+            <li key={i.subjectId}>
+              <p className="portal-row-name">{i.name}</p>
+              <dl className="portal-row-meta">
+                <dt>{C.colEmail}</dt><dd>{i.email}</dd>
+                <dt>{C.colWhen}</dt><dd><time dateTime={new Date(i.claimedAt).toISOString()}>{when.format(new Date(i.claimedAt))} UTC</time></dd>
+              </dl>
+              <ActivateButtons subjectId={i.subjectId} name={i.name} fresh={fresh} />
+            </li>
+          ))}
+        </ul>
       )}
     </Shell>
   )
