@@ -40,7 +40,7 @@ export async function guardPage(deps: GuardDeps, headers: Headers, pathname: str
 
   const d = decide(
     state.kind === 'active'
-      ? { hasSession: true, sessionStrong: state.sessionStrong, factors: state.factors, pathname }
+      ? { hasSession: true, sessionStrong: state.sessionStrong, factors: state.factors, pathname, accountStatus: state.accountStatus }
       : { hasSession: false, sessionStrong: false, factors: null, pathname },
   )
   if (!d.allow) {

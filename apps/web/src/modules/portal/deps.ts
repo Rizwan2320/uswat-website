@@ -9,6 +9,7 @@ import { readPortalConfig } from '../identity/config'
 import { getIdentityPool } from '../identity/db'
 import { loadFactors } from '../identity/factors'
 import type { AuthLike, HandlerDeps } from '../identity/handlers'
+import { createPgStatusStore } from '../identity/accountStatus'
 import { createPgSharedStore } from '../identity/sharedStore'
 import { createPgSessionStore } from '../identity/sessionStore'
 import { ipPrefix } from '../identity/clientAddress'
@@ -35,6 +36,7 @@ const throttle = () => createSignInThrottle({ store: createPgThrottleStore(pool(
 export const portalDeps: Omit<HandlerDeps, 'env'> = {
   getAuth,
   loadFactors: (userId) => loadFactors(pool(), userId),
+  accountStatus: (userId) => createPgStatusStore(pool()).get(userId),
   isStrongSession: (sessionId) => createPgAssuranceStore(pool()).isStrong(sessionId),
   lastVerifiedAt: (sessionId) => createPgAssuranceStore(pool()).lastVerifiedAt(sessionId),
   isSharedSession: (sessionId) => createPgSharedStore(pool()).isShared(sessionId),

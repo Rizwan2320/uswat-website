@@ -7,6 +7,7 @@
 import { clientAddress as addressOf } from './clientAddress'
 import { readPortalConfig } from './config'
 import { AUTH_BASE, decide, classifyPath, type FactorState } from './gate'
+import type { AccountStatus } from './accountStatus'
 import { readSessionState, type SessionLookup } from './sessionState'
 import type { SignInThrottle } from './signInThrottle'
 
@@ -23,6 +24,8 @@ export type HandlerDeps = {
   loadFactors: (userId: string) => Promise<FactorState>
   /** Whether this session was made with a second factor. Throwing counts as not strong. */
   isStrongSession: (sessionId: string) => Promise<boolean>
+  /** The account's state (pending, active, suspended, left). Required: a caller that forgets it must not let such an account in. */
+  accountStatus: (userId: string) => Promise<AccountStatus>
   /** Epoch ms of this session's last second-factor proof (step-up). Absent or throwing means not fresh. */
   lastVerifiedAt?: (sessionId: string) => Promise<number | null>
   /** Whether the session was made with "shared computer". Absent means not shared; throwing means shared. */
@@ -103,7 +106,7 @@ export function createAuthHandlers(deps: HandlerDeps) {
 
     const d = decide(
       state.kind === 'active'
-        ? { hasSession: true, sessionStrong: state.sessionStrong, factors: state.factors, pathname, verifiedAt: state.verifiedAt, now }
+        ? { hasSession: true, sessionStrong: state.sessionStrong, factors: state.factors, pathname, verifiedAt: state.verifiedAt, now, accountStatus: state.accountStatus }
         : { hasSession: false, sessionStrong: false, factors: null, pathname },
     )
     if (!d.allow) return refusal(d.status, d.status === 404 ? 'not found' : d.reason, d.redirectTo)

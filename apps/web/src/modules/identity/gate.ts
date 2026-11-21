@@ -120,6 +120,8 @@ export function isFresh(verifiedAt: number | null | undefined, now: number): boo
   return age >= -60_000 && age <= STEP_UP_WINDOW_MS
 }
 
+export const PENDING_PATH = `${PORTAL_BASE}/pending`
+
 export type GateInput = {
   hasSession: boolean
   /**
@@ -136,14 +138,29 @@ export type GateInput = {
   verifiedAt?: number | null
   /** Epoch ms now. Absent is treated as unknown, so a caller that forgets it is refused, never allowed. */
   now?: number
+  /**
+   * The account's state. 'pending-activation' reaches only the waiting page (and enrolment and sign-out, which are other classes);
+   * 'unknown' means it could not be read and closes the portal. Absent is treated as active, so every real caller passes it
+   * (SessionDeps requires it).
+   */
+  accountStatus?: 'pending-activation' | 'active' | 'suspended' | 'left' | 'unknown'
 }
 
 export type GateDecision =
   | { allow: true }
   | { allow: false; status: 401 | 403 | 404; redirectTo?: string; reason: string }
 
-export function decide({ hasSession, sessionStrong, factors, pathname, verifiedAt, now }: GateInput): GateDecision {
+export function decide({ hasSession, sessionStrong, factors, pathname, verifiedAt, now, accountStatus }: GateInput): GateDecision {
   const decision = decideBase({ hasSession, sessionStrong, factors, pathname })
+  if (decision.allow && hasSession && classifyPath(pathname) === 'portal' && accountStatus !== undefined && accountStatus !== 'active') {
+    if (accountStatus === 'pending-activation') {
+      if (pathname !== PENDING_PATH) return { allow: false, status: 403, redirectTo: PENDING_PATH, reason: 'account not active' }
+    } else if (accountStatus === 'unknown') {
+      return { allow: false, status: 403, reason: 'account state unavailable' }
+    } else {
+      return { allow: false, status: 401, redirectTo: `${PORTAL_BASE}/sign-in`, reason: 'no session' }
+    }
+  }
   if (!decision.allow || !needsStepUp(pathname)) return decision
   // Only an account that already has a second factor is asked to prove it again.
   if (factors === null || !hasSecondFactor(factors)) return decision

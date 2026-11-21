@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import type { AccountStatus } from '@/modules/identity/accountStatus'
 import { AUTH_BASE, type FactorState } from '@/modules/identity/gate'
 import { createAuthHandlers, type AuthLike } from '@/modules/identity/handlers'
 import { createMemoryThrottleStore, createSignInThrottle } from '@/modules/identity/signInThrottle'
@@ -13,7 +14,7 @@ const env = {
 const noFactor: FactorState = { passkeys: 0, totpVerified: false, recoveryCodesRemaining: 0 }
 const withPasskey: FactorState = { passkeys: 1, totpVerified: false, recoveryCodesRemaining: 10 }
 
-function setup(opts: { env?: Record<string, string | undefined>; session?: boolean; factors?: FactorState | 'throw'; strong?: boolean | 'throw'; createdMsAgo?: number; updatedMsAgo?: number } = {}) {
+function setup(opts: { env?: Record<string, string | undefined>; session?: boolean; factors?: FactorState | 'throw'; strong?: boolean | 'throw'; createdMsAgo?: number; updatedMsAgo?: number; status?: AccountStatus | 'throw' } = {}) {
   const libHandler = vi.fn(async (_req: Request) => new Response('library', { status: 200 }))
   const getSession = vi.fn(async () => (opts.session ? { user: { id: 'u1' }, session: { id: 's1', createdAt: new Date(Date.now() - (opts.createdMsAgo ?? 60_000)), updatedAt: new Date(Date.now() - (opts.updatedMsAgo ?? 1_000)) } } : null))
   const auth: AuthLike = { handler: libHandler, api: { getSession } }
@@ -30,7 +31,11 @@ function setup(opts: { env?: Record<string, string | undefined>; session?: boole
   const touchSession = vi.fn(async () => {})
   const store = createMemoryThrottleStore()
   const signInThrottle = createSignInThrottle({ store })
-  const h = createAuthHandlers({ env: opts.env ?? env, getAuth, loadFactors, isStrongSession, endSession, touchSession, signInThrottle })
+  const accountStatus = vi.fn(async () => {
+    if (opts.status === 'throw') throw new Error('db down')
+    return (opts.status ?? 'active') as AccountStatus
+  })
+  const h = createAuthHandlers({ env: opts.env ?? env, getAuth, loadFactors, isStrongSession, accountStatus, endSession, touchSession, signInThrottle })
   return { h, libHandler, getSession, getAuth, loadFactors, isStrongSession, endSession, touchSession, signInThrottle, store }
 }
 const req = (path: string, method = 'GET') => new Request(`https://portal.uswat.edu.pk${path}`, { method })
@@ -337,5 +342,35 @@ describe('portal auth route handlers', () => {
     expect((await s.h.POST(recover('a@example.test'))).status).toBe(200)
     s.libHandler.mockImplementation(async () => new Response('{}', { status: 401 }))
     for (let i = 0; i < 3; i++) expect((await s.h.POST(recover('a@example.test'))).status).toBe(401)
+  })
+})
+
+describe('account status on the API (FP-17)', () => {
+  const strong = { session: true, strong: true, factors: { passkeys: 1, totpVerified: false, recoveryCodesRemaining: 0 } as FactorState }
+  it('a pending account is refused on a portal endpoint with a pointer to the waiting page, and the library is not reached', async () => {
+    const s = setup({ ...strong, status: 'pending-activation' })
+    const res = await s.h.GET(req(`${AUTH_BASE}/passkey/list-user-passkeys`))
+    expect(res.status).toBe(403)
+    expect(await res.json()).toMatchObject({ error: 'account not active', redirectTo: '/portal/pending' })
+    expect(s.libHandler).not.toHaveBeenCalled()
+  })
+  it('a pending account may still read its session and sign out', async () => {
+    const s = setup({ ...strong, status: 'pending-activation' })
+    expect((await s.h.GET(req(`${AUTH_BASE}/get-session`))).status).toBe(200)
+    expect((await s.h.POST(req(`${AUTH_BASE}/sign-out`, 'POST'))).status).toBe(200)
+  })
+  it('a suspended or left account is refused as signed out and its session ends', async () => {
+    for (const status of ['suspended', 'left'] as const) {
+      const s = setup({ ...strong, status })
+      const res = await s.h.GET(req(`${AUTH_BASE}/passkey/list-user-passkeys`))
+      expect(res.status, status).toBe(401)
+      expect(s.endSession).toHaveBeenCalledWith('s1')
+      expect(s.libHandler).not.toHaveBeenCalled()
+    }
+  })
+  it('an unreadable status refuses the request', async () => {
+    const s = setup({ ...strong, status: 'throw' })
+    expect((await s.h.GET(req(`${AUTH_BASE}/passkey/list-user-passkeys`))).status).toBe(403)
+    expect(s.libHandler).not.toHaveBeenCalled()
   })
 })
