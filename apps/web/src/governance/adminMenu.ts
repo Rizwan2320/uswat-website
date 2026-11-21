@@ -17,6 +17,16 @@ export const hiddenFromEditors = ({ user }: { user?: unknown }): boolean => {
 }
 
 /**
+ * Areas editors and approvers use but contributors have no part in (slice 3z: the home page content).
+ * Auditors keep it visible, read only.
+ */
+export const hiddenFromContributors = ({ user }: { user?: unknown }): boolean => {
+  if (!user) return true
+  const actor = actorFromUser(user as { id: string | number; role?: unknown })
+  return actor.kind !== 'user' || actor.role === 'contributor'
+}
+
+/**
  * Users is the one settings area a head of an office also sees (slice 3hod): scoped to their own team
  * by the collection's access rule, so the screen is theirs, not the whole staff directory.
  */
