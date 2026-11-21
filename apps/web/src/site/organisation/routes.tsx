@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 
 import RichDepartmentPage from '../academics/RichDepartmentPage'
 import RichDisciplinePage from '../academics/RichDisciplinePage'
+import { departmentFeed } from '../academics/feed'
 import { profileForDepartment, profileForDiscipline } from '../academics/profiles'
 
 import { DepartmentsIndex, ProgrammesIndex } from './Lists'
@@ -11,7 +12,7 @@ import { AcademicsPage, CampusPage } from './Landing'
 import OfficePage from './Office'
 import { DepartmentPage, ProgrammePage } from './Pages'
 import { getCampus, getDepartment, getOffice, getProgramme, listDepartments, listProgrammes, peopleOfDepartment, programmesAtCampus, programmesOfDepartment } from './queries'
-import { ACADEMICS_PATH, CAMPUSES_PATH, DEPARTMENTS_PATH, OFFICES_PATH, PROGRAMMES_PATH, str, type Doc } from './shape'
+import { ACADEMICS_PATH, CAMPUSES_PATH, DEPARTMENTS_PATH, OFFICES_PATH, PROGRAMMES_PATH, str } from './shape'
 
 /* The route files under (site)/(cms)/academics/{departments,programmes} are one-liners over these. */
 
@@ -38,9 +39,12 @@ export const programmesListMetadata: Metadata = { title: 'Programmes', alternate
 export async function DepartmentRoute({ params }: { params: SlugParams }) {
   const doc = await getDepartment(decode((await params).slug ?? ''), await preview())
   if (!doc) notFound()
-  const [programmes, people] = await Promise.all([programmesOfDepartment(doc.id), peopleOfDepartment(doc.id)])
   const profile = profileForDepartment(str(doc.slug) ?? '')
-  if (profile) return <RichDepartmentPage doc={doc} profile={profile} programmes={programmes} people={people} />
+  if (profile) {
+    const [programmes, feed] = await Promise.all([programmesOfDepartment(doc.id), departmentFeed(profile.slug)])
+    return <RichDepartmentPage doc={doc} profile={profile} programmes={programmes} feed={feed} />
+  }
+  const [programmes, people] = await Promise.all([programmesOfDepartment(doc.id), peopleOfDepartment(doc.id)])
   return <DepartmentPage doc={doc} programmes={programmes} people={people} />
 }
 export async function departmentMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
@@ -56,9 +60,8 @@ export async function ProgrammeRoute({ params }: { params: SlugParams }) {
   if (!doc) notFound()
   const profile = profileForDiscipline(str(doc.slug) ?? '')
   if (profile) {
-    const dept = doc.department && typeof doc.department === 'object' ? (doc.department as Doc) : null
-    const siblings = dept ? await programmesOfDepartment(dept.id) : []
-    return <RichDisciplinePage doc={doc} profile={profile} siblings={siblings} />
+    const feed = await departmentFeed(profile.department)
+    return <RichDisciplinePage doc={doc} profile={profile} feed={feed} />
   }
   return <ProgrammePage doc={doc} />
 }

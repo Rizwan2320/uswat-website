@@ -6,9 +6,13 @@ import SafeImage from '../components/SafeImage'
 import Accordion from '../components/kit/Accordion'
 import Tabs from '../components/kit/Tabs'
 
+import { formatDate, formatDateTime } from '../articles/format'
+import type { ListItem } from '../articles/where'
+
 import AcademicIcon from './AcademicIcon'
 import styles from './Academics.module.css'
-import type { Art, Faq, IconTitled, Titled, Year } from './types'
+import type { DepartmentFeed } from './feed'
+import type { Art, Faq, IconTitled, TeamMember, Titled, Year } from './types'
 
 /* Next Link for pages of this site, a plain link for in-page anchors and other sites. */
 export function SiteLink({
@@ -397,3 +401,150 @@ export const initials = (name: string) =>
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase())
     .join('')
+
+/** A portrait in a 4:5 frame. With no photo yet it shows the person's initials, so the slot is never empty. */
+export function Portrait({
+  member,
+  className,
+  sizes = '(max-width: 600px) 60vw, 280px',
+}: {
+  member: TeamMember
+  className?: string
+  sizes?: string
+}) {
+  return (
+    <div className={`${styles.portrait} ${className ?? ''}`}>
+      {member.photo ? (
+        <SafeImage src={member.photo} alt={member.name} fill sizes={sizes} />
+      ) : (
+        <span className={styles.portraitInitials} aria-hidden="true">
+          {initials(member.name)}
+        </span>
+      )}
+    </div>
+  )
+}
+
+const coordinatesLabel = (m: TeamMember, names: Map<string, string>) =>
+  (m.coordinates ?? []).map((slug) => ({ slug, name: names.get(slug) ?? slug }))
+
+/** The head of department: a wide card with a large portrait and the qualifications. */
+export function HeadCard({ member }: { member: TeamMember }) {
+  return (
+    <article className={styles.headCard}>
+      <Portrait member={member} className={styles.headPortrait} sizes="(max-width: 700px) 60vw, 260px" />
+      <div className={styles.headBody}>
+        <span className={styles.roleTag}>Head of Department (HoD)</span>
+        <h3 className={styles.headName}>{member.name}</h3>
+        <p className={styles.personTitle}>{member.title}</p>
+        {member.qualifications?.length ? (
+          <ul className={styles.quals}>
+            {member.qualifications.map((q) => (
+              <li key={q}>{q}</li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+    </article>
+  )
+}
+
+/** The programme coordinators: one card each, with links to the programmes they coordinate. */
+export function CoordinatorCards({
+  members,
+  programmeNames,
+  programmeHref,
+}: {
+  members: TeamMember[]
+  programmeNames: Map<string, string>
+  programmeHref: (slug: string) => string
+}) {
+  return (
+    <ul className={styles.coordinators}>
+      {members.map((m) => (
+        <li key={m.id} className={styles.coordCard}>
+          <Portrait member={m} className={styles.coordPortrait} />
+          <div className={styles.coordBody}>
+            <span className={styles.roleTag}>Coordinator</span>
+            <h3 className={styles.coordName}>{m.name}</h3>
+            <p className={styles.personTitle}>{m.title}</p>
+            {m.qualifications?.map((q) => (
+              <p key={q} className={styles.coordQual}>
+                {q}
+              </p>
+            ))}
+            <ul className={styles.coordProgs}>
+              {coordinatesLabel(m, programmeNames).map((c) => (
+                <li key={c.slug}>
+                  <SiteLink href={programmeHref(c.slug)}>{c.name}</SiteLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/** A compact coordinator card for a programme page. */
+export function CoordinatorNote({ member }: { member: TeamMember }) {
+  return (
+    <aside className={styles.coordNote} aria-label="Programme coordinator">
+      <Portrait member={member} className={styles.notePortrait} sizes="96px" />
+      <div>
+        <span className={styles.roleTag}>Coordinator</span>
+        <p className={styles.coordName}>{member.name}</p>
+        <p className={styles.personTitle}>{member.title}</p>
+        {member.qualifications?.map((q) => (
+          <p key={q} className={styles.coordQual}>
+            {q}
+          </p>
+        ))}
+      </div>
+    </aside>
+  )
+}
+
+const FEED_COLUMNS = [
+  { key: 'news', title: 'News', all: '/news', allLabel: 'All news', empty: 'No news for this department yet.' },
+  { key: 'events', title: 'Events', all: '/events', allLabel: 'All events', empty: 'No upcoming events yet.' },
+  { key: 'notices', title: 'Notices', all: '/notices', allLabel: 'All notices', empty: 'No notices at the moment.' },
+] as const
+
+const feedDate = (key: string, i: ListItem) =>
+  key === 'events' ? formatDateTime(i.startsAt) : formatDate(i.publishedAt)
+
+/** Department news, events and notices in three columns. */
+export function DeptFeed({ feed }: { feed: DepartmentFeed }) {
+  return (
+    <div className={styles.feed}>
+      {FEED_COLUMNS.map((c) => (
+        <section key={c.key} className={styles.feedCol} aria-labelledby={`feed-${c.key}`}>
+          <h3 id={`feed-${c.key}`} className={styles.feedTitle}>
+            {c.title}
+          </h3>
+          {feed[c.key].length ? (
+            <ul className={styles.feedList}>
+              {feed[c.key].map((i) => (
+                <li key={i.id}>
+                  <SiteLink href={`/${c.key}/${encodeURIComponent(i.slug)}`} className={styles.feedLink}>
+                    {i.title}
+                  </SiteLink>
+                  <span className={styles.feedMeta}>
+                    {[feedDate(c.key, i), c.key === 'events' ? i.venue : null].filter(Boolean).join(' · ')}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className={styles.feedEmpty}>{c.empty}</p>
+          )}
+          <SiteLink href={c.all} className={styles.feedAll}>
+            {c.allLabel} →
+          </SiteLink>
+        </section>
+      ))}
+    </div>
+  )
+}

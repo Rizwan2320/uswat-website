@@ -1,24 +1,23 @@
-import { safeHref } from '@/utilities/safeHref'
-
 import PageHeader from '../components/kit/PageHeader'
 import { admissions } from '../content/admissions'
 import {
   DEPARTMENTS_PATH,
   programmeHref,
-  rel,
   str,
   paragraphs,
   type Doc,
   type ProgrammeCard,
 } from '../organisation/shape'
-import type { PersonCard } from '../organisation/queries'
 
 import styles from './Academics.module.css'
 import {
   Band,
+  CoordinatorCards,
   Cta,
+  DeptFeed,
   DraftNote,
   FaqList,
+  HeadCard,
   Hero,
   IconCards,
   IconRows,
@@ -26,13 +25,12 @@ import {
   PictureCard,
   Prose,
   SectionNav,
-  SiteLink,
   Stats,
   TitledCards,
-  initials,
 } from './blocks'
 import { art } from './profiles/art'
 import { disciplinesOf } from './profiles'
+import type { DepartmentFeed } from './feed'
 import type { DepartmentProfile } from './types'
 
 /* T3, rich layout: used when a profile exists for the department's slug (see profiles/index.ts). */
@@ -40,18 +38,17 @@ export default function RichDepartmentPage({
   doc,
   profile,
   programmes,
-  people,
+  feed,
 }: {
   doc: Doc
   profile: DepartmentProfile
   programmes: ProgrammeCard[]
-  people: PersonCard[]
+  feed: DepartmentFeed
 }) {
   const name = str(doc.name) ?? profile.shortName
-  const head = rel(doc.head)
-  const emails = (Array.isArray(doc.emails) ? doc.emails : []).flatMap((e) =>
-    str((e as Doc).email) ? [str((e as Doc).email)!] : [],
-  )
+  const head = profile.team.find((m) => m.role === 'head')
+  const coordinators = profile.team.filter((m) => m.role === 'coordinator')
+  const programmeNames = new Map(programmes.map((p) => [p.slug, p.name]))
   const vision = str(doc.vision) ?? profile.vision
   const mission = str(doc.mission) ?? profile.mission
 
@@ -67,7 +64,6 @@ export default function RichDepartmentPage({
     const d = known.find((k) => k.slug === p.slug)
     return { p, d }
   })
-  const staff = people.filter((p) => !head || p.name !== str(head.name))
 
   const stats = [
     { value: programmes.length, label: 'degree programmes' },
@@ -82,9 +78,9 @@ export default function RichDepartmentPage({
     { id: 'research', label: 'Research' },
     { id: 'careers', label: 'Careers' },
     { id: 'student-life', label: 'Student life' },
-    { id: 'people', label: 'People' },
+    { id: 'people', label: 'Faculty' },
+    { id: 'news', label: 'News and notices' },
     { id: 'faq', label: 'Questions' },
-    { id: 'contact', label: 'Contact' },
   ]
   return (
     <div className={styles.root}>
@@ -109,7 +105,7 @@ export default function RichDepartmentPage({
         ]}
         actions={[
           { label: 'Explore programmes', href: '#programmes' },
-          { label: 'Contact the department', href: '#contact', ghost: true },
+          { label: 'News and notices', href: '#news', ghost: true },
         ]}
       />
       <Stats items={stats} />
@@ -206,99 +202,49 @@ export default function RichDepartmentPage({
         <IconCards items={profile.studentLife} />
       </Band>
 
-      <Band id="people" tint kicker="Faculty" title="People">
-        {head && str(head.name) ? (
-          <div className={styles.head}>
-            <span className={styles.avatar} aria-hidden="true">
-              {initials(str(head.name)!)}
-            </span>
-            <div>
-              <p className={styles.personName}>{str(head.name)}</p>
-              <p className={styles.personRole}>
-                {[str(head.designation), 'Head of department'].filter(Boolean).join(', ')}
-              </p>
-              {str(head.email) && safeHref(`mailto:${str(head.email)}`) ? (
-                <a className={styles.personMail} href={`mailto:${str(head.email)}`}>
-                  {str(head.email)}
-                </a>
-              ) : null}
-            </div>
-          </div>
+      <Band
+        id="people"
+        tint
+        kicker="Faculty"
+        title="Leadership and coordinators"
+        lede="Each programme has a coordinator who guides students through the study plan."
+      >
+        {head ? <HeadCard member={head} /> : null}
+        {coordinators.length ? (
+          <>
+            <h3 className={styles.subhead}>Programme coordinators</h3>
+            <CoordinatorCards
+              members={coordinators}
+              programmeNames={programmeNames}
+              programmeHref={programmeHref}
+            />
+          </>
         ) : null}
-        {staff.length ? (
-          <ul className={styles.people}>
-            {staff.map((p) => (
-              <li key={p.id} className={styles.person}>
-                <span className={styles.avatar} aria-hidden="true">
-                  {initials(p.name)}
-                </span>
-                <div>
-                  <p className={styles.personName}>{p.name}</p>
-                  {p.designation ? <p className={styles.personRole}>{p.designation}</p> : null}
-                  {p.email && safeHref(`mailto:${p.email}`) ? (
-                    <a className={styles.personMail} href={`mailto:${p.email}`}>
-                      {p.email}
-                    </a>
-                  ) : null}
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-        {!head && !staff.length ? <p>No people are listed for this department yet.</p> : null}
+      </Band>
+
+      <Band
+        id="news"
+        kicker="Latest"
+        title="News, events and notices"
+        lede={`Announcements from ${profile.shortName}. Items tagged "${profile.shortName}" in the CMS appear here.`}
+      >
+        <DeptFeed feed={feed} />
       </Band>
 
       <Band id="faq" kicker="Good to know" title="Questions">
         <FaqList items={profile.faq} />
       </Band>
 
-      <Band id="contact" tint kicker="Get in touch" title="Contact">
-        <div className={styles.split}>
-          <div className={styles.contact}>
-            <dl>
-              <div>
-                <dt>Department</dt>
-                <dd>{name}</dd>
-              </div>
-              <div>
-                <dt>Location</dt>
-                <dd>{profile.location}</dd>
-              </div>
-              <div>
-                <dt>Office hours</dt>
-                <dd>{profile.hours}</dd>
-              </div>
-              {emails.length ? (
-                <div>
-                  <dt>E-mail</dt>
-                  <dd>
-                    {emails.map((e) => (
-                      <div key={e}>
-                        <a href={`mailto:${e}`}>{e}</a>
-                      </div>
-                    ))}
-                  </dd>
-                </div>
-              ) : null}
-              <div>
-                <dt>Directory</dt>
-                <dd>
-                  <SiteLink href="/contact/directory">University contact directory</SiteLink>
-                </dd>
-              </div>
-            </dl>
-          </div>
-          <Photo art={profile.campusPhoto} />
-        </div>
+      <div className="container">
         <Cta
           title="Ready to apply?"
           text="Applications open through the university admissions portal. Merit lists and announcements are posted on the notices page."
           actions={[
             { label: 'Apply online', href: admissions.applyUrl },
-            { label: 'Read the notices', href: '/notices', ghost: true },
+            { label: 'Explore programmes', href: '#programmes', ghost: true },
           ]}
         />
-      </Band>
+      </div>
       {profile.status === 'draft' ? <DraftNote /> : null}
     </div>
   )

@@ -9,7 +9,8 @@ import { beforeAll, describe, expect, it, vi } from 'vitest'
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn(), unstable_cache: (fn: unknown) => fn }))
 
-import { ARTICLE_COLLECTIONS, applyArticleSeeds, articleSeeds, meritLists, tags } from '../../../../scripts/import/seeds/articles'
+import { readFeed } from '../../src/site/academics/feed'
+import { ARTICLE_COLLECTIONS, applyArticleSeeds, articleSeeds, departmentArticleSeeds, meritLists, tags } from '../../../../scripts/import/seeds/articles'
 import type { Cms } from '../../../../scripts/import/writer'
 import { listArticles } from '../../src/site/articles/queries'
 import { feedXml } from '../../src/site/feeds/collect'
@@ -48,6 +49,18 @@ describe('Sample article pack', () => {
       for (const slug of slugsOf(c, 'published')) expect(seen.has(slug), `${c} ${slug}`).toBe(true)
       for (const slug of [...slugsOf(c, 'draft'), ...slugsOf(c, 'in_review')]) expect(seen.has(slug), `${c} ${slug}`).toBe(false)
     }
+  })
+
+  it('lists on a department page exactly the current items tagged with its slug', async () => {
+    const feed = await readFeed(payload, 'dcst')
+    const want = (c: string) => departmentArticleSeeds().filter((a) => a.collection === c).length
+    expect(feed.news).toHaveLength(Math.min(3, want('posts')))
+    expect(feed.events).toHaveLength(Math.min(3, want('events')))
+    expect(feed.notices).toHaveLength(Math.min(3, want('notices')))
+    for (const i of [...feed.news, ...feed.events, ...feed.notices]) expect(i.title).toMatch(/^Sample DCST /)
+    // another department's slug, or one that has no tag, shows nothing
+    const none = await readFeed(payload, 'no-such-department')
+    expect([none.news, none.events, none.notices].flat()).toHaveLength(0)
   })
 
   it('puts the in-review rows in review and leaves the drafts as drafts', async () => {

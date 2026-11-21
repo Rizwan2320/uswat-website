@@ -17,3 +17,7 @@ export const profileForDiscipline = (slug: string) =>
   disciplineProfiles.find((p) => p.slug === slug) ?? null
 export const disciplinesOf = (department: string) =>
   disciplineProfiles.filter((d) => d.department === department)
+
+/** The person who coordinates a programme, from the department's team. */
+export const coordinatorOf = (department: string, programmeSlug: string) =>
+  profileForDepartment(department)?.team.find((m) => m.coordinates?.includes(programmeSlug)) ?? null

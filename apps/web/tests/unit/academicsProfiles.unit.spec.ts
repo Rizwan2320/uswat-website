@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 
 import { departments, programmes } from '../../../../scripts/import/seeds/data'
 import {
+  coordinatorOf,
   departmentProfiles,
   disciplineProfiles,
   disciplinesOf,
@@ -36,7 +37,7 @@ describe('department and discipline profiles', () => {
 
   it('names pictures that exist and describes the informative ones', () => {
     const all: Art[] = []
-    for (const p of departmentProfiles) all.push(p.hero, p.campusPhoto, ...p.labs.map((l) => l.art))
+    for (const p of departmentProfiles) all.push(p.hero, ...p.labs.map((l) => l.art))
     for (const d of disciplineProfiles) all.push(d.hero, d.tile, d.figure)
     for (const src of arts(all)) expect(existsSync(pub(src)), src).toBe(true)
     for (const d of disciplineProfiles) expect(d.tile.alt.length, d.slug).toBeGreaterThan(10)
@@ -92,6 +93,29 @@ describe('department and discipline profiles', () => {
       expect(disciplinesOf(d.department)).toContain(d)
     }
     expect(JSON.stringify([departmentProfiles, disciplineProfiles])).not.toMatch(/sample/i)
+  })
+
+  it('has one head and a coordinator for every programme, with no contact details', () => {
+    for (const p of departmentProfiles) {
+      expect(p.team.filter((m) => m.role === 'head'), p.slug).toHaveLength(1)
+      expect(p.team[0]?.role, 'the head comes first').toBe('head')
+      expect(new Set(p.team.map((m) => m.id)).size).toBe(p.team.length)
+      for (const slug of p.disciplines) {
+        const who = coordinatorOf(p.slug, slug)
+        expect(who, `${slug} has a coordinator`).not.toBeNull()
+        expect(who?.role).toBe('coordinator')
+      }
+      // each programme has exactly one coordinator
+      for (const slug of p.disciplines)
+        expect(p.team.filter((m) => m.coordinates?.includes(slug)), slug).toHaveLength(1)
+      for (const m of p.team) for (const slug of m.coordinates ?? []) expect(p.disciplines).toContain(slug)
+    }
+    expect(JSON.stringify(departmentProfiles.map((p) => p.team))).not.toMatch(/@|\+92|tel:|mailto/i)
+  })
+
+  it('names a photo file only when it exists', () => {
+    for (const p of departmentProfiles)
+      for (const m of p.team) if (m.photo) expect(existsSync(pub(m.photo)), m.id).toBe(true)
   })
 
   it('is still a draft until the department approves it', () => {

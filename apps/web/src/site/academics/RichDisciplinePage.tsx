@@ -2,35 +2,34 @@ import PageHeader from '../components/kit/PageHeader'
 import { admissions } from '../content/admissions'
 import {
   DEPARTMENTS_PATH,
-  PROGRAMMES_PATH,
   departmentHref,
-  programmeHref,
   rel,
   str,
   paragraphs,
   type Doc,
-  type ProgrammeCard,
 } from '../organisation/shape'
 
 import styles from './Academics.module.css'
 import {
   Band,
   Chips,
+  CoordinatorNote,
   Cta,
   Curriculum,
+  DeptFeed,
   DraftNote,
   FaqList,
   Hero,
   IconCards,
   IconRows,
   Photo,
-  PictureCard,
   Prose,
   SectionNav,
   Stats,
   TitledCards,
 } from './blocks'
-import { disciplinesOf } from './profiles'
+import { coordinatorOf } from './profiles'
+import type { DepartmentFeed } from './feed'
 import type { DisciplineProfile } from './types'
 
 const STEPS = [
@@ -53,11 +52,11 @@ const STEPS = [
 export default function RichDisciplinePage({
   doc,
   profile,
-  siblings,
+  feed,
 }: {
   doc: Doc
   profile: DisciplineProfile
-  siblings: ProgrammeCard[]
+  feed: DepartmentFeed
 }) {
   const name = str(doc.name) ?? profile.shortName
   const dept = rel(doc.department)
@@ -67,9 +66,7 @@ export default function RichDisciplinePage({
     (n, y) => n + y.semesters.reduce((m, s) => m + s.courses.length, 0),
     0,
   )
-  const others = disciplinesOf(profile.department).filter(
-    (d) => d.slug !== profile.slug && siblings.some((s) => s.slug === d.slug),
-  )
+  const coordinator = coordinatorOf(profile.department, profile.slug)
 
   const facts: [string, string][] = [
     ['Level', str(doc.level) ?? 'BS'],
@@ -85,7 +82,7 @@ export default function RichDisciplinePage({
     { id: 'careers', label: 'Careers' },
     { id: 'admission', label: 'Admission' },
     { id: 'faq', label: 'Questions' },
-    ...(others.length ? [{ id: 'more', label: 'Other programmes' }] : []),
+    { id: 'news', label: 'News and notices' },
   ]
   return (
     <div className={styles.root}>
@@ -123,7 +120,10 @@ export default function RichDisciplinePage({
 
       <Band id="overview" kicker="About the programme" title={`About ${name}`}>
         <div className={styles.split}>
-          <Prose paragraphs={profile.about} />
+          <div>
+            <Prose paragraphs={profile.about} />
+            {coordinator ? <CoordinatorNote member={coordinator} /> : null}
+          </div>
           <Photo art={profile.figure} />
         </div>
       </Band>
@@ -188,34 +188,15 @@ export default function RichDisciplinePage({
         <FaqList items={profile.faq} />
       </Band>
 
-      {others.length ? (
-        <Band
-          id="more"
-          kicker={dept && str(dept.name) ? str(dept.name)! : 'Department'}
-          title="Other programmes in the department"
-        >
-          <ul className={styles.pics}>
-            {others.map((d) => {
-              const card = siblings.find((s) => s.slug === d.slug)!
-              return (
-                <PictureCard
-                  key={d.slug}
-                  art={d.tile}
-                  title={card.name}
-                  href={programmeHref(d.slug)}
-                  tag={d.shortName}
-                  meta={[card.level, card.duration].filter(Boolean).join(' · ')}
-                  text={d.summary}
-                  more="Explore programme"
-                />
-              )
-            })}
-          </ul>
-          <p style={{ marginTop: 16 }}>
-            <a href={PROGRAMMES_PATH}>All programmes of the university</a>
-          </p>
-        </Band>
-      ) : null}
+      <Band
+        id="news"
+        tint
+        kicker="From the department"
+        title="News, events and notices"
+        lede="Announcements from the department that runs this programme."
+      >
+        <DeptFeed feed={feed} />
+      </Band>
 
       <div className="container">
         <Cta
