@@ -25,6 +25,12 @@ function enabledConfig() {
   return config
 }
 
+/** The typed auth object, for server code that creates accounts (the claim action). Never reachable from a request path. */
+export function getPortalAuth(): PortalAuth {
+  auth ??= createPortalAuth(enabledConfig())
+  return auth
+}
+
 export function getAuth(): AuthLike {
   auth ??= createPortalAuth(enabledConfig())
   return auth as unknown as AuthLike

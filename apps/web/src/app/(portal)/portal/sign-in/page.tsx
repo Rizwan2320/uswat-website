@@ -12,6 +12,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
   const notices: Record<string, string> = {
     expired: COPY.signIn.expired,
     'second-factor': COPY.signIn.needSecondFactor,
+    claimed: COPY.signIn.claimed,
     'signed-out-everywhere': COPY.signIn.signedOutEverywhere,
     'not-me': COPY.signIn.notMe,
     'not-me-no-alert': COPY.signIn.notMeNoAlert,

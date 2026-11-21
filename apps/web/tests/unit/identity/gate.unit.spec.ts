@@ -254,3 +254,36 @@ describe('decide: how the session was made (AUTH-01, FP-2: a password alone is n
     }
   })
 })
+
+describe('claim page and account status (FP-17)', () => {
+  const T = 'A'.repeat(43)
+  it('only the exact shape /portal/claim/<43 URL-safe characters> is public', () => {
+    expect(classifyPath(`/portal/claim/${T}`)).toBe('public')
+    expect(classifyPath(`/portal/claim/${T}/`)).toBe('public')
+    for (const p of ['/portal/claim', '/portal/claim/', `/portal/claim/${T}x`, `/portal/claim/${'A'.repeat(42)}`, `/portal/claim/${T}/extra`, `/portal/CLAIM/${T}`, `/Portal/claim/${T}`, `/portal/claim/${'A'.repeat(42)}!`, `/portal/claim/${'A'.repeat(21)}%41${'A'.repeat(21)}`]) {
+      expect(classifyPath(p), p).not.toBe('public')
+    }
+  })
+  const base = { hasSession: true, sessionStrong: true, factors: { passkeys: 1, totpVerified: false, recoveryCodesRemaining: 0 }, now: 1_000_000, verifiedAt: 1_000_000 }
+  it('a pending account reaches only the waiting page among portal paths, and enrolment and sign-out stay as before', () => {
+    const d = (pathname: string, accountStatus?: Parameters<typeof decide>[0]['accountStatus']) => decide({ ...base, pathname, accountStatus })
+    expect(d('/portal/profile', 'pending-activation')).toMatchObject({ allow: false, status: 403, redirectTo: '/portal/pending' })
+    expect(d('/portal-api/auth/passkey/list-user-passkeys', 'pending-activation')).toMatchObject({ allow: false, redirectTo: '/portal/pending' })
+    expect(d('/portal/pending', 'pending-activation')).toEqual({ allow: true })
+    expect(d('/portal-api/auth/get-session', 'pending-activation')).toEqual({ allow: true })
+    expect(d('/portal-api/auth/sign-out', 'pending-activation')).toEqual({ allow: true })
+    expect(d('/portal/enrol', 'pending-activation')).toEqual({ allow: true })
+  })
+  it('active, and an absent status, change nothing; unknown closes the portal; suspended and left are signed out', () => {
+    const d = (accountStatus?: Parameters<typeof decide>[0]['accountStatus']) => decide({ ...base, pathname: '/portal/profile', accountStatus })
+    expect(d('active')).toEqual({ allow: true })
+    expect(d(undefined)).toEqual({ allow: true })
+    expect(d('unknown')).toMatchObject({ allow: false, status: 403 })
+    expect(d('suspended')).toMatchObject({ allow: false, status: 401, redirectTo: '/portal/sign-in' })
+    expect(d('left')).toMatchObject({ allow: false, status: 401 })
+  })
+  it('the waiting page still needs a strong session', () => {
+    expect(decide({ ...base, sessionStrong: false, pathname: '/portal/pending', accountStatus: 'pending-activation' })).toMatchObject({ allow: false })
+    expect(decide({ hasSession: false, sessionStrong: false, factors: null, pathname: '/portal/pending' })).toMatchObject({ allow: false, status: 401 })
+  })
+})
