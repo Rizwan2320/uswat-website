@@ -19,7 +19,12 @@ export type PurgeCounts = {
   recoveryAttempts: number
   totpReplays: number
   securityEvents: number
+  notifications: number
+  noticeLog: number
 }
+
+/** Digest items and notice-log rows older than this are removed. A demo choice, like the other retention times (FP-43). */
+export const NOTICE_RETENTION_MS = 90 * 24 * 60 * 60_000
 
 const at = (now: number, agoMs: number) => new Date(now - agoMs)
 
@@ -52,6 +57,8 @@ export async function purgeExpired(pool: pg.Pool, now: number, opts: { dryRun?: 
       recoveryAttempts: await run('delete from "recovery_attempt"', '"windowStart" <= $1', [at(now, LOCK_WINDOW_MS)], '"recovery_attempt"'),
       totpReplays: await run('delete from "totp_replay"', '"usedAt" <= $1', [at(now, REPLAY_WINDOW_MS)], '"totp_replay"'),
       securityEvents: await run('delete from "security_event"', '"at" < $1', [at(now, EVENT_RETENTION_MS)], '"security_event"'),
+      notifications: await run('delete from "notification"', '"at" < $1', [at(now, NOTICE_RETENTION_MS)], '"notification"'),
+      noticeLog: await run('delete from "notice_log"', '"at" < $1', [at(now, NOTICE_RETENTION_MS)], '"notice_log"'),
     }
     await client.query(opts.dryRun ? 'rollback' : 'commit')
     return counts
