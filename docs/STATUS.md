@@ -698,3 +698,9 @@ P3 agent (slice 3a), own entry:
 - **Checks run:** typecheck 0 errors; lint 0 errors; 6 new integration tests with controls; full suite 987 pass and the 3 known local-only failures; no drift; build passes; migration drilled on a populated copy and an empty database (P3y-a to d). One unexplained, non-repeating failure while recording the second `up` is written up in P3y-b. Not run: a hosted preview, the Neon `previews` branch.
 - **For the main agent (your lane, not edited):** add the Apply button on the programme page (T4) reading `applyUrl` through `safeHref`, and hide it when empty (FR-05). **For the owner:** the admissions portal address for each programme has to be entered by an editor; nothing in the repo supplies it.
 - **Next:** 3z Head of Department manages own team.
+
+## P3 slice 3ab, only a platform admin creates departments and programmes (2026-11-21, branch `p3/academics-create-admin-only`, from `main`)
+- **Done:** owner instruction. Departments and Programmes now allow create for the platform admin only (new `governedCreateAdminOnly`, factory option `createAdminOnly`); every other role loses the Create button but still edits and publishes existing records under the same workflow. The importer and seeds (system actor) are unchanged. No migration, no dependency. Brief: `docs/briefs/p3ab-structure-admin-only.md`; prediction P3ab-a.
+- **Checks run:** typecheck 0 errors; lint 0 errors; 16 new integration tests (every role, system actor, edit control) and the access matrix; with the rule off 5 tests fail as they should; full suite 1179 pass with the 3 known local-only failures. Build passes. Not run: browser, a hosted preview.
+- **Question:** faculty groups, offices, campuses and People keep the old rule; the owner named academics only.
+- **Next:** P3aa (role buttons, banner, dashboards; main agent's brief), then the academics CMS fields (`p3-academics-full-cms.md`, on PR #116).
