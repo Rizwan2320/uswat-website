@@ -25,7 +25,7 @@ Date 2026-11-21. Branch `fp/digest`, stacked on `fp/delegation` (PR #123), then 
 
 ## Decisions I took (reversible)
 - Delegation given is a security notice for the grantor (ABU-03 lists it); the colleague gets a summary line.
-- Turning digests off stops queueing; items queued earlier stay until purged and are not sent. Turning it on again does not revive nothing that was never queued.
+- Turning digests off stops queueing; items queued earlier stay until purged and are not sent. Turning it on again does not bring back anything that was never queued.
 - Reviewers get one summary line per submitted profile; heads get none for new claims (they have an activation list, and a claim is not yet enrolled).
 - The digest log row holds kind, count, first and last time; the words are chosen when the page is shown, so Urdu text (FP-53) needs no data change.
 
