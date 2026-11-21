@@ -59,6 +59,7 @@ export function createPgActivationStore(pool: pg.Pool): ActivationStore {
         } else {
           await client.query(`update "account_status" set "status" = 'suspended' where "userId" = $1`, [input.subjectId])
           await client.query(`delete from "session" where "userId" = $1`, [input.subjectId])
+          await client.query(`update "delegation" set "revokedAt" = $2 where ("grantorId" = $1 or "delegateId" = $1) and "revokedAt" is null`, [input.subjectId, at])
         }
         await client.query(`insert into "account_review" ("userId","reviewerId","decision","at") values ($1,$2,$3,$4)`, [input.subjectId, headId, input.decision, at])
         await client.query('commit')
