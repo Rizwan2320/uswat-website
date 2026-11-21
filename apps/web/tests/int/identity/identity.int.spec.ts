@@ -2865,6 +2865,27 @@ describe.skipIf(!DB)('notification digest and notice log (FP-43, ABU-03), Postgr
       expect(await notes().buildDigest(a.id, NOW + DAY)).toMatchObject({ built: true })
       expect(await logRows(a.id, 'digest')).toHaveLength(2)
       expect(await waitingCount(a.id)).toBe(0)
+      // The second digest lists only what is new: the first digest's item is not counted again.
+      expect((await logRows(a.id, 'digest'))[1].lines.map((l: { kind: string; count: number }) => [l.kind, l.count])).toEqual([['profile-returned', 1]])
+    })
+    it('a build waits for anyone else already building for the same person, and only for that person', async () => {
+      const a = await person(), b = await person()
+      await enqueue(a.id, 'works-found', 1, null, NOW - H)
+      await enqueue(b.id, 'works-found', 1, null, NOW - H)
+      const holder = await pool().connect()
+      try {
+        await holder.query('begin')
+        await holder.query(`select pg_advisory_xact_lock(hashtext($1))`, [`digest:${a.id}`])
+        let done = false
+        const waiting = notes().buildDigest(a.id, NOW).then((r) => { done = true; return r })
+        expect(await notes().buildDigest(b.id, NOW)).toMatchObject({ built: true })
+        await new Promise((r) => setTimeout(r, 300))
+        expect(done).toBe(false)
+        await holder.query('rollback')
+        expect(await waiting).toMatchObject({ built: true })
+      } finally {
+        holder.release()
+      }
     })
     it('weekly: nothing at six days, a digest at seven', async () => {
       const a = await person()
