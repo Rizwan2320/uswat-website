@@ -28,6 +28,9 @@ const NOBODY: Who[] = []
 // never published may be deleted by whoever may edit it; anything else only by an admin. The
 // per-stage rules are proven in governance.access.int.spec.ts.
 const governed: Rule = { create: STAFF, update: STAFF, delete: STAFF }
+// Departments and programmes: only the platform admin creates them (owner decision, 2026-11-21);
+// everyone who may edit still edits the ones that exist.
+const structure: Rule = { create: ['platformAdmin'], update: STAFF, delete: STAFF }
 const adminsWrite: Rule = { create: ADMINS, update: ADMINS, delete: ADMINS }
 
 const COLLECTIONS: Record<string, Rule> = {
@@ -42,8 +45,8 @@ const COLLECTIONS: Record<string, Rule> = {
   jobs: governed,
   tenders: governed,
   faculties: governed,
-  departments: governed,
-  programmes: governed,
+  departments: structure,
+  programmes: structure,
   offices: governed,
   campuses: governed,
   people: governed,

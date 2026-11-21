@@ -118,4 +118,6 @@ Anything that has been sent for review, approved, published or archived cannot b
 
 Nobody can delete an item that other items still use. For example, a department that people or programmes point to cannot be deleted; the message says how many of what. Remove those links first, or archive the item instead.
 
+Only a platform admin can create a new department or a new programme. If one is missing, ask the platform admin. Once it exists, editors and approvers of its office edit and publish its content as usual.
+
 The **Delete** button can appear on items you are not allowed to delete. The system refuses the delete and says why; nothing is removed.
