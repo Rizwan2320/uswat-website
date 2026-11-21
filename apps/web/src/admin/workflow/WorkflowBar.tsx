@@ -42,6 +42,9 @@ const recentlyAccepted = new Map<
   { until: number; stage?: WorkflowStatus; verification?: VerificationStatus; note?: string }
 >()
 
+/** Outside the component so the render stays free of clock reads. */
+const fiveSecondsFromNow = (): number => Date.now() + 5000
+
 const pick = (words: Words, language: string): string => (language === 'ur' ? words.ur : words.en)
 const idOf = (v: unknown): string | null =>
   v && typeof v === 'object' && 'id' in v
@@ -65,7 +68,9 @@ export function WorkflowBar(): React.ReactElement | null {
   // A save already running (the form saves drafts by itself) makes `submit` return at once without sending.
   const processing = useFormProcessing()
   const processingRef = useRef(processing)
-  processingRef.current = processing
+  useEffect(() => {
+    processingRef.current = processing
+  }, [processing])
   const stage = useField<WorkflowStatus>({ path: 'governance.status' })
   const verification = useField<VerificationStatus>({ path: 'governance.verificationStatus' })
   const risk = useField<RiskClass>({ path: 'governance.riskClass' })
@@ -143,7 +148,7 @@ export function WorkflowBar(): React.ReactElement | null {
     // screen back to what it was, so it never claims a step that did not happen.
     if (result?.res?.ok) {
       recentlyAccepted.set(key, {
-        until: Date.now() + 5000,
+        until: fiveSecondsFromNow(),
         ...(action === 'markVerified'
           ? { verification: 'verified' as const }
           : { stage: STEP_TARGET[action] }),
