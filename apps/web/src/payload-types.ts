@@ -142,11 +142,13 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'home-content': HomeContent;
     'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'home-content': HomeContentSelect<false> | HomeContentSelect<true>;
     'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: 'en' | 'ur';
@@ -4180,6 +4182,70 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
+ * The photographs and the statistics at the top of the home page. The headline and the sentence under it do not change here.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-content".
+ */
+export interface HomeContent {
+  id: number;
+  /**
+   * The photographs at the top of the home page, in this order. Each photograph shows with its two buttons. 3 to 8 slides.
+   */
+  slides?:
+    | {
+        /**
+         * A landscape photograph at least 1600 pixels wide and under 4 MB. It needs alt text and a recorded rights status in the Media library before you can publish.
+         */
+        image: number | Media;
+        primary: {
+          label: string;
+          /**
+           * A page on this site, starting with / (for example /academics), or a full address starting with https://
+           */
+          href: string;
+          /**
+           * Optional. A small picture beside the button text.
+           */
+          icon?: ('cap' | 'document' | 'book' | 'calendar' | 'people' | 'badge') | null;
+        };
+        secondary: {
+          label: string;
+          /**
+           * A page on this site, starting with / (for example /academics), or a full address starting with https://
+           */
+          href: string;
+          /**
+           * Optional. A small picture beside the button text.
+           */
+          icon?: ('cap' | 'document' | 'book' | 'calendar' | 'people' | 'badge') | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * The figures in the statistics bar. 3 to 6. Every figure needs a source and the date it was checked, or must be ticked as a sample.
+   */
+  stats?:
+    | {
+        value: number;
+        /**
+         * For example + . Optional.
+         */
+        suffix?: string | null;
+        label: string;
+        icon: 'cap' | 'people' | 'person' | 'trophy';
+        sample?: boolean | null;
+        source?: string | null;
+        verifiedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs-stats".
  */
@@ -4239,6 +4305,48 @@ export interface FooterSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-content_select".
+ */
+export interface HomeContentSelect<T extends boolean = true> {
+  slides?:
+    | T
+    | {
+        image?: T;
+        primary?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              icon?: T;
+            };
+        secondary?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              icon?: T;
+            };
+        id?: T;
+      };
+  stats?:
+    | T
+    | {
+        value?: T;
+        suffix?: T;
+        label?: T;
+        icon?: T;
+        sample?: T;
+        source?: T;
+        verifiedAt?: T;
+        id?: T;
+      };
+  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
