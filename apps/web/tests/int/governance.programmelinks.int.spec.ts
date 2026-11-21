@@ -16,7 +16,7 @@ import type { User } from '../../src/payload-types'
 import { as, can, getTestPayload, makeUser, uniq } from '../helpers/governance'
 
 let payload: Payload
-let admin: User, editor: User
+let admin: User, editor: User, closer: User
 
 const gov = () => ({ ownerOffice: 'Registrar', source: 'https://example.test/source' })
 type Prog = { id: number; applyUrl?: string | null; governance?: Record<string, unknown> }
@@ -50,7 +50,7 @@ async function approve(id: number) {
         reviewDueAt: '2027-06-30T00:00:00.000Z',
       },
     } as never,
-    ...as(admin),
+    ...as(closer), // nobody approves their own work
   }) as Promise<Prog>
 }
 
@@ -65,6 +65,7 @@ const publish = (id: number) =>
 beforeAll(async () => {
   payload = await getTestPayload()
   admin = await makeUser(payload, 'platformAdmin')
+  closer = await makeUser(payload, 'platformAdmin')
   editor = await makeUser(payload, 'editor', ['registrar'])
 })
 
