@@ -78,7 +78,7 @@ export default async function DelegationPage() {
         <ul className="portal-rows" data-testid="activity-list">
           {audit.map((a, i) => (
             <li key={i}>
-              <p className="portal-row-name">{C.activityLine(a.actorName ?? C.unknownActor, C.sections[a.section], a.action)}</p>
+              <p className="portal-row-name">{C.activityLine(a.actorName ?? C.unknownActor, C.sections[a.section], C.actions[a.action] ?? a.action)}</p>
               <p className="portal-row-meta"><time dateTime={new Date(a.at).toISOString()}>{when.format(new Date(a.at))} UTC</time></p>
             </li>
           ))}

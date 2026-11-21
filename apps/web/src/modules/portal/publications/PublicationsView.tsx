@@ -57,7 +57,7 @@ export default function PublicationsView({ lists, hasOrcid, sampleMode, forId }:
       try {
         const r = await job()
         if (!r.ok) {
-          setMessage({ kind: 'error', text: C.errors[r.error] ?? C.errors.generic })
+          setMessage({ kind: 'error', text: forId && r.error === 'session' ? COPY.delegation.ended : C.errors[r.error] ?? C.errors.generic })
           return
         }
         setMessage({ kind: 'ok', text: r.counts ? C.harvested(r.counts.added, r.counts.alreadyKnown, r.counts.invalid) : okText })

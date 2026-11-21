@@ -391,8 +391,10 @@ export const COPY = {
     edit: (name: string, section: string) => `Edit ${name}’s ${section.toLowerCase()}`,
     activityTitle: 'Recent activity on your behalf',
     activityEmpty: 'Nothing yet.',
+    actions: { view: 'opened the page', saveProfile: 'saved the draft', harvestWorks: 'looked for new works', claimWork: 'claimed a work', rejectWork: 'marked a work as not yours', duplicateWork: 'marked a work as a duplicate', addCourse: 'added a course', removeCourse: 'removed a course' } as Record<string, string>,
     activityLine: (actor: string, section: string, action: string) => `${actor} · ${section} · ${action}`,
     unknownActor: 'A former colleague',
+    ended: 'Your access to this page has ended, so nothing was saved. Go back to your own page, or ask for access again.',
     banner: (name: string, until: string) => `You are editing ${name}’s page as their delegate until ${until}. Every change is recorded with your name.`,
     bannerBack: 'Back to your own page',
     errors: {

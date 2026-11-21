@@ -26,7 +26,7 @@ export default function CoursesView({ courses, sampleMode, defaultYear, forId }:
         const r = await job()
         if (!r.ok) {
           setErrors(r.errors ?? {})
-          setMessage({ kind: 'error', text: C.errors[r.error] ?? C.errors.generic })
+          setMessage({ kind: 'error', text: forId && r.error === 'session' ? COPY.delegation.ended : C.errors[r.error] ?? C.errors.generic })
           return
         }
         setErrors({})
