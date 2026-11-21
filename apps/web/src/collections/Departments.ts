@@ -13,6 +13,7 @@ export const Departments = governedCollection({
   singular: 'Department',
   plural: 'Departments',
   useAsTitle: 'name',
+  createAdminOnly: true,
   group: 'Organisation',
   defaultColumns: ['name', 'facultyGroup', 'updatedAt'],
   fields: [

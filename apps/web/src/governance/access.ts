@@ -56,6 +56,17 @@ export const governedCreate: Access = ({ req }) => {
 }
 
 /**
+ * Creating a department or a programme is for the platform admin only (owner decision, 2026-11-21):
+ * the structure of the university is not something editors or approvers add to. They still edit and
+ * publish the content of the ones that exist. The importer and the seeds use the system actor
+ * (no user, Local API), which does not go through this rule.
+ */
+export const governedCreateAdminOnly: Access = ({ req }) => {
+  const actor = actorFromRequest(req)
+  return actor.kind === 'user' && actor.role === 'platformAdmin'
+}
+
+/**
  * Update and delete are decided by the policy hooks, not by a database filter: draft saves
  * live in the versions table, so the published row's office, status and risk class can be
  * stale. Access only turns away roles that can never write.
