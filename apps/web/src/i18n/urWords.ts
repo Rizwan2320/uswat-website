@@ -265,6 +265,37 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
     'وہ دفاتر جن کے لیے یہ شخص کام کرتا ہے (ریکارڈ کے ذمہ دار دفتر سے ملائے جاتے ہیں)۔ چھوٹے حروف میں محفوظ ہوتے ہیں۔',
 
   // --- Organisation, academics, people, directory
+  'A landscape photograph at least 1600 pixels wide and under 4 MB. It needs alt text and a recorded rights status in the Media library before you can publish.':
+    'کم از کم 1600 پکسل چوڑی اور 4 ایم بی سے کم افقی تصویر۔ شائع کرنے سے پہلے میڈیا لائبریری میں اس کا متبادل متن اور حقوق کی حیثیت درج ہونی چاہیے۔',
+  'A page on this site, starting with / (for example /academics), or a full address starting with https://':
+    'اس سائٹ کا کوئی صفحہ، جو / سے شروع ہو (مثلاً /academics)، یا https:// سے شروع ہونے والا مکمل پتہ۔',
+  'After the number': 'عدد کے بعد',
+  Badge: 'بیج',
+  Book: 'کتاب',
+  'Button text': 'بٹن کا متن',
+  Calendar: 'کیلنڈر',
+  'Checked on': 'تصدیق کی تاریخ',
+  'First button': 'پہلا بٹن',
+  'For example + . Optional.': 'مثلاً +۔ اختیاری۔',
+  'Goes to': 'کہاں لے جاتا ہے',
+  'Graduation cap': 'گریجویشن ٹوپی',
+  'Home page content': 'ہوم پیج کا مواد',
+  Icon: 'آئیکن',
+  'Optional. A small picture beside the button text.':
+    'اختیاری۔ بٹن کے متن کے ساتھ ایک چھوٹی تصویر۔',
+  Photograph: 'تصویر',
+  'Second button': 'دوسرا بٹن',
+  Slide: 'سلائیڈ',
+  Slides: 'سلائیڈز',
+  Statistic: 'شماریاتی عدد',
+  Statistics: 'اعداد و شمار',
+  'The figures in the statistics bar. 3 to 6. Every figure needs a source and the date it was checked, or must be ticked as a sample.':
+    'اعداد و شمار کی پٹی میں دکھائے جانے والے اعداد۔ 3 سے 6۔ ہر عدد کا ماخذ اور تصدیق کی تاریخ درج ہونی چاہیے، یا اسے نمونہ کے طور پر نشان زد کیا جائے۔',
+  'The photographs at the top of the home page, in this order. Each photograph shows with its two buttons. 3 to 8 slides.':
+    'ہوم پیج کے اوپر دکھائی جانے والی تصاویر، اسی ترتیب سے۔ ہر تصویر کے ساتھ اس کے دو بٹن نظر آتے ہیں۔ 3 سے 8 سلائیڈز۔',
+  'This is a sample figure': 'یہ ایک نمونہ عدد ہے',
+  Trophy: 'ٹرافی',
+  'Where the figure comes from': 'عدد کہاں سے لیا گیا',
   'Head of department': 'شعبے کا سربراہ',
   'Set this when the news belongs to one department, so it shows on that department’s page. Leave empty for university-wide news.':
     'جب خبر کسی ایک شعبے سے متعلق ہو تو یہ منتخب کریں، تاکہ وہ اس شعبے کے صفحے پر نظر آئے۔ پوری جامعہ کی خبروں کے لیے خالی چھوڑ دیں۔',
