@@ -723,3 +723,8 @@ P3 agent (slice 3a), own entry:
 - **Checks run:** 5 integration tests (2 fail on main without the change); typecheck, lint, full suite 1183 pass; build; main's `role-workflow`, `editor-flows` and `role-views` browser specs: 27 pass. Not run: hosted preview.
 - **Known limit:** the server still does not require a note when sending back (existing policy tests move In review to Draft without one); only the screen requires it.
 - **Next:** academics CMS fields (`p3-academics-full-cms.md`, PR #116): departments, then programmes. Only a platform admin creates them (PR #120).
+## P3 slice 3ab, only a platform admin creates departments and programmes (2026-11-21, branch `p3/academics-create-admin-only`, from `main`)
+- **Done:** owner instruction. Departments and Programmes now allow create for the platform admin only (new `governedCreateAdminOnly`, factory option `createAdminOnly`); every other role loses the Create button but still edits and publishes existing records under the same workflow. The importer and seeds (system actor) are unchanged. No migration, no dependency. Brief: `docs/briefs/p3ab-structure-admin-only.md`; prediction P3ab-a.
+- **Checks run:** typecheck 0 errors; lint 0 errors; 16 new integration tests (every role, system actor, edit control) and the access matrix; with the rule off 5 tests fail as they should; full suite 1179 pass with the 3 known local-only failures. Build passes. Not run: browser, a hosted preview.
+- **Question:** faculty groups, offices, campuses and People keep the old rule; the owner named academics only.
+- **Next:** P3aa (role buttons, banner, dashboards; main agent's brief), then the academics CMS fields (`p3-academics-full-cms.md`, on PR #116).
