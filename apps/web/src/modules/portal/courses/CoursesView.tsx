@@ -10,7 +10,7 @@ import { SEASONS, type Course } from './types'
 
 const C = COPY.courses
 
-export default function CoursesView({ courses, sampleMode, defaultYear }: { courses: Course[]; sampleMode: boolean; defaultYear: number }) {
+export default function CoursesView({ courses, sampleMode, defaultYear, forId }: { courses: Course[]; sampleMode: boolean; defaultYear: number; forId?: string }) {
   const uid = useId()
   const router = useRouter()
   const [form, setForm] = useState({ code: '', title: '', season: 'Fall', year: String(defaultYear), programme: '' })
@@ -40,7 +40,7 @@ export default function CoursesView({ courses, sampleMode, defaultYear }: { cour
   }
 
   const yearNum = /^\d{4}$/.test(form.year.trim()) ? Number(form.year.trim()) : NaN
-  const submit = () => run(() => addCourse({ code: form.code, title: form.title, season: form.season, year: yearNum, programme: form.programme }), C.added, () => setForm((f) => ({ ...f, code: '', title: '', programme: '' })))
+  const submit = () => run(() => addCourse({ code: form.code, title: form.title, season: form.season, year: yearNum, programme: form.programme }, forId), C.added, () => setForm((f) => ({ ...f, code: '', title: '', programme: '' })))
 
   const errText = (k: keyof CourseErrors) => (errors[k] ? C.fieldErrors[errors[k]!] ?? C.fieldErrors.invalid : null)
   const field = (key: 'code' | 'title' | 'programme', label: string, hint?: string) => {
@@ -104,7 +104,7 @@ export default function CoursesView({ courses, sampleMode, defaultYear }: { cour
                 <span className="pub-meta">{C.semester(C.seasons[c.season] ?? c.season, c.year)}{c.programme ? ` · ${c.programme}` : ''}</span>
                 {c.source === 'manual' ? (
                   <div className="pub-actions">
-                    <button type="button" className="portal-btn secondary" disabled={pending} aria-label={C.removeFor(c.code, c.season, c.year)} onClick={() => run(() => removeCourse(c.id), C.removed)}>{C.remove}</button>
+                    <button type="button" className="portal-btn secondary" disabled={pending} aria-label={C.removeFor(c.code, c.season, c.year)} onClick={() => run(() => removeCourse(c.id, forId), C.removed)}>{C.remove}</button>
                   </div>
                 ) : null}
               </li>

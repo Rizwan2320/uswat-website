@@ -136,3 +136,10 @@ a.portal-btn { display: inline-flex; align-items: center; box-sizing: border-box
   .cv section, .cv li, .cv tr { break-inside: avoid; }
   @page { margin: 18mm 16mm; }
 }
+
+/* Delegation (FP-50) */
+.portal-banner { border: 2px solid var(--maroon); border-radius: 10px; padding: 12px 14px; margin: 14px 0; background: #fff; color: var(--maroon-deep); font-weight: 600; overflow-wrap: anywhere; }
+.portal-banner a { color: inherit; }
+.portal-check-list { display: grid; gap: 0; margin: 0; padding: 0; }
+.portal-links { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.portal-rows .portal-links li { border: 0; padding: 0; background: transparent; }
