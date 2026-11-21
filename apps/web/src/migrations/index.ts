@@ -11,7 +11,7 @@ import * as migration_20261119_021305_p3t_media_storage_fields from './20261119_
 import * as migration_20261120_015808_p3x_post_fields from './20261120_015808_p3x_post_fields';
 import * as migration_20261120_064238_p3y_programme_apply_link from './20261120_064238_p3y_programme_apply_link';
 import * as migration_20261121_060522_p3aa_review_note from './20261121_060522_p3aa_review_note';
-import * as migration_20261121_153505_p3ad_department_page_content from './20261121_153505_p3ad_department_page_content';
+import * as migration_20261121_155041_p3ad_department_page_content from './20261121_155041_p3ad_department_page_content';
 
 export const migrations = [
   {
@@ -80,8 +80,8 @@ export const migrations = [
     name: '20261121_060522_p3aa_review_note',
   },
   {
-    up: migration_20261121_153505_p3ad_department_page_content.up,
-    down: migration_20261121_153505_p3ad_department_page_content.down,
-    name: '20261121_153505_p3ad_department_page_content'
+    up: migration_20261121_155041_p3ad_department_page_content.up,
+    down: migration_20261121_155041_p3ad_department_page_content.down,
+    name: '20261121_155041_p3ad_department_page_content'
   },
 ];

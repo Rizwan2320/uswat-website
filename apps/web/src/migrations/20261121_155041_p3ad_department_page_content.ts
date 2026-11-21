@@ -3,11 +3,11 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
    CREATE TYPE "public"."enum_departments_page_content_highlights_icon" AS ENUM('code', 'layers', 'network', 'chart', 'brain', 'flask', 'book', 'briefcase', 'users', 'trophy', 'spark', 'shield', 'cloud', 'phone', 'search', 'rocket', 'globe', 'cap', 'gear', 'database');
-  CREATE TYPE "public"."enum_research_icon" AS ENUM('code', 'layers', 'network', 'chart', 'brain', 'flask', 'book', 'briefcase', 'users', 'trophy', 'spark', 'shield', 'cloud', 'phone', 'search', 'rocket', 'globe', 'cap', 'gear', 'database');
+  CREATE TYPE "public"."enum_department_research_icon" AS ENUM('code', 'layers', 'network', 'chart', 'brain', 'flask', 'book', 'briefcase', 'users', 'trophy', 'spark', 'shield', 'cloud', 'phone', 'search', 'rocket', 'globe', 'cap', 'gear', 'database');
   CREATE TYPE "public"."enum_departments_page_content_careers_icon" AS ENUM('code', 'layers', 'network', 'chart', 'brain', 'flask', 'book', 'briefcase', 'users', 'trophy', 'spark', 'shield', 'cloud', 'phone', 'search', 'rocket', 'globe', 'cap', 'gear', 'database');
   CREATE TYPE "public"."enum_departments_page_content_student_life_icon" AS ENUM('code', 'layers', 'network', 'chart', 'brain', 'flask', 'book', 'briefcase', 'users', 'trophy', 'spark', 'shield', 'cloud', 'phone', 'search', 'rocket', 'globe', 'cap', 'gear', 'database');
   CREATE TYPE "public"."enum__departments_v_version_page_content_highlights_icon" AS ENUM('code', 'layers', 'network', 'chart', 'brain', 'flask', 'book', 'briefcase', 'users', 'trophy', 'spark', 'shield', 'cloud', 'phone', 'search', 'rocket', 'globe', 'cap', 'gear', 'database');
-  CREATE TYPE "public"."enum__research_v_icon" AS ENUM('code', 'layers', 'network', 'chart', 'brain', 'flask', 'book', 'briefcase', 'users', 'trophy', 'spark', 'shield', 'cloud', 'phone', 'search', 'rocket', 'globe', 'cap', 'gear', 'database');
+  CREATE TYPE "public"."enum__department_research_v_icon" AS ENUM('code', 'layers', 'network', 'chart', 'brain', 'flask', 'book', 'briefcase', 'users', 'trophy', 'spark', 'shield', 'cloud', 'phone', 'search', 'rocket', 'globe', 'cap', 'gear', 'database');
   CREATE TYPE "public"."enum__departments_v_version_page_content_careers_icon" AS ENUM('code', 'layers', 'network', 'chart', 'brain', 'flask', 'book', 'briefcase', 'users', 'trophy', 'spark', 'shield', 'cloud', 'phone', 'search', 'rocket', 'globe', 'cap', 'gear', 'database');
   CREATE TYPE "public"."enum__departments_v_version_page_content_student_life_icon" AS ENUM('code', 'layers', 'network', 'chart', 'brain', 'flask', 'book', 'briefcase', 'users', 'trophy', 'spark', 'shield', 'cloud', 'phone', 'search', 'rocket', 'globe', 'cap', 'gear', 'database');
   CREATE TABLE "departments_page_content_about" (
@@ -53,14 +53,14 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"_parent_id" varchar NOT NULL
   );
   
-  CREATE TABLE "research" (
+  CREATE TABLE "department_research" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
   	"id" varchar PRIMARY KEY NOT NULL,
-  	"icon" "enum_research_icon"
+  	"icon" "enum_department_research_icon"
   );
   
-  CREATE TABLE "research_locales" (
+  CREATE TABLE "department_research_locales" (
   	"title" varchar,
   	"text" varchar,
   	"id" serial PRIMARY KEY NOT NULL,
@@ -166,15 +166,15 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"_parent_id" integer NOT NULL
   );
   
-  CREATE TABLE "_research_v" (
+  CREATE TABLE "_department_research_v" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
   	"id" serial PRIMARY KEY NOT NULL,
-  	"icon" "enum__research_v_icon",
+  	"icon" "enum__department_research_v_icon",
   	"_uuid" varchar
   );
   
-  CREATE TABLE "_research_v_locales" (
+  CREATE TABLE "_department_research_v_locales" (
   	"title" varchar,
   	"text" varchar,
   	"id" serial PRIMARY KEY NOT NULL,
@@ -260,8 +260,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   ALTER TABLE "departments_page_content_labs" ADD CONSTRAINT "departments_page_content_labs_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "departments_page_content_labs" ADD CONSTRAINT "departments_page_content_labs_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."departments"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "departments_page_content_labs_locales" ADD CONSTRAINT "departments_page_content_labs_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."departments_page_content_labs"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "research" ADD CONSTRAINT "research_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."departments"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "research_locales" ADD CONSTRAINT "research_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."research"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "department_research" ADD CONSTRAINT "department_research_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."departments"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "department_research_locales" ADD CONSTRAINT "department_research_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."department_research"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "departments_page_content_careers" ADD CONSTRAINT "departments_page_content_careers_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."departments"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "departments_page_content_careers_locales" ADD CONSTRAINT "departments_page_content_careers_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."departments_page_content_careers"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "departments_page_content_student_life" ADD CONSTRAINT "departments_page_content_student_life_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."departments"("id") ON DELETE cascade ON UPDATE no action;
@@ -276,8 +276,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   ALTER TABLE "_departments_v_version_page_content_labs" ADD CONSTRAINT "_departments_v_version_page_content_labs_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "_departments_v_version_page_content_labs" ADD CONSTRAINT "_departments_v_version_page_content_labs_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_departments_v"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_departments_v_version_page_content_labs_locales" ADD CONSTRAINT "_departments_v_version_page_content_labs_locales_parent_i_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_departments_v_version_page_content_labs"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "_research_v" ADD CONSTRAINT "_research_v_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_departments_v"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "_research_v_locales" ADD CONSTRAINT "_research_v_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_research_v"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "_department_research_v" ADD CONSTRAINT "_department_research_v_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_departments_v"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "_department_research_v_locales" ADD CONSTRAINT "_department_research_v_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_department_research_v"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_departments_v_version_page_content_careers" ADD CONSTRAINT "_departments_v_version_page_content_careers_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_departments_v"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_departments_v_version_page_content_careers_locales" ADD CONSTRAINT "_departments_v_version_page_content_careers_locales_paren_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_departments_v_version_page_content_careers"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_departments_v_version_page_content_student_life" ADD CONSTRAINT "_departments_v_version_page_content_student_life_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_departments_v"("id") ON DELETE cascade ON UPDATE no action;
@@ -298,10 +298,10 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "departments_page_content_labs_image_idx" ON "departments_page_content_labs" USING btree ("image_id");
   CREATE UNIQUE INDEX "departments_page_content_labs_locales_locale_parent_id_uniqu" ON "departments_page_content_labs_locales" USING btree ("_locale","_parent_id");
   CREATE INDEX "departments_page_content_labs_locales_parent_id_idx" ON "departments_page_content_labs_locales" USING btree ("_parent_id");
-  CREATE INDEX "research_order_idx" ON "research" USING btree ("_order");
-  CREATE INDEX "research_parent_id_idx" ON "research" USING btree ("_parent_id");
-  CREATE UNIQUE INDEX "research_locales_locale_parent_id_unique" ON "research_locales" USING btree ("_locale","_parent_id");
-  CREATE INDEX "research_locales_parent_id_idx" ON "research_locales" USING btree ("_parent_id");
+  CREATE INDEX "department_research_order_idx" ON "department_research" USING btree ("_order");
+  CREATE INDEX "department_research_parent_id_idx" ON "department_research" USING btree ("_parent_id");
+  CREATE UNIQUE INDEX "department_research_locales_locale_parent_id_unique" ON "department_research_locales" USING btree ("_locale","_parent_id");
+  CREATE INDEX "department_research_locales_parent_id_idx" ON "department_research_locales" USING btree ("_parent_id");
   CREATE INDEX "departments_page_content_careers_order_idx" ON "departments_page_content_careers" USING btree ("_order");
   CREATE INDEX "departments_page_content_careers_parent_id_idx" ON "departments_page_content_careers" USING btree ("_parent_id");
   CREATE UNIQUE INDEX "departments_page_content_careers_locales_locale_parent_id_un" ON "departments_page_content_careers_locales" USING btree ("_locale","_parent_id");
@@ -328,10 +328,10 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "_departments_v_version_page_content_labs_image_idx" ON "_departments_v_version_page_content_labs" USING btree ("image_id");
   CREATE UNIQUE INDEX "_departments_v_version_page_content_labs_locales_locale_pare" ON "_departments_v_version_page_content_labs_locales" USING btree ("_locale","_parent_id");
   CREATE INDEX "_departments_v_version_page_content_labs_locales_parent__idx" ON "_departments_v_version_page_content_labs_locales" USING btree ("_parent_id");
-  CREATE INDEX "_research_v_order_idx" ON "_research_v" USING btree ("_order");
-  CREATE INDEX "_research_v_parent_id_idx" ON "_research_v" USING btree ("_parent_id");
-  CREATE UNIQUE INDEX "_research_v_locales_locale_parent_id_unique" ON "_research_v_locales" USING btree ("_locale","_parent_id");
-  CREATE INDEX "_research_v_locales_parent_id_idx" ON "_research_v_locales" USING btree ("_parent_id");
+  CREATE INDEX "_department_research_v_order_idx" ON "_department_research_v" USING btree ("_order");
+  CREATE INDEX "_department_research_v_parent_id_idx" ON "_department_research_v" USING btree ("_parent_id");
+  CREATE UNIQUE INDEX "_department_research_v_locales_locale_parent_id_unique" ON "_department_research_v_locales" USING btree ("_locale","_parent_id");
+  CREATE INDEX "_department_research_v_locales_parent_id_idx" ON "_department_research_v_locales" USING btree ("_parent_id");
   CREATE INDEX "_departments_v_version_page_content_careers_order_idx" ON "_departments_v_version_page_content_careers" USING btree ("_order");
   CREATE INDEX "_departments_v_version_page_content_careers_parent_id_idx" ON "_departments_v_version_page_content_careers" USING btree ("_parent_id");
   CREATE UNIQUE INDEX "_departments_v_version_page_content_careers_locales_locale_p" ON "_departments_v_version_page_content_careers_locales" USING btree ("_locale","_parent_id");
@@ -365,8 +365,8 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   ALTER TABLE "departments_page_content_highlights_locales" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "departments_page_content_labs" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "departments_page_content_labs_locales" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "research" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "research_locales" DISABLE ROW LEVEL SECURITY;
+  ALTER TABLE "department_research" DISABLE ROW LEVEL SECURITY;
+  ALTER TABLE "department_research_locales" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "departments_page_content_careers" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "departments_page_content_careers_locales" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "departments_page_content_student_life" DISABLE ROW LEVEL SECURITY;
@@ -380,8 +380,8 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   ALTER TABLE "_departments_v_version_page_content_highlights_locales" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "_departments_v_version_page_content_labs" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "_departments_v_version_page_content_labs_locales" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "_research_v" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "_research_v_locales" DISABLE ROW LEVEL SECURITY;
+  ALTER TABLE "_department_research_v" DISABLE ROW LEVEL SECURITY;
+  ALTER TABLE "_department_research_v_locales" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "_departments_v_version_page_content_careers" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "_departments_v_version_page_content_careers_locales" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "_departments_v_version_page_content_student_life" DISABLE ROW LEVEL SECURITY;
@@ -395,8 +395,8 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP TABLE "departments_page_content_highlights_locales" CASCADE;
   DROP TABLE "departments_page_content_labs" CASCADE;
   DROP TABLE "departments_page_content_labs_locales" CASCADE;
-  DROP TABLE "research" CASCADE;
-  DROP TABLE "research_locales" CASCADE;
+  DROP TABLE "department_research" CASCADE;
+  DROP TABLE "department_research_locales" CASCADE;
   DROP TABLE "departments_page_content_careers" CASCADE;
   DROP TABLE "departments_page_content_careers_locales" CASCADE;
   DROP TABLE "departments_page_content_student_life" CASCADE;
@@ -410,8 +410,8 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP TABLE "_departments_v_version_page_content_highlights_locales" CASCADE;
   DROP TABLE "_departments_v_version_page_content_labs" CASCADE;
   DROP TABLE "_departments_v_version_page_content_labs_locales" CASCADE;
-  DROP TABLE "_research_v" CASCADE;
-  DROP TABLE "_research_v_locales" CASCADE;
+  DROP TABLE "_department_research_v" CASCADE;
+  DROP TABLE "_department_research_v_locales" CASCADE;
   DROP TABLE "_departments_v_version_page_content_careers" CASCADE;
   DROP TABLE "_departments_v_version_page_content_careers_locales" CASCADE;
   DROP TABLE "_departments_v_version_page_content_student_life" CASCADE;
@@ -450,11 +450,11 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   ALTER TABLE "_departments_v_locales" DROP COLUMN "version_page_content_location";
   ALTER TABLE "_departments_v_locales" DROP COLUMN "version_page_content_office_hours";
   DROP TYPE "public"."enum_departments_page_content_highlights_icon";
-  DROP TYPE "public"."enum_research_icon";
+  DROP TYPE "public"."enum_department_research_icon";
   DROP TYPE "public"."enum_departments_page_content_careers_icon";
   DROP TYPE "public"."enum_departments_page_content_student_life_icon";
   DROP TYPE "public"."enum__departments_v_version_page_content_highlights_icon";
-  DROP TYPE "public"."enum__research_v_icon";
+  DROP TYPE "public"."enum__department_research_v_icon";
   DROP TYPE "public"."enum__departments_v_version_page_content_careers_icon";
   DROP TYPE "public"."enum__departments_v_version_page_content_student_life_icon";`)
 }

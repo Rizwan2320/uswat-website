@@ -103,7 +103,7 @@ export const Departments = governedCollection({
         },
         iconTitledList('researchAreas', {
           label: 'Research areas',
-          dbName: 'research',
+          dbName: 'department_research',
           singular: 'Research area',
           max: 6,
           description: 'Topics the department works on.',

@@ -21406,8 +21406,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.research": {
-      "name": "research",
+    "public.department_research": {
+      "name": "department_research",
       "schema": "",
       "columns": {
         "_order": {
@@ -21430,15 +21430,15 @@
         },
         "icon": {
           "name": "icon",
-          "type": "enum_research_icon",
+          "type": "enum_department_research_icon",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         }
       },
       "indexes": {
-        "research_order_idx": {
-          "name": "research_order_idx",
+        "department_research_order_idx": {
+          "name": "department_research_order_idx",
           "columns": [
             {
               "expression": "_order",
@@ -21452,8 +21452,8 @@
           "method": "btree",
           "with": {}
         },
-        "research_parent_id_idx": {
-          "name": "research_parent_id_idx",
+        "department_research_parent_id_idx": {
+          "name": "department_research_parent_id_idx",
           "columns": [
             {
               "expression": "_parent_id",
@@ -21469,9 +21469,9 @@
         }
       },
       "foreignKeys": {
-        "research_parent_id_fk": {
-          "name": "research_parent_id_fk",
-          "tableFrom": "research",
+        "department_research_parent_id_fk": {
+          "name": "department_research_parent_id_fk",
+          "tableFrom": "department_research",
           "tableTo": "departments",
           "columnsFrom": [
             "_parent_id"
@@ -21489,8 +21489,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.research_locales": {
-      "name": "research_locales",
+    "public.department_research_locales": {
+      "name": "department_research_locales",
       "schema": "",
       "columns": {
         "title": {
@@ -21526,8 +21526,8 @@
         }
       },
       "indexes": {
-        "research_locales_locale_parent_id_unique": {
-          "name": "research_locales_locale_parent_id_unique",
+        "department_research_locales_locale_parent_id_unique": {
+          "name": "department_research_locales_locale_parent_id_unique",
           "columns": [
             {
               "expression": "_locale",
@@ -21547,8 +21547,8 @@
           "method": "btree",
           "with": {}
         },
-        "research_locales_parent_id_idx": {
-          "name": "research_locales_parent_id_idx",
+        "department_research_locales_parent_id_idx": {
+          "name": "department_research_locales_parent_id_idx",
           "columns": [
             {
               "expression": "_parent_id",
@@ -21564,10 +21564,10 @@
         }
       },
       "foreignKeys": {
-        "research_locales_parent_id_fk": {
-          "name": "research_locales_parent_id_fk",
-          "tableFrom": "research_locales",
-          "tableTo": "research",
+        "department_research_locales_parent_id_fk": {
+          "name": "department_research_locales_parent_id_fk",
+          "tableFrom": "department_research_locales",
+          "tableTo": "department_research",
           "columnsFrom": [
             "_parent_id"
           ],
@@ -23664,8 +23664,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public._research_v": {
-      "name": "_research_v",
+    "public._department_research_v": {
+      "name": "_department_research_v",
       "schema": "",
       "columns": {
         "_order": {
@@ -23688,7 +23688,7 @@
         },
         "icon": {
           "name": "icon",
-          "type": "enum__research_v_icon",
+          "type": "enum__department_research_v_icon",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
@@ -23701,8 +23701,8 @@
         }
       },
       "indexes": {
-        "_research_v_order_idx": {
-          "name": "_research_v_order_idx",
+        "_department_research_v_order_idx": {
+          "name": "_department_research_v_order_idx",
           "columns": [
             {
               "expression": "_order",
@@ -23716,8 +23716,8 @@
           "method": "btree",
           "with": {}
         },
-        "_research_v_parent_id_idx": {
-          "name": "_research_v_parent_id_idx",
+        "_department_research_v_parent_id_idx": {
+          "name": "_department_research_v_parent_id_idx",
           "columns": [
             {
               "expression": "_parent_id",
@@ -23733,9 +23733,9 @@
         }
       },
       "foreignKeys": {
-        "_research_v_parent_id_fk": {
-          "name": "_research_v_parent_id_fk",
-          "tableFrom": "_research_v",
+        "_department_research_v_parent_id_fk": {
+          "name": "_department_research_v_parent_id_fk",
+          "tableFrom": "_department_research_v",
           "tableTo": "_departments_v",
           "columnsFrom": [
             "_parent_id"
@@ -23753,8 +23753,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public._research_v_locales": {
-      "name": "_research_v_locales",
+    "public._department_research_v_locales": {
+      "name": "_department_research_v_locales",
       "schema": "",
       "columns": {
         "title": {
@@ -23790,8 +23790,8 @@
         }
       },
       "indexes": {
-        "_research_v_locales_locale_parent_id_unique": {
-          "name": "_research_v_locales_locale_parent_id_unique",
+        "_department_research_v_locales_locale_parent_id_unique": {
+          "name": "_department_research_v_locales_locale_parent_id_unique",
           "columns": [
             {
               "expression": "_locale",
@@ -23811,8 +23811,8 @@
           "method": "btree",
           "with": {}
         },
-        "_research_v_locales_parent_id_idx": {
-          "name": "_research_v_locales_parent_id_idx",
+        "_department_research_v_locales_parent_id_idx": {
+          "name": "_department_research_v_locales_parent_id_idx",
           "columns": [
             {
               "expression": "_parent_id",
@@ -23828,10 +23828,10 @@
         }
       },
       "foreignKeys": {
-        "_research_v_locales_parent_id_fk": {
-          "name": "_research_v_locales_parent_id_fk",
-          "tableFrom": "_research_v_locales",
-          "tableTo": "_research_v",
+        "_department_research_v_locales_parent_id_fk": {
+          "name": "_department_research_v_locales_parent_id_fk",
+          "tableFrom": "_department_research_v_locales",
+          "tableTo": "_department_research_v",
           "columnsFrom": [
             "_parent_id"
           ],
@@ -38685,8 +38685,8 @@
         "database"
       ]
     },
-    "public.enum_research_icon": {
-      "name": "enum_research_icon",
+    "public.enum_department_research_icon": {
+      "name": "enum_department_research_icon",
       "schema": "public",
       "values": [
         "code",
@@ -38835,8 +38835,8 @@
         "database"
       ]
     },
-    "public.enum__research_v_icon": {
-      "name": "enum__research_v_icon",
+    "public.enum__department_research_v_icon": {
+      "name": "enum__department_research_v_icon",
       "schema": "public",
       "values": [
         "code",
@@ -39516,6 +39516,6 @@
     "tables": {},
     "columns": {}
   },
-  "id": "48735790-e2c3-4f54-96c2-9874e2948167",
+  "id": "01d25643-1fd2-4784-b228-dc14d3ca3250",
   "prevId": "00000000-0000-0000-0000-000000000000"
 }
