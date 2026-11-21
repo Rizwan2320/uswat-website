@@ -254,6 +254,7 @@ export const governanceFields: Field[] = [
 /** UI-only field (no column): the per-role status line and step buttons. */
 export const workflowBarField: Field = {
   name: 'workflowBar',
+  label: bi('Status and next step', 'حالت اور اگلا قدم'),
   type: 'ui',
   admin: { components: { Field: '@/admin/workflow/WorkflowBar' } },
 }
