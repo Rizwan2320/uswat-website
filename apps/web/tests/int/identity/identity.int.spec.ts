@@ -42,6 +42,9 @@ import { createPgActivationStore } from '@/modules/portal/activation/pgStore'
 import { createClaimService } from '@/modules/identity/claimService'
 import { createPgInvitationStore, hashToken, INVITATION_TTL_MS, type InvitationStore } from '@/modules/identity/invitations'
 import { createPgRoleStore } from '@/modules/portal/review/roles'
+import { createPgDelegationStore } from '@/modules/portal/delegation/pgStore'
+import { resolveAccount } from '@/modules/portal/delegation/resolve'
+import { createCourseService } from '@/modules/portal/courses/service'
 
 const DB = process.env.IDENTITY_TEST_DATABASE_URL
 const ORIGIN = 'http://localhost:3999'
@@ -2519,6 +2522,235 @@ describe.skipIf(!DB)('claim by invitation and activation by the department head 
       expect(await roles().grantHead(email)).toBe('no-department')
       expect(await roles().grantHead('nobody@example.invalid')).toBe('no-account')
       expect(await roles().revokeHead(email)).toBe('not-reviewer')
+    })
+  })
+})
+
+describe.skipIf(!DB)('delegation (FP-18, FP-50), PostgreSQL', () => {
+  const pool = () => getIdentityPool(DB!)
+  const store = () => createPgDelegationStore(pool())
+  const statuses = () => createPgStatusStore(pool())
+  const NOW = Date.UTC(2026, 10, 21, 9)
+  const DAY = 86_400_000
+  let seq = 0
+  const person = async (name = 'Person') => {
+    const id = `dlg${Date.now().toString(36)}${++seq}${Math.random().toString(36).slice(2, 8)}`
+    const email = `${id}@example.invalid`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, name, email])
+    return { id, email, name }
+  }
+  const ALL = ['profile', 'publications', 'courses'] as const
+  const grant = async (g: { id: string }, d: { id: string }, sections: readonly string[] = ALL, days = 30, at = NOW) => (await store().create(g.id, { delegateId: d.id, sections: [...sections] as never, days }, at)).id
+  const auditCount = async (subject: string) => Number((await pool().query(`select count(*) from "delegation_audit" where "subjectId" = $1`, [subject])).rows[0].count)
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  describe('the database refuses what the service would never send', () => {
+    it('refuses self-grants, unknown or empty sections, and more than 90 days', async () => {
+      const a = await person(), b = await person()
+      const ins = (g: string, d: string, sections: string, days: number) => pool().query(`insert into "delegation" ("grantorId","delegateId","sections","expiresAt") values ($1,$2,$3::text[], now() + $4 * interval '1 day')`, [g, d, sections, days])
+      await expect(ins(a.id, a.id, '{profile}', 5)).rejects.toThrow()
+      await expect(ins(a.id, b.id, '{security}', 5)).rejects.toThrow()
+      await expect(ins(a.id, b.id, '{delegation}', 5)).rejects.toThrow()
+      await expect(ins(a.id, b.id, '{}', 5)).rejects.toThrow()
+      await expect(ins(a.id, b.id, '{profile,profile,courses,courses}', 5)).rejects.toThrow()
+      await expect(ins(a.id, b.id, '{profile}', 91)).rejects.toThrow()
+      await expect(ins(a.id, b.id, '{profile}', -1)).rejects.toThrow()
+      await expect(ins(a.id, b.id, '{profile}', 90)).resolves.toBeTruthy()
+    })
+    it('allows one open grant per pair', async () => {
+      const a = await person(), b = await person()
+      const ins = () => pool().query(`insert into "delegation" ("grantorId","delegateId","sections","expiresAt") values ($1,$2,'{profile}', now() + interval '1 day')`, [a.id, b.id])
+      await ins()
+      await expect(ins()).rejects.toThrow()
+    })
+  })
+
+  describe('grants', () => {
+    it('re-granting replaces the earlier grant: one open grant, the old one shown as withdrawn', async () => {
+      const a = await person(), b = await person('Bee')
+      const first = await grant(a, b, ['profile'])
+      const second = await grant(a, b, ['courses'], 10, NOW + 1000)
+      expect(second).not.toBe(first)
+      const given = await store().listGiven(a.id, NOW + 2000)
+      expect(given.map((g) => [g.id, g.state])).toEqual([[second, 'active'], [first, 'revoked']])
+      expect(await store().authorise(b.id, a.id, 'profile', 'saveProfile', NOW + 2000)).toBeNull()
+      expect(await store().authorise(b.id, a.id, 'courses', 'addCourse', NOW + 2000)).not.toBeNull()
+    })
+    it('lists what a delegate has received, only unrevoked and unexpired ones', async () => {
+      const a = await person('Ayesha'), b = await person(), c = await person()
+      await grant(a, b, ['publications'], 5)
+      const gone = await grant(c, b, ['courses'], 5)
+      await store().revoke(c.id, gone, NOW)
+      const rec = await store().listReceived(b.id, NOW + DAY)
+      expect(rec.map((r) => [r.grantorId, r.grantorName, r.sections])).toEqual([[a.id, 'Ayesha', ['publications']]])
+      expect(await store().listReceived(b.id, NOW + 6 * DAY)).toEqual([])
+    })
+    it('finds a delegate by address regardless of case, and not an inactive or suspended account', async () => {
+      const b = await person('Bee'), c = await person(), d = await person()
+      expect(await store().findDelegate(b.email.toUpperCase())).toEqual({ id: b.id, name: 'Bee' })
+      expect(await store().findDelegate('nobody@example.invalid')).toBeNull()
+      await pool().query(`insert into "account_status" ("userId","status") values ($1,'suspended')`, [c.id])
+      await pool().query(`insert into "account_status" ("userId","status") values ($1,'pending-activation')`, [d.id])
+      expect(await store().findDelegate(c.email)).toBeNull()
+      expect(await store().findDelegate(d.email)).toBeNull()
+    })
+    it('only the grantor can withdraw; the delegate and a stranger cannot, and a missing id is just false', async () => {
+      const a = await person(), b = await person(), c = await person()
+      const id = await grant(a, b)
+      expect(await store().revoke(b.id, id, NOW)).toBe(false)
+      expect(await store().revoke(c.id, id, NOW)).toBe(false)
+      expect(await store().authorise(b.id, a.id, 'courses', 'addCourse', NOW)).not.toBeNull()
+      expect(await store().revoke(a.id, id, NOW)).toBe(true)
+      expect(await store().revoke(a.id, id, NOW)).toBe(false)
+      expect(await store().revoke(a.id, '7f0c1c1e-5b8e-4b1a-9c1d-0a1b2c3d4e5f', NOW)).toBe(false)
+      expect(await store().revoke(a.id, 'not-a-uuid', NOW)).toBe(false)
+    })
+  })
+
+  describe('authorise', () => {
+    it('allows exactly the granted sections and refuses the others, in the grantor only', async () => {
+      const a = await person(), b = await person(), c = await person()
+      await grant(a, b, ['publications'])
+      expect(await store().authorise(b.id, a.id, 'publications', 'harvestWorks', NOW)).toMatchObject({ subject: { id: a.id, email: a.email } })
+      expect(await store().authorise(b.id, a.id, 'profile', 'saveProfile', NOW)).toBeNull()
+      expect(await store().authorise(b.id, a.id, 'courses', 'addCourse', NOW)).toBeNull()
+      // IDOR: a third person has no grant; the grant is one-way (the grantor cannot act as the delegate).
+      expect(await store().authorise(c.id, a.id, 'publications', 'harvestWorks', NOW)).toBeNull()
+      expect(await store().authorise(a.id, b.id, 'publications', 'harvestWorks', NOW)).toBeNull()
+      expect(await store().authorise(b.id, c.id, 'publications', 'harvestWorks', NOW)).toBeNull()
+      expect(await store().authorise(b.id, b.id, 'publications', 'harvestWorks', NOW)).toBeNull()
+    })
+    it('refuses unknown sections and action names that are not plain words', async () => {
+      const a = await person(), b = await person()
+      await grant(a, b)
+      expect(await store().authorise(b.id, a.id, 'security' as never, 'view', NOW)).toBeNull()
+      for (const bad of ['', 'x', "x'; drop table delegation;--", 'Save', 'a'.repeat(60), 'save profile']) expect(await store().authorise(b.id, a.id, 'profile', bad, NOW), bad).toBeNull()
+    })
+    it('stops at the expiry instant and after withdrawal', async () => {
+      const a = await person(), b = await person()
+      const id = await grant(a, b, ALL, 2)
+      expect(await store().authorise(b.id, a.id, 'courses', 'addCourse', NOW + 2 * DAY - 1)).not.toBeNull()
+      expect(await store().authorise(b.id, a.id, 'courses', 'addCourse', NOW + 2 * DAY)).toBeNull()
+      const id2 = await grant(a, b, ALL, 2, NOW + 3 * DAY)
+      expect(id2).not.toBe(id)
+      expect(await store().authorise(b.id, a.id, 'courses', 'addCourse', NOW + 3 * DAY + 1)).not.toBeNull()
+      await store().revoke(a.id, id2, NOW + 3 * DAY + 2)
+      expect(await store().authorise(b.id, a.id, 'courses', 'addCourse', NOW + 3 * DAY + 3)).toBeNull()
+    })
+    it('refuses when either account is suspended, left or pending, and leaving or suspending revokes the grants', async () => {
+      const a = await person(), b = await person(), c = await person(), d = await person()
+      await grant(a, b)
+      await pool().query(`insert into "account_status" ("userId","status") values ($1,'suspended')`, [b.id])
+      expect(await store().authorise(b.id, a.id, 'courses', 'addCourse', NOW)).toBeNull()
+      await pool().query(`delete from "account_status" where "userId" = $1`, [b.id])
+      expect(await store().authorise(b.id, a.id, 'courses', 'addCourse', NOW)).not.toBeNull()
+      await pool().query(`insert into "account_status" ("userId","status") values ($1,'left')`, [a.id])
+      expect(await store().authorise(b.id, a.id, 'courses', 'addCourse', NOW)).toBeNull()
+      // Through the real status store: the grants are withdrawn, so a later return to active does not revive them.
+      await grant(c, d)
+      expect(await statuses().set(c.id, 'suspended', NOW)).toBe('ok')
+      expect(await store().authorise(d.id, c.id, 'courses', 'addCourse', NOW)).toBeNull()
+      expect((await store().listGiven(c.id, NOW))[0]!.state).toBe('revoked')
+      await statuses().set(c.id, 'active', NOW)
+      expect(await store().authorise(d.id, c.id, 'courses', 'addCourse', NOW)).toBeNull()
+      const e = await person(), f = await person()
+      await grant(f, e)
+      await statuses().set(e.id, 'left', NOW)
+      expect((await store().listGiven(f.id, NOW))[0]!.state).toBe('revoked')
+    })
+    it('a revoke and an authorise at the same time never leave an action allowed after the revoke committed', async () => {
+      const a = await person(), b = await person()
+      for (let i = 0; i < 12; i++) {
+        const id = await grant(a, b, ALL, 5, NOW + i)
+        const [r, ok] = await Promise.all([store().revoke(a.id, id, NOW + i), store().authorise(b.id, a.id, 'courses', 'addCourse', NOW + i)])
+        expect(r).toBe(true)
+        // Whatever the order, once the revoke has returned, the next check is refused.
+        expect(await store().authorise(b.id, a.id, 'courses', 'addCourse', NOW + i)).toBeNull()
+        void ok
+      }
+    })
+  })
+
+  describe('audit', () => {
+    it('writes one row per authorised action, by the actor on behalf of the grantor, and none for refused ones', async () => {
+      const a = await person('Grantor'), b = await person('Delegate'), c = await person()
+      await grant(a, b, ['courses'])
+      const before = await auditCount(a.id)
+      await store().authorise(b.id, a.id, 'courses', 'addCourse', NOW)
+      await store().authorise(b.id, a.id, 'courses', 'removeCourse', NOW + 1000)
+      await store().authorise(b.id, a.id, 'profile', 'saveProfile', NOW)
+      await store().authorise(c.id, a.id, 'courses', 'addCourse', NOW)
+      expect(await auditCount(a.id)).toBe(before + 2)
+      expect(await store().recentAudit(a.id, 10)).toEqual([
+        { at: NOW + 1000, actorName: 'Delegate', section: 'courses', action: 'removeCourse' },
+        { at: NOW, actorName: 'Delegate', section: 'courses', action: 'addCourse' },
+      ])
+      expect(await store().recentAudit(b.id, 10)).toEqual([])
+    })
+    it('is append-only: no edit to what happened, who did it or for whom; only the allowed foreign-key clean-up', async () => {
+      const a = await person(), b = await person(), c = await person()
+      const id = await grant(a, b)
+      await store().authorise(b.id, a.id, 'courses', 'addCourse', NOW)
+      for (const sql of [`update "delegation_audit" set "action" = 'viewed' where "subjectId" = $1`, `update "delegation_audit" set "section" = 'profile' where "subjectId" = $1`, `update "delegation_audit" set "at" = now() where "subjectId" = $1`, `update "delegation_audit" set "subjectId" = '${c.id}' where "subjectId" = $1`, `update "delegation_audit" set "actorId" = '${c.id}' where "subjectId" = $1`]) {
+        await expect(pool().query(sql, [a.id]), sql).rejects.toThrow(/append-only/)
+      }
+      // Deleting the delegate keeps the row with no actor; the grant row goes with it and the audit row stays.
+      await pool().query(`delete from "user" where "id" = $1`, [b.id])
+      const row = (await pool().query(`select "actorId","delegationId" from "delegation_audit" where "subjectId" = $1`, [a.id])).rows
+      expect(row).toEqual([{ actorId: null, delegationId: null }])
+      expect((await pool().query(`select 1 from "delegation" where "id" = $1`, [id])).rowCount).toBe(0)
+      expect((await store().recentAudit(a.id, 10))[0]!.actorName).toBeNull()
+      await pool().query(`delete from "user" where "id" = $1`, [a.id])
+      expect((await pool().query(`select 1 from "delegation_audit" where "subjectId" = $1`, [a.id])).rowCount).toBe(0)
+    })
+  })
+
+  describe('acting for the grantor (resolveAccount and a real service)', () => {
+    it('without forId it is the signed-in person, and never audited', async () => {
+      const a = await person()
+      const before = await auditCount(a.id)
+      for (const f of [undefined, null, '', a.id]) expect(await resolveAccount(store(), a, 'courses', 'addCourse', f, NOW)).toEqual(a)
+      expect(await auditCount(a.id)).toBe(before)
+    })
+    it('with forId it is the grantor, only inside the grant; everything else is null', async () => {
+      const a = await person(), b = await person(), c = await person()
+      await grant(a, b, ['courses'])
+      expect(await resolveAccount(store(), b, 'courses', 'addCourse', a.id, NOW)).toEqual({ id: a.id, email: a.email })
+      expect(await resolveAccount(store(), b, 'profile', 'saveProfile', a.id, NOW)).toBeNull()
+      expect(await resolveAccount(store(), c, 'courses', 'addCourse', a.id, NOW)).toBeNull()
+      for (const bad of [5, {}, [a.id], "x' or 1=1", '../x', 'a'.repeat(200)]) expect(await resolveAccount(store(), b, 'courses', 'addCourse', bad, NOW), String(bad)).toBeNull()
+    })
+    it('a delegated course action changes the grantor’s list, never the delegate’s, and is audited', async () => {
+      const a = await person(), b = await person()
+      await grant(a, b, ['courses'])
+      const courses = createPgCourseStore(pool())
+      const as = (forId: string | undefined) => createCourseService({ store: courses, getAccount: () => resolveAccount(store(), b, 'courses', 'addCourse', forId, NOW), now: () => NOW })
+      expect(await as(a.id).add({ code: 'CS-101', title: 'Programming', season: 'Fall', year: 2026, programme: 'BS CS' })).toEqual({ ok: true })
+      expect((await courses.list(a.id)).map((c) => c.code)).toEqual(['CS-101'])
+      expect(await courses.list(b.id)).toEqual([])
+      expect(await auditCount(a.id)).toBeGreaterThanOrEqual(1)
+      // Outside the grant the service answers its "session" error and writes nothing.
+      const c = await person()
+      const stranger = createCourseService({ store: courses, getAccount: () => resolveAccount(store(), c, 'courses', 'addCourse', a.id, NOW), now: () => NOW })
+      expect(await stranger.add({ code: 'CS-102', title: 'Algorithms', season: 'Fall', year: 2026, programme: 'BS CS' })).toEqual({ ok: false, error: 'session' })
+      expect((await courses.list(a.id)).length).toBe(1)
+    })
+    it('a delegated profile save cannot submit: the draft changes, the status does not', async () => {
+      const a = await person(), b = await person()
+      await grant(a, b, ['profile'])
+      const profiles = createSampleProfileStore(pool())
+      const target = await resolveAccount(store(), b, 'profile', 'saveProfile', a.id, NOW)
+      expect(target).toEqual({ id: a.id, email: a.email })
+      await profiles.saveDraft(target!.id, { ...EMPTY_EDIT, bio: { en: 'Written by a delegate', ur: '' } } as ProfileEdit)
+      const loaded = await profiles.load({ id: a.id, email: a.email })
+      expect(loaded.status).toBe('draft')
     })
   })
 })
