@@ -71,6 +71,14 @@ const ownNotice = await payload.create({
   ...as(contributor),
 })
 
+// An approver's own draft (nobody approves their own work, slice 3aa).
+const approverDraft = await payload.create({
+  collection: 'notices',
+  draft: true,
+  data: { title: uniq('e2e-approver-own'), governance: { ownerOffice: 'Registrar' } } as never,
+  ...as(approver),
+})
+
 // An event with no "Take down on" date: sending it for review is refused by the policy (LIF-04).
 const noExpiry = await payload.create({
   collection: 'events',
@@ -92,6 +100,7 @@ writeFileSync(
     flowNotice: { id: flowNotice.id, title: flowNotice.title },
     ownNotice: { id: ownNotice.id, title: ownNotice.title },
     noExpiry: { id: noExpiry.id, title: noExpiry.title },
+    approverDraft: { id: approverDraft.id, title: approverDraft.title },
     contributor: contributor.email,
     auditor: auditor.email,
     siteManager: siteManager.email,

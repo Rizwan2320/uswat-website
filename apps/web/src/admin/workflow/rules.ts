@@ -19,6 +19,9 @@ import {
 export type StepAction = 'sendForReview' | 'approve' | 'sendBack' | 'markVerified'
 export type Words = { en: string; ur: string }
 
+/** Who wrote the item, as far as the signed-in person is concerned. */
+export type Author = 'me' | 'other' | 'import'
+
 export interface WorkflowInput {
   actor: Actor
   stage: WorkflowStatus
@@ -27,8 +30,8 @@ export interface WorkflowInput {
   ownerOffice: string | null
   /** The document has been saved at least once. */
   saved: boolean
-  /** Created by the signed-in person (matters for contributors). */
-  mine: boolean
+  /** Created by the signed-in person, by someone else, or brought in by the importer (no author). */
+  author: Author
 }
 
 export type Tone = 'info' | 'waiting' | 'ready' | 'readonly'
@@ -39,8 +42,6 @@ export interface WorkflowView {
   actions: StepAction[]
   /** Payload's Publish button. Reviewers only, and only once the item is Approved (or already live). */
   showPublish: boolean
-  /** Payload's Save Draft button. */
-  showSave: boolean
 }
 
 const w = (en: string, ur: string): Words => ({ en, ur })
@@ -49,41 +50,43 @@ const w = (en: string, ur: string): Words => ({ en, ur })
 const office = (o: string | null): string =>
   o ? o.replace(/\b\p{L}/gu, (c) => c.toUpperCase()) : 'the owning office'
 
-/** The first step an approver takes on a draft: approve straight away, or ask for a second pair of eyes. */
+const readOnly = (banner: Words): WorkflowView => ({
+  tone: 'readonly',
+  banner,
+  actions: [],
+  showPublish: false,
+})
+
+/**
+ * Two rules the owner asked for (2026-11-21): a draft belongs to its author until it is sent for
+ * review, and nobody approves what they wrote themselves. Both are shown here; the second is also
+ * enforced on the server (policy.ts, SELF_APPROVAL).
+ */
 export function workflowView(input: WorkflowInput): WorkflowView {
-  const { actor, stage, verification, risk, ownerOffice, saved, mine } = input
+  const { actor, stage, verification, risk, ownerOffice, saved, author } = input
 
   if (actor.kind !== 'user' || actor.role === 'auditor') {
-    return {
-      tone: 'readonly',
-      banner: w(
+    return readOnly(
+      w(
         `Read only. This item is ${WORKFLOW_LABELS[stage]}. Your role can look but not change it.`,
         'صرف پڑھنے کے لیے۔ آپ کا کردار اسے دیکھ سکتا ہے، بدل نہیں سکتا۔',
       ),
-      actions: [],
-      showPublish: false,
-      showSave: false,
-    }
+    )
   }
 
   const scope = { ownerOffice: normalizeOffice(ownerOffice) || null, risk }
   const reviewer = isReviewerFor(actor, scope)
   const submitter = canSubmitFor(actor, scope)
   const role = actor.role
-  const outOfOffice =
-    (role === 'editor' || role === 'approver') && saved && !inScope(actor, scope.ownerOffice)
+  const mine = author === 'me'
 
-  if (outOfOffice) {
-    return {
-      tone: 'readonly',
-      banner: w(
+  if ((role === 'editor' || role === 'approver') && saved && !inScope(actor, scope.ownerOffice)) {
+    return readOnly(
+      w(
         `This item belongs to ${office(ownerOffice)}, not to your office. You can look but not change it.`,
         'یہ آئٹم آپ کے دفتر کا نہیں ہے۔ آپ اسے دیکھ سکتے ہیں، بدل نہیں سکتے۔',
       ),
-      actions: [],
-      showPublish: false,
-      showSave: false,
-    }
+    )
   }
 
   const unverified = verification !== 'verified'
@@ -93,12 +96,11 @@ export function workflowView(input: WorkflowInput): WorkflowView {
     return {
       tone: 'info',
       banner: w(
-        'New item. Fill it in and press Save Draft. After it is saved you can send it for review.',
-        'نیا آئٹم۔ اسے بھریں اور مسودہ محفوظ کریں دبائیں۔ محفوظ ہونے کے بعد آپ اسے جائزے کے لیے بھیج سکتے ہیں۔',
+        'New item. Fill it in; it saves by itself as a draft. After the first save you can send it for review.',
+        'نیا آئٹم۔ اسے بھریں؛ یہ خود بخود مسودے کے طور پر محفوظ ہوتا ہے۔ پہلی بار محفوظ ہونے کے بعد آپ اسے جائزے کے لیے بھیج سکتے ہیں۔',
       ),
       actions: [],
       showPublish: false,
-      showSave: true,
     }
   }
 
@@ -107,52 +109,72 @@ export function workflowView(input: WorkflowInput): WorkflowView {
       return {
         tone: 'info',
         banner: w(
-          `Your draft. Press Save Draft to keep it. Contributors cannot send items for review: ask an editor of ${office(ownerOffice)} to send it.`,
-          'آپ کا مسودہ۔ اسے رکھنے کے لیے مسودہ محفوظ کریں دبائیں۔ معاونین جائزے کے لیے نہیں بھیج سکتے: اپنے دفتر کے ایڈیٹر سے کہیں۔',
+          `Your draft. It saves by itself. Contributors cannot send items for review: ask an editor of ${office(ownerOffice)} to send it.`,
+          'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ معاونین جائزے کے لیے نہیں بھیج سکتے: اپنے دفتر کے ایڈیٹر سے کہیں۔',
         ),
         actions: [],
         showPublish: false,
-        showSave: true,
       }
     }
-    return {
-      tone: 'readonly',
-      banner: w(
+    return readOnly(
+      w(
         `This item is ${WORKFLOW_LABELS[stage]}. Contributors can only change their own drafts.`,
         'یہ آئٹم اب آپ کے مسودے کے مرحلے میں نہیں۔ معاونین صرف اپنے مسودے بدل سکتے ہیں۔',
       ),
-      actions: [],
-      showPublish: false,
-      showSave: false,
-    }
+    )
   }
 
   // Editors, approvers, site managers and platform admins from here on.
   switch (stage) {
     case 'draft':
-      if (reviewer) {
+      if (reviewer && !mine) {
+        if (author === 'import') {
+          return {
+            tone: 'info',
+            banner: w(
+              'Brought in by the importer. Check it, mark it verified, then approve it.',
+              'درآمد کنندہ نے لایا ہے۔ اسے جانچیں، تصدیق شدہ کریں، پھر منظور کریں۔',
+            ),
+            actions: ['approve', ...verify],
+            showPublish: false,
+          }
+        }
         return {
           tone: 'info',
           banner: w(
-            'Draft. Save it, then approve it yourself or send it for a second review.',
-            'مسودہ۔ اسے محفوظ کریں، پھر خود منظور کریں یا دوسرے جائزے کے لیے بھیجیں۔',
+            'Someone else’s draft. It has not been sent for review, so there is nothing for you to approve yet. It will appear under Waiting for review when the author sends it.',
+            'یہ کسی اور کا مسودہ ہے۔ یہ جائزے کے لیے نہیں بھیجا گیا، اس لیے ابھی آپ کے لیے منظوری کو کچھ نہیں۔ بھیجے جانے پر یہ "جائزے کے منتظر" میں آئے گا۔',
           ),
-          actions: ['approve', 'sendForReview', ...verify],
+          actions: [],
           showPublish: false,
-          showSave: true,
         }
       }
       return {
         tone: 'info',
-        banner: w(
-          `Draft. Press Save Draft to keep your changes, then Send for review when it is ready. Your ${office(ownerOffice)} approver will see it under Waiting for review.`,
-          'مسودہ۔ تبدیلیاں رکھنے کے لیے مسودہ محفوظ کریں دبائیں، تیار ہو تو جائزے کے لیے بھیجیں۔ آپ کے دفتر کے منظوری دہندہ اسے "جائزے کے منتظر" میں دیکھیں گے۔',
-        ),
+        banner: reviewer
+          ? w(
+              'Your draft. It saves by itself. Send it for review: another approver must approve it, because nobody approves their own work.',
+              'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ جائزے کے لیے بھیجیں: کوئی دوسرا منظوری دہندہ منظور کرے گا، کیونکہ کوئی اپنا کام خود منظور نہیں کرتا۔',
+            )
+          : w(
+              `Draft. It saves by itself. Press Send for review when it is ready. Your ${office(ownerOffice)} approver will see it under Waiting for review.`,
+              'مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ تیار ہو تو جائزے کے لیے بھیجیں دبائیں۔ آپ کے دفتر کے منظوری دہندہ اسے "جائزے کے منتظر" میں دیکھیں گے۔',
+            ),
         actions: submitter ? ['sendForReview'] : [],
         showPublish: false,
-        showSave: true,
       }
     case 'in_review':
+      if (reviewer && mine) {
+        return {
+          tone: 'waiting',
+          banner: w(
+            'You wrote this, so you cannot approve it. Waiting for another approver.',
+            'یہ آپ نے لکھا ہے، اس لیے آپ اسے منظور نہیں کر سکتے۔ دوسرے منظوری دہندہ کا انتظار ہے۔',
+          ),
+          actions: [],
+          showPublish: false,
+        }
+      }
       if (reviewer) {
         return {
           tone: 'waiting',
@@ -162,7 +184,6 @@ export function workflowView(input: WorkflowInput): WorkflowView {
           ),
           actions: ['approve', 'sendBack', ...verify],
           showPublish: false,
-          showSave: true,
         }
       }
       return {
@@ -173,7 +194,6 @@ export function workflowView(input: WorkflowInput): WorkflowView {
         ),
         actions: [],
         showPublish: false,
-        showSave: false,
       }
     case 'approved':
       if (reviewer) {
@@ -181,8 +201,8 @@ export function workflowView(input: WorkflowInput): WorkflowView {
           tone: 'ready',
           banner: unverified
             ? w(
-                'Approved. Before it can be published, set Fact-check to Verified (Mark verified) and make sure the source is filled in.',
-                'منظور شدہ۔ شائع کرنے سے پہلے حقائق کی جانچ کو تصدیق شدہ کریں اور ماخذ بھریں۔',
+                'Approved. Before it can be published, press Mark verified and make sure the source is filled in. Then press Publish.',
+                'منظور شدہ۔ شائع کرنے سے پہلے تصدیق شدہ کریں دبائیں اور ماخذ بھریں۔ پھر شائع کریں دبائیں۔',
               )
             : w(
                 'Approved and verified. Press Publish to put it on the website.',
@@ -190,7 +210,6 @@ export function workflowView(input: WorkflowInput): WorkflowView {
               ),
           actions: ['sendBack', ...verify],
           showPublish: true,
-          showSave: true,
         }
       }
       return {
@@ -201,19 +220,17 @@ export function workflowView(input: WorkflowInput): WorkflowView {
         ),
         actions: [],
         showPublish: false,
-        showSave: false,
       }
     case 'published':
       if (reviewer) {
         return {
           tone: 'ready',
           banner: w(
-            'Live on the website. Changes are saved as a new draft first; Publish changes puts them live.',
+            'Live on the website. Changes save as a new draft first; Publish puts them live.',
             'ویب سائٹ پر شائع ہے۔ تبدیلیاں پہلے نئے مسودے کے طور پر محفوظ ہوتی ہیں؛ شائع کریں دبانے پر لائیو ہوتی ہیں۔',
           ),
           actions: verify,
           showPublish: true,
-          showSave: true,
         }
       }
       return {
@@ -224,20 +241,15 @@ export function workflowView(input: WorkflowInput): WorkflowView {
         ),
         actions: [],
         showPublish: false,
-        showSave: true,
       }
     case 'archived':
     default:
-      return {
-        tone: 'readonly',
-        banner: w(
+      return readOnly(
+        w(
           'Archived. It is no longer shown on the website. Only an approver or a platform admin can restore it.',
           'آرکائیو شدہ۔ یہ اب ویب سائٹ پر نہیں دکھتا۔ صرف منظوری دہندہ یا پلیٹ فارم ایڈمن اسے بحال کر سکتا ہے۔',
         ),
-        actions: [],
-        showPublish: false,
-        showSave: false,
-      }
+      )
   }
 }
 
@@ -261,7 +273,13 @@ export const STEP_DONE: Record<StepAction, Words> = {
     'Sent. Your approver sees it under Waiting for review.',
     'بھیج دیا گیا۔ منظوری دہندہ اسے "جائزے کے منتظر" میں دیکھے گا۔',
   ),
-  approve: w('Approved. An approver can now publish it.', 'منظور ہو گیا۔ اب منظوری دہندہ اسے شائع کر سکتا ہے۔'),
-  sendBack: w('Sent back to Draft. The editor can change it and send it again.', 'مسودے میں واپس بھیج دیا گیا۔'),
+  approve: w(
+    'Approved. An approver can now publish it.',
+    'منظور ہو گیا۔ اب منظوری دہندہ اسے شائع کر سکتا ہے۔',
+  ),
+  sendBack: w(
+    'Sent back to Draft. The editor can change it and send it again.',
+    'مسودے میں واپس بھیج دیا گیا۔',
+  ),
   markVerified: w('Marked as verified.', 'تصدیق شدہ نشان زد ہو گیا۔'),
 }

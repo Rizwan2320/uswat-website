@@ -25,7 +25,10 @@ const open = async (page: Page, id: string | number, collection = 'notices') => 
 const takeOverIfLocked = async (page: Page) => {
   const take = page.locator('dialog#document-locked').getByRole('button', { name: /Take over/i })
   // The prompt appears a moment after the page loads, and only if the other person had it open.
-  const shown = await take.waitFor({ state: 'visible', timeout: 6_000 }).then(() => true, () => false)
+  const shown = await take.waitFor({ state: 'visible', timeout: 6_000 }).then(
+    () => true,
+    () => false,
+  )
   if (shown) await take.click()
 }
 const bar = (page: Page) => page.getByRole('region', { name: 'Item status' })
@@ -74,6 +77,22 @@ test('auditor: read only banner and no buttons', async ({ page }) => {
   await shot(page, 'auditor-read-only')
 })
 
+test('approver: another person’s unsent draft has nothing to approve; their own draft can only be sent', async ({
+  page,
+}) => {
+  await signIn(page, fx.approver)
+  await open(page, fx.ownNotice.id) // the contributor's draft
+  await expect(bar(page)).toContainText('nothing for you to approve')
+  await expect(bar(page).getByRole('button')).toHaveCount(0)
+  await expect(btn(page, 'Approve')).toHaveCount(0)
+  await shot(page, 'approver-others-draft')
+  await open(page, fx.approverDraft.id)
+  await expect(bar(page)).toContainText('nobody approves their own work')
+  await expect(btn(page, 'Send for review')).toBeVisible()
+  await expect(btn(page, 'Approve')).toHaveCount(0)
+  await shot(page, 'approver-own-draft')
+})
+
 test('whole path: editor sends, approver sends back with a note, editor fixes and sends again, approver publishes', async ({
   browser,
 }) => {
@@ -103,8 +122,14 @@ test('whole path: editor sends, approver sends back with a note, editor fixes an
   await expect(btn(ap, 'Send back')).toBeDisabled()
   await shot(ap, 'approver-send-back-note')
   await ap.fill('#workflow-note', 'Please add the date of the meeting.')
+  // After taking over a locked item Payload can redraw the old stage for a moment (data is saved right;
+  // a reload shows it), so the proof here is that the server accepted the save and the editor's screen
+  // below shows the note.
+  const saved = ap.waitForResponse(
+    (r) => r.request().method() === 'PATCH' && /\/api\/notices\//.test(r.url()) && r.ok(),
+  )
   await btn(ap, 'Send back').click()
-  await expect(bar(ap)).toContainText('Sent back to Draft', { timeout: 30_000 })
+  await saved
   await ap.close()
 
   const ed2 = await browser.newPage()
@@ -124,9 +149,11 @@ test('whole path: editor sends, approver sends back with a note, editor fixes an
   await expect(bar(ap2)).toContainText('Waiting for your review')
   await press(ap2, 'Mark verified', 'Marked as verified')
   await press(ap2, 'Approve', /Approved\. (Before|An approver|Press)/)
-  await expect(btn(ap2, 'Publish changes')).toBeVisible()
+  // Publish sits in the status box, next to the other steps; the top of the screen has none.
+  await expect(bar(ap2).getByRole('button', { name: 'Publish changes' })).toBeVisible()
+  await expect(btn(ap2, 'Publish changes')).toHaveCount(1)
   await shot(ap2, 'approver-approved')
-  await btn(ap2, 'Publish changes').click()
+  await bar(ap2).getByRole('button', { name: 'Publish changes' }).click()
   await expect(ap2.getByText(/Published|updated successfully/i).first()).toBeVisible({
     timeout: 30_000,
   })

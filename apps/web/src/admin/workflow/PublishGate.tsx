@@ -1,37 +1,15 @@
 'use client'
 
-import { PublishButton, useAuth, useField } from '@payloadcms/ui'
-import React from 'react'
-
-import {
-  actorFromUser,
-  type RiskClass,
-  type VerificationStatus,
-  type WorkflowStatus,
-} from '../../governance/roles'
-import { workflowView } from './rules'
+import type React from 'react'
 
 /**
- * Payload's Publish button, shown only when the role may publish this item (slice 3aa).
- * Everyone else sees no Publish at all, instead of a button the policy refuses after the click.
+ * Replaces Payload's Publish button at the top of the screen with nothing (slice 3aa).
+ * The Publish button now sits in the coloured status box (WorkflowBar), next to the other steps,
+ * only for roles that may publish and only once the item is Approved, so there is one place to act
+ * and it does not scroll out of sight. Everyone else never sees a Publish button.
  */
 export function PublishGate(): React.ReactElement | null {
-  const { user } = useAuth()
-  const stage = useField<WorkflowStatus>({ path: 'governance.status' })
-  const verification = useField<VerificationStatus>({ path: 'governance.verificationStatus' })
-  const risk = useField<RiskClass>({ path: 'governance.riskClass' })
-  const owner = useField<string>({ path: 'governance.ownerOffice' })
-  if (!user) return null
-  const view = workflowView({
-    actor: actorFromUser(user as never),
-    stage: stage.value ?? 'draft',
-    verification: verification.value ?? 'unverified',
-    risk: risk.value ?? 'standard',
-    ownerOffice: owner.value ?? null,
-    saved: true,
-    mine: true,
-  })
-  return view.showPublish ? <PublishButton /> : null
+  return null
 }
 
 export default PublishGate
