@@ -5,12 +5,14 @@ import { COPY } from './copy'
 import SignOutButton from './SignOutButton'
 
 /** Header and main landmark. `email` present means a signed-in page (shows navigation and sign-out). */
-export default function Shell({ email, wide, children }: { email?: string | null; wide?: boolean; children: ReactNode }) {
+export default function Shell({ email, wide, pending, children }: { email?: string | null; wide?: boolean; pending?: boolean; children: ReactNode }) {
   return (
     <>
       <header className="portal-head">
         <Link className="portal-brand" href={email ? '/portal' : '/portal/sign-in'}>{COPY.siteName}</Link>
-        {email ? (
+        {email && pending ? (
+          <nav className="portal-nav" aria-label="Portal"><SignOutButton /></nav>
+        ) : email ? (
           <nav className="portal-nav" aria-label="Portal">
             <Link href="/portal">{COPY.nav.home}</Link>
             <Link href="/portal/profile">{COPY.nav.profile}</Link>

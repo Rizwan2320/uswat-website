@@ -35,6 +35,7 @@
     "identity:purge": "tsx scripts/identity-purge.ts",
     "identity:alerts": "tsx scripts/identity-alerts.ts",
     "identity:roles": "tsx scripts/identity-roles.ts",
+    "identity:invite": "tsx scripts/identity-invite.ts",
     "identity:courses-import": "tsx scripts/courses-import.ts"
   },
   "dependencies": {

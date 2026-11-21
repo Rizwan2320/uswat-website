@@ -11,6 +11,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { totpAt } from '../../helpers/totp'
 import { readPortalConfig } from '@/modules/identity/config'
 import { createPortalAuth, type PortalAuth } from '@/modules/identity/auth'
+import { createPgStatusStore } from '@/modules/identity/accountStatus'
 import { createPgAssuranceStore } from '@/modules/identity/assuranceStore'
 import { createRecoveryService } from '@/modules/identity/recoveryService'
 import { createPgAttemptStore, createPgRecoveryStore } from '@/modules/identity/recoveryStore'
@@ -37,6 +38,9 @@ import { createPgCourseStore } from '@/modules/portal/courses/pgStore'
 import { LIMITS as COURSE_LIMITS } from '@/modules/portal/courses/rules'
 import type { CourseInput } from '@/modules/portal/courses/types'
 import { createPgReviewStore } from '@/modules/portal/review/pgStore'
+import { createPgActivationStore } from '@/modules/portal/activation/pgStore'
+import { createClaimService } from '@/modules/identity/claimService'
+import { createPgInvitationStore, hashToken, INVITATION_TTL_MS, type InvitationStore } from '@/modules/identity/invitations'
 import { createPgRoleStore } from '@/modules/portal/review/roles'
 
 const DB = process.env.IDENTITY_TEST_DATABASE_URL
@@ -75,7 +79,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue', '0012_claim_activation'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -118,6 +122,7 @@ describe.skipIf(!DB)('portal auth API with the real library (FPR-01, PJ2, SES-05
       getAuth: () => auth as unknown as AuthLike,
       loadFactors: (id) => loadFactors(pool, id),
       isStrongSession: (id) => createPgAssuranceStore(pool).isStrong(id),
+      accountStatus: (id) => createPgStatusStore(pool).get(id),
       lastVerifiedAt: (id) => createPgAssuranceStore(pool).lastVerifiedAt(id),
       endSession: (id) => createPgSessionStore(pool).end(id),
       touchSession: (id, now) => createPgSessionStore(pool).touch(id, now),
@@ -584,6 +589,7 @@ describe.skipIf(!DB)('step-up (AUTH-09) and session rotation (SES-03) with the r
       getAuth: () => auth as unknown as AuthLike,
       loadFactors: (id) => loadFactors(pool, id),
       isStrongSession: (id) => createPgAssuranceStore(pool).isStrong(id),
+      accountStatus: (id) => createPgStatusStore(pool).get(id),
       lastVerifiedAt: (id) => createPgAssuranceStore(pool).lastVerifiedAt(id),
       endSession: (id) => createPgSessionStore(pool).end(id),
       touchSession: (id, now) => createPgSessionStore(pool).touch(id, now),
@@ -754,6 +760,7 @@ describe.skipIf(!DB)('shared computer (SES-04) with the real library', () => {
       getAuth: () => auth as unknown as AuthLike,
       loadFactors: (id) => loadFactors(pool, id),
       isStrongSession: (id) => createPgAssuranceStore(pool).isStrong(id),
+      accountStatus: (id) => createPgStatusStore(pool).get(id),
       lastVerifiedAt: (id) => createPgAssuranceStore(pool).lastVerifiedAt(id),
       isSharedSession: (id) => createPgSharedStore(pool).isShared(id),
       endSession: (id) => createPgSessionStore(pool).end(id),
@@ -1478,6 +1485,7 @@ describe.skipIf(!DB)('security centre (FP-51, PJ8), PostgreSQL and the real libr
       getAuth: () => auth as unknown as AuthLike,
       loadFactors: (id) => loadFactors(pool, id),
       isStrongSession: (id) => createPgAssuranceStore(pool).isStrong(id),
+      accountStatus: (id) => createPgStatusStore(pool).get(id),
       lastVerifiedAt: (id) => createPgAssuranceStore(pool).lastVerifiedAt(id),
       endSession: (id) => createPgSessionStore(pool).end(id),
       touchSession: (id, now) => createPgSessionStore(pool).touch(id, now),
@@ -2152,7 +2160,7 @@ describe.skipIf(!DB)('department reviewer queue (FP-16, FPR-04, PJ4), PostgreSQL
       expect(await roles().grantReviewer(a.email)).toBe('ok')
       expect(await roles().grantReviewer(a.email)).toBe('ok')
       const row = (await roles().list()).find((r) => r.email === a.email)
-      expect(row).toEqual({ email: a.email, department: 'Computer Science', reviewer: true })
+      expect(row).toEqual({ email: a.email, department: 'Computer Science', reviewer: true, head: false })
       expect(await roles().revokeReviewer(a.email)).toBe('ok')
       expect(await roles().revokeReviewer(a.email)).toBe('not-reviewer')
     })
@@ -2163,6 +2171,354 @@ describe.skipIf(!DB)('department reviewer queue (FP-16, FPR-04, PJ4), PostgreSQL
       const a = await account('a')
       for (const bad of ['', '   ', 'x'.repeat(81), 'a\u202Eb']) expect(await roles().setDepartment(a.email, bad)).toBe('invalid')
       expect((await pool().query(`select 1 from "account_department" where "userId" = $1`, [a.id])).rowCount).toBe(0)
+    })
+  })
+})
+
+describe.skipIf(!DB)('claim by invitation and activation by the department head (FP-17, FP-01, PJ1), PostgreSQL and the real library', () => {
+  let auth: PortalAuth
+  let h: ReturnType<typeof createAuthHandlers>
+  const pool = () => getIdentityPool(DB!)
+  const invitations = () => createPgInvitationStore(pool())
+  const heads = () => createPgActivationStore(pool())
+  const roles = () => createPgRoleStore(pool())
+  const statuses = () => createPgStatusStore(pool())
+  const NOW = Date.UTC(2026, 10, 21, 9)
+  const PW = 'a sample claim password 15+'
+  let seq = 0
+  const uniq = () => `${Date.now()}-${++seq}-${Math.random().toString(36).slice(2, 6)}`
+  const dept = () => `Dept ${Math.random().toString(36).slice(2, 8)}`
+
+  function claimer(over: { invitations?: Pick<InvitationStore, 'peek' | 'consume'>; now?: () => number } = {}) {
+    return createClaimService({
+      invitations: over.invitations ?? invitations(),
+      accounts: {
+        create: async ({ email, password, name }) => ({ id: (await auth.api.signUpEmail({ body: { email, password, name } })).user.id }),
+        remove: async (id) => void (await pool().query(`delete from "user" where "id" = $1`, [id])),
+        endSessions: async (id) => void (await pool().query(`delete from "session" where "userId" = $1`, [id])),
+      },
+      now: over.now ?? (() => NOW),
+    })
+  }
+  let tick = 0
+  const invite = async (department = dept(), at = NOW) => {
+    const email = `claim-${uniq()}@example.invalid`
+    const recordRef = `rec_${uniq()}`.replace(/[^A-Za-z0-9_-]/g, '_')
+    const made = await invitations().create({ recordRef, email, name: 'Sample Claimant', department }, at)
+    return { ...made, email, recordRef, department }
+  }
+  const userByEmail = async (email: string) => (await pool().query<{ id: string }>(`select "id" from "user" where "email" = $1`, [email])).rows[0]?.id ?? null
+  const statusOf = async (id: string) => (await pool().query<{ status: string }>(`select "status" from "account_status" where "userId" = $1`, [id])).rows[0]?.status ?? null
+
+  let jarSeq = 0
+  class Jar {
+    readonly ip = `198.19.${Math.floor(++jarSeq / 250)}.${(jarSeq % 250) + 1}`
+    private c = new Map<string, string>()
+    header() { return [...this.c].map(([k, v]) => `${k}=${v}`).join('; ') }
+    absorb(res: Response) {
+      for (const line of res.headers.getSetCookie()) {
+        const [pair] = line.split(';')
+        const i = pair!.indexOf('=')
+        const name = pair!.slice(0, i), val = pair!.slice(i + 1)
+        if (val === '' || /max-age=0/i.test(line)) this.c.delete(name)
+        else this.c.set(name, val)
+      }
+    }
+  }
+  async function call(jar: Jar, method: 'GET' | 'POST', path: string, body?: unknown) {
+    const res = await h[method](new Request(`${BASE}${path}`, { method, headers: { 'content-type': 'application/json', origin: ORIGIN, cookie: jar.header(), 'x-real-ip': jar.ip }, body: body === undefined ? undefined : JSON.stringify(body) }))
+    jar.absorb(res)
+    return res
+  }
+  /** What the person does after claiming: sign in with the password, then enrol an authenticator (the first factor). */
+  async function enrol(email: string, password = PW) {
+    const jar = new Jar()
+    expect((await call(jar, 'POST', '/sign-in/email', { email, password })).status).toBe(200)
+    const enable = (await (await call(jar, 'POST', '/two-factor/enable', { password })).json()) as { totpURI: string }
+    const secret = new URL(enable.totpURI).searchParams.get('secret') ?? ''
+    expect((await call(jar, 'POST', '/two-factor/verify-totp', { code: totpAt(secret, Date.now() - 30_000) })).status).toBe(200)
+    return jar
+  }
+  /** A claimed and enrolled person, pending activation, in `department`. */
+  async function pending(department: string) {
+    const inv = await invite(department)
+    // Each claim a minute after the last, so "oldest first" is a real order and not a tie.
+    expect(await claimer({ now: () => NOW + ++tick * 60_000 }).claim(inv.token, PW)).toEqual({ ok: true })
+    const id = (await userByEmail(inv.email))!
+    const jar = await enrol(inv.email)
+    return { ...inv, id, jar }
+  }
+  async function head(department: string) {
+    const email = `head-${uniq()}@example.invalid`
+    const id = (await auth.api.signUpEmail({ body: { email, password: PW, name: 'Sample Head' } })).user.id
+    await pool().query(`delete from "session" where "userId" = $1`, [id])
+    expect(await roles().setDepartment(email, department)).toBe('ok')
+    expect(await roles().grantHead(email)).toBe('ok')
+    return { id, email }
+  }
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+    const config = readPortalConfig(env)
+    if (!config.enabled) throw new Error(`config: ${config.reason}`)
+    auth = createPortalAuth(config)
+    const p = getIdentityPool(config.databaseUrl)
+    h = createAuthHandlers({
+      env,
+      getAuth: () => auth as unknown as AuthLike,
+      loadFactors: (id) => loadFactors(p, id),
+      isStrongSession: (id) => createPgAssuranceStore(p).isStrong(id),
+      accountStatus: (id) => createPgStatusStore(p).get(id),
+      lastVerifiedAt: (id) => createPgAssuranceStore(p).lastVerifiedAt(id),
+      endSession: (id) => createPgSessionStore(p).end(id),
+      touchSession: (id, now) => createPgSessionStore(p).touch(id, now),
+      signInThrottle: createSignInThrottle({ store: createPgThrottleStore(p) }),
+    })
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  describe('invitations', () => {
+    it('store only a hash, last exactly 72 hours, and are found only by the exact token', async () => {
+      const i = await invite()
+      const row = (await pool().query(`select "tokenHash","expiresAt","createdAt" from "invitation" where "recordRef" = $1`, [i.recordRef])).rows[0]
+      expect(row.tokenHash).toBe(hashToken(i.token))
+      expect(JSON.stringify(row)).not.toContain(i.token)
+      expect(row.expiresAt.getTime() - row.createdAt.getTime()).toBe(INVITATION_TTL_MS)
+      expect(i.expiresAt).toBe(NOW + INVITATION_TTL_MS)
+      expect(await invitations().peek(i.token, NOW)).toMatchObject({ email: i.email, department: i.department })
+      for (const bad of [i.token.slice(0, -1) + (i.token.endsWith('A') ? 'B' : 'A'), '', 'x'.repeat(43), "' or 1=1 --", `${i.token} `]) expect(await invitations().peek(bad, NOW), bad).toBeNull()
+    })
+    it('are open until the second they expire, and no longer after', async () => {
+      const i = await invite()
+      expect(await invitations().peek(i.token, NOW + INVITATION_TTL_MS - 1)).not.toBeNull()
+      expect(await invitations().peek(i.token, NOW + INVITATION_TTL_MS)).toBeNull()
+      expect(await invitations().peek(i.token, NOW + INVITATION_TTL_MS + 1)).toBeNull()
+    })
+    it('inviting the same record again revokes the earlier link', async () => {
+      const a = await invite()
+      const b = await invitations().create({ recordRef: a.recordRef, email: a.email, name: 'Sample Claimant', department: a.department }, NOW + 1000)
+      expect(await invitations().peek(a.token, NOW + 1000)).toBeNull()
+      expect(await invitations().peek(b.token, NOW + 1000)).not.toBeNull()
+      expect((await pool().query(`select count(*)::int as n from "invitation" where "recordRef" = $1 and "usedAt" is null and "revokedAt" is null`, [a.recordRef])).rows[0].n).toBe(1)
+      expect(await claimer().claim(a.token, PW)).toEqual({ ok: false, error: 'unavailable' })
+    })
+    it('the database refuses a second open invitation for a record and an expiry before creation', async () => {
+      const a = await invite()
+      const ins = (ref: string, exp: string) => pool().query(`insert into "invitation" ("tokenHash","recordRef","email","name","department","expiresAt") values ($1,$2,'a@b.invalid','n','d',${exp})`, [hashToken(`${Math.random()}`), ref])
+      await expect(ins(a.recordRef, `now() + interval '1 day'`)).rejects.toThrow()
+      await expect(ins(`rec_${uniq()}`, `now() - interval '1 day'`)).rejects.toThrow()
+    })
+  })
+
+  describe('claiming', () => {
+    it('creates a pending account in the invited department with the claim recorded, no session, and the password signs in', async () => {
+      const i = await invite()
+      expect(await claimer().claim(i.token, PW)).toEqual({ ok: true })
+      const id = (await userByEmail(i.email))!
+      expect(await statusOf(id)).toBe('pending-activation')
+      expect((await pool().query(`select "department" from "account_department" where "userId" = $1`, [id])).rows[0].department).toBe(i.department)
+      const inv = (await pool().query(`select "usedAt","userId" from "invitation" where "recordRef" = $1`, [i.recordRef])).rows[0]
+      expect(inv.userId).toBe(id)
+      expect(inv.usedAt.getTime()).toBe(NOW)
+      expect((await pool().query(`select count(*)::int as n from "session" where "userId" = $1`, [id])).rows[0].n).toBe(0)
+      expect((await call(new Jar(), 'POST', '/sign-in/email', { email: i.email, password: PW })).status).toBe(200)
+    })
+    it('works once: the same link again, an expired link and a made-up link all give the same answer', async () => {
+      const i = await invite()
+      expect(await claimer().claim(i.token, PW)).toEqual({ ok: true })
+      const again = await claimer().claim(i.token, PW)
+      const old = await invite(dept(), NOW - INVITATION_TTL_MS - 5000)
+      const expired = await claimer().claim(old.token, PW)
+      const unknown = await claimer().claim('x'.repeat(43), PW)
+      expect([again, expired, unknown]).toEqual([{ ok: false, error: 'unavailable' }, { ok: false, error: 'unavailable' }, { ok: false, error: 'unavailable' }])
+      expect(await userByEmail(old.email)).toBeNull()
+    })
+    it('two people using one link at once: one account, one pending status', async () => {
+      const i = await invite()
+      const results = await Promise.all([claimer().claim(i.token, PW), claimer().claim(i.token, `${PW} second`)])
+      expect(results.filter((r) => r.ok)).toHaveLength(1)
+      expect((await pool().query(`select count(*)::int as n from "user" where "email" = $1`, [i.email])).rows[0].n).toBe(1)
+      const id = (await userByEmail(i.email))!
+      expect(await statusOf(id)).toBe('pending-activation')
+      expect((await pool().query(`select count(*)::int as n from "account_status" where "userId" = $1`, [id])).rows[0].n).toBe(1)
+    })
+    it('the store itself uses a link once: a second consume for another account changes nothing (not only the claim service guards this)', async () => {
+      const i = await invite()
+      const mk = async () => (await auth.api.signUpEmail({ body: { email: `direct-${uniq()}@example.invalid`, password: PW, name: 'Direct' } })).user.id
+      const u1 = await mk()
+      const u2 = await mk()
+      expect(await invitations().consume(i.token, u1, NOW)).toBe('ok')
+      expect(await invitations().consume(i.token, u2, NOW)).toBe('unavailable')
+      expect(await statusOf(u1)).toBe('pending-activation')
+      expect(await statusOf(u2)).toBeNull()
+      expect((await pool().query(`select "userId" from "invitation" where "recordRef" = $1`, [i.recordRef])).rows[0].userId).toBe(u1)
+    })
+    it('a short password changes nothing and the link stays usable', async () => {
+      const i = await invite()
+      expect(await claimer().claim(i.token, 'too short')).toEqual({ ok: false, error: 'password' })
+      expect(await userByEmail(i.email)).toBeNull()
+      expect(await claimer().claim(i.token, PW)).toEqual({ ok: true })
+    })
+    it('an address that already has an account is refused like any bad link, and the link is not used up', async () => {
+      const i = await invite()
+      await auth.api.signUpEmail({ body: { email: i.email, password: PW, name: 'Someone else' } })
+      expect(await claimer().claim(i.token, PW)).toEqual({ ok: false, error: 'unavailable' })
+      expect(await invitations().peek(i.token, NOW)).not.toBeNull()
+    })
+    it('if using the link fails, the new account is removed and not left active with no status row', async () => {
+      const i = await invite()
+      const broken = claimer({ invitations: { peek: (t, n) => invitations().peek(t, n), consume: async () => { throw new Error('db down') } } })
+      await expect(broken.claim(i.token, PW)).rejects.toThrow('db down')
+      expect(await userByEmail(i.email)).toBeNull()
+      expect(await claimer().claim(i.token, PW)).toEqual({ ok: true })
+    })
+    it('a record that was already claimed cannot be claimed again by a second link', async () => {
+      const first = await invite()
+      expect(await claimer().claim(first.token, PW)).toEqual({ ok: true })
+      const second = await invitations().create({ recordRef: first.recordRef, email: `other-${uniq()}@example.invalid`, name: 'Impostor', department: first.department }, NOW)
+      const before = (await pool().query(`select count(*)::int as n from "user"`)).rows[0].n
+      expect(await claimer().claim(second.token, PW)).toEqual({ ok: false, error: 'unavailable' })
+      expect((await pool().query(`select count(*)::int as n from "user"`)).rows[0].n).toBe(before)
+    })
+  })
+
+  describe('a pending account', () => {
+    it('can enrol and read its session, but every other endpoint is refused with a pointer to the waiting page', async () => {
+      const p = await pending(dept())
+      expect((await call(p.jar, 'GET', '/get-session')).status).toBe(200)
+      const res = await call(p.jar, 'GET', '/passkey/list-user-passkeys')
+      expect(res.status).toBe(403)
+      expect(await res.json()).toMatchObject({ error: 'account not active', redirectTo: '/portal/pending' })
+      expect((await call(p.jar, 'POST', '/passkey/delete-passkey', { id: 'x' })).status).toBe(403)
+      expect((await call(p.jar, 'POST', '/two-factor/disable', { password: PW })).status).toBe(403)
+    })
+    it('is let in the moment the head activates it, with the same session', async () => {
+      const d = dept()
+      const p = await pending(d)
+      const hd = await head(d)
+      expect(await heads().decide(hd.id, { subjectId: p.id, decision: 'activated' }, NOW)).toBe('ok')
+      expect((await call(p.jar, 'GET', '/passkey/list-user-passkeys')).status).toBe(200)
+    })
+    it('a suspended or left account is signed out at once and cannot sign in to anything', async () => {
+      const d = dept()
+      const p = await pending(d)
+      const hd = await head(d)
+      await heads().decide(hd.id, { subjectId: p.id, decision: 'activated' }, NOW)
+      expect(await statuses().set(p.id, 'left', NOW)).toBe('ok')
+      expect((await call(p.jar, 'GET', '/passkey/list-user-passkeys')).status).toBe(401)
+      expect((await pool().query(`select count(*)::int as n from "session" where "userId" = $1`, [p.id])).rows[0].n).toBe(0)
+      expect(await statuses().set('no-such-user', 'left', NOW)).toBe('no-account')
+    })
+  })
+
+  describe('activation by the department head', () => {
+    it('lists only enrolled pending people from the head’s own department (case ignored), oldest first, never the head', async () => {
+      const d = dept()
+      const hd = await head(d)
+      const a = await pending(d.toUpperCase())
+      const b = await pending(d)
+      const other = await pending(dept())
+      const notEnrolled = await invite(d)
+      await claimer().claim(notEnrolled.token, PW)
+      const items = await heads().listPending(hd.id)
+      expect(items.map((i) => i.subjectId)).toEqual([a.id, b.id])
+      expect(items[0]).toMatchObject({ email: a.email, recordRef: a.recordRef })
+      expect(items.map((i) => i.subjectId)).not.toContain(other.id)
+      expect(await heads().isHead(hd.id)).toBe(true)
+      expect(await heads().isHead(a.id)).toBe(false)
+      expect(await heads().listPending(a.id)).toEqual([])
+    })
+    it('activate confirms the person, records who and when, and appends to the log', async () => {
+      const d = dept()
+      const hd = await head(d)
+      const p = await pending(d)
+      expect(await heads().decide(hd.id, { subjectId: p.id, decision: 'activated' }, NOW)).toBe('ok')
+      expect(await statusOf(p.id)).toBe('active')
+      const row = (await pool().query(`select "activatedBy","activatedAt" from "account_status" where "userId" = $1`, [p.id])).rows[0]
+      expect(row.activatedBy).toBe(hd.id)
+      expect(row.activatedAt.getTime()).toBe(NOW)
+      expect((await pool().query(`select "decision","reviewerId" from "account_review" where "userId" = $1`, [p.id])).rows).toEqual([{ decision: 'activated', reviewerId: hd.id }])
+    })
+    it('decline suspends the account and ends its sessions', async () => {
+      const d = dept()
+      const hd = await head(d)
+      const p = await pending(d)
+      expect(await heads().decide(hd.id, { subjectId: p.id, decision: 'declined' }, NOW)).toBe('ok')
+      expect(await statusOf(p.id)).toBe('suspended')
+      expect((await pool().query(`select count(*)::int as n from "session" where "userId" = $1`, [p.id])).rows[0].n).toBe(0)
+      expect((await call(p.jar, 'GET', '/get-session')).status).not.toBe(200)
+    })
+    it('is refused for another department, a non-head, oneself, a stranger and a revoked head, and changes nothing', async () => {
+      const d = dept()
+      const p = await pending(d)
+      const otherHead = await head(dept())
+      const plain = await pending(d)
+      const revoked = await head(d)
+      expect(await roles().revokeHead(revoked.email)).toBe('ok')
+      for (const who of [otherHead.id, plain.id, p.id, 'no-such-user', revoked.id]) {
+        expect(await heads().decide(who, { subjectId: p.id, decision: 'activated' }, NOW), who).toBe('forbidden')
+      }
+      expect(await statusOf(p.id)).toBe('pending-activation')
+      expect((await pool().query(`select count(*)::int as n from "account_review" where "userId" = $1`, [p.id])).rows[0].n).toBe(0)
+    })
+    it('a head cannot activate themselves even if their own account is pending', async () => {
+      const d = dept()
+      const hd = await head(d)
+      await pool().query(`insert into "account_status" ("userId","status") values ($1,'pending-activation')`, [hd.id])
+      expect(await heads().decide(hd.id, { subjectId: hd.id, decision: 'activated' }, NOW)).toBe('forbidden')
+    })
+    it('applies once, and not before a second factor is enrolled', async () => {
+      const d = dept()
+      const hd = await head(d)
+      const p = await pending(d)
+      expect(await heads().decide(hd.id, { subjectId: p.id, decision: 'activated' }, NOW)).toBe('ok')
+      expect(await heads().decide(hd.id, { subjectId: p.id, decision: 'declined' }, NOW)).toBe('stale')
+      const i = await invite(d)
+      await claimer().claim(i.token, PW)
+      const id = (await userByEmail(i.email))!
+      expect(await heads().decide(hd.id, { subjectId: id, decision: 'activated' }, NOW)).toBe('stale')
+      expect(await statusOf(id)).toBe('pending-activation')
+    })
+    it('two heads deciding at once: one succeeds, one is stale, one log entry', async () => {
+      const d = dept()
+      const h1 = await head(d)
+      const h2 = await head(d)
+      const p = await pending(d)
+      const r = await Promise.all([heads().decide(h1.id, { subjectId: p.id, decision: 'activated' }, NOW), heads().decide(h2.id, { subjectId: p.id, decision: 'declined' }, NOW)])
+      expect([...r].sort()).toEqual(['ok', 'stale'])
+      expect((await pool().query(`select count(*)::int as n from "account_review" where "userId" = $1`, [p.id])).rows[0].n).toBe(1)
+    })
+    it('the log is append-only, keeps the entry when the head’s account goes, and goes with the person', async () => {
+      const d = dept()
+      const hd = await head(d)
+      const p = await pending(d)
+      await heads().decide(hd.id, { subjectId: p.id, decision: 'activated' }, NOW)
+      for (const sql of [`update "account_review" set "decision" = 'declined' where "userId" = $1`, `update "account_review" set "at" = now() where "userId" = $1`, `update "account_review" set "reviewerId" = "userId" where "userId" = $1`]) {
+        await expect(pool().query(sql, [p.id])).rejects.toThrow(/append-only/)
+      }
+      await pool().query(`delete from "user" where "id" = $1`, [hd.id])
+      expect((await pool().query(`select "reviewerId" from "account_review" where "userId" = $1`, [p.id])).rows[0].reviewerId).toBeNull()
+      await pool().query(`delete from "user" where "id" = $1`, [p.id])
+      for (const t of ['account_review', 'account_status', 'account_department']) expect((await pool().query(`select 1 from "${t}" where "userId" = $1`, [p.id])).rowCount).toBe(0)
+    })
+  })
+
+  describe('status rules', () => {
+    it('an account with no status row is active, and the database refuses an unknown status', async () => {
+      const email = `legacy-${uniq()}@example.invalid`
+      const id = (await auth.api.signUpEmail({ body: { email, password: PW, name: 'Legacy' } })).user.id
+      expect(await statuses().get(id)).toBe('active')
+      await expect(pool().query(`insert into "account_status" ("userId","status") values ($1,'admin')`, [id])).rejects.toThrow()
+    })
+    it('heads and statuses are set only by the operator command (store level): a head needs a department', async () => {
+      const email = `nodept-${uniq()}@example.invalid`
+      await auth.api.signUpEmail({ body: { email, password: PW, name: 'No Dept' } })
+      expect(await roles().grantHead(email)).toBe('no-department')
+      expect(await roles().grantHead('nobody@example.invalid')).toBe('no-account')
+      expect(await roles().revokeHead(email)).toBe('not-reviewer')
     })
   })
 })

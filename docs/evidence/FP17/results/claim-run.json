@@ -1,0 +1,145 @@
+{
+  "at": "2026-11-21T05:35:44.116Z",
+  "results": [
+    {
+      "id": "C1 the invite command refuses a bad address and writes nothing",
+      "ok": true,
+      "note": "{\"result\":\"invalid\",\"field\":\"email\"}"
+    },
+    {
+      "id": "C2 the command prints one claim link with a 43-character token and says no email is sent",
+      "ok": true,
+      "note": "http://localhost:3040/portal/claim/<token>"
+    },
+    {
+      "id": "C3 only a hash of the token is stored",
+      "ok": true,
+      "note": "token not found in the row"
+    },
+    {
+      "id": "C4 inviting the same record again closes the first link",
+      "ok": true,
+      "note": "first link shows the unavailable page"
+    },
+    {
+      "id": "C5 the link page is sent no-referrer and noindex",
+      "ok": true,
+      "note": "no-referrer, noindex, nofollow"
+    },
+    {
+      "id": "C6 the page names the person and the address the link was sent to, nothing else",
+      "ok": true,
+      "note": "This invitation is for Dr Ayesha Sample, sent to ayesha.sample@example.invalid. "
+    },
+    {
+      "id": "C7 a short password and two different passwords are refused beside the form, and nothing is created",
+      "ok": true,
+      "note": "Use at least 15 characters. / The two passwords are not the same."
+    },
+    {
+      "id": "C8 a good password creates the account and sends the person to sign in, with a notice that says what comes next",
+      "ok": true,
+      "note": "notice shown"
+    },
+    {
+      "id": "C9 the account is pending, in the invited department, with the claim recorded",
+      "ok": true,
+      "note": "pending-activation"
+    },
+    {
+      "id": "C10 a used link, a made-up link and a malformed link all show the same page",
+      "ok": true,
+      "note": "identical text, no name"
+    },
+    {
+      "id": "C11 after signing in and adding a passkey the person lands on the waiting page",
+      "ok": true,
+      "note": "/portal/pending"
+    },
+    {
+      "id": "C12 the waiting page offers only Sign out",
+      "ok": true,
+      "note": "\"Sign out\""
+    },
+    {
+      "id": "C13 every other portal page sends a pending person back to the waiting page",
+      "ok": true,
+      "note": "/portal/pending /portal/pending /portal/pending /portal/pending /portal/pending /portal/pending"
+    },
+    {
+      "id": "C14 the API refuses a pending person too, except reading the session",
+      "ok": true,
+      "note": "list 403, session 200"
+    },
+    {
+      "id": "C15 a head of another department sees nobody waiting",
+      "ok": true,
+      "note": "empty list"
+    },
+    {
+      "id": "C16 the head sees the link on the home page",
+      "ok": true,
+      "note": "link shown"
+    },
+    {
+      "id": "C17 the head sees the pending person with the invited address",
+      "ok": true,
+      "note": "Dr Ayesha Sample / "
+    },
+    {
+      "id": "C18 with an old confirmation the buttons are off and the page says why",
+      "ok": true,
+      "note": "disabled with notice"
+    },
+    {
+      "id": "C19 Confirm works from the keyboard, the notice says so and the list is empty",
+      "ok": true,
+      "note": "confirmed"
+    },
+    {
+      "id": "C20 the person is active, with who confirmed them and when, and the decision is logged",
+      "ok": true,
+      "note": "active"
+    },
+    {
+      "id": "C21 the person is let in with the same session: the waiting page sends them home and the profile opens",
+      "ok": true,
+      "note": "/portal then profile"
+    },
+    {
+      "id": "C22 declining closes the account and ends its sessions",
+      "ok": true,
+      "note": "suspended, no sessions"
+    },
+    {
+      "id": "C23 the declined person is signed out on the next click",
+      "ok": true,
+      "note": "/portal/sign-in"
+    },
+    {
+      "id": "C24 signing in again gets them nowhere: no portal page, and no redirect loop",
+      "ok": true,
+      "note": "/portal/sign-in"
+    },
+    {
+      "id": "C25 an invitation older than 72 hours shows the same unavailable page and creates nothing",
+      "ok": true,
+      "note": "expired"
+    },
+    {
+      "id": "C26 someone already signed in who opens a link is sent home, not shown it",
+      "ok": true,
+      "note": "/portal"
+    },
+    {
+      "id": "C27 at 390 px the claim page and the activation page (with a long name and address in the row) do not scroll sideways and the buttons stay on screen",
+      "ok": true,
+      "note": "claim 390,390, activate 390,390, button 31..145"
+    },
+    {
+      "id": "C28 marking someone as left ends their session the same moment",
+      "ok": true,
+      "note": "{\"command\":\"set-status\",\"result\":\"ok\"} -> /portal/sign-in"
+    }
+  ]
+}
