@@ -678,3 +678,8 @@ P3 agent (slice 3a), own entry:
 - Checks run: tsc, eslint, unit tests (720 pass), 36 page loads (no overflow, no axe issues). Not run: production build, e2e, pack integrity test (#94).
 - Next: confirm on the Vercel preview; owner to choose the next department to roll out.
 
+### DCST pages, round five (2026-11-21, branch `p4/real-departments`, prediction A4-w)
+- The six banners were replaced with the owner's brighter set (`public/images/academics/banner-{dcst,cs,se,it,ds,ai}.webp`). The new DCST picture said "Technology", so "ies" was composited in again.
+- Picture band cut 30%: height 21.7vw (296 px at 1366, was 423). Breadcrumbs moved into a slim strip above the picture (they no longer cover the title). The title block of every banner is fully visible; the bottom icon row is cropped at desktop widths. Phones keep the full 16:9 picture.
+- Checks run: tsc, eslint, 720 unit tests, 36 page loads (no overflow, no axe issues). Not run: production build, e2e, pack integrity test (#94).
+

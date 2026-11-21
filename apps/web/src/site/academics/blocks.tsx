@@ -529,9 +529,7 @@ export function BannerHeader({ banner, crumbs }: { banner: Art; crumbs: Crumb[] 
       </h1>
       <div className={styles.bannerCrumbs}>
         <div className="container">
-          <div className={styles.crumbPill}>
-            <Breadcrumbs items={crumbs} tone="dark" />
-          </div>
+          <Breadcrumbs items={crumbs} tone="dark" />
         </div>
       </div>
     </header>

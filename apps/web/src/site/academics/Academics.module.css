@@ -623,36 +623,29 @@
 /* the first hero section: the banner covers the whole band, breadcrumbs over its top edge.
    Height is 31vw (456px at 1440), about 40% less than the first version of the band (about 760px). */
 .bannerHeader {
-  position: relative;
   display: flex;
   flex-direction: column;
-  height: clamp(280px, 31vw, 520px);
-  overflow: hidden;
   background: var(--forest);
   color: var(--ivory);
 }
+/* the picture band: 30% shorter than round four (31vw -> 21.7vw); the title block of every banner fits it */
 .bannerTitle {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  order: 1;
+  height: 21.7vw;
   margin: 0;
+  overflow: hidden;
 }
 .bannerImg {
   object-fit: cover;
-  /* keep the title block (about 20% to 68% of the picture) in view when the band is cropped */
-  object-position: center 36%;
+  /* centre the title block (about 26% to 64% of the picture) in the band */
+  object-position: center 40%;
 }
+/* breadcrumbs sit in a slim strip above the picture so they never cover the title */
 .bannerCrumbs {
-  position: relative;
-  z-index: 1;
-  padding-block: clamp(12px, 1.4vw, 18px) 0;
-}
-.crumbPill {
-  display: inline-block;
-  max-width: 100%;
-  padding: 2px 14px;
-  border-radius: 999px;
-  background: rgb(0 42 16 / 0.72);
-  backdrop-filter: blur(4px);
+  order: 0;
+  padding-block: 9px;
+  background: var(--forest);
 }
 
 /* curriculum */
@@ -850,23 +843,12 @@
   }
 }
 @media (max-width: 640px) {
-  .bannerHeader {
-    height: auto;
-  }
   .bannerTitle {
-    position: relative;
-    inset: auto;
+    height: auto;
     aspect-ratio: 16 / 9;
   }
   .bannerCrumbs {
-    order: -1;
     padding-block: 12px;
-    background: var(--forest);
-  }
-  .crumbPill {
-    padding: 0;
-    background: none;
-    backdrop-filter: none;
   }
 }
 @media (max-width: 600px) {
