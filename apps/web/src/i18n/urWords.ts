@@ -371,7 +371,6 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
     'شعبے کی عمارت کی تصویر۔ اس کا متبادل متن ضروری ہے۔',
   'About the department': 'شعبے کے بارے میں',
   Answer: 'جواب',
-  Book: 'کتاب',
   Brain: 'دماغ',
   Briefcase: 'بریف کیس',
   'Campus photo': 'کیمپس کی تصویر',
@@ -392,7 +391,6 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   Globe: 'گلوب',
   Highlight: 'نمایاں نکتہ',
   Highlights: 'نمایاں نکات',
-  Icon: 'آئیکن',
   'It needs alt text in the media library.': 'میڈیا لائبریری میں اس کا متبادل متن ضروری ہے۔',
   Item: 'اندراج',
   'Keywords, up to 6.': 'کلیدی الفاظ، زیادہ سے زیادہ 6۔',
@@ -434,7 +432,6 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
     'شعبے کے صفحے کے الفاظ اور تصاویر۔ صرف سادہ متن: کوئی لنک نہیں، کوئی فارمیٹنگ نہیں۔ کسی حصے کو صفحے سے نکالنے کے لیے اسے خالی چھوڑیں۔',
   Tools: 'ٹولز',
   'Topics the department works on. Up to 6.': 'جن موضوعات پر شعبہ کام کرتا ہے، زیادہ سے زیادہ 6۔',
-  Trophy: 'ٹرافی',
   'Where graduates work. Up to 8.': 'فارغ التحصیل افراد کہاں کام کرتے ہیں، زیادہ سے زیادہ 8۔',
   'Where the department is on campus.': 'کیمپس میں شعبہ کہاں ہے۔',
 }
