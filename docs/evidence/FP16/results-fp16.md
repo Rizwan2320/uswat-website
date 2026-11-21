@@ -28,6 +28,6 @@ Date 2026-11-20. Branch `fp/review-queue` (stacked on the security centre, which
 - Email or digest to the owner after a decision (FP-43, next), delegation when the reviewer is away (FP-50), a Verifier role and source documents for high-impact fields, a reviewer in more than one department.
 - Real devices, a screen reader, https, large queues (the list is capped at 200).
 
-## Decisions for the owner
-- The review log is deleted with the faculty member's account (cascade), so an audit entry does not outlive the person it is about. Say if the log must be kept after the account goes.
-- A reviewer may see the full sample text of a submitted profile, including fields the person marked hidden (email visibility is shown as a choice, not exposed). Confirm that reviewers should see everything that would change.
+## Decisions (owner delegated both to me, 2026-11-21)
+- The review log is deleted with the faculty member's account. Reason: each entry holds a copy of the person's profile text, which is their personal data, so erasing the person should erase it. The cost is that an approval record does not outlive the person. For the demo (Sample data) this is the simpler and safer default. When real data is used, keeping an audit trail without the profile text (who decided what, when) is a data-protection decision for the university; it is parked with the other real-data steps.
+- Reviewers see everything that would change, and only that. The comparison shows exactly the fields the person can edit and would be published, so the reviewer approves what the public will see. They do not see fields the university sets, the person's private settings other than the two visibility choices that are part of the edit, or anything outside their own department.
