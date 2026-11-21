@@ -124,6 +124,11 @@ export function isFresh(verifiedAt: number | null | undefined, now: number): boo
 }
 
 export const PENDING_PATH = `${PORTAL_BASE}/pending`
+/**
+ * What a pending account may still reach among portal-class paths: the waiting page, and issuing its first recovery codes,
+ * which is the last step of the enrolment flow the claim leads into (found by the browser run: without it the flow stopped there).
+ */
+const PENDING_ALLOWED = new Set<string>([PENDING_PATH, `${AUTH_BASE}/recovery/issue`])
 
 export type GateInput = {
   hasSession: boolean
@@ -157,7 +162,7 @@ export function decide({ hasSession, sessionStrong, factors, pathname, verifiedA
   const decision = decideBase({ hasSession, sessionStrong, factors, pathname })
   if (decision.allow && hasSession && classifyPath(pathname) === 'portal' && accountStatus !== undefined && accountStatus !== 'active') {
     if (accountStatus === 'pending-activation') {
-      if (pathname !== PENDING_PATH) return { allow: false, status: 403, redirectTo: PENDING_PATH, reason: 'account not active' }
+      if (!PENDING_ALLOWED.has(pathname)) return { allow: false, status: 403, redirectTo: PENDING_PATH, reason: 'account not active' }
     } else if (accountStatus === 'unknown') {
       return { allow: false, status: 403, reason: 'account state unavailable' }
     } else {

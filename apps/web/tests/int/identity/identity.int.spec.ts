@@ -2345,6 +2345,17 @@ describe.skipIf(!DB)('claim by invitation and activation by the department head 
       expect(await statusOf(id)).toBe('pending-activation')
       expect((await pool().query(`select count(*)::int as n from "account_status" where "userId" = $1`, [id])).rows[0].n).toBe(1)
     })
+    it('the store itself uses a link once: a second consume for another account changes nothing (not only the claim service guards this)', async () => {
+      const i = await invite()
+      const mk = async () => (await auth.api.signUpEmail({ body: { email: `direct-${uniq()}@example.invalid`, password: PW, name: 'Direct' } })).user.id
+      const u1 = await mk()
+      const u2 = await mk()
+      expect(await invitations().consume(i.token, u1, NOW)).toBe('ok')
+      expect(await invitations().consume(i.token, u2, NOW)).toBe('unavailable')
+      expect(await statusOf(u1)).toBe('pending-activation')
+      expect(await statusOf(u2)).toBeNull()
+      expect((await pool().query(`select "userId" from "invitation" where "recordRef" = $1`, [i.recordRef])).rows[0].userId).toBe(u1)
+    })
     it('a short password changes nothing and the link stays usable', async () => {
       const i = await invite()
       expect(await claimer().claim(i.token, 'too short')).toEqual({ ok: false, error: 'password' })
@@ -2381,7 +2392,8 @@ describe.skipIf(!DB)('claim by invitation and activation by the department head 
       const res = await call(p.jar, 'GET', '/passkey/list-user-passkeys')
       expect(res.status).toBe(403)
       expect(await res.json()).toMatchObject({ error: 'account not active', redirectTo: '/portal/pending' })
-      expect((await call(p.jar, 'POST', '/recovery/issue', {})).status).toBe(403)
+      expect((await call(p.jar, 'POST', '/passkey/delete-passkey', { id: 'x' })).status).toBe(403)
+      expect((await call(p.jar, 'POST', '/two-factor/disable', { password: PW })).status).toBe(403)
     })
     it('is let in the moment the head activates it, with the same session', async () => {
       const d = dept()
