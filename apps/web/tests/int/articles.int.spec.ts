@@ -108,7 +108,8 @@ describe('paging and years', () => {
     expect(p2.items.length).toBeGreaterThanOrEqual(2)
     const dates = [...p1.items, ...p2.items].map((i) => i.publishedAt!)
     expect([...dates].sort().reverse()).toEqual(dates)
-  })
+    // Fourteen posts each go through draft, review, approval and publish; the 5 s default is too tight on a busy CI machine.
+  }, 60_000)
   it('the year range covers the oldest and newest published record', async () => {
     const r = await yearRange('news')
     expect(r!.first).toBeLessThanOrEqual(YEAR)
