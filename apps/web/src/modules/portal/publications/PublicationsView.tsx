@@ -22,15 +22,15 @@ function WorkLine({ w }: { w: StoredWork }) {
   )
 }
 
-function Pending({ w, claimed, busy, run }: { w: StoredWork; claimed: StoredWork[]; busy: boolean; run: (job: () => Promise<PubResult>, ok: string) => void }) {
+function Pending({ w, claimed, busy, run, forId }: { forId?: string; w: StoredWork; claimed: StoredWork[]; busy: boolean; run: (job: () => Promise<PubResult>, ok: string) => void }) {
   const id = useId()
   const [target, setTarget] = useState('')
   return (
     <li className="pub-item" data-testid="pub-pending">
       <WorkLine w={w} />
       <div className="pub-actions">
-        <button type="button" className="portal-btn" disabled={busy} onClick={() => run(() => claimWork(w.id), C.done.claimed)}>{C.claim}</button>
-        <button type="button" className="portal-btn secondary" disabled={busy} onClick={() => run(() => rejectWork(w.id), C.done.rejected)}>{C.reject}</button>
+        <button type="button" className="portal-btn" disabled={busy} onClick={() => run(() => claimWork(w.id, forId), C.done.claimed)}>{C.claim}</button>
+        <button type="button" className="portal-btn secondary" disabled={busy} onClick={() => run(() => rejectWork(w.id, forId), C.done.rejected)}>{C.reject}</button>
       </div>
       {claimed.length > 0 ? (
         <div className="pub-dup">
@@ -39,14 +39,14 @@ function Pending({ w, claimed, busy, run }: { w: StoredWork; claimed: StoredWork
             <option value="">{C.duplicateChoose}</option>
             {claimed.map((c) => <option key={c.id} value={c.id}>{c.title} ({c.year})</option>)}
           </select>
-          <button type="button" className="portal-btn secondary" disabled={busy || target === ''} onClick={() => run(() => duplicateWork(w.id, target), C.done.duplicate)}>{C.markDuplicate}</button>
+          <button type="button" className="portal-btn secondary" disabled={busy || target === ''} onClick={() => run(() => duplicateWork(w.id, target, forId), C.done.duplicate)}>{C.markDuplicate}</button>
         </div>
       ) : null}
     </li>
   )
 }
 
-export default function PublicationsView({ lists, hasOrcid, sampleMode }: { lists: WorkLists; hasOrcid: boolean; sampleMode: boolean }) {
+export default function PublicationsView({ lists, hasOrcid, sampleMode, forId }: { lists: WorkLists; hasOrcid: boolean; sampleMode: boolean; forId?: string }) {
   const router = useRouter()
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
   const [pending, start] = useTransition()
@@ -83,15 +83,15 @@ export default function PublicationsView({ lists, hasOrcid, sampleMode }: { list
       {sampleMode ? <div className="portal-notice" role="note">{C.sampleNote}</div> : null}
       {!hasOrcid ? (
         <div className="portal-notice" role="note">
-          {C.needOrcid} <Link className="portal-link" href="/portal/profile">{C.profileLink}</Link>
+          {C.needOrcid} <Link className="portal-link" href={forId ? `/portal/profile?for=${forId}` : '/portal/profile'}>{C.profileLink}</Link>
         </div>
       ) : null}
       <div className="portal-actions">
-        <button type="button" className="portal-btn" disabled={pending || !hasOrcid} onClick={() => run(harvestWorks, '')}>{pending ? C.harvesting : C.harvest}</button>
+        <button type="button" className="portal-btn" disabled={pending || !hasOrcid} onClick={() => run(() => harvestWorks(forId), '')}>{pending ? C.harvesting : C.harvest}</button>
       </div>
       {message ? <div className={message.kind === 'ok' ? 'portal-notice' : 'portal-error'} role={message.kind === 'ok' ? 'status' : 'alert'} data-testid="pub-message">{message.text}</div> : null}
 
-      {section(C.pendingTitle(lists.pending.length), C.emptyPending, lists.pending, (w) => <Pending key={w.id} w={w} claimed={lists.claimed} busy={pending} run={run} />, 'pub-section-pending')}
+      {section(C.pendingTitle(lists.pending.length), C.emptyPending, lists.pending, (w) => <Pending key={w.id} w={w} claimed={lists.claimed} busy={pending} run={run} forId={forId} />, 'pub-section-pending')}
       {section(C.claimedTitle(lists.claimed.length), C.emptyClaimed, lists.claimed, (w) => <li key={w.id} className="pub-item"><WorkLine w={w} /></li>, 'pub-section-claimed')}
       {section(C.duplicateTitle(lists.duplicate.length), C.emptyDuplicate, lists.duplicate, (w) => (
         <li key={w.id} className="pub-item">
