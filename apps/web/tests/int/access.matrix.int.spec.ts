@@ -70,6 +70,9 @@ const COLLECTIONS: Record<string, Rule> = {
 const GLOBALS: Record<string, Rule> = {
   header: { read: ALL, update: ADMINS },
   footer: { read: ALL, update: ADMINS },
+  // Everyone reads the published version (drafts only for staff and auditors, tested in
+  // governance.homecontent.int.spec.ts); editors save drafts, the publish step is gated in a hook.
+  'home-content': { read: ALL, update: ['platformAdmin', 'siteManager', 'approver', 'editor'] },
   // Written by Payload on every job run; operators only.
   'payload-jobs-stats': { read: ADMINS, update: NOBODY },
 }
