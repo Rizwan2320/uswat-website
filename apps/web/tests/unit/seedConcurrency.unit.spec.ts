@@ -106,7 +106,7 @@ describe('seeds with records written at once', () => {
     const cms = new FakeCms()
     await seed(cms, { concurrency: 6 })
     const published = cms.recs.filter((r) => r._status === 'published')
-    expect(published.length).toBe(80) // 42 organisation, 6 contacts, 28 articles, tags and merit lists, 4 pages
+    expect(published.length).toBe(93) // 48 organisation (DCST and its five programmes included), 6 contacts, 35 articles, tags and merit lists (DCST news included), 4 pages
     for (const r of published) {
       const flow = r.steps.filter((s) => s !== 'ur' && s !== 'create')
       // organisation records are also linked while still drafts, which adds no workflow step
@@ -133,7 +133,7 @@ describe('seeds with records written at once', () => {
     const first = await seed(cms, { concurrency: 6, deadline: Date.now() + 1 })
     expect(first.partial).toBe(true)
     // the organisation data is never cut short, so it is complete; the articles are not
-    expect(first.created).toBe(42)
+    expect(first.created).toBe(48)
     expect(first.articles.created).toBeLessThan(50)
     const second = await seed(cms, { concurrency: 6 })
     expect(second.partial).toBe(false)
