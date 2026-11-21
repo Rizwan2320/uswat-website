@@ -670,3 +670,11 @@ P3 agent (slice 3a), own entry:
 - Found: they hold real content the owner supplied (real Vice Chancellor name, portrait and message; 5 hero photographs with real people's faces; statistics marked "given by the owner"; the footer phone and email). The fake-data rules say none of that for the pack.
 - Decision (the user, 2026-11-20): keep it. Recorded as an exception in `docs/briefs/a4-sample-content-pack.md`. No code changed. Not run: anything (docs only).
 - Open for the main agent: if the owner later wants the competition entry fully Sample, the home content, the 5 faces and the footer contacts are the list to replace.
+
+### DCST pages, round four (2026-11-21, branch `p4/real-departments`, prediction A4-v)
+- Banner is now a full-bleed band: image fills it edge to edge (`object-fit: cover`), height `clamp(280px, 31vw, 520px)` (about 40% shorter than before; 423 px at 1366), breadcrumbs overlaid on a dark pill. On phones (≤640 px) it stays 16:9 and uncropped.
+- Card under the banner is 90% wide (was 80%, originally 70%), same height, no longer overlaps the banner.
+- DCST banner picture edited so it reads "Department of Computer and Software Technologies (DCST)" (composited text; faint artefacts possible).
+- Checks run: tsc, eslint, unit tests (720 pass), 36 page loads (no overflow, no axe issues). Not run: production build, e2e, pack integrity test (#94).
+- Next: confirm on the Vercel preview; owner to choose the next department to roll out.
+
