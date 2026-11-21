@@ -1,6 +1,6 @@
 import type { DepartmentProfile } from '../types'
 
-import { art } from './art'
+import { art, banner } from './art'
 
 /* Department of Computer and Software Technologies (DCST). The department name and its five disciplines come from the
    owner (2026-11-20). Everything else here is illustrative text for the template and has not been checked by the
@@ -13,6 +13,7 @@ export const dcst: DepartmentProfile = {
   intro:
     'Five four-year BS programmes in computing, one shared first year, and laboratory work in every semester.',
   hero: art('dcst', 'hero'),
+  banner: banner('dcst', 'Department of Computer and Software Technology (DCST). Learn, Develop, Innovate.'),
   about: [
     'The Department of Computer and Software Technologies teaches the foundations of computing and the practice of building software. Students learn to design programs, structure data, build and secure networks, and apply machine learning to real problems.',
     'The five programmes share a first-year core, so a student can move between disciplines early on. From the second year each programme goes its own way, with its own courses, laboratories and a final-year project.',
@@ -198,6 +199,7 @@ export const dcst: DepartmentProfile = {
   team: [
     {
       id: 'sana-ullah',
+      photo: '/images/faculty/sana-ullah.jpg',
       name: 'Dr. Sana Ullah',
       title: 'Professor and Chairman',
       role: 'head',
@@ -209,6 +211,7 @@ export const dcst: DepartmentProfile = {
     },
     {
       id: 'abdul-haq',
+      photo: '/images/faculty/abdul-haq.jpg',
       name: 'Mr. Abdul Haq',
       title: 'Lecturer',
       role: 'coordinator',
@@ -216,6 +219,7 @@ export const dcst: DepartmentProfile = {
     },
     {
       id: 'umar-ali',
+      photo: '/images/faculty/umar-ali.jpg',
       name: 'Mr. Umar Ali',
       title: 'Lecturer',
       role: 'coordinator',
@@ -224,6 +228,7 @@ export const dcst: DepartmentProfile = {
     },
     {
       id: 'naeem-ullah',
+      photo: '/images/faculty/naeem-ullah.jpg',
       name: 'Mr. Naeem Ullah',
       title: 'Lecturer',
       role: 'coordinator',
@@ -231,6 +236,7 @@ export const dcst: DepartmentProfile = {
     },
     {
       id: 'kiramat-rahman',
+      photo: '/images/faculty/kiramat-rahman.jpg',
       name: 'Mr. Kiramat Rahman',
       title: 'Assistant Professor',
       role: 'coordinator',

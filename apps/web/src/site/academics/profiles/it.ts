@@ -1,6 +1,6 @@
 import type { DisciplineProfile } from '../types'
 
-import { art } from './art'
+import { art, banner } from './art'
 import { commonFaq, firstYear, year } from './core'
 
 export const it: DisciplineProfile = {
@@ -12,6 +12,7 @@ export const it: DisciplineProfile = {
   summary:
     'Networks, servers, cloud and security: running the technology that organisations depend on.',
   hero: art('it', 'hero'),
+  banner: banner('it', 'Department of Information Technology. Innovate, Connect, Transform.'),
   tile: art('it', 'tile', 'Illustration of a network of connected computers around a central hub'),
   figure: art('it', 'lab', 'Illustration of a network of connected computers around a central hub'),
   about: [

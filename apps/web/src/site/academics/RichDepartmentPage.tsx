@@ -1,4 +1,3 @@
-import PageHeader from '../components/kit/PageHeader'
 import { admissions } from '../content/admissions'
 import {
   DEPARTMENTS_PATH,
@@ -11,6 +10,7 @@ import {
 
 import styles from './Academics.module.css'
 import {
+  BannerHeader,
   Band,
   CoordinatorCards,
   Cta,
@@ -45,7 +45,6 @@ export default function RichDepartmentPage({
   programmes: ProgrammeCard[]
   feed: DepartmentFeed
 }) {
-  const name = str(doc.name) ?? profile.shortName
   const head = profile.team.find((m) => m.role === 'head')
   const coordinators = profile.team.filter((m) => m.role === 'coordinator')
   const programmeNames = new Map(programmes.map((p) => [p.slug, p.name]))
@@ -84,9 +83,8 @@ export default function RichDepartmentPage({
   ]
   return (
     <div className={styles.root}>
-      <PageHeader
-        title={name}
-        lede={profile.tagline}
+      <BannerHeader
+        banner={profile.banner}
         crumbs={[
           { label: 'Home', href: '/' },
           { label: 'Academics', href: '/academics' },

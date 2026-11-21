@@ -56,6 +56,8 @@ export type DepartmentProfile = {
   /** One or two sentences in the hero; keep it different from `about`. */
   intro: string
   hero: Art
+  /** The wide banner at the top of the page (1672 x 941, the title is in the picture, so `alt` is the page title and tagline). */
+  banner: Art
   about: string[]
   /** Used when the CMS record has no vision or mission of its own. */
   vision: string
@@ -85,6 +87,8 @@ export type DisciplineProfile = {
   /** One or two sentences for the card on the department page. */
   summary: string
   hero: Art
+  /** The wide banner at the top of the page (1672 x 941, the title is in the picture, so `alt` is the page title and tagline). */
+  banner: Art
   tile: Art
   /** The light picture beside the overview, so it differs from the hero. */
   figure: Art

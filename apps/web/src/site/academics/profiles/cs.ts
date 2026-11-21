@@ -1,6 +1,6 @@
 import type { DisciplineProfile } from '../types'
 
-import { art } from './art'
+import { art, banner } from './art'
 import { commonFaq, firstYear, year } from './core'
 
 export const cs: DisciplineProfile = {
@@ -13,6 +13,7 @@ export const cs: DisciplineProfile = {
   summary:
     'The broadest of the five: algorithms, operating systems, databases, networks and the theory that holds them together.',
   hero: art('cs', 'hero'),
+  banner: banner('cs', 'Department of Computer Science. Learn, Innovate, Build a Smarter Tomorrow.'),
   tile: art('cs', 'tile', 'Illustration of a binary tree beside a window of program code'),
   figure: art('cs', 'lab', 'Illustration of a binary tree beside a window of program code'),
   about: [

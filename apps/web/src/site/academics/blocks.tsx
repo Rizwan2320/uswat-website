@@ -6,8 +6,13 @@ import SafeImage from '../components/SafeImage'
 import Accordion from '../components/kit/Accordion'
 import Tabs from '../components/kit/Tabs'
 
-import { formatDate, formatDateTime } from '../articles/format'
+import Breadcrumbs, { type Crumb } from '../components/kit/Breadcrumbs'
+import { dateBlock, itemDate } from '../lib/dates'
 import type { ListItem } from '../articles/where'
+
+import { ArrowRightIcon, CalendarIcon, MegaphoneIcon, NewspaperIcon } from '../components/icons'
+import eventStyles from '../components/NewsEvents.module.css'
+import feedStyles from '../components/FeedCards.module.css'
 
 import AcademicIcon from './AcademicIcon'
 import styles from './Academics.module.css'
@@ -506,45 +511,109 @@ export function CoordinatorNote({ member }: { member: TeamMember }) {
   )
 }
 
-const FEED_COLUMNS = [
-  { key: 'news', title: 'News', all: '/news', allLabel: 'All news', empty: 'No news for this department yet.' },
-  { key: 'events', title: 'Events', all: '/events', allLabel: 'All events', empty: 'No upcoming events yet.' },
-  { key: 'notices', title: 'Notices', all: '/notices', allLabel: 'All notices', empty: 'No notices at the moment.' },
-] as const
-
-const feedDate = (key: string, i: ListItem) =>
-  key === 'events' ? formatDateTime(i.startsAt) : formatDate(i.publishedAt)
-
-/** Department news, events and notices in three columns. */
-export function DeptFeed({ feed }: { feed: DepartmentFeed }) {
+/** The first hero section: breadcrumbs and the page's banner. The title is in the picture, so the h1 holds the picture
+    and its alt text is the title. */
+export function BannerHeader({ banner, crumbs }: { banner: Art; crumbs: Crumb[] }) {
   return (
-    <div className={styles.feed}>
-      {FEED_COLUMNS.map((c) => (
-        <section key={c.key} className={styles.feedCol} aria-labelledby={`feed-${c.key}`}>
-          <h3 id={`feed-${c.key}`} className={styles.feedTitle}>
-            {c.title}
-          </h3>
-          {feed[c.key].length ? (
-            <ul className={styles.feedList}>
-              {feed[c.key].map((i) => (
-                <li key={i.id}>
-                  <SiteLink href={`/${c.key}/${encodeURIComponent(i.slug)}`} className={styles.feedLink}>
-                    {i.title}
+    <header className={styles.bannerHeader}>
+      <div className="container">
+        <Breadcrumbs items={crumbs} tone="dark" />
+        <h1 className={styles.bannerTitle}>
+          <SafeImage
+            src={banner.src}
+            alt={banner.alt}
+            width={banner.width}
+            height={banner.height}
+            sizes="(max-width: 1160px) 100vw, 1120px"
+            priority
+            className={styles.bannerImg}
+          />
+        </h1>
+      </div>
+    </header>
+  )
+}
+
+/** Department news, events and notices, in the cards of the landing page (FeedCards and the events card of NewsEvents). */
+export function DeptFeed({ feed }: { feed: DepartmentFeed }) {
+  const when = (i: ListItem) => (i.publishedAt ? { dateISO: i.publishedAt } : {})
+  const row = (type: 'news' | 'notices', i: ListItem) => {
+    const d = itemDate(when(i))
+    return (
+      <li key={i.id} className={`row ${feedStyles.row}`}>
+        <SiteLink href={`/${type}/${encodeURIComponent(i.slug)}`} className={feedStyles.link}>
+          <span className={`dot ${feedStyles.dot}`} aria-hidden="true" />
+          <span className={`row-title ${feedStyles.rowTitle}`}>{i.title}</span>
+          {d ? (
+            <time className={feedStyles.date} dateTime={d.dateTime}>
+              {d.label}
+            </time>
+          ) : null}
+        </SiteLink>
+      </li>
+    )
+  }
+  const head = (id: string, title: string, Icon: typeof NewspaperIcon, all: string) => (
+    <header className={feedStyles.head}>
+      <span className={`card-icon ${feedStyles.icon}`}>
+        <Icon />
+      </span>
+      <h3 id={id} className={`card-title ${feedStyles.title}`}>
+        {title}
+      </h3>
+      <SiteLink href={all} className={feedStyles.all}>
+        View All <ArrowRightIcon className={`card-arrow flip ${feedStyles.allArrow}`} />
+      </SiteLink>
+    </header>
+  )
+  return (
+    <div className={`${feedStyles.grid} ${styles.feedGrid} pop-grid`}>
+      <article className={`pop ${feedStyles.card}`} aria-labelledby="feed-news">
+        {head('feed-news', 'News', NewspaperIcon, '/news')}
+        {feed.news.length ? (
+          <ul className={feedStyles.list}>{feed.news.map((i) => row('news', i))}</ul>
+        ) : (
+          <p className={feedStyles.empty}>No news for this department yet.</p>
+        )}
+      </article>
+
+      <article className={`pop ${feedStyles.card}`} aria-labelledby="feed-events">
+        {head('feed-events', 'Upcoming Events', CalendarIcon, '/events')}
+        {feed.events.length ? (
+          <ul className={feedStyles.list}>
+            {feed.events.map((i) => {
+              const b = dateBlock({ dateISO: i.startsAt ?? i.publishedAt ?? undefined })
+              return (
+                <li key={i.id} className={`row ${feedStyles.row}`}>
+                  <SiteLink href={`/events/${encodeURIComponent(i.slug)}`} className={eventStyles.evLink}>
+                    {b ? (
+                      <time className={eventStyles.block} dateTime={b.dateTime}>
+                        <span className={eventStyles.day}>{b.top}</span>
+                        <span className={eventStyles.mon}>{b.bottom}</span>
+                      </time>
+                    ) : null}
+                    <span className={eventStyles.evText}>
+                      <span className={`row-title ${eventStyles.evTitle}`}>{i.title}</span>
+                      {i.venue ? <span className={eventStyles.venue}>{i.venue}</span> : null}
+                    </span>
                   </SiteLink>
-                  <span className={styles.feedMeta}>
-                    {[feedDate(c.key, i), c.key === 'events' ? i.venue : null].filter(Boolean).join(' · ')}
-                  </span>
                 </li>
-              ))}
-            </ul>
-          ) : (
-            <p className={styles.feedEmpty}>{c.empty}</p>
-          )}
-          <SiteLink href={c.all} className={styles.feedAll}>
-            {c.allLabel} →
-          </SiteLink>
-        </section>
-      ))}
+              )
+            })}
+          </ul>
+        ) : (
+          <p className={feedStyles.empty}>No upcoming events yet.</p>
+        )}
+      </article>
+
+      <article className={`pop ${feedStyles.card}`} aria-labelledby="feed-notices">
+        {head('feed-notices', 'Notices', MegaphoneIcon, '/notices')}
+        {feed.notices.length ? (
+          <ul className={feedStyles.list}>{feed.notices.map((i) => row('notices', i))}</ul>
+        ) : (
+          <p className={feedStyles.empty}>No notices at the moment.</p>
+        )}
+      </article>
     </div>
   )
 }

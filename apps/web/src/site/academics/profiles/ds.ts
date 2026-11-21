@@ -1,6 +1,6 @@
 import type { DisciplineProfile } from '../types'
 
-import { art } from './art'
+import { art, banner } from './art'
 import { commonFaq, firstYear, year } from './core'
 
 export const ds: DisciplineProfile = {
@@ -12,6 +12,7 @@ export const ds: DisciplineProfile = {
   summary:
     'Statistics, programming and machine learning: collecting, analysing and explaining data.',
   hero: art('ds', 'hero'),
+  banner: banner('ds', 'Department of Data Science. Explore, Analyze, Innovate.'),
   tile: art(
     'ds',
     'tile',

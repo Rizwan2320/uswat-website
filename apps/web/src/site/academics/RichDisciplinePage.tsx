@@ -1,4 +1,3 @@
-import PageHeader from '../components/kit/PageHeader'
 import { admissions } from '../content/admissions'
 import {
   DEPARTMENTS_PATH,
@@ -11,6 +10,7 @@ import {
 
 import styles from './Academics.module.css'
 import {
+  BannerHeader,
   Band,
   Chips,
   CoordinatorNote,
@@ -86,9 +86,8 @@ export default function RichDisciplinePage({
   ]
   return (
     <div className={styles.root}>
-      <PageHeader
-        title={name}
-        lede={profile.tagline}
+      <BannerHeader
+        banner={profile.banner}
         crumbs={[
           { label: 'Home', href: '/' },
           { label: 'Academics', href: '/academics' },
