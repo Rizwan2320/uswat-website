@@ -104,7 +104,14 @@ export async function applySeeds(cms: Cms, actor: SeedActor, run: Run = SEQUENTI
   const id = (c: Coll, slug: string) => ids.get(`${c}/${slug}`) as Id
   await stage(
     departments.map((r) => () =>
-      make('departments', r, { summary: r.summary, facultyGroup: id('faculties', r.facultyGroup), head: id('people', r.head) }),
+      make('departments', r, {
+        summary: r.summary,
+        ...(r.vision ? { vision: r.vision } : {}),
+        ...(r.mission ? { mission: r.mission } : {}),
+        ...(r.emails ? { emails: r.emails.map((email) => ({ email })) } : {}),
+        facultyGroup: id('faculties', r.facultyGroup),
+        head: id('people', r.head),
+      }),
     ),
   )
   await stage(
@@ -112,7 +119,7 @@ export async function applySeeds(cms: Cms, actor: SeedActor, run: Run = SEQUENTI
       make('programmes', r, {
         level: r.level,
         duration: r.duration,
-        eligibility: 'Sample eligibility text. Invented, not a real requirement.',
+        eligibility: r.eligibility ?? 'Sample eligibility text. Invented, not a real requirement.',
         department: id('departments', r.department),
         campus: id('campuses', r.campus),
       }),
@@ -131,6 +138,7 @@ export async function applySeeds(cms: Cms, actor: SeedActor, run: Run = SEQUENTI
   }
   // Each loop touches different records (a test checks that the heads are distinct), and the loops run one after another.
   await stage(departments.map((d) => () => link('people', d.head, { department: id('departments', d.slug) })))
+  await stage(people.filter((p) => p.department).map((p) => () => link('people', p.slug, { department: id('departments', p.department as string) })))
   await stage(offices.map((o) => () => link('people', o.head, { office: id('offices', o.slug) })))
   await stage(offices.map((o) => () => link('offices', o.slug, { head: id('people', o.head) })))
 

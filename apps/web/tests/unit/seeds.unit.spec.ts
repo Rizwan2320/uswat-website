@@ -9,14 +9,20 @@ const all = Object.entries(rows).flatMap(([c, rs]) => rs.map((r) => ({ c, ...r }
 describe('Sample seed data', () => {
   it('has the planned counts', () => {
     expect(Object.fromEntries(Object.entries(rows).map(([c, r]) => [c, r.length]))).toEqual({
-      faculties: 3, campuses: 3, people: 10, offices: 4, departments: 8, programmes: 14,
+      faculties: 3, campuses: 3, people: 14, offices: 4, departments: 8, programmes: 16,
     })
   })
-  it('labels every record Sample and gives it a sample.invalid source', () => {
+  it('labels every invented record Sample and gives every record a sample.invalid source', () => {
+    // Owner decision 2026-11-20: records that carry the university's real structure show their real names. These are the
+    // campuses and the Department of Computer and Software Technologies with its programmes. Their source is still sample.invalid,
+    // the machine marker, because their text is not yet checked.
+    const real = (r: { c: string; slug: string }) =>
+      r.c === 'campuses' || (r.c === 'departments' && r.slug === 'dcst') || (r.c === 'programmes' && programmes.find((p) => p.slug === r.slug)?.department === 'dcst')
     for (const r of all) {
-      expect(r.name.startsWith('Sample'), r.name).toBe(true)
-      // Campuses keep the slugs the route map expects (main, sangota, women); their names and source say Sample.
-      if (r.c !== 'campuses') expect(r.slug.startsWith('sample-'), r.slug).toBe(true)
+      if (!real(r)) {
+        expect(r.name.startsWith('Sample'), r.name).toBe(true)
+        expect(r.slug.startsWith('sample-'), r.slug).toBe(true)
+      }
       expect(sampleSource(r.c, r.slug)).toContain(`https://${SAMPLE_HOST}/seed/`)
     }
     expect(SAMPLE_OWNER_OFFICE.startsWith('Sample')).toBe(true)
