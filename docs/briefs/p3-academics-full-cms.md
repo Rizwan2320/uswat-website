@@ -35,6 +35,8 @@ One migration, additive only. Fields go on the existing collections, not new one
 
 **Shared:** `icon` is a select limited to the 20 names in `IconName` (`types.ts`). A `pageStatus` of draft or reviewed (draft prints one quiet line at the foot of the page); better still, derive it from the governance state so it is not a second thing to remember. Your call.
 
+**People** (for the department's faculty section; today it is code in `profiles/dcst.ts` `team`): `designation`, `qualifications` (array of text), `photo` (Media, alt required), and which department role they hold (head, or coordinator of one or more programmes). Photos are public only when the person's visibility setting says so (3e already hides photo by default).
+
 ## Rules the fields must enforce (so an editor cannot break the layout or the policy)
 1. Every image has alt text, required, and is a `media` upload; no external image URLs.
 2. Maximums per list (the layout is tested up to these): highlights 6, labs 6, research areas 6, careers 8, FAQ 12, tracks 6, courses per semester 8, tags 6 per item. Minimums only where a section would look empty; empty lists hide their section, which the renderer already does not guarantee, so tell me and I will handle it.

@@ -8,11 +8,3 @@ export function art(key: ArtKey, kind: keyof typeof SIZE, alt = ''): Art {
   const [width, height] = SIZE[kind]
   return { src: `/images/academics/${key}-${kind}.svg`, alt, width, height }
 }
-
-/** The owner's photograph of the main campus (already on the home page). */
-export const campusPhoto: Art = {
-  src: '/images/hero/hero-6-campus-sunset.jpg',
-  alt: 'The University of Swat main campus at sunset, with wet paths, lit buildings and misty mountains',
-  width: 1000,
-  height: 653,
-}

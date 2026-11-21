@@ -26,6 +26,9 @@ export const tags: TagSeed[] = [
   { slug: 'sample-careers', name: 'Sample Careers' },
 ]
 
+/** Department tags: the tag's slug equals the department's slug, and the department page lists what is tagged (site/academics/feed.ts). */
+export const departmentTags: TagSeed[] = [{ slug: 'dcst', name: 'DCST' }]
+
 export type ArticleSeed = {
   collection: Coll
   slug: string
@@ -115,6 +118,30 @@ export function articleSeeds(): ArticleSeed[] {
   return out
 }
 
+/** A few current records for the DCST department page. Their titles say Sample, like every other invented record. */
+export function departmentArticleSeeds(): ArticleSeed[] {
+  const mk = (collection: Coll, noun: string, n: number, title: string, publishedDays: number, extra: Partial<ArticleSeed> = {}): ArticleSeed => ({
+    collection,
+    slug: `sample-dcst-${noun}-${n}`,
+    role: 'current',
+    title: `Sample DCST ${noun}: ${title}`,
+    excerpt: `A Sample ${noun} for the department page.`,
+    body: body(noun, 'current'),
+    state: 'published',
+    tags: ['dcst'],
+    publishedDays,
+    ...extra,
+  })
+  return [
+    mk('posts', 'news', 1, 'students present their project posters', -2),
+    mk('posts', 'news', 2, 'guest lecture on machine learning', -9),
+    mk('events', 'event', 1, 'programming contest', -3, { startsDays: 7 }),
+    mk('events', 'event', 2, 'open day for new students', -4, { startsDays: 16 }),
+    mk('notices', 'notice', 1, 'semester timetable posted', -1),
+    mk('notices', 'notice', 2, 'project proposal deadline', -6),
+  ]
+}
+
 export type MeritSeed = { slug: string; title: string; cycle: string; programme: string; state: SeedState; documents: string[] }
 export const meritLists: MeritSeed[] = [
   { slug: 'sample-merit-list-first', title: 'Sample merit list: first list', cycle: 'Sample Fall', programme: 'Sample Programme A', state: 'published', documents: ['Sample merit list, first list (PDF)'] },
@@ -153,9 +180,17 @@ export async function applyArticleSeeds(
     )
   }
 
+  for (const t of departmentTags) {
+    const source = sampleSource('article-tags', t.slug)
+    tagIds.set(
+      t.slug,
+      await seedRecord(cms, actor, existingTags, { collection: 'article-tags', source, state: 'published', data: { name: t.name, slug: t.slug, governance: { ownerOffice: SAMPLE_OWNER_OFFICE, source } } }, out),
+    )
+  }
+
   for (const collection of ARTICLE_COLLECTIONS) {
     const existing = await loadBySource(cms, collection)
-    for (const a of articleSeeds().filter((x) => x.collection === collection)) {
+    for (const a of [...articleSeeds(), ...departmentArticleSeeds()].filter((x) => x.collection === collection)) {
       const source = sampleSource(collection, a.slug)
       const lexical = (text: string) => textToLexical(text)
       const governance: Record<string, unknown> = { ownerOffice: SAMPLE_OWNER_OFFICE, source }

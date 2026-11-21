@@ -35,6 +35,19 @@ export type ProfileStatus = 'draft' | 'reviewed'
 export type Lab = Titled & { art: Art; tools: string[] }
 export type ResearchArea = Titled & { icon: IconName; tags: string[] }
 
+/** A person on the department page. Supplied by the owner; no e-mail or phone is shown.
+    Photo: put a portrait (JPG, about 4:5) at `public/images/faculty/<id>.jpg` and set `photo` to that path; until then initials show. */
+export type TeamMember = {
+  id: string
+  name: string
+  title: string
+  role: 'head' | 'coordinator'
+  /** Programme slugs this person coordinates. */
+  coordinates?: string[]
+  qualifications?: string[]
+  photo?: string
+}
+
 export type DepartmentProfile = {
   slug: string
   status: ProfileStatus
@@ -55,10 +68,8 @@ export type DepartmentProfile = {
   careers: IconTitled[]
   studentLife: IconTitled[]
   faq: Faq[]
-  /** Where the department sits on campus, for the contact block. */
-  location: string
-  hours: string
-  campusPhoto: Art
+  /** The head of department first, then the programme coordinators. */
+  team: TeamMember[]
 }
 
 export type Course = string

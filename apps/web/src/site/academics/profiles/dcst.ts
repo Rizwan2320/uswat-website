@@ -1,6 +1,6 @@
 import type { DepartmentProfile } from '../types'
 
-import { art, campusPhoto } from './art'
+import { art } from './art'
 
 /* Department of Computer and Software Technologies (DCST). The department name and its five disciplines come from the
    owner (2026-11-20). Everything else here is illustrative text for the template and has not been checked by the
@@ -194,7 +194,47 @@ export const dcst: DepartmentProfile = {
       a: 'Merit lists, timetables and announcements are published on the university notices page.',
     },
   ],
-  location: 'Main Campus, University of Swat',
-  hours: 'Monday to Friday, during university working hours',
-  campusPhoto,
+  /* Names, titles and qualifications supplied by the owner on 2026-11-21 (no public source address yet; the page stays marked draft). */
+  team: [
+    {
+      id: 'sana-ullah',
+      name: 'Dr. Sana Ullah',
+      title: 'Professor and Chairman',
+      role: 'head',
+      qualifications: [
+        'Postdoc, Gyeongsang National University, South Korea (2019)',
+        'Postdoc, ISEP/INESC-TEC, Porto, Portugal (2015)',
+        'PhD (Wireless Networks), Inha University, South Korea (2011)',
+      ],
+    },
+    {
+      id: 'abdul-haq',
+      name: 'Mr. Abdul Haq',
+      title: 'Lecturer',
+      role: 'coordinator',
+      coordinates: ['bs-software-engineering'],
+    },
+    {
+      id: 'umar-ali',
+      name: 'Mr. Umar Ali',
+      title: 'Lecturer',
+      role: 'coordinator',
+      coordinates: ['bs-computer-science'],
+      qualifications: ['MS Computer Science, Asian Institute of Technology, Thailand'],
+    },
+    {
+      id: 'naeem-ullah',
+      name: 'Mr. Naeem Ullah',
+      title: 'Lecturer',
+      role: 'coordinator',
+      coordinates: ['bs-information-technology'],
+    },
+    {
+      id: 'kiramat-rahman',
+      name: 'Mr. Kiramat Rahman',
+      title: 'Assistant Professor',
+      role: 'coordinator',
+      coordinates: ['bs-artificial-intelligence', 'bs-data-science'],
+    },
+  ],
 }
