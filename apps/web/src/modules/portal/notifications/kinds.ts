@@ -16,6 +16,4 @@ export const isCadence = (v: unknown): v is Cadence => typeof v === 'string' && 
 export const HOUR = 3_600_000
 /** One digest per person per period. */
 export const PERIOD_MS: Record<Exclude<Cadence, 'off'>, number> = { daily: 24 * HOUR, weekly: 7 * 24 * HOUR }
-/** Items and log rows older than this are removed by the purge. A demo choice, like the other retention times. */
-export const NOTICE_RETENTION_MS = 90 * 24 * HOUR
 export const LOG_PAGE = 30

@@ -34,6 +34,7 @@
     "identity:migrate": "tsx scripts/identity-migrate.ts",
     "identity:purge": "tsx scripts/identity-purge.ts",
     "identity:alerts": "tsx scripts/identity-alerts.ts",
+    "identity:digest": "tsx scripts/identity-digest.ts",
     "identity:roles": "tsx scripts/identity-roles.ts",
     "identity:invite": "tsx scripts/identity-invite.ts",
     "identity:courses-import": "tsx scripts/courses-import.ts"
