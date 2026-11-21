@@ -77,6 +77,9 @@ function isPlain(path: string): boolean {
   return !path.split('/').some((seg) => seg === '.' || seg === '..')
 }
 
+/** The claim page: /portal/claim/<43-character token>. Matched by exact shape and case, like the allow-lists. */
+const CLAIM_PAGE = /^\/portal\/claim\/[A-Za-z0-9_-]{43}$/
+
 export function classifyPath(pathname: string): RouteClass {
   if (!isPlain(pathname)) return 'forbidden'
   const p = pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname
@@ -84,7 +87,7 @@ export function classifyPath(pathname: string): RouteClass {
   if (FORBIDDEN.has(p.toLowerCase())) return 'forbidden'
   // Allow-list entries are matched exactly, case included: a differently cased spelling is not
   // widened into a public or enrolment path, it falls to 'portal' (session and second factor).
-  if (PUBLIC.has(p)) return 'public'
+  if (PUBLIC.has(p) || CLAIM_PAGE.test(p)) return 'public'
   if (ENROLMENT.has(p)) return 'enrolment'
   if (OWN_SESSION.has(p)) return 'session'
   return 'portal'
