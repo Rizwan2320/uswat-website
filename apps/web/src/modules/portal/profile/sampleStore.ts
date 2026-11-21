@@ -74,8 +74,18 @@ export function createSampleProfileStore(pool: pg.Pool): ProfileStore {
       return r.rowCount === 1
     },
     async submit(accountId) {
-      const r = await pool.query(`update "profile_draft" set "status" = 'submitted', "updatedAt" = now(), "rev" = "rev" + 1, "reviewNote" = null where "userId" = $1 and "status" = 'draft'`, [accountId])
-      return r.rowCount === 1
+      // The department's reviewers get one summary line each (FP-43), queued in the same statement as the submission.
+      const r = await pool.query<{ updated: number }>(
+        `with u as (update "profile_draft" set "status" = 'submitted', "updatedAt" = now(), "rev" = "rev" + 1, "reviewNote" = null where "userId" = $1 and "status" = 'draft' returning "userId"),
+              n as (select identity.enqueue_notification(rv."userId", 'review-waiting', 1, null, now())
+                    from u join "account_department" sd on sd."userId" = u."userId"
+                    join "account_department" rd on lower(rd."department") = lower(sd."department")
+                    join "reviewer_role" rv on rv."userId" = rd."userId"
+                    where rv."userId" <> u."userId")
+         select (select count(*) from u)::int as updated, (select count(*) from n)::int as notified`,
+        [accountId],
+      )
+      return r.rows[0]!.updated === 1
     },
     async withdraw(accountId) {
       const r = await pool.query(`update "profile_draft" set "status" = 'draft', "updatedAt" = now(), "rev" = "rev" + 1 where "userId" = $1 and "status" = 'submitted'`, [accountId])

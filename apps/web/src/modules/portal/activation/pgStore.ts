@@ -62,6 +62,7 @@ export function createPgActivationStore(pool: pg.Pool): ActivationStore {
           await client.query(`update "delegation" set "revokedAt" = $2 where ("grantorId" = $1 or "delegateId" = $1) and "revokedAt" is null`, [input.subjectId, at])
         }
         await client.query(`insert into "account_review" ("userId","reviewerId","decision","at") values ($1,$2,$3,$4)`, [input.subjectId, headId, input.decision, at])
+        if (input.decision === 'activated') await client.query(`select identity.enqueue_notification($1, 'account-confirmed', 1, null, $2)`, [input.subjectId, at])
         await client.query('commit')
         return 'ok'
       } catch (e) {

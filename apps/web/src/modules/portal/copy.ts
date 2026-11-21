@@ -8,7 +8,7 @@ export const COPY = {
   sampleBanner: 'Sample portal for demonstration. It is not the university’s system and holds no real records.',
   skipLink: 'Skip to the main content',
   signOut: 'Sign out',
-  nav: { home: 'Home', profile: 'Profile', publications: 'Publications', courses: 'Courses', cv: 'CV', delegation: 'Delegation', security: 'Security' },
+  nav: { home: 'Home', profile: 'Profile', publications: 'Publications', courses: 'Courses', cv: 'CV', delegation: 'Delegation', notifications: 'Notices', security: 'Security' },
 
   signIn: {
     sharedLabel: 'This is a shared computer',
@@ -45,6 +45,7 @@ export const COPY = {
     coursesLink: 'List the courses you teach',
     cvLink: 'Make your CV',
     delegationLink: 'Let a colleague help with your profile',
+    notificationsLink: 'Choose how often you get a summary of changes',
     reviewLink: 'Review your department’s profile changes',
     activateLink: 'Confirm new faculty accounts in your department',
   },
@@ -360,6 +361,49 @@ export const COPY = {
     active: 'You are confirmed.',
     continue: 'Go to the portal',
   },
+  notifications: {
+    title: 'Notices',
+    sampleBadge: 'Sample',
+    intro: 'Changes that need no action from you, such as a decision on your profile, are gathered into one summary instead of one message each. Notices about your sign-in security are always sent at once, and you cannot turn them off.',
+    noMail: 'This is a demonstration. No email is sent. The list below is the log of what would be sent.',
+    cadenceLegend: 'How often should we send the summary?',
+    cadences: { daily: 'Once a day', weekly: 'Once a week', off: 'Not at all (security notices still come at once)' } as Record<string, string>,
+    save: 'Save',
+    working: 'Saving…',
+    saved: 'Saved.',
+    waitingTitle: 'Waiting for your next summary',
+    waitingNone: 'Nothing is waiting.',
+    logTitle: 'What would have been sent',
+    logEmpty: 'Nothing has been sent yet.',
+    classes: { security: 'Security notice, sent at once', digest: 'Summary' } as Record<string, string>,
+    cadenceWord: { daily: 'daily', weekly: 'weekly' } as Record<string, string>,
+    lineLabel: (kind: string, count: number) => {
+      const n = count === 1 ? 'once' : `${count} times`
+      const m: Record<string, string> = {
+        'passkey-added': 'A passkey was added to your account.',
+        'passkey-removed': 'A passkey was removed from your account.',
+        'recovery-codes-issued': 'New recovery codes were issued.',
+        'sign-in-recovery': 'Someone signed in with a recovery code.',
+        'sign-out-everywhere': 'You were signed out of every device.',
+        'delegation-given': 'You gave a colleague access to part of your page.',
+        'profile-approved': `Your profile changes were approved (${n}).`,
+        'profile-returned': `Your profile was returned with a note (${n}).`,
+        'account-confirmed': 'Your account was confirmed by your department head.',
+        'works-found': `${count} new ${count === 1 ? 'work was' : 'works were'} found for you to review.`,
+        'delegation-received': `A colleague gave you access to part of their page (${n}).`,
+        'delegation-ended': `Access a colleague gave you was withdrawn (${n}).`,
+        'delegate-activity': `${count} ${count === 1 ? 'change was' : 'changes were'} made on your behalf by a colleague.`,
+        'review-waiting': `${count} ${count === 1 ? 'profile is' : 'profiles are'} waiting for your review.`,
+      }
+      return m[kind] ?? 'An update.'
+    },
+    errors: {
+      session: 'Your session ended. Sign in again to continue.',
+      invalid: 'Choose one of the three options.',
+      generic: 'Something went wrong. Please try again in a moment.',
+    } as Record<string, string>,
+  },
+
   delegation: {
     title: 'Delegation',
     sampleBadge: 'Sample',

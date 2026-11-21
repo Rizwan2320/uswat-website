@@ -29,6 +29,9 @@ export function createPgDelegationStore(pool: pg.Pool): DelegationStore {
           `insert into "delegation" ("grantorId","delegateId","sections","createdAt","expiresAt") values ($1,$2,$3,$4,$5) returning "id"`,
           [grantorId, input.delegateId, input.sections, at, expiresAt],
         )
+        // ABU-03: giving access is a security notice, at once; the colleague gets a summary line (FP-43).
+        await client.query(`select identity.log_security_notice($1, 'delegation-given', $2)`, [grantorId, at])
+        await client.query(`select identity.enqueue_notification($1, 'delegation-received', 1, $2, $3)`, [input.delegateId, rows[0]!.id, at])
         await client.query('commit')
         return { id: rows[0]!.id, expiresAt: expiresAt.getTime() }
       } catch (e) {
@@ -62,7 +65,11 @@ export function createPgDelegationStore(pool: pg.Pool): DelegationStore {
 
     async revoke(grantorId, delegationId, now) {
       if (!isGrantId(delegationId)) return false
-      const r = await pool.query(`update "delegation" set "revokedAt" = $3 where "id" = $1 and "grantorId" = $2 and "revokedAt" is null`, [delegationId, grantorId, new Date(now)])
+      const r = await pool.query(
+        `with r as (update "delegation" set "revokedAt" = $3 where "id" = $1 and "grantorId" = $2 and "revokedAt" is null returning "id", "delegateId")
+         select identity.enqueue_notification(r."delegateId", 'delegation-ended', 1, r."id"::text, $3) from r`,
+        [delegationId, grantorId, new Date(now)],
+      )
       return r.rowCount === 1
     },
 
@@ -85,6 +92,7 @@ export function createPgDelegationStore(pool: pg.Pool): DelegationStore {
           return null
         }
         await client.query(`insert into "delegation_audit" ("at","actorId","subjectId","delegationId","section","action") values ($1,$2,$3,$4,$5,$6)`, [new Date(now), actorId, subjectId, r.did, section, action])
+        if (action !== 'view') await client.query(`select identity.enqueue_notification($1, 'delegate-activity', 1, $2, $3)`, [subjectId, r.did, new Date(now)])
         await client.query('commit')
         return { delegationId: r.did, subject: { id: r.id, email: r.email, name: r.name }, expiresAt: r.expiresAt.getTime() }
       } catch (e) {
