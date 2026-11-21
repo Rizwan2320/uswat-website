@@ -71,7 +71,7 @@ export default function ProfileEditor({ initial, forId }: { initial: LoadedProfi
 
   function fail(kind: string, errs?: FieldErrors) {
     setErrors(errs ?? {})
-    setMessage({ kind: 'error', text: C.actionErrors[kind] ?? C.actionErrors.generic })
+    setMessage({ kind: 'error', text: delegated && kind === 'session' ? COPY.delegation.ended : C.actionErrors[kind] ?? C.actionErrors.generic })
   }
 
   function run(job: () => Promise<void>) {

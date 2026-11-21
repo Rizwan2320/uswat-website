@@ -30,3 +30,16 @@ describe('what a delegate can reach (static guard)', () => {
     expect(bad).toEqual([])
   })
 })
+
+describe('plain words', () => {
+  it('every action name a delegated action can write to the audit log has a plain-words line on the delegation page', async () => {
+    const { COPY } = await import('@/modules/portal/copy')
+    const names = new Set<string>(['view'])
+    for (const f of ['courses', 'publications', 'profile']) {
+      const src = readFileSync(join(SRC, `modules/portal/${f}/actions.ts`), 'utf8')
+      for (const m of src.matchAll(/(?:accountFor\(PATH, '\w+', '(\w+)'|service\('(\w+)')/g)) names.add((m[1] ?? m[2])!)
+    }
+    expect(names.size).toBeGreaterThan(5)
+    for (const n of names) expect(COPY.delegation.actions[n], n).toBeTruthy()
+  })
+})
