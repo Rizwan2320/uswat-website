@@ -11,10 +11,12 @@ const NOW = new Date('2026-11-11T00:00:00.000Z')
 describe('dashboard queues', () => {
   it('shows each role only its own queues, and the auditor none', () => {
     const keys = (r: (typeof ROLES)[number]) => queuesFor(r).map((q) => q.key)
-    expect(keys('contributor')).toEqual(['myDrafts', 'expiring'])
-    expect(keys('editor')).toEqual(['myDrafts', 'expiring'])
+    // Editors and contributors follow their own work through review (slice 3aa).
+    expect(keys('contributor')).toEqual(['sentBack', 'myDrafts', 'sentByMe', 'expiring'])
+    expect(keys('editor')).toEqual(['sentBack', 'myDrafts', 'sentByMe', 'expiring'])
+    // Approvers read what waits for them first, and get no author lists.
     for (const r of ['approver', 'siteManager', 'platformAdmin'] as const) {
-      expect(keys(r)).toEqual([...QUEUE_KEYS])
+      expect(keys(r)).toEqual(['review', 'myDrafts', 'stale', 'expiring', 'needsAlt'])
     }
     expect(keys('auditor')).toEqual([])
   })

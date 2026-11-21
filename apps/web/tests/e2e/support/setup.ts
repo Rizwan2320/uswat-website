@@ -53,6 +53,32 @@ const notice = await payload.create({
   ...as(editor),
 })
 
+// For tests/e2e/role-workflow.e2e.spec.ts: a draft with its source filled in (so it can go all the way
+// to Published) and a contributor's own draft.
+const flowNotice = await payload.create({
+  collection: 'notices',
+  draft: true,
+  data: {
+    title: uniq('e2e-flow'),
+    governance: { ownerOffice: 'Registrar', source: 'https://example.invalid/sample-source' },
+  } as never,
+  ...as(editor),
+})
+const ownNotice = await payload.create({
+  collection: 'notices',
+  draft: true,
+  data: { title: uniq('e2e-own'), governance: { ownerOffice: 'Registrar' } } as never,
+  ...as(contributor),
+})
+
+// An event with no "Take down on" date: sending it for review is refused by the policy (LIF-04).
+const noExpiry = await payload.create({
+  collection: 'events',
+  draft: true,
+  data: { title: uniq('e2e-event'), governance: { ownerOffice: 'Registrar' } } as never,
+  ...as(editor),
+})
+
 mkdirSync('/tmp/uswat-e2e', { recursive: true })
 writeFileSync(
   '/tmp/uswat-e2e/fixtures.json',
@@ -63,6 +89,9 @@ writeFileSync(
     admin: admin.email,
     page: { id: page.id, title },
     notice: { id: notice.id, title: notice.title },
+    flowNotice: { id: flowNotice.id, title: flowNotice.title },
+    ownNotice: { id: ownNotice.id, title: ownNotice.title },
+    noExpiry: { id: noExpiry.id, title: noExpiry.title },
     contributor: contributor.email,
     auditor: auditor.email,
     siteManager: siteManager.email,

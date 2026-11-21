@@ -100,6 +100,33 @@ describe('editor dashboard', () => {
     })
   })
 
+  it('the author follows an item: I sent for review, then Sent back to me with the reason, then back out of it when sent again', async () => {
+    const t = uniq('followed')
+    const n = await notice(editor, t)
+    await step(n.id, editor, { status: 'in_review' })
+    expect(titles(await get(editor, 'sentByMe'))).toContain(t)
+    expect(titles(await get(editor, 'sentBack'))).not.toContain(t)
+
+    await step(n.id, approver, { status: 'draft', reviewNote: 'Add the date.' })
+    expect(titles(await get(editor, 'sentByMe'))).not.toContain(t)
+    expect(titles(await get(editor, 'sentBack'))).toContain(t)
+    // Listed once: a sent-back item is not repeated under My drafts.
+    expect(titles(await get(editor, 'myDrafts'))).not.toContain(t)
+    // Someone else's list does not show it.
+    expect(titles(await get(otherEditor, 'sentBack'))).not.toContain(t)
+
+    await step(n.id, editor, { status: 'in_review', reviewNote: '' })
+    expect(titles(await get(editor, 'sentBack'))).not.toContain(t)
+    expect(titles(await get(editor, 'sentByMe'))).toContain(t)
+  })
+
+  it('approvers get no author lists, and the review list comes first', async () => {
+    const all = await loadDashboard(payload, approver as never)
+    expect(all.map((q) => q.key)[0]).toBe('review')
+    expect(all.map((q) => q.key)).not.toContain('sentBack')
+    expect(all.map((q) => q.key)).not.toContain('sentByMe')
+  })
+
   it('imported drafts wait in the review queue', async () => {
     const t = uniq('imported')
     await payload.create({
@@ -159,7 +186,7 @@ describe('editor dashboard', () => {
     const t0 = Date.now()
     const all = await loadDashboard(payload, approver as never)
     const ms = Date.now() - t0
-    expect(all.map((q) => q.key)).toEqual(['myDrafts', 'review', 'expiring', 'stale', 'needsAlt'])
+    expect(all.map((q) => q.key)).toEqual(['review', 'myDrafts', 'stale', 'expiring', 'needsAlt'])
     expect(all.every((q) => !q.partial)).toBe(true)
     console.info(`dashboard load for an approver: ${ms} ms`)
   })

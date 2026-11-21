@@ -98,6 +98,18 @@ export const governanceFields: Field[] = [
     },
   },
   {
+    name: 'reviewNote',
+    label: bi('Why it was sent back', 'واپس بھیجنے کی وجہ'),
+    type: 'textarea',
+    admin: {
+      readOnly: true,
+      description: bi(
+        'Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.',
+        'واپس بھیجیں کے بٹن سے بھرا جاتا ہے۔ ایڈیٹر اسے مسودے پر دیکھتا ہے۔ دوبارہ جائزے کے لیے بھیجنے پر صاف ہو جاتا ہے۔',
+      ),
+    },
+  },
+  {
     name: 'ownerOffice',
     label: bi('Owner office', 'ذمہ دار دفتر'),
     type: 'text',
@@ -251,6 +263,14 @@ export const governanceFields: Field[] = [
   },
 ]
 
+/** UI-only field (no column): the per-role status line and step buttons. */
+export const workflowBarField: Field = {
+  name: 'workflowBar',
+  label: bi('Status and next step', 'حالت اور اگلا قدم'),
+  type: 'ui',
+  admin: { components: { Field: '@/admin/workflow/WorkflowBar' } },
+}
+
 export const governanceGroup: Field = {
   name: 'governance',
   label: bi('Ownership and approval', 'ملکیت اور منظوری'),
@@ -270,7 +290,19 @@ export function withGovernance<T extends CollectionConfig>(
 ): T {
   return {
     ...config,
-    fields: [...config.fields, governanceGroup],
+    admin: {
+      ...config.admin,
+      components: {
+        ...config.admin?.components,
+        edit: {
+          ...config.admin?.components?.edit,
+          // Publish is drawn only for roles that may publish (3aa).
+          PublishButton: '@/admin/workflow/PublishGate',
+        },
+      },
+    },
+    // The status line and step buttons sit first in the form, full width, so they never cover Payload's own controls (3aa).
+    fields: [workflowBarField, ...config.fields, governanceGroup],
     hooks: {
       ...config.hooks,
       beforeOperation: [governanceBeforeOperation, ...(config.hooks?.beforeOperation ?? [])],
