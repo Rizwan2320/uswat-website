@@ -1,6 +1,6 @@
 # P3 slice 3aj: the coordinator publishes what the head approved
 
-**Branch:** `p3/coordinator-publishes-3aj`, stacked on `p3/academic-scope-3ah` (#134). **Lane:** `src/governance/policy.ts`, `src/admin/workflow/rules.ts` (screen mirrors policy), tests, docs. No schema change, no migration.
+**Branch:** `p3/coordinator-publishes-3aj`, on `main` (3ah, #134, is merged). **Lane:** `src/governance/policy.ts`, `src/admin/workflow/rules.ts` (screen mirrors policy), tests, docs. No schema change, no migration.
 
 ## Owner request (2026-11-22)
 The head of department (HOD) writes the department page and publishes it without review. A programme coordinator writes a draft and sends it to the HOD; when the HOD approves and verifies it, the Publish button on the coordinator's screen becomes clickable and **the coordinator publishes**.

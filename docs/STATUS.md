@@ -831,7 +831,7 @@ P3 agent (slice 3a), own entry:
 - **Tried and backed out:** locking the whole `pages` collection to admins. It broke 46 tests that use pages as the generic test record and would take away the Registrar-style offices' own pages. Main pages stay the admin's by ownership (IT Directorate). A hard lock is one set in `policy.ts` plus moving those tests; say if you want it.
 - **Next:** 3ai, a "You are..." banner, a dashboard that shows each role only what it needs, one-click Approve and publish; then rebase #127 (programme page content) onto `main`.
 
-## P3 slice 3aj, the coordinator publishes what the head approved (2026-11-22, branch `p3/coordinator-publishes-3aj`, stacked on 3ah, PR #134)
+## P3 slice 3aj, the coordinator publishes what the head approved (2026-11-22, branch `p3/coordinator-publishes-3aj`, on main after 3ah merged)
 - A programme coordinator can press Publish on their own programme once the head of department approved and verified it, and for nothing else. A publishing save that also changes content is refused (`PUBLISH_CHANGED_CONTENT`). Brief: `docs/briefs/p3aj-coordinator-publishes.md`. No schema change.
 - Checks run: typecheck, lint, 7 new integration tests, 3 new screen-rule tests, full suite 1392 pass / 150 skipped / 0 failed (`uswat_ah_fresh`), unit 936 pass. Prediction P3aj-a. Not run: browser check of the coordinator screen, hosted preview.
 - **Next:** 3ai (role banner, role dashboards, one-click Approve and publish), then rebase #127 onto main.
