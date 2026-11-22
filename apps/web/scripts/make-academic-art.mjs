@@ -205,6 +205,11 @@ const OFFICES = {
   'hunerkada-center-for-excellence': 'Hunerkada',
   about: 'About',
   'vice-chancellors-message': 'VC',
+  'allied-health-sciences': 'FAHS',
+  'bs-medical-laboratory-technology': 'MLT',
+  'bs-dental-technology': 'Dental',
+  'doctor-of-physical-therapy': 'DPT',
+  'bs-radiography-and-imaging-technology': 'Imaging',
 }
 for (const [k, label] of Object.entries(OFFICES)) MOTIFS[k] = (p, r) => chip(p, r, label)
 

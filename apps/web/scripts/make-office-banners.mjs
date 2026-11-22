@@ -28,6 +28,9 @@ const ICON = {
   clipboard: 'M9 4h6v3H9zM7 5.5H5.5V21h13V5.5H17M9 12h6M9 16h4',
   laptop: 'M5 6h14v9H5zM2 19h20M9 15v4M15 15v4',
   globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3Z',
+  heart: 'M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.4a4.3 4.3 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20ZM7.5 12h2.2l1.2-2.2 1.8 4 1.3-1.8h2.5',
+  tooth: 'M7.5 4C5.4 4 4 5.7 4 7.9c0 2 1 3.6 1.6 5.6.6 2 .8 6.5 2.3 6.5 1.3 0 1-3.9 2.7-3.9h2.8c1.7 0 1.4 3.9 2.7 3.9 1.5 0 1.7-4.5 2.3-6.5.6-2 1.6-3.6 1.6-5.6C20 5.7 18.6 4 16.5 4c-1.2 0-2 .6-4.5.6S8.7 4 7.5 4Z',
+  scan: 'M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16M12 8.5v7',
   rocket: 'M12 3c3 1.5 5 5 5 9l-2.5 3h-5L7 12c0-4 2-7.5 5-9ZM9.5 15l-2.5 3 3-.5M14.5 15l2.5 3-3-.5M12 9.5a1.2 1.2 0 1 0 0 .01',
 }
 
@@ -46,6 +49,11 @@ const BANNERS = [
   { key: 'kamyab-jawan-markaz', icon: 'rocket', pre: '', one: 'Youth Development', two: 'Centre (YDC)', tag: 'University of Swat' },
   { key: 'alumni', icon: 'users', pre: '', one: 'Alumni', two: 'Association', tag: 'University of Swat' },
   { key: 'hunerkada-center-for-excellence', icon: 'globe', pre: '', one: 'Hunerkada', two: 'Center of Excellence', tag: 'University of Swat' },
+  { key: 'allied-health-sciences', icon: 'heart', pre: 'University of Swat', one: 'Faculty of Allied', two: 'Health Sciences', tag: 'Centres • Programmes' },
+  { key: 'bs-medical-laboratory-technology', icon: 'flask', pre: 'Allied Health Sciences', one: 'BS Medical Laboratory', two: 'Technology (MLT)', tag: 'University of Swat' },
+  { key: 'bs-dental-technology', icon: 'tooth', pre: 'Allied Health Sciences', one: 'BS Dental', two: 'Technology', tag: 'University of Swat' },
+  { key: 'doctor-of-physical-therapy', icon: 'users', pre: 'Allied Health Sciences', one: 'Doctor of', two: 'Physical Therapy (DPT)', tag: 'University of Swat' },
+  { key: 'bs-radiography-and-imaging-technology', icon: 'scan', pre: 'Allied Health Sciences', one: 'BS Radiography &', two: 'Imaging Technology', tag: 'University of Swat' },
 ]
 
 const circuit = (flip) => {
