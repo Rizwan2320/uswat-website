@@ -43,6 +43,8 @@ export const site = {
   /** Swat valley, used for the map link only. TODO(content): replace with the verified campus pin. */
   mapHref: 'https://www.openstreetmap.org/search?query=University%20of%20Swat',
   portalLinks: {
+    /** Campus Management System (host crawled 2026-11-06, see portals.ts). TODO(content): confirm the landing page the university wants here. */
+    cms: 'https://cms1.uswat.edu.pk/',
     student: 'https://cms1.uswat.edu.pk/web/login',
     faculty: 'https://cms1.uswat.edu.pk/web/login', // TODO(content): confirm whether faculty use a separate login
   },

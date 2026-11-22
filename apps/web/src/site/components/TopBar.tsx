@@ -1,4 +1,5 @@
 import { site } from '../content/site'
+import DepartmentSearch from './DepartmentSearch'
 import { LanguageToggle, T } from './I18n'
 import { PinIcon } from './icons'
 import SearchOverlay from './SearchOverlay'
@@ -18,14 +19,25 @@ export default function TopBar() {
           <span className={styles.tagline}>{site.established}</span>
         </p>
         <nav className={styles.right} aria-label="Portals and language">
+          <a href={site.portalLinks.cms} rel="noopener noreferrer" className={styles.pill}>
+            <T k="CMS" />
+          </a>
+          <DepartmentSearch triggerClassName={`${styles.pill} ${styles.deptBtn}`} />
+          <span aria-hidden="true" className={styles.sep}>
+            |
+          </span>
           <a href={site.portalLinks.student} rel="noopener noreferrer">
             <T k="Student Portal" />
           </a>
-          <span aria-hidden="true" className={styles.sep}>|</span>
+          <span aria-hidden="true" className={styles.sep}>
+            |
+          </span>
           <a href={site.portalLinks.faculty} rel="noopener noreferrer">
             <T k="Faculty Portal" />
           </a>
-          <span aria-hidden="true" className={styles.sep}>|</span>
+          <span aria-hidden="true" className={styles.sep}>
+            |
+          </span>
           <LanguageToggle className={styles.lang} />
           <SearchOverlay triggerClassName={styles.search} />
         </nav>
