@@ -25,7 +25,7 @@ export default function PortalRootLayout({ children }: { children: ReactNode }) 
     <html lang="en">
       <body className="portal">
         <a className="portal-skip" href="#main">{COPY.skipLink}</a>
-        <div className="portal-banner" role="note">{COPY.sampleBanner}</div>
+        <div className="portal-sample-banner" role="note">{COPY.sampleBanner}</div>
         {children}
       </body>
     </html>
