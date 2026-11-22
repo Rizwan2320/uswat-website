@@ -13,6 +13,7 @@ import {
   shortListField,
 } from './academics/pageFields'
 import { governedCollection, legacyUrlField } from './governedCollection'
+import { inheritDepartmentOffice } from './academics/programmeOwner'
 
 /** One semester per row. The site groups rows by year; two rows for one semester would show it twice. */
 const curriculumField: ArrayField = {
@@ -96,6 +97,7 @@ export const Programmes = governedCollection({
   plural: 'Programmes',
   useAsTitle: 'name',
   createAdminOnly: true,
+  hooks: { beforeValidate: [inheritDepartmentOffice] },
   group: 'Organisation',
   defaultColumns: ['name', 'department', 'campus', 'updatedAt'],
   fields: [

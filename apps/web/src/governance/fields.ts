@@ -135,8 +135,11 @@ export const governanceFields: Field[] = [
     // draft save has no office and an editor is refused before typing anything (found in a real
     // browser; the create page came up blank). A person with several offices can change it.
     defaultValue: ({ user }) => {
-      const offices = (user as { offices?: unknown } | null)?.offices
-      return Array.isArray(offices) && typeof offices[0] === 'string' ? offices[0] : undefined
+      const u = user as { offices?: unknown; role?: unknown } | null
+      if (Array.isArray(u?.offices) && typeof u.offices[0] === 'string') return u.offices[0]
+      // A platform admin has no office of their own; the main pages they publish belong to the
+      // IT Directorate, so the box is not left empty (it blocked publishing on the preview).
+      return u?.role === 'platformAdmin' ? 'IT Directorate' : undefined
     },
     admin: {
       description: bi(

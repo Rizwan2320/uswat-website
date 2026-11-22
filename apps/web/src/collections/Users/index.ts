@@ -125,6 +125,20 @@ export const Users: CollectionConfig = {
         ],
       },
     },
+    {
+      name: 'programmes',
+      label: 'Programmes they coordinate',
+      type: 'relationship',
+      relationTo: 'programmes',
+      hasMany: true,
+      // Only a platform admin decides who coordinates which programme (slice 3ah).
+      access: { update: ({ req }) => isPlatformAdmin(req) },
+      admin: {
+        condition: (data) => data?.role === 'editor',
+        description:
+          'For a programme coordinator: the programmes this person writes drafts for. They can edit only these programmes (not the department page, not other programmes) and send them to the head of the department. Leave empty for an Editor of a whole office.',
+      },
+    },
   ],
   hooks: {
     afterLogin: [auditAfterLogin],
