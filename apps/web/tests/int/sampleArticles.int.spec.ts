@@ -29,6 +29,8 @@ beforeAll(async () => {
 
 describe('Sample article pack', () => {
   it('creates every state on the first run and nothing on the second', async () => {
+    // Count only the pack's own rows (slug 'sample-…'): other test files write to the same collections in parallel, and
+    // on a slow runner their versions landed between the two counts (CI: +1 or +2 in one collection).
     // One fixed clock for both runs: the dates in the pack are relative to it, and on a slow runner the first run
     // takes minutes, so a second `Date.now()` made some rows look changed and rewrote them (the CI flake).
     const now = Date.now()
@@ -36,10 +38,10 @@ describe('Sample article pack', () => {
     const expectedPublished = seeds.filter((s) => s.state === 'published').length + tags.length + meritLists.filter((m) => m.state === 'published').length
     // A database that already holds the pack (an earlier run) makes the first run "unchanged"; both cases are right.
     expect(first.published + first.unchanged).toBeGreaterThanOrEqual(expectedPublished)
-    const versionsBefore = await Promise.all(ARTICLE_COLLECTIONS.map(async (c) => (await payload.countVersions({ collection: c })).totalDocs))
+    const versionsBefore = await Promise.all(ARTICLE_COLLECTIONS.map(async (c) => (await payload.countVersions({ collection: c, where: { 'version.slug': { like: 'sample-' } } })).totalDocs))
     const second = await applyArticleSeeds(payload as unknown as Cms, actor, now)
     expect(second).toMatchObject({ created: 0, published: 0, inReview: 0, drafts: 0 })
-    const versionsAfter = await Promise.all(ARTICLE_COLLECTIONS.map(async (c) => (await payload.countVersions({ collection: c })).totalDocs))
+    const versionsAfter = await Promise.all(ARTICLE_COLLECTIONS.map(async (c) => (await payload.countVersions({ collection: c, where: { 'version.slug': { like: 'sample-' } } })).totalDocs))
     expect(versionsAfter).toEqual(versionsBefore)
     // The first run walks about 45 records through the real workflow (several versions each); the default 5 s
     // limit is too short on a busy machine and made the next tests fail too (CI on #85).
