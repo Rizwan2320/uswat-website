@@ -70,6 +70,7 @@ describe('header menu and footer links', () => {
     expect(at('Academics > Computer and Software Technologies')).toBe('/academics/departments/dcst')
     expect(at('About > Vice Chancellor’s Message')).toBe('/about/vice-chancellors-message')
     expect(at('About > Alumni Association')).toBe('/administration/alumni')
+    expect(at('Academics > Faculty of Allied Health Sciences')).toBe('/faculties/allied-health-sciences')
     expect(at('footer Research')).toBe('/research')
     expect(at('footer Contact Us')).toBe('/contact/directory')
     expect(at('hero Explore Programs')).toBe('/academics')

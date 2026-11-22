@@ -1509,7 +1509,7 @@ https://uswat.edu.pk/election-administrative-officers-and-faculty-members/,elect
 https://uswat.edu.pk/etea-test/,etea-test,7,(none),-,/,redirect to nearest parent; 301,was hold as draft (near-empty)
 https://uswat.edu.pk/examination/,examination,12,(none),-,/,redirect to nearest parent; 301,was hold as draft (near-empty)
 https://uswat.edu.pk/facilities/,facilities,12,(none),-,/,redirect to nearest parent; 301,was hold as draft (near-empty)
-https://uswat.edu.pk/faculty/,faculty,250,Pages,T2/T8 Page,/faculty/,migrate,
+https://uswat.edu.pk/faculty/,faculty,250,Offices,T3 Faculty,/faculties/allied-health-sciences/,migrate,the old /faculty/ page is the Faculty of Allied Health Sciences; the new faculty page is served at the new address and the old one redirects
 https://uswat.edu.pk/faculty-of-life-sciences/,faculty-of-life-sciences,492,Departments (+People),T3 Department,/academics/departments/life-sciences/,migrate,
 https://uswat.edu.pk/fee-structure/,fee-structure,12,(none),-,/,redirect to nearest parent; 301,was hold as draft (near-empty)
 https://uswat.edu.pk/gallery/,gallery,17,(none),-,/,redirect to nearest parent; 301,was hold as draft (near-empty)

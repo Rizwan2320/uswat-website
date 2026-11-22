@@ -13,7 +13,7 @@ export const nav: NavItem[] = [
     href: '/academics',
     children: [
       { label: 'All faculties and programmes', href: '/academics', icon: 'cap' },
-      { label: 'Faculty of Allied Health Sciences', href: `${U}/faculty/`, external: true, icon: 'heart' },
+      { label: 'Faculty of Allied Health Sciences', href: '/faculties/allied-health-sciences', icon: 'heart' },
       { label: 'Computer and Software Technologies', href: '/academics/departments/dcst', icon: 'laptop' },
       { label: 'Management & Commerce', href: `${U}/department-of-management-commerce/`, external: true, icon: 'trending' },
       { label: 'English and Foreign Languages', href: `${U}/department-of-english-and-foreign-languages/`, external: true, icon: 'book' },

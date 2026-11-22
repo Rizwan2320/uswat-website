@@ -1494,6 +1494,7 @@
   "/etea-test": "/",
   "/examination": "/",
   "/facilities": "/",
+  "/faculty": "/faculties/allied-health-sciences",
   "/faculty-of-life-sciences": "/academics/departments/life-sciences",
   "/fee-structure": "/",
   "/gallery": "/",
