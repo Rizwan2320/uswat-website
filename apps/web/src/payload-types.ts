@@ -2486,6 +2486,199 @@ export interface Programme {
    * Where applicants start their application (the admissions portal page for this programme). Leave empty to hide the Apply button.
    */
   applyUrl?: string | null;
+  /**
+   * Programmes are listed on the department page from the lowest number up. Leave empty to list it last.
+   */
+  order?: number | null;
+  /**
+   * The words and pictures of the programme page. Plain text only: no links, no formatting. Leave a part empty to leave that section out of the page.
+   */
+  pageContent?: {
+    /**
+     * For example "BS CS".
+     */
+    shortName?: string | null;
+    /**
+     * One short line under the name.
+     */
+    tagline?: string | null;
+    /**
+     * One or two sentences for the card on the department page.
+     */
+    summary?: string | null;
+    /**
+     * The large picture at the top. It needs alt text in the media library.
+     */
+    heroImage?: (number | null) | Media;
+    /**
+     * The small picture on the department page card. It needs alt text.
+     */
+    tileImage?: (number | null) | Media;
+    /**
+     * The light picture beside the overview. It needs alt text.
+     */
+    figureImage?: (number | null) | Media;
+    /**
+     * Plain paragraphs, up to 4.
+     */
+    about?:
+      | {
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * What a graduate can do, one line each, up to 8.
+     */
+    outcomes?:
+      | {
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Short reasons to choose the programme. Up to 6.
+     */
+    whyStudy?:
+      | {
+          /**
+           * The small picture drawn beside the title.
+           */
+          icon:
+            | 'code'
+            | 'layers'
+            | 'network'
+            | 'chart'
+            | 'brain'
+            | 'flask'
+            | 'book'
+            | 'briefcase'
+            | 'users'
+            | 'trophy'
+            | 'spark'
+            | 'shield'
+            | 'cloud'
+            | 'phone'
+            | 'search'
+            | 'rocket'
+            | 'globe'
+            | 'cap'
+            | 'gear'
+            | 'database';
+          title?: string | null;
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Areas a student can specialise in. Up to 6.
+     */
+    tracks?:
+      | {
+          /**
+           * The small picture drawn beside the title.
+           */
+          icon:
+            | 'code'
+            | 'layers'
+            | 'network'
+            | 'chart'
+            | 'brain'
+            | 'flask'
+            | 'book'
+            | 'briefcase'
+            | 'users'
+            | 'trophy'
+            | 'spark'
+            | 'shield'
+            | 'cloud'
+            | 'phone'
+            | 'search'
+            | 'rocket'
+            | 'globe'
+            | 'cap'
+            | 'gear'
+            | 'database';
+          title?: string | null;
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Groups of skills students gain, up to 6.
+     */
+    skills?:
+      | {
+          group?: string | null;
+          /**
+           * Up to 8.
+           */
+          items?: string[] | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * One row for each semester: its year (1 to 6) and term (1 or 2), then the course names. Up to 12 rows.
+     */
+    curriculum?:
+      | {
+          /**
+           * Year of study, 1 to 6.
+           */
+          year: number;
+          term: '1' | '2';
+          /**
+           * Course names, up to 8.
+           */
+          courses?: string[] | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Where graduates work. Up to 8.
+     */
+    careers?:
+      | {
+          /**
+           * The small picture drawn beside the title.
+           */
+          icon:
+            | 'code'
+            | 'layers'
+            | 'network'
+            | 'chart'
+            | 'brain'
+            | 'flask'
+            | 'book'
+            | 'briefcase'
+            | 'users'
+            | 'trophy'
+            | 'spark'
+            | 'shield'
+            | 'cloud'
+            | 'phone'
+            | 'search'
+            | 'rocket'
+            | 'globe'
+            | 'cap'
+            | 'gear'
+            | 'database';
+          title?: string | null;
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Common questions, up to 12.
+     */
+    faq?:
+      | {
+          question?: string | null;
+          answer?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
   governance?: {
     /**
      * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
@@ -3935,6 +4128,75 @@ export interface ProgrammesSelect<T extends boolean = true> {
   curriculumUrl?: T;
   feeLink?: T;
   applyUrl?: T;
+  order?: T;
+  pageContent?:
+    | T
+    | {
+        shortName?: T;
+        tagline?: T;
+        summary?: T;
+        heroImage?: T;
+        tileImage?: T;
+        figureImage?: T;
+        about?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        outcomes?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        whyStudy?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              text?: T;
+              id?: T;
+            };
+        tracks?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              text?: T;
+              id?: T;
+            };
+        skills?:
+          | T
+          | {
+              group?: T;
+              items?: T;
+              id?: T;
+            };
+        curriculum?:
+          | T
+          | {
+              year?: T;
+              term?: T;
+              courses?: T;
+              id?: T;
+            };
+        careers?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              text?: T;
+              id?: T;
+            };
+        faq?:
+          | T
+          | {
+              question?: T;
+              answer?: T;
+              id?: T;
+            };
+      };
   governance?:
     | T
     | {
