@@ -221,6 +221,32 @@ describe('the pictures', () => {
   })
 })
 
+describe('deleting a picture the home page uses', () => {
+  it('is refused while a slide (even only in the newest draft) shows it, and allowed once it is replaced', async () => {
+    const pic = await upload({ alt: 'Used on the home page', rightsStatus: 'owned' })
+    await draft(editor, { slides: [slide(pic), slide(m2), slide(m3)] })
+    let message = ''
+    let status = 0
+    try {
+      await payload.delete({ collection: 'media', id: pic, overrideAccess: true })
+    } catch (e) {
+      message = (e as Error).message
+      status = (e as { status?: number }).status ?? 0
+    }
+    expect(status).toBe(409)
+    expect(message).toContain('Home page content')
+    expect(
+      await payload.findByID({ collection: 'media', id: pic, overrideAccess: true }),
+    ).toBeTruthy()
+
+    await draft(editor, { slides: [slide(m1), slide(m2), slide(m3)] })
+    await payload.delete({ collection: 'media', id: pic, overrideAccess: true })
+    await expect(
+      payload.findByID({ collection: 'media', id: pic, overrideAccess: true }),
+    ).rejects.toBeTruthy()
+  })
+})
+
 describe('what the public sees', () => {
   it('only the published version, never a draft', async () => {
     await publish(approver, {

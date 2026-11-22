@@ -311,7 +311,7 @@ export const publishGuard: CollectionBeforeChangeHook = async ({
 /**
  * Integrity, not permission (slice 3af): a picture that other records still show is not deleted, for
  * anyone. The fields that point at media are found from the config (`findReferences`), so a new
- * picture field is covered without a list to keep in step. Globals are not searched.
+ * picture field is covered without a list to keep in step. Globals (home page content, header, footer) are searched too, in the live version and the newest draft.
  */
 export const mediaBeforeDelete: CollectionBeforeDeleteHook = async ({ id, req }) => {
   const used = await findReferences(req.payload, 'media', id, req)
