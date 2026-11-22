@@ -5,7 +5,7 @@
 
 import type { CollectionConfig, Payload } from 'payload'
 
-import { queuesFor, type QueueKey, type QueueSpec } from './dashboard'
+import { queuesForActor, type QueueKey, type QueueSpec } from './dashboard'
 import { actorFromUser } from './roles'
 
 export interface QueueItem {
@@ -65,7 +65,7 @@ export async function loadDashboard(
         try {
           const res = await payload.find({
             collection: c.slug as 'pages',
-            where: spec.where({ userId: user.id, now }),
+            where: spec.where({ userId: user.id, now, actor, collection: c.slug }),
             draft: spec.draft,
             depth: 0,
             limit: PER_COLLECTION,
@@ -106,13 +106,13 @@ export async function loadDashboard(
       .slice(0, ITEMS_PER_QUEUE)
     return {
       key: spec.key,
-      title: spec.title,
-      help: spec.help,
+      title: spec.words?.(actor)?.title ?? spec.title,
+      help: spec.words?.(actor)?.help ?? spec.help,
       total: perCollection.reduce((n, r) => n + r.total, 0),
       items,
       partial,
     }
   }
 
-  return Promise.all(queuesFor(actor.role).map(run))
+  return Promise.all(queuesForActor(actor).map(run))
 }

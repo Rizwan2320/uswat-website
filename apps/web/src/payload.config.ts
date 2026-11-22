@@ -51,6 +51,8 @@ const built = buildConfig({
       // The editor dashboard (CMS-09): my drafts, review queue, expiring soon, stale, needs alt.
       // Operations (3v): sweep status and work by office, for admin, site manager and auditor only.
       beforeDashboard: ['@/admin/EditorDashboard', '@/admin/OperationsPanel'],
+      // "You are...": who you are and what that means, on every screen (slice 3ai).
+      header: ['@/admin/RoleBanner'],
     },
     importMap: {
       baseDir: path.resolve(dirname),
