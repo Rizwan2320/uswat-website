@@ -22,7 +22,8 @@ import {
   type WorkflowStatus,
 } from '../../governance/roles'
 
-export type StepAction = 'sendForReview' | 'approve' | 'sendBack' | 'markVerified'
+export type StepAction =
+  'sendForReview' | 'approve' | 'approveAndPublish' | 'sendBack' | 'markVerified'
 export type Words = { en: string; ur: string }
 
 /** Who wrote the item, as far as the signed-in person is concerned. */
@@ -162,13 +163,18 @@ export function workflowView(input: WorkflowInput): WorkflowView {
           tone: 'info',
           banner: w(
             role === 'approver'
-              ? 'Your draft. It saves by itself. As head of the department you publish it yourself: mark it verified, press Approve, then Publish. No one else needs to review it.'
-              : 'Your draft. It saves by itself. You publish it yourself: mark it verified, press Approve, then Publish. No second person is needed for a platform admin.',
+              ? 'Your draft. It saves by itself. As head of the department you publish it yourself: fill in the source of the facts, then press Approve and publish. It marks the facts verified, approves and publishes in one step. No one else needs to review it.'
+              : 'Your draft. It saves by itself. You publish it yourself: fill in the source of the facts, then press Approve and publish. It marks the facts verified, approves and publishes in one step. No second person is needed for a platform admin.',
             role === 'approver'
-              ? 'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ شعبے کے سربراہ کے طور پر آپ اسے خود شائع کرتے ہیں: تصدیق شدہ کریں، منظور کریں دبائیں، پھر شائع کریں۔ کسی اور کو جانچنے کی ضرورت نہیں۔'
-              : 'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ آپ اسے خود شائع کرتے ہیں: تصدیق شدہ کریں، منظور کریں دبائیں، پھر شائع کریں۔ پلیٹ فارم ایڈمن کے لیے کسی دوسرے شخص کی ضرورت نہیں۔',
+              ? 'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ شعبے کے سربراہ کے طور پر آپ اسے خود شائع کرتے ہیں: حقائق کا ماخذ بھریں، پھر منظور کریں اور شائع کریں دبائیں۔ یہ ایک ہی قدم میں تصدیق، منظوری اور اشاعت کرتا ہے۔ کسی اور کو جانچنے کی ضرورت نہیں۔'
+              : 'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ آپ اسے خود شائع کرتے ہیں: حقائق کا ماخذ بھریں، پھر منظور کریں اور شائع کریں دبائیں۔ یہ ایک ہی قدم میں تصدیق، منظوری اور اشاعت کرتا ہے۔ پلیٹ فارم ایڈمن کے لیے کسی دوسرے شخص کی ضرورت نہیں۔',
           ),
-          actions: ['approve', ...verify],
+          // One press for the owner of the page (slice 3ak): mark verified, approve and publish. A head
+          // looking at a draft a coordinator has not sent yet keeps the separate steps.
+          actions:
+            mine || target?.collection === 'departments'
+              ? ['approveAndPublish']
+              : ['approve', ...verify],
           showPublish: false,
         }
       }
@@ -299,7 +305,10 @@ export function workflowView(input: WorkflowInput): WorkflowView {
 }
 
 /** The Stage each step button asks for. The policy decides whether the save is allowed. */
-export const STEP_TARGET: Record<Exclude<StepAction, 'markVerified'>, WorkflowStatus> = {
+export const STEP_TARGET: Record<
+  Exclude<StepAction, 'markVerified' | 'approveAndPublish'>,
+  WorkflowStatus
+> = {
   sendForReview: 'in_review',
   approve: 'approved',
   sendBack: 'draft',
@@ -308,6 +317,7 @@ export const STEP_TARGET: Record<Exclude<StepAction, 'markVerified'>, WorkflowSt
 export const STEP_LABEL: Record<StepAction, Words> = {
   sendForReview: w('Send for review', 'جائزے کے لیے بھیجیں'),
   approve: w('Approve', 'منظور کریں'),
+  approveAndPublish: w('Approve and publish', 'منظور کریں اور شائع کریں'),
   sendBack: w('Send back', 'واپس بھیجیں'),
   markVerified: w('Mark verified', 'تصدیق شدہ کریں'),
 }
@@ -321,6 +331,10 @@ export const STEP_DONE: Record<StepAction, Words> = {
   approve: w(
     'Approved. An approver can now publish it.',
     'منظور ہو گیا۔ اب منظوری دہندہ اسے شائع کر سکتا ہے۔',
+  ),
+  approveAndPublish: w(
+    'Approved, verified and published. It is live on the website.',
+    'منظور، تصدیق شدہ اور شائع ہو گیا۔ یہ ویب سائٹ پر لائیو ہے۔',
   ),
   sendBack: w(
     'Sent back to Draft. The editor can change it and send it again.',
