@@ -96,6 +96,7 @@ export const governanceFields: Field[] = [
     options: options(WORKFLOW_STATUSES, STAGE_LABELS),
     index: true,
     admin: {
+      components: { Field: '@/admin/workflow/StageField' },
       description: bi(
         'Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.',
         'مسودہ، زیرِ جائزہ، منظور شدہ، شائع شدہ یا آرکائیو شدہ۔ آپ اسے کہاں لے جا سکتے ہیں، یہ آپ کے کردار پر منحصر ہے۔',

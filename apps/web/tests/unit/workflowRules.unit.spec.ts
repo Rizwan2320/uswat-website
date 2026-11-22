@@ -33,16 +33,17 @@ describe('head of department and coordinator (slice 3ah)', () => {
   const hod = person('approver', ['Registrar'])
   const deptPage = { target: { collection: 'departments', id: 4 } }
 
-  it('a head publishes their department page without sending it for review, whoever started the draft', () => {
+  it('a head publishes their department page without sending it for review, in one press, whoever started the draft', () => {
     for (const author of ['me', 'other'] as const) {
       const v = view(hod, 'draft', { ...deptPage, author })
-      expect(v.actions).toEqual(['approve', 'markVerified'])
+      expect(v.actions).toEqual(['approveAndPublish'])
       expect(v.banner.en).toMatch(/head of the department you publish it yourself/)
+      expect(v.banner.en).toMatch(/Approve and publish/)
     }
-    expect(view(hod, 'draft', { target: { collection: 'programmes', id: 9 } }).actions).toEqual([
-      'approve',
-      'markVerified',
-    ])
+    // A programme the head started themselves: one press. A coordinator's unsent draft: separate steps.
+    const prog = { target: { collection: 'programmes', id: 9 } }
+    expect(view(hod, 'draft', { ...prog, author: 'me' }).actions).toEqual(['approveAndPublish'])
+    expect(view(hod, 'draft', prog).actions).toEqual(['approve', 'markVerified'])
     expect(view(hod, 'approved', deptPage).showPublish).toBe(true)
   })
 
@@ -174,7 +175,7 @@ describe('workflow view per role', () => {
   it('a platform admin publishes their own work: Approve on a draft, Approve on their item in review, no waiting', () => {
     const p = person('platformAdmin')
     const draft = view(p, 'draft', { author: 'me' })
-    expect(draft.actions).toEqual(['approve', 'markVerified'])
+    expect(draft.actions).toEqual(['approveAndPublish'])
     expect(draft.banner.en).toMatch(/No second person is needed/)
     const review = view(p, 'in_review', { author: 'me' })
     expect(review.actions).toEqual(['approve', 'sendBack', 'markVerified'])
@@ -264,7 +265,7 @@ describe('workflow view per role', () => {
         for (const risk of ['standard', 'high_impact'] as const) {
           const v = view(actor, stage, { risk, author: 'other' })
           for (const a of v.actions as StepAction[]) {
-            if (a === 'markVerified') continue
+            if (a === 'markVerified' || a === 'approveAndPublish') continue
             expect(
               checkTransition(actor, { ownerOffice: 'registrar', risk }, stage, STEP_TARGET[a]),
               `${r} ${stage} ${risk} ${a}`,

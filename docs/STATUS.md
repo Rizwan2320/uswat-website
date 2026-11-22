@@ -849,3 +849,9 @@ P3 agent (slice 3a), own entry:
 - Checks run: typecheck, lint (0 errors), dashboard unit and integration tests, full suite 1455 pass / 196 skipped / 0 failed (`uswat_aj`, fresh and migrated to main), unit 970 pass, production build, browser check as admin, head of department and coordinator (banner, lists, Publish button on the coordinator's approved page). Prediction P3ai-a.
 - Not run: Urdu rendering of the banner in a browser, phone width, hosted preview. The Urdu lines need a native reader.
 - **Next:** one-click Approve and publish (own slice), the login screen wording, Urdu review.
+
+## P3 slice 3ak, one press to publish (2026-11-22, branch `p3/one-click-publish-3ak`, on main)
+- "Approve and publish" for a page's owner (admin; head of department on department pages and their own programme pages), source checked first; the Stage box is read-only except for the platform admin. Brief: `docs/briefs/p3ak-one-click-publish.md`. No schema change.
+- Checks run: typecheck, lint (0 errors), unit 963 pass, integration 1436 pass / 196 skipped / 0 failed (fresh database migrated to main), production build, browser check as head and admin (publish, source-empty stop, Stage box states). Prediction P3ak-a.
+- Not run: automated browser test, axe, Urdu rendering, phone width, hosted preview.
+- **Next:** Archive and Restore buttons, axe on the status and Stage boxes, Urdu review, login screen wording.
