@@ -16,6 +16,10 @@ export default function CvDocument({ cv }: { cv: Cv }) {
     <article className={`cv cv-${cv.template}`} lang="en" aria-labelledby="cv-name" data-testid="cv-document">
       <header className="cv-head">
         {cv.sample ? <p className="cv-sample">{C.sampleLabel}</p> : null}
+        {h.photo ? (
+          // eslint-disable-next-line @next/next/no-img-element -- a small illustration from the app's own public folder
+          <img className="portal-avatar cv-photo" src={h.photo} alt="" width={96} height={96} />
+        ) : null}
         <h1 id="cv-name">{h.nameEn}</h1>
         <p className="cv-name-ur" lang="ur" dir="rtl">{h.nameUr}</p>
         <p>{h.designation}, {h.department}</p>

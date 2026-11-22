@@ -176,3 +176,12 @@ describe('changedFields', () => {
     expect(changedFields(a, { ...a, visibility: { ...a.visibility, photo: 'hidden' } })).toEqual(['visibility'])
   })
 })
+
+describe('the picture in the preview', () => {
+  it('is carried through, and is only shown when the person made the photo public', () => {
+    const withPhoto = (vis: { email: 'hidden' | 'internal' | 'public'; photo: 'hidden' | 'internal' | 'public' }) => ({ ...profile(vis), photo: '/portal-avatars/rizwan.svg' })
+    expect(buildPreview(withPhoto({ email: 'hidden', photo: 'public' }))).toMatchObject({ showPhoto: true, photo: '/portal-avatars/rizwan.svg' })
+    expect(buildPreview(withPhoto({ email: 'hidden', photo: 'internal' })).showPhoto).toBe(false)
+    expect(buildPreview(profile({ email: 'hidden', photo: 'public' })).photo).toBeNull()
+  })
+})
