@@ -21,7 +21,7 @@ const asId = (v: string): string | number => (/^\d+$/.test(v) ? Number(v) : v)
  * their own programmes by id (never by office, and never a department). An id means something different in each collection, so these
  * filters are built per collection.
  */
-function scopeFilter(actor: Actor, prefix = '', slug?: string, versions = false): boolean | Where {
+export function scopeFilter(actor: Actor, prefix = '', slug?: string, versions = false): boolean | Where {
   if (actor.kind !== 'user') return false
   switch (actor.role) {
     case 'platformAdmin':

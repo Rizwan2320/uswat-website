@@ -843,3 +843,9 @@ P3 agent (slice 3a), own entry:
 - A programme coordinator can press Publish on their own programme once the head of department approved and verified it, and for nothing else. A publishing save that also changes content is refused (`PUBLISH_CHANGED_CONTENT`). Brief: `docs/briefs/p3aj-coordinator-publishes.md`. No schema change.
 - Checks run: typecheck, lint, 7 new integration tests, 3 new screen-rule tests, full suite 1392 pass / 150 skipped / 0 failed (`uswat_ah_fresh`), unit 936 pass. Prediction P3aj-a. Not run: browser check of the coordinator screen, hosted preview.
 - **Next:** 3ai (role banner, role dashboards, one-click Approve and publish), then rebase #127 onto main.
+
+## P3 slice 3ai, role screens (2026-11-22, branch `p3/role-screens-3ai`, on main)
+- A "You are..." bar on every admin screen, role-specific dashboard lists (a head's "Waiting for your review", "Approved, ready to publish", a coordinator's "Ready for you to publish"), your own item no longer shown as something for you to review, expiring and stale lists limited to your own pages. Brief: `docs/briefs/p3ai-role-screens.md`. No schema change.
+- Checks run: typecheck, lint (0 errors), dashboard unit and integration tests, full suite 1455 pass / 196 skipped / 0 failed (`uswat_aj`, fresh and migrated to main), unit 970 pass, production build, browser check as admin, head of department and coordinator (banner, lists, Publish button on the coordinator's approved page). Prediction P3ai-a.
+- Not run: Urdu rendering of the banner in a browser, phone width, hosted preview. The Urdu lines need a native reader.
+- **Next:** one-click Approve and publish (own slice), the login screen wording, Urdu review.
