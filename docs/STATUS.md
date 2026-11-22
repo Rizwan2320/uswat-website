@@ -780,3 +780,10 @@ P3 agent (slice 3a), own entry:
 - Picture band cut 30%: height 21.7vw (296 px at 1366, was 423). Breadcrumbs moved into a slim strip above the picture (they no longer cover the title). The title block of every banner is fully visible; the bottom icon row is cropped at desktop widths. Phones keep the full 16:9 picture.
 - Checks run: tsc, eslint, 720 unit tests, 36 page loads (no overflow, no axe issues). Not run: production build, e2e, pack integrity test (#94).
 
+### Research and Administration pages (2026-11-22, branch `p4/real-departments`, prediction A4-x, brief `docs/briefs/p5-research-administration.md`)
+- Built `/research`, `/administration` and nine office pages (`/administration/{oric-2, advanced-studies-and-research-board, directorate-of-it, controller-of-examination-office, directorate-of-works, proctorial-board, kamyab-jawan-markaz, alumni, hunerkada-center-for-excellence}`) in the DCST style from `src/site/offices/`. Data is in typed profiles with source URLs and `verifiedAt` 2026-11-05; open conflicts are shown as "Still to be confirmed" (ORIC director name). QEC has no data (external link only).
+- Seeds add the nine office records (names real, source still `sample.invalid`); `SEED_SAMPLE_ON_PREVIEW` must be true for one preview build for the office routes to render there.
+- Route map: one CSV row changed (old `/administration/` is served by the new page); `/research` and `/administration` added to the reserved list.
+- Checks run: tsc, eslint, 727 unit tests, 66 page loads (no overflow, no axe issues, no broken images). Not run: production build, e2e, pack integrity (#94), preview verification (pending).
+- Open: nav menus still point to the old university site (needs owner go-ahead to rewire); office content lives in code, not CMS fields; the P3 content brief covers Academics only.
+
