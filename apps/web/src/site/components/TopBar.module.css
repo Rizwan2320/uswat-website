@@ -21,12 +21,11 @@
   .left { display: none; }
   .inner { justify-content: flex-end; }
 }
-/* CMS link and Departments button: small outlined pills so they read as buttons, not as plain portal links. */
-.right .pill, .deptBtn {
-  display: inline-flex; align-items: center; padding: 3px 12px; border: 1px solid rgb(252 250 244 / 0.55); border-radius: 999px;
-  background: transparent; color: inherit; font: inherit; line-height: 1.4; cursor: pointer; text-decoration: none;
+/* The Departments button looks exactly like the portal links next to it: plain text, underline on hover. */
+.linkBtn {
+  padding: 8px 4px; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer;
 }
-.right .pill:hover, .deptBtn:hover { background: rgb(252 250 244 / 0.14); text-decoration: none; }
+.linkBtn:hover { text-decoration: underline; text-underline-offset: 4px; }
 @media (max-width: 767px) {
   .inner { padding-block: 4px; }
   .right { flex: 0 1 auto; min-width: 0; flex-wrap: wrap; justify-content: flex-end; gap: 2px 8px; }

@@ -19,10 +19,13 @@ export default function TopBar() {
           <span className={styles.tagline}>{site.established}</span>
         </p>
         <nav className={styles.right} aria-label="Portals and language">
-          <a href={site.portalLinks.cms} rel="noopener noreferrer" className={styles.pill}>
+          <DepartmentSearch triggerClassName={styles.linkBtn} />
+          <span aria-hidden="true" className={styles.sep}>
+            |
+          </span>
+          <a href={site.portalLinks.cms} rel="noopener noreferrer">
             <T k="CMS" />
           </a>
-          <DepartmentSearch triggerClassName={`${styles.pill} ${styles.deptBtn}`} />
           <span aria-hidden="true" className={styles.sep}>
             |
           </span>
