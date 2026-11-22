@@ -192,7 +192,7 @@ a.portal-btn { display: inline-flex; align-items: center; box-sizing: border-box
 .portal-util-tag { font-style: italic; }
 .portal-util-sep { opacity: 0.5; }
 .portal-util-who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 36ch; }
-.portal-head { position: relative; background: #fff; color: var(--forest); border-bottom: 1.5px solid #b4d0a9; box-shadow: 0 12px 16px -10px rgb(0 42 16 / 0.34), 0 3px 6px rgb(0 42 16 / 0.07); }
+.portal-head { position: relative; background: #fff; color: var(--forest); border-bottom: 1.5px solid color-mix(in srgb, var(--forest) 30%, #fff); box-shadow: 0 12px 16px -10px rgb(0 42 16 / 0.34), 0 3px 6px rgb(0 42 16 / 0.07); }
 .portal-head-in { display: flex; align-items: center; gap: clamp(12px, 1.4vw, 20px); max-width: 1320px; margin-inline: auto; min-height: 56px; padding: 4px clamp(12px, 2.2vw, 32px); }
 .portal-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--forest); text-decoration: none; flex: none; }
 .portal-crest { border-radius: 50%; display: block; }
@@ -204,17 +204,17 @@ a.portal-btn { display: inline-flex; align-items: center; box-sizing: border-box
 .phd-list { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; }
 .phd-item { position: relative; }
 .phd-link { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 11px; border: 0; border-radius: 999px; background: transparent; color: var(--forest); font: inherit; font-family: var(--stack-nav); font-weight: 500; font-size: 0.93rem; text-decoration: none; cursor: pointer; white-space: nowrap; transition: background-color 0.2s ease; }
-.phd-link:hover, .phd-link[aria-expanded='true'] { background: #e8efe1; }
+.phd-link:hover, .phd-link[aria-expanded='true'] { background: color-mix(in srgb, var(--forest) 10%, #fff); }
 .phd-link.is-current { font-weight: 600; }
 .phd-link.is-current::after { content: ''; position: absolute; inset-inline: 11px; bottom: 0; height: 3px; border-radius: 3px; background: var(--maroon); }
 .phd-caret { font-size: 0.8em; transition: transform 0.2s ease; }
 [aria-expanded='true'] > .phd-caret { transform: rotate(180deg); }
-.phd-sub { position: absolute; top: calc(100% + 10px); left: 0; z-index: 60; width: min(330px, calc(100vw - 32px)); padding: 8px; border-radius: 18px; background: var(--ivory); border: 1.5px solid #b4d0a9; box-shadow: 0 22px 50px -10px rgb(0 42 16 / 0.28), 0 4px 12px rgb(0 42 16 / 0.08); display: grid; gap: 2px; }
+.phd-sub { position: absolute; top: calc(100% + 10px); left: 0; z-index: 60; width: min(330px, calc(100vw - 32px)); padding: 8px; border-radius: 18px; background: var(--ivory); border: 1.5px solid color-mix(in srgb, var(--forest) 30%, #fff); box-shadow: 0 22px 50px -10px rgb(0 42 16 / 0.28), 0 4px 12px rgb(0 42 16 / 0.08); display: grid; gap: 2px; }
 .phd-sub[hidden] { display: none; }
-.phd-sub::before { content: ''; position: absolute; top: -9px; left: 28px; width: 16px; height: 16px; border-radius: 4px 0 0 0; background: var(--ivory); border-top: 1.5px solid #b4d0a9; border-left: 1.5px solid #b4d0a9; transform: rotate(45deg); }
+.phd-sub::before { content: ''; position: absolute; top: -9px; left: 28px; width: 16px; height: 16px; border-radius: 4px 0 0 0; background: var(--ivory); border-top: 1.5px solid color-mix(in srgb, var(--forest) 30%, #fff); border-left: 1.5px solid color-mix(in srgb, var(--forest) 30%, #fff); transform: rotate(45deg); }
 .phd-sub a { position: relative; display: grid; gap: 1px; padding: 8px 12px; border-radius: 10px; color: var(--forest); text-decoration: none; font-family: var(--stack-nav); }
-.phd-sub a:hover, .phd-sub a:focus-visible { background: #e8efe1; }
-.phd-sub a[aria-current='page'] { background: #e8efe1; }
+.phd-sub a:hover, .phd-sub a:focus-visible { background: color-mix(in srgb, var(--forest) 10%, #fff); }
+.phd-sub a[aria-current='page'] { background: color-mix(in srgb, var(--forest) 10%, #fff); }
 .phd-sub-title { font-size: 0.92rem; font-weight: 600; }
 .phd-sub-hint { font-size: 0.78rem; opacity: 0.75; font-weight: 400; }
 .phd-signout { flex: none; min-height: 38px; padding: 4px 18px; border: 0; border-radius: 999px; background: var(--gold); color: var(--forest-deep); font: inherit; font-family: var(--stack-nav); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s ease; }
@@ -225,7 +225,7 @@ a.portal-btn { display: inline-flex; align-items: center; box-sizing: border-box
 .phd-drawer[hidden] { display: none; }
 .phd-drawer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .phd-drawer a { display: flex; align-items: center; min-height: 44px; padding: 6px 12px; border-radius: 10px; color: var(--forest); font-family: var(--stack-nav); font-weight: 500; text-decoration: none; }
-.phd-drawer a:hover, .phd-drawer a[aria-current='page'] { background: #e8efe1; font-weight: 600; }
+.phd-drawer a:hover, .phd-drawer a[aria-current='page'] { background: color-mix(in srgb, var(--forest) 10%, #fff); font-weight: 600; }
 .phd-drawer-foot { margin-top: auto; }
 .phd-drawer-foot .phd-signout { width: 100%; min-height: 44px; }
 .portal-head *:focus-visible, .portal-util *:focus-visible, .phd-drawer *:focus-visible { outline: 3px solid var(--forest); outline-offset: 2px; }
