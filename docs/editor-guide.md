@@ -28,7 +28,7 @@ A coloured line at the top of every item says in plain words where it stands and
 
 **Send back** asks the approver to type what the editor must fix; it cannot be empty. The editor sees it on the item ("Sent back: ...") and under **Sent back to me**, and it clears when the editor sends the item for review again. The note is a convenience on screen, not a rule: the system does not refuse a send-back without one if it is done by another route.
 
-**Nobody approves their own work (since phase 3).** If you created an item you cannot approve it, even as platform admin; send it for review and another approver does it. The server refuses it too. Items brought in by the importer have no author, so an approver may approve those.
+**Nobody approves their own work (since phase 3), except a platform admin.** If you created an item you cannot approve it; send it for review and another approver does it. The server refuses it too. A platform admin looks after the main pages alone, so an admin approves and publishes their own items (Mark verified, Approve, Publish); every step is in the audit log. Items brought in by the importer have no author, so an approver may approve those.
 
 **Publish changes** now sits inside the coloured status box, next to the other steps, and only appears for roles that may publish and only once the item is Approved (or already live). There is no Publish button at the top of the screen.
 

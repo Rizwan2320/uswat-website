@@ -59,8 +59,9 @@ const readOnly = (banner: Words): WorkflowView => ({
 
 /**
  * Two rules the owner asked for (2026-11-21): a draft belongs to its author until it is sent for
- * review, and nobody approves what they wrote themselves. Both are shown here; the second is also
- * enforced on the server (policy.ts, SELF_APPROVAL).
+ * review, and nobody approves what they wrote themselves, except that a platform admin publishes
+ * their own work (2026-11-22). Both are shown here; the second is also enforced on the server
+ * (policy.ts, SELF_APPROVAL).
  */
 export function workflowView(input: WorkflowInput): WorkflowView {
   const { actor, stage, verification, risk, ownerOffice, saved, author } = input
@@ -79,6 +80,8 @@ export function workflowView(input: WorkflowInput): WorkflowView {
   const submitter = canSubmitFor(actor, scope)
   const role = actor.role
   const mine = author === 'me'
+  // A platform admin publishes their own work (slice 3ag); everyone else needs a second person.
+  const needsAnother = mine && role !== 'platformAdmin'
 
   if ((role === 'editor' || role === 'approver') && saved && !inScope(actor, scope.ownerOffice)) {
     return readOnly(
@@ -149,6 +152,17 @@ export function workflowView(input: WorkflowInput): WorkflowView {
           showPublish: false,
         }
       }
+      if (role === 'platformAdmin') {
+        return {
+          tone: 'info',
+          banner: w(
+            'Your draft. It saves by itself. You publish it yourself: mark it verified, press Approve, then Publish. No second person is needed for a platform admin.',
+            'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ آپ اسے خود شائع کرتے ہیں: تصدیق شدہ کریں، منظور کریں دبائیں، پھر شائع کریں۔ پلیٹ فارم ایڈمن کے لیے کسی دوسرے شخص کی ضرورت نہیں۔',
+          ),
+          actions: ['approve', ...verify],
+          showPublish: false,
+        }
+      }
       return {
         tone: 'info',
         banner: reviewer
@@ -164,7 +178,7 @@ export function workflowView(input: WorkflowInput): WorkflowView {
         showPublish: false,
       }
     case 'in_review':
-      if (reviewer && mine) {
+      if (reviewer && needsAnother) {
         return {
           tone: 'waiting',
           banner: w(

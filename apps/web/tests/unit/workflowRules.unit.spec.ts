@@ -64,7 +64,7 @@ describe('workflow view per role', () => {
   })
 
   it('nobody approves their own work: author sees Send for review on a draft and no Approve while it waits', () => {
-    for (const r of ['approver', 'siteManager', 'platformAdmin'] as const) {
+    for (const r of ['approver', 'siteManager'] as const) {
       const p = person(r, r === 'approver' ? ['Registrar'] : [])
       expect(view(p, 'draft', { author: 'me' }).actions, r).toEqual(['sendForReview'])
       expect(view(p, 'draft', { author: 'me' }).banner.en).toMatch(/nobody approves their own work/)
@@ -74,6 +74,17 @@ describe('workflow view per role', () => {
       // Once someone else approved it, they may publish it.
       expect(view(p, 'approved', { author: 'me' }).showPublish, r).toBe(true)
     }
+  })
+
+  it('a platform admin publishes their own work: Approve on a draft, Approve on their item in review, no waiting', () => {
+    const p = person('platformAdmin')
+    const draft = view(p, 'draft', { author: 'me' })
+    expect(draft.actions).toEqual(['approve', 'markVerified'])
+    expect(draft.banner.en).toMatch(/No second person is needed/)
+    const review = view(p, 'in_review', { author: 'me' })
+    expect(review.actions).toEqual(['approve', 'sendBack', 'markVerified'])
+    expect(review.banner.en).not.toMatch(/cannot approve it/)
+    expect(view(p, 'approved', { author: 'me' }).showPublish).toBe(true)
   })
 
   it('an imported draft (no author) can be approved by a reviewer', () => {

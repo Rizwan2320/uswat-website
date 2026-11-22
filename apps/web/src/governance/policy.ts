@@ -301,6 +301,9 @@ function evaluateCreate(input: SaveInput): SaveOutcome {
 /**
  * Four eyes (owner decision, 2026-11-21): nobody approves an item they created themselves, whatever
  * their role. A person with no author (an import) and the system are not affected.
+ * Exception (owner decision, 2026-11-22, slice 3ag): a platform admin publishes their own work. The
+ * main pages have no one above the admin, so a second person would never exist; every step is in the
+ * audit log. Heads of department, approvers and site managers are still bound by the rule.
  */
 const SELF_APPROVAL = deny(
   'SELF_APPROVAL',
@@ -311,7 +314,10 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
   const { actor, publishing, prev, next, contentChanged, now } = input
   const notes: string[] = []
   const wroteIt =
-    isUser(actor) && prev.createdBy != null && String(prev.createdBy) === String(actor.id)
+    isUser(actor) &&
+    actor.role !== 'platformAdmin' &&
+    prev.createdBy != null &&
+    String(prev.createdBy) === String(actor.id)
 
   // Scope is judged on the latest saved state of the record (`prev`), not on the published
   // row: draft saves never touch the published row, so database-level filters see stale data.
