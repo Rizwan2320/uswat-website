@@ -1,0 +1,24 @@
+.before-login {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+
+  &__list {
+    margin: 0.25rem 0 0.75rem;
+    padding-inline-start: 1.1rem;
+  }
+
+  &__ur {
+    padding-top: 0.5rem;
+    border-top: 1px solid #d8d8d8;
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+}
+
+// No mail is set up yet, so "Forgot your password?" would lead to a message that never arrives.
+// The text above says what to do instead. Remove this rule when mail is set up.
+.template-minimal a[href$='/forgot'],
+.template-minimal a[href*='/forgot?'] {
+  display: none;
+}
