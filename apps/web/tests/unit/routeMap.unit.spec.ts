@@ -18,7 +18,7 @@ const csv = readFileSync(path.resolve(process.cwd(), '../../scripts/import/data/
 /** Paths the new site already serves (src/app). An old address that lands on one would shadow it. */
 const RESERVED = [
   '/admin', '/api', '/posts', '/search', '/design', '/healthz', '/readyz', '/next', '/portal', '/portal-api',
-  '/pages-sitemap.xml', '/posts-sitemap.xml', '/sitemap.xml', '/robots.txt', '/media', '/_next',
+  '/research', '/administration', '/pages-sitemap.xml', '/posts-sitemap.xml', '/sitemap.xml', '/robots.txt', '/media', '/_next',
 ]
 const isReserved = (key: string) => key === '/' || RESERVED.some((r) => key === r || key.startsWith(`${r}/`))
 
