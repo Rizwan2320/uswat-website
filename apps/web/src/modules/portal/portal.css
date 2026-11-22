@@ -180,3 +180,9 @@ a.portal-btn { display: inline-flex; align-items: center; box-sizing: border-box
 [data-testid='grant-form'] > .portal-notice, [data-testid='grant-form'] > .portal-error, [data-testid='grant-form'] > .portal-actions, [data-testid='grant-form'] > fieldset { grid-column: 1 / -1; }
 .portal-check-list { display: flex; flex-wrap: wrap; gap: 4px 28px; }
 @media (max-width: 700px) { [data-testid='grant-form'] { grid-template-columns: minmax(0, 1fr); } }
+
+/* Registrar's office (FP-V) */
+.portal-form-grid { display: grid; gap: 0 18px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) { .portal-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.portal-search { display: flex; flex-wrap: wrap; gap: 0 12px; align-items: end; max-width: 640px; }
+.portal-search .portal-field { flex: 1 1 280px; }
