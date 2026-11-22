@@ -855,3 +855,8 @@ P3 agent (slice 3a), own entry:
 - Checks run: typecheck, lint (0 errors), unit 963 pass, integration 1436 pass / 196 skipped / 0 failed (fresh database migrated to main), production build, browser check as head and admin (publish, source-empty stop, Stage box states). Prediction P3ak-a.
 - Not run: automated browser test, axe, Urdu rendering, phone width, hosted preview.
 - **Next:** Archive and Restore buttons, axe on the status and Stage boxes, Urdu review, login screen wording.
+## P3 slice 3al, who takes a page offline, and sign-in wording (2026-11-22, branch `p3/offline-and-login-3al`, stacked on 3aj)
+- A programme page is taken offline by its coordinator; the head takes offline only the department page; admin and site manager unchanged. New Take offline button with a confirm step. Sign-in page: plain English and Urdu text, forgot-password link hidden until mail exists. Brief: `docs/briefs/p3al-offline-and-sign-in.md`. No schema change.
+- Checks run: typecheck, lint (0 errors), unit 970 pass, integration 1453 pass / 196 skipped / 0 failed (fresh database migrated to main), production build, browser check (sign-in page, coordinator takes a page offline and it leaves the public API, head has the button on the department page only). Predictions P3al-a and b.
+- Not run: axe, phone width, Urdu rendering review, hosted preview.
+- **Next:** Archive and Restore buttons, axe on the status and Stage boxes, Urdu review, mail setup (then show the forgot-password link again).

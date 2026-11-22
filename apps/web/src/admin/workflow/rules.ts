@@ -12,6 +12,7 @@ import {
   isReviewerFor,
   mayApproveOwn,
   mayPublishApproved,
+  mayTakeOffline,
   type Target,
 } from '../../governance/policy'
 import {
@@ -24,7 +25,7 @@ import {
 } from '../../governance/roles'
 
 export type StepAction =
-  'sendForReview' | 'approve' | 'approveAndPublish' | 'sendBack' | 'markVerified'
+  'sendForReview' | 'approve' | 'approveAndPublish' | 'sendBack' | 'markVerified' | 'takeOffline'
 export type Words = { en: string; ur: string }
 
 /** Who wrote the item, as far as the signed-in person is concerned. */
@@ -295,15 +296,22 @@ export function workflowView(input: WorkflowInput): WorkflowView {
         actions: [],
         showPublish: false,
       }
-    case 'published':
+    case 'published': {
+      const offline: StepAction[] = mayTakeOffline(actor, scope) ? ['takeOffline'] : []
       if (reviewer) {
         return {
           tone: 'ready',
-          banner: w(
-            'Live on the website. Changes save as a new draft first; Publish puts them live.',
-            'ویب سائٹ پر شائع ہے۔ تبدیلیاں پہلے نئے مسودے کے طور پر محفوظ ہوتی ہیں؛ شائع کریں دبانے پر لائیو ہوتی ہیں۔',
-          ),
-          actions: verify,
+          banner:
+            target?.collection === 'programmes' && role === 'approver'
+              ? w(
+                  'Live on the website. Changes save as a new draft first; Publish puts them live. A programme page is taken offline by its coordinator, not by the head.',
+                  'ویب سائٹ پر شائع ہے۔ تبدیلیاں پہلے نئے مسودے کے طور پر محفوظ ہوتی ہیں؛ شائع کریں دبانے پر لائیو ہوتی ہیں۔ پروگرام کا صفحہ اس کا کوآرڈینیٹر آف لائن کرتا ہے، سربراہ نہیں۔',
+                )
+              : w(
+                  'Live on the website. Changes save as a new draft first; Publish puts them live.',
+                  'ویب سائٹ پر شائع ہے۔ تبدیلیاں پہلے نئے مسودے کے طور پر محفوظ ہوتی ہیں؛ شائع کریں دبانے پر لائیو ہوتی ہیں۔',
+                ),
+          actions: [...verify, ...offline],
           showPublish: true,
         }
       }
@@ -313,9 +321,10 @@ export function workflowView(input: WorkflowInput): WorkflowView {
           'Live on the website. Your changes are saved as a draft and must be approved before they go live.',
           'ویب سائٹ پر شائع ہے۔ آپ کی تبدیلیاں مسودے کے طور پر محفوظ ہوں گی اور لائیو ہونے سے پہلے منظور ہونی چاہئیں۔',
         ),
-        actions: [],
+        actions: offline,
         showPublish: false,
       }
+    }
     case 'archived':
     default:
       return readOnly(
@@ -329,7 +338,7 @@ export function workflowView(input: WorkflowInput): WorkflowView {
 
 /** The Stage each step button asks for. The policy decides whether the save is allowed. */
 export const STEP_TARGET: Record<
-  Exclude<StepAction, 'markVerified' | 'approveAndPublish'>,
+  Exclude<StepAction, 'markVerified' | 'approveAndPublish' | 'takeOffline'>,
   WorkflowStatus
 > = {
   sendForReview: 'in_review',
@@ -343,6 +352,7 @@ export const STEP_LABEL: Record<StepAction, Words> = {
   approveAndPublish: w('Approve and publish', 'منظور کریں اور شائع کریں'),
   sendBack: w('Send back', 'واپس بھیجیں'),
   markVerified: w('Mark verified', 'تصدیق شدہ کریں'),
+  takeOffline: w('Take offline', 'آف لائن کریں'),
 }
 
 /** What the banner says right after a step succeeded. */
@@ -364,4 +374,8 @@ export const STEP_DONE: Record<StepAction, Words> = {
     'مسودے میں واپس بھیج دیا گیا۔',
   ),
   markVerified: w('Marked as verified.', 'تصدیق شدہ نشان زد ہو گیا۔'),
+  takeOffline: w(
+    'Taken offline. It is a draft again and no longer on the website. To bring it back, send it for approval again.',
+    'آف لائن کر دیا گیا۔ یہ دوبارہ مسودہ ہے اور ویب سائٹ پر نہیں۔ واپس لانے کے لیے دوبارہ منظوری کے لیے بھیجیں۔',
+  ),
 }

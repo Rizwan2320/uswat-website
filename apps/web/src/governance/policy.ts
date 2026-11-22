@@ -106,6 +106,21 @@ export function mayPublishApproved(actor: Actor, target?: Target): boolean {
   return target.collection === 'programmes' && inScope(actor, null, target)
 }
 
+/**
+ * Taking a page offline (slice 3al, owner, 2026-11-22): a programme page is taken offline by its
+ * own coordinator, not by the head; the head takes offline only their own department page. So on a
+ * programme a head of department cannot, and the coordinator of that programme can. Everywhere else
+ * the reviewer keeps the power (admin, site manager, an approver of an ordinary office).
+ * Taking a page down is never a way round review: it removes content, and putting it back goes
+ * through review and approval again (a restore is for approvers and platform admins).
+ */
+export function mayTakeOffline(actor: Actor, rec: Scope): boolean {
+  if (!isUser(actor)) return false
+  if (mayPublishApproved(actor, rec.target)) return true
+  if (!isReviewerFor(actor, rec)) return false
+  return !(actor.role === 'approver' && rec.target?.collection === 'programmes')
+}
+
 type Scope = Pick<RecordState, 'ownerOffice' | 'risk' | 'target'>
 
 const deny = (code: PolicyCode, message: string, httpStatus: 400 | 403 = 403): Denial => ({
@@ -228,7 +243,7 @@ export function checkTransition(
             'a reviewer: an approver of the owning office, a platform admin, or a site manager for items that are not High impact',
           )
     case 'published>archived':
-      return reviewer || system
+      return mayTakeOffline(actor, rec) || system
         ? null
         : forbidden(
             'a reviewer: an approver of the owning office, a platform admin, or a site manager for items that are not High impact',
@@ -526,10 +541,21 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
       }
     }
   } else {
-    if (input.unpublishing && !reviewerOnPrev && actor.kind !== 'system') {
+    if (
+      input.unpublishing &&
+      actor.kind !== 'system' &&
+      !mayTakeOffline(actor, {
+        ownerOffice: prev.ownerOffice,
+        risk: prev.risk,
+        target: prev.target ?? next.target,
+      })
+    ) {
+      const onProgramme = (prev.target ?? next.target)?.collection === 'programmes'
       return deny(
         'UNPUBLISH_FORBIDDEN',
-        'Taking published content offline needs a reviewer: an approver of the owning office, a platform admin, or a site manager for items that are not High impact.',
+        onProgramme
+          ? 'A programme page is taken offline by its own coordinator or the platform admin. The head of the department takes offline only the department page.'
+          : 'Taking published content offline needs a reviewer: an approver of the owning office, a platform admin, or a site manager for items that are not High impact.',
       )
     }
     let requested = next.status

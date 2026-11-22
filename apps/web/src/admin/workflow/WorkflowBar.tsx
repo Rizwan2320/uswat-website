@@ -79,6 +79,7 @@ export function WorkflowBar(): React.ReactElement | null {
   const createdBy = useField<unknown>({ path: 'governance.createdBy' })
   const reviewNote = useField<string>({ path: 'governance.reviewNote' })
   const [asking, setAsking] = useState(false)
+  const [askingOffline, setAskingOffline] = useState(false)
   const [draftNote, setDraftNote] = useState('')
   const [busy, setBusy] = useState<StepAction | null>(null)
   const [done, setDone] = useState<Words | null>(null)
@@ -112,7 +113,7 @@ export function WorkflowBar(): React.ReactElement | null {
   const language = i18n.language
 
   const run = async (
-    action: Exclude<StepAction, 'approveAndPublish'>,
+    action: Exclude<StepAction, 'approveAndPublish' | 'takeOffline'>,
     note?: string,
   ): Promise<boolean> => {
     if (!collectionSlug || id == null) return false
@@ -221,6 +222,35 @@ export function WorkflowBar(): React.ReactElement | null {
     setBusy(null)
   }
 
+  /**
+   * Take a live page offline (slice 3al): the same save as Payload's Unpublish, asked for once more
+   * first because it removes the page from the website. The server decides who may (policy.ts).
+   */
+  const takeOffline = async () => {
+    if (!collectionSlug || id == null) return
+    setAskingOffline(false)
+    setBusy('takeOffline')
+    setDone(null)
+    for (let i = 0; i < 200 && processingRef.current; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 25))
+    }
+    const url = formatAdminURL({
+      apiRoute: config.routes.api,
+      path: `/${collectionSlug}/${id}?locale=${locale}&depth=0&fallback-locale=null`,
+    })
+    const result = await submit({
+      action: url,
+      method: 'PATCH',
+      overrides: { _status: 'draft' },
+      skipValidation: true,
+    })
+    if (result?.res?.ok) {
+      recentlyAccepted.set(key, { until: fiveSecondsFromNow(), stage: 'draft' })
+      setDone(STEP_DONE.takeOffline)
+    }
+    setBusy(null)
+  }
+
   return (
     <section
       className={`workflow-bar workflow-bar--${view.tone}`}
@@ -262,6 +292,31 @@ export function WorkflowBar(): React.ReactElement | null {
             </button>
           </div>
         </div>
+      ) : askingOffline ? (
+        <div className="workflow-bar__ask">
+          <p role="alert">
+            {language === 'ur'
+              ? 'یہ صفحہ ویب سائٹ سے ہٹ جائے گا اور مسودہ بن جائے گا۔ واپس لانے کے لیے دوبارہ منظوری درکار ہوگی۔ کیا آف لائن کریں؟'
+              : 'This removes the page from the website and makes it a draft. Bringing it back needs approval again. Take it offline?'}
+          </p>
+          <div className="workflow-bar__actions">
+            <button
+              type="button"
+              className="workflow-bar__button workflow-bar__button--takeOffline"
+              disabled={busy !== null}
+              onClick={() => void takeOffline()}
+            >
+              {language === 'ur' ? 'ہاں، آف لائن کریں' : 'Yes, take it offline'}
+            </button>
+            <button
+              type="button"
+              className="workflow-bar__button"
+              onClick={() => setAskingOffline(false)}
+            >
+              {language === 'ur' ? 'منسوخ کریں' : 'Cancel'}
+            </button>
+          </div>
+        </div>
       ) : view.actions.length > 0 || view.showPublish ? (
         <div className="workflow-bar__actions">
           {view.actions.map((a) => (
@@ -275,7 +330,9 @@ export function WorkflowBar(): React.ReactElement | null {
                   ? setAsking(true)
                   : a === 'approveAndPublish'
                     ? void approveAndPublish()
-                    : void run(a)
+                    : a === 'takeOffline'
+                      ? setAskingOffline(true)
+                      : void run(a)
               }
             >
               {pick(STEP_LABEL[a], language)}
