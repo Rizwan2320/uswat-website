@@ -96,6 +96,20 @@ export function Milestones({ items }: { items: Milestone[] }) {
   )
 }
 
+/** A timeline whose dates are text as the source gives them (some have no day), oldest first. */
+export function Story({ items }: { items: { when: string; text: string }[] }) {
+  return (
+    <ol className={styles.timeline}>
+      {items.map((m) => (
+        <li key={m.when}>
+          <strong>{m.when}</strong>
+          <span>{m.text}</span>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
 /** Every page ends with where its facts come from and the day they were read (CLAUDE.md rule 3). */
 export function Sources({ sources, verifiedAt, openPoints }: { sources: Source[]; verifiedAt: string; openPoints?: string[] }) {
   return (

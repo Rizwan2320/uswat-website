@@ -6,6 +6,9 @@ import RichDepartmentPage from '../academics/RichDepartmentPage'
 import RichDisciplinePage from '../academics/RichDisciplinePage'
 import { departmentFeed } from '../academics/feed'
 import { profileForDepartment, profileForDiscipline } from '../academics/profiles'
+import RichAboutPage from '../about/RichAboutPage'
+import RichMessagePage from '../about/RichMessagePage'
+import { ABOUT_PATH, MESSAGE_PATH } from '../about/data'
 import RichAdministrationPage from '../offices/RichAdministrationPage'
 import RichOfficePage from '../offices/RichOfficePage'
 import RichResearchPage from '../offices/RichResearchPage'
@@ -125,4 +128,22 @@ export async function campusMetadata({ params }: { params: SlugParams }): Promis
   const slug = decode((await params).slug ?? '')
   const doc = await getCampus(slug, await preview())
   return doc ? { title: str(doc.name) ?? 'Campus', alternates: { canonical: `${CAMPUSES_PATH}/${encodeURIComponent(slug)}` } } : { title: 'Campus' }
+}
+
+/* /about and /about/vice-chancellors-message: static routes, so they win over a Pages record with the same slug (the seeded Sample About page). */
+export function AboutRoute() {
+  return <RichAboutPage />
+}
+export const aboutMetadata: Metadata = {
+  title: 'About the University',
+  description: 'History, vision and mission of the University of Swat.',
+  alternates: { canonical: ABOUT_PATH },
+}
+export function MessageRoute() {
+  return <RichMessagePage />
+}
+export const messageMetadata: Metadata = {
+  title: 'Vice Chancellor’s Message',
+  description: 'A message from the Vice Chancellor of the University of Swat, Prof. Dr. Husnul Amin.',
+  alternates: { canonical: MESSAGE_PATH },
 }

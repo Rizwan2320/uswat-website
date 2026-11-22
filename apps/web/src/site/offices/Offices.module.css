@@ -108,7 +108,8 @@
   border-bottom: 1px solid rgb(0 59 23 / 0.12);
   line-height: 1.5;
 }
-.timeline time {
+.timeline time,
+.timeline strong {
   font-weight: 700;
   color: var(--forest);
 }
@@ -142,5 +143,17 @@
   margin: 8px 0 0;
   font-family: var(--stack-serif);
   font-size: 1.1rem;
+  color: var(--forest);
+}
+
+/* chips, text and a quote one under the other with room between them */
+.stack {
+  display: grid;
+  gap: 20px;
+}
+.quote {
+  margin: 28px 0 0;
+  font-size: 1.15rem;
+  font-style: italic;
   color: var(--forest);
 }
