@@ -995,6 +995,10 @@ export interface User {
    * Offices this person works for (matched against a record's owner office). Stored lower-case. A head of an office can add or take away only their own offices.
    */
   offices?: string[] | null;
+  /**
+   * For a programme coordinator: the programmes this person writes drafts for. They can edit only these programmes (not the department page, not other programmes) and send them to the head of the department. A head of department can pick only programmes of their own department. Leave empty for an Editor of a whole office.
+   */
+  programmes?: (number | Programme)[] | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1014,6 +1018,355 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "programmes".
+ */
+export interface Programme {
+  id: number;
+  name: string;
+  /**
+   * Leave ticked and the address follows the title. Untick it to type your own.
+   */
+  generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
+  slug: string;
+  /**
+   * The address of the page on the old site. Used to match records on re-import and to redirect.
+   */
+  legacyUrl?: string | null;
+  department?: (number | null) | Department;
+  campus?: (number | null) | Campus;
+  level?: string | null;
+  duration?: string | null;
+  eligibility?: string | null;
+  curriculumUrl?: string | null;
+  feeLink?: string | null;
+  /**
+   * Where applicants start their application (the admissions portal page for this programme). Leave empty to hide the Apply button.
+   */
+  applyUrl?: string | null;
+  /**
+   * Programmes are listed on the department page from the lowest number up. Leave empty to list it last.
+   */
+  order?: number | null;
+  /**
+   * The words and pictures of the programme page. Plain text only: no links, no formatting. Leave a part empty to leave that section out of the page.
+   */
+  pageContent?: {
+    /**
+     * For example "BS CS".
+     */
+    shortName?: string | null;
+    /**
+     * One short line under the name.
+     */
+    tagline?: string | null;
+    /**
+     * One or two sentences for the card on the department page.
+     */
+    summary?: string | null;
+    /**
+     * The large picture at the top. It needs alt text in the media library.
+     */
+    heroImage?: (number | null) | Media;
+    /**
+     * The small picture on the department page card. It needs alt text.
+     */
+    tileImage?: (number | null) | Media;
+    /**
+     * The light picture beside the overview. It needs alt text.
+     */
+    figureImage?: (number | null) | Media;
+    /**
+     * Plain paragraphs, up to 4.
+     */
+    about?:
+      | {
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * What a graduate can do, one line each, up to 8.
+     */
+    outcomes?:
+      | {
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Short reasons to choose the programme. Up to 6.
+     */
+    whyStudy?:
+      | {
+          /**
+           * The small picture drawn beside the title.
+           */
+          icon:
+            | 'code'
+            | 'layers'
+            | 'network'
+            | 'chart'
+            | 'brain'
+            | 'flask'
+            | 'book'
+            | 'briefcase'
+            | 'users'
+            | 'trophy'
+            | 'spark'
+            | 'shield'
+            | 'cloud'
+            | 'phone'
+            | 'search'
+            | 'rocket'
+            | 'globe'
+            | 'cap'
+            | 'gear'
+            | 'database';
+          title?: string | null;
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Areas a student can specialise in. Up to 6.
+     */
+    tracks?:
+      | {
+          /**
+           * The small picture drawn beside the title.
+           */
+          icon:
+            | 'code'
+            | 'layers'
+            | 'network'
+            | 'chart'
+            | 'brain'
+            | 'flask'
+            | 'book'
+            | 'briefcase'
+            | 'users'
+            | 'trophy'
+            | 'spark'
+            | 'shield'
+            | 'cloud'
+            | 'phone'
+            | 'search'
+            | 'rocket'
+            | 'globe'
+            | 'cap'
+            | 'gear'
+            | 'database';
+          title?: string | null;
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Groups of skills students gain, up to 6.
+     */
+    skills?:
+      | {
+          group?: string | null;
+          /**
+           * Up to 8.
+           */
+          items?: string[] | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * One row for each semester: its year (1 to 6) and term (1 or 2), then the course names. Up to 12 rows.
+     */
+    curriculum?:
+      | {
+          /**
+           * Year of study, 1 to 6.
+           */
+          year: number;
+          term: '1' | '2';
+          /**
+           * Course names, up to 8.
+           */
+          courses?: string[] | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Where graduates work. Up to 8.
+     */
+    careers?:
+      | {
+          /**
+           * The small picture drawn beside the title.
+           */
+          icon:
+            | 'code'
+            | 'layers'
+            | 'network'
+            | 'chart'
+            | 'brain'
+            | 'flask'
+            | 'book'
+            | 'briefcase'
+            | 'users'
+            | 'trophy'
+            | 'spark'
+            | 'shield'
+            | 'cloud'
+            | 'phone'
+            | 'search'
+            | 'rocket'
+            | 'globe'
+            | 'cap'
+            | 'gear'
+            | 'database';
+          title?: string | null;
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Common questions, up to 12.
+     */
+    faq?:
+      | {
+          question?: string | null;
+          answer?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
+    /**
+     * The date someone should re-check this. Needed to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
+    publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "campuses".
+ */
+export interface Campus {
+  id: number;
+  name: string;
+  /**
+   * Leave ticked and the address follows the title. Untick it to type your own.
+   */
+  generateSlug?: boolean | null;
+  /**
+   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
+   */
+  slug: string;
+  address?: string | null;
+  /**
+   * A web page or map link.
+   */
+  link?: string | null;
+  governance?: {
+    /**
+     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
+     */
+    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
+    /**
+     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
+     */
+    reviewNote?: string | null;
+    /**
+     * The office accountable for this record (for example "Registrar"). Required to publish.
+     */
+    ownerOffice?: string | null;
+    /**
+     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
+     */
+    source?: string | null;
+    /**
+     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
+     */
+    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
+    verifiedAt?: string | null;
+    verifiedBy?: (number | null) | User;
+    /**
+     * The date someone should re-check this. Needed to publish a high-impact record.
+     */
+    reviewDueAt?: string | null;
+    /**
+     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
+     */
+    riskClass?: ('low' | 'standard' | 'high_impact') | null;
+    /**
+     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
+     */
+    publishAt?: string | null;
+    /**
+     * Optional. After this time the item is archived and no longer shown.
+     */
+    expireAt?: string | null;
+    origin?: ('editor' | 'importer' | 'watcher') | null;
+    contentHash?: string | null;
+    sourceContentHash?: string | null;
+    collectedAt?: string | null;
+    /**
+     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
+     */
+    pinned?: boolean | null;
+    createdBy?: (number | null) | User;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2458,355 +2811,6 @@ export interface Tender {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "programmes".
- */
-export interface Programme {
-  id: number;
-  name: string;
-  /**
-   * Leave ticked and the address follows the title. Untick it to type your own.
-   */
-  generateSlug?: boolean | null;
-  /**
-   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
-   */
-  slug: string;
-  /**
-   * The address of the page on the old site. Used to match records on re-import and to redirect.
-   */
-  legacyUrl?: string | null;
-  department?: (number | null) | Department;
-  campus?: (number | null) | Campus;
-  level?: string | null;
-  duration?: string | null;
-  eligibility?: string | null;
-  curriculumUrl?: string | null;
-  feeLink?: string | null;
-  /**
-   * Where applicants start their application (the admissions portal page for this programme). Leave empty to hide the Apply button.
-   */
-  applyUrl?: string | null;
-  /**
-   * Programmes are listed on the department page from the lowest number up. Leave empty to list it last.
-   */
-  order?: number | null;
-  /**
-   * The words and pictures of the programme page. Plain text only: no links, no formatting. Leave a part empty to leave that section out of the page.
-   */
-  pageContent?: {
-    /**
-     * For example "BS CS".
-     */
-    shortName?: string | null;
-    /**
-     * One short line under the name.
-     */
-    tagline?: string | null;
-    /**
-     * One or two sentences for the card on the department page.
-     */
-    summary?: string | null;
-    /**
-     * The large picture at the top. It needs alt text in the media library.
-     */
-    heroImage?: (number | null) | Media;
-    /**
-     * The small picture on the department page card. It needs alt text.
-     */
-    tileImage?: (number | null) | Media;
-    /**
-     * The light picture beside the overview. It needs alt text.
-     */
-    figureImage?: (number | null) | Media;
-    /**
-     * Plain paragraphs, up to 4.
-     */
-    about?:
-      | {
-          text?: string | null;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * What a graduate can do, one line each, up to 8.
-     */
-    outcomes?:
-      | {
-          text?: string | null;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * Short reasons to choose the programme. Up to 6.
-     */
-    whyStudy?:
-      | {
-          /**
-           * The small picture drawn beside the title.
-           */
-          icon:
-            | 'code'
-            | 'layers'
-            | 'network'
-            | 'chart'
-            | 'brain'
-            | 'flask'
-            | 'book'
-            | 'briefcase'
-            | 'users'
-            | 'trophy'
-            | 'spark'
-            | 'shield'
-            | 'cloud'
-            | 'phone'
-            | 'search'
-            | 'rocket'
-            | 'globe'
-            | 'cap'
-            | 'gear'
-            | 'database';
-          title?: string | null;
-          text?: string | null;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * Areas a student can specialise in. Up to 6.
-     */
-    tracks?:
-      | {
-          /**
-           * The small picture drawn beside the title.
-           */
-          icon:
-            | 'code'
-            | 'layers'
-            | 'network'
-            | 'chart'
-            | 'brain'
-            | 'flask'
-            | 'book'
-            | 'briefcase'
-            | 'users'
-            | 'trophy'
-            | 'spark'
-            | 'shield'
-            | 'cloud'
-            | 'phone'
-            | 'search'
-            | 'rocket'
-            | 'globe'
-            | 'cap'
-            | 'gear'
-            | 'database';
-          title?: string | null;
-          text?: string | null;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * Groups of skills students gain, up to 6.
-     */
-    skills?:
-      | {
-          group?: string | null;
-          /**
-           * Up to 8.
-           */
-          items?: string[] | null;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * One row for each semester: its year (1 to 6) and term (1 or 2), then the course names. Up to 12 rows.
-     */
-    curriculum?:
-      | {
-          /**
-           * Year of study, 1 to 6.
-           */
-          year: number;
-          term: '1' | '2';
-          /**
-           * Course names, up to 8.
-           */
-          courses?: string[] | null;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * Where graduates work. Up to 8.
-     */
-    careers?:
-      | {
-          /**
-           * The small picture drawn beside the title.
-           */
-          icon:
-            | 'code'
-            | 'layers'
-            | 'network'
-            | 'chart'
-            | 'brain'
-            | 'flask'
-            | 'book'
-            | 'briefcase'
-            | 'users'
-            | 'trophy'
-            | 'spark'
-            | 'shield'
-            | 'cloud'
-            | 'phone'
-            | 'search'
-            | 'rocket'
-            | 'globe'
-            | 'cap'
-            | 'gear'
-            | 'database';
-          title?: string | null;
-          text?: string | null;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * Common questions, up to 12.
-     */
-    faq?:
-      | {
-          question?: string | null;
-          answer?: string | null;
-          id?: string | null;
-        }[]
-      | null;
-  };
-  governance?: {
-    /**
-     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
-     */
-    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
-    /**
-     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
-     */
-    reviewNote?: string | null;
-    /**
-     * The office accountable for this record (for example "Registrar"). Required to publish.
-     */
-    ownerOffice?: string | null;
-    /**
-     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
-     */
-    source?: string | null;
-    /**
-     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
-     */
-    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
-    verifiedAt?: string | null;
-    verifiedBy?: (number | null) | User;
-    /**
-     * The date someone should re-check this. Needed to publish a high-impact record.
-     */
-    reviewDueAt?: string | null;
-    /**
-     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
-     */
-    riskClass?: ('low' | 'standard' | 'high_impact') | null;
-    /**
-     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
-     */
-    publishAt?: string | null;
-    /**
-     * Optional. After this time the item is archived and no longer shown.
-     */
-    expireAt?: string | null;
-    origin?: ('editor' | 'importer' | 'watcher') | null;
-    contentHash?: string | null;
-    sourceContentHash?: string | null;
-    collectedAt?: string | null;
-    /**
-     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
-     */
-    pinned?: boolean | null;
-    createdBy?: (number | null) | User;
-  };
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "campuses".
- */
-export interface Campus {
-  id: number;
-  name: string;
-  /**
-   * Leave ticked and the address follows the title. Untick it to type your own.
-   */
-  generateSlug?: boolean | null;
-  /**
-   * The last part of this page’s web address, for example "admission-notice". Use lower-case words joined by dashes.
-   */
-  slug: string;
-  address?: string | null;
-  /**
-   * A web page or map link.
-   */
-  link?: string | null;
-  governance?: {
-    /**
-     * Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.
-     */
-    status?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
-    /**
-     * Filled in by the Send back button. The editor sees it on the draft. It is cleared when the item is sent for review again.
-     */
-    reviewNote?: string | null;
-    /**
-     * The office accountable for this record (for example "Registrar"). Required to publish.
-     */
-    ownerOffice?: string | null;
-    /**
-     * A web address or the name of a document, for example "Notification no. 123, dated 3 March". Needed before this can be published.
-     */
-    source?: string | null;
-    /**
-     * Only a reviewer can mark a record Verified. A record that is not verified cannot be published.
-     */
-    verificationStatus?: ('unverified' | 'verified' | 'stale') | null;
-    verifiedAt?: string | null;
-    verifiedBy?: (number | null) | User;
-    /**
-     * The date someone should re-check this. Needed to publish a high-impact record.
-     */
-    reviewDueAt?: string | null;
-    /**
-     * Choose High impact for fees, admissions, deadlines, merit lists and legal notices. An approver must publish these.
-     */
-    riskClass?: ('low' | 'standard' | 'high_impact') | null;
-    /**
-     * Optional. Set the Stage to Approved and this item goes live by itself at this time.
-     */
-    publishAt?: string | null;
-    /**
-     * Optional. After this time the item is archived and no longer shown.
-     */
-    expireAt?: string | null;
-    origin?: ('editor' | 'importer' | 'watcher') | null;
-    contentHash?: string | null;
-    sourceContentHash?: string | null;
-    collectedAt?: string | null;
-    /**
-     * Notices drop out of the current list after 90 days unless this is ticked and there is no take-down date. Reviewers only.
-     */
-    pinned?: boolean | null;
-    createdBy?: (number | null) | User;
-  };
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-logs".
  */
 export interface AuditLog {
@@ -3560,6 +3564,7 @@ export interface UsersSelect<T extends boolean = true> {
   name?: T;
   role?: T;
   offices?: T;
+  programmes?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
