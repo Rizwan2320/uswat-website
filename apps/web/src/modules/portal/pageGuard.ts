@@ -70,3 +70,9 @@ export function reviewerFrom(result: GuardResult): { id: string; fresh: boolean 
   if (result.action !== 'render' || !result.strong || !result.userId) return null
   return { id: result.userId, fresh: result.fresh }
 }
+
+/** For Registrar actions: like `reviewerFrom`, plus whether the account has a passkey. A privileged role needs one (AUTH-07); an authenticator app is not enough. */
+export function verifierFrom(result: GuardResult): { id: string; fresh: boolean; hasPasskey: boolean } | null {
+  if (result.action !== 'render' || !result.strong || !result.userId) return null
+  return { id: result.userId, fresh: result.fresh, hasPasskey: (result.factors?.passkeys ?? 0) > 0 }
+}

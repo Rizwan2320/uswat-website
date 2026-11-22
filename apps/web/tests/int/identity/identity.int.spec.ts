@@ -38,6 +38,8 @@ import { createPgCourseStore } from '@/modules/portal/courses/pgStore'
 import { LIMITS as COURSE_LIMITS } from '@/modules/portal/courses/rules'
 import type { CourseInput } from '@/modules/portal/courses/types'
 import { createPgReviewStore } from '@/modules/portal/review/pgStore'
+import { createPgRegistrarStore } from '@/modules/portal/registrar/pgStore'
+import { createRegistrarService, type VerifierSession } from '@/modules/portal/registrar/service'
 import { createPgActivationStore } from '@/modules/portal/activation/pgStore'
 import { createClaimService } from '@/modules/identity/claimService'
 import { createPgInvitationStore, hashToken, INVITATION_TTL_MS, type InvitationStore } from '@/modules/identity/invitations'
@@ -85,7 +87,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue', '0012_claim_activation', '0013_delegation', '0014_notifications', '0015_profile_fixed'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue', '0012_claim_activation', '0013_delegation', '0014_notifications', '0015_profile_fixed', '0016_verifier'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -2182,7 +2184,7 @@ describe.skipIf(!DB)('department reviewer queue (FP-16, FPR-04, PJ4), PostgreSQL
       expect(await roles().grantReviewer(a.email)).toBe('ok')
       expect(await roles().grantReviewer(a.email)).toBe('ok')
       const row = (await roles().list()).find((r) => r.email === a.email)
-      expect(row).toEqual({ email: a.email, department: 'Computer Science', reviewer: true, head: false })
+      expect(row).toEqual({ email: a.email, department: 'Computer Science', reviewer: true, head: false, verifier: false })
       expect(await roles().revokeReviewer(a.email)).toBe('ok')
       expect(await roles().revokeReviewer(a.email)).toBe('not-reviewer')
     })
@@ -3158,6 +3160,184 @@ describe.skipIf(!DB)('notification digest and notice log (FP-43, ABU-03), Postgr
         client.release()
       }
       expect(await waitingCount(a.id)).toBe(0)
+    })
+  })
+})
+
+describe.skipIf(!DB)('Registrar’s office, the Verifier role (FP-V, AUTH-07), PostgreSQL', () => {
+  const pool = () => getIdentityPool(DB!)
+  const roles = () => createPgRoleStore(pool())
+  const store = () => createPgRegistrarStore(pool())
+  let tick = Date.UTC(2026, 10, 22, 12)
+  const NOW = tick
+  const values = (over: Record<string, unknown> = {}) => ({ designationEn: 'Assistant Professor', designationUr: 'اسسٹنٹ پروفیسر', nameUr: 'نام', department: 'Dept R', source: 'Notification 12 of 2026', ...over })
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  async function account(tag: string, opts: { verifier?: boolean; dept?: string } = {}): Promise<{ id: string; email: string }> {
+    const id = `vf-${tag}-${Math.random().toString(36).slice(2, 8)}`
+    const email = `${id}@example.invalid`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Person ${tag}`, email])
+    if (opts.dept) await roles().setDepartment(email, opts.dept)
+    if (opts.verifier) expect(await roles().grantVerifier(email)).toBe('ok')
+    return { id, email }
+  }
+  /** A service for `me`, as the session would present them. */
+  const service = (me: { id: string } | null, over: Partial<VerifierSession> = {}) =>
+    createRegistrarService({ store: store(), getVerifier: async () => (me ? { id: me.id, fresh: true, hasPasskey: true, ...over } : null), now: () => (tick += 1000) })
+  const logRows = async (id: string) => (await pool().query(`select "verifierId","source","before","after" from "fixed_change" where "subjectId" = $1 order by "at"`, [id])).rows
+
+  describe('who may use it', () => {
+    it('refuses a person without the role, and a Verifier with no passkey, and no session, all without a trace', async () => {
+      const v = await account('v', { verifier: true })
+      const plain = await account('plain')
+      const p = await account('p')
+      expect(await service(plain).save({ subjectId: p.id, ...values() })).toEqual({ ok: false, error: 'unavailable' })
+      expect(await service(v, { hasPasskey: false }).save({ subjectId: p.id, ...values() })).toEqual({ ok: false, error: 'unavailable' })
+      expect(await service(null).save({ subjectId: p.id, ...values() })).toEqual({ ok: false, error: 'session' })
+      expect(await service(plain).search('Person')).toEqual({ ok: false, error: 'unavailable' })
+      expect(await service(v, { hasPasskey: false }).open(p.id)).toEqual({ ok: false, error: 'unavailable' })
+      expect(await logRows(p.id)).toEqual([])
+    })
+    it('a delegate, reviewer or head role does not give access to the Registrar screen', async () => {
+      const r = await account('rev', { dept: 'Dept R' })
+      expect(await roles().grantReviewer(r.email)).toBe('ok')
+      expect(await roles().grantHead(r.email)).toBe('ok')
+      expect(await service(r).search('Person')).toEqual({ ok: false, error: 'unavailable' })
+    })
+    it('cannot change their own record, and an unknown person looks the same', async () => {
+      const v = await account('v', { verifier: true, dept: 'Dept R' })
+      expect(await service(v).save({ subjectId: v.id, ...values() })).toEqual({ ok: false, error: 'unavailable' })
+      expect(await service(v).open(v.id)).toEqual({ ok: false, error: 'unavailable' })
+      expect(await service(v).save({ subjectId: 'nobody-here-123', ...values() })).toEqual({ ok: false, error: 'unavailable' })
+      expect((await service(v).search(v.email.slice(0, 12))) as { people: unknown[] }).toMatchObject({ ok: true })
+      const found = await service(v).search(v.email)
+      expect(found).toEqual({ ok: true, people: [] })
+      expect(await logRows(v.id)).toEqual([])
+    })
+    it('needs a recent second factor to save, but not to look', async () => {
+      const v = await account('v', { verifier: true })
+      const p = await account('p')
+      expect(await service(v, { fresh: false }).save({ subjectId: p.id, ...values() })).toEqual({ ok: false, error: 'fresh' })
+      expect(await service(v, { fresh: false }).open(p.id)).toMatchObject({ ok: true })
+      expect(await logRows(p.id)).toEqual([])
+    })
+  })
+
+  describe('saving', () => {
+    it('writes the fields, the department and one log row together, with the before and the source', async () => {
+      const v = await account('v', { verifier: true })
+      const p = await account('p')
+      expect(await service(v).save({ subjectId: p.id, ...values({ department: '  Dept   R ' }) })).toEqual({ ok: true })
+      const fx = (await pool().query(`select * from "account_fixed" where "userId" = $1`, [p.id])).rows[0]
+      expect(fx).toMatchObject({ designationEn: 'Assistant Professor', designationUr: 'اسسٹنٹ پروفیسر', nameUr: 'نام' })
+      expect((await pool().query(`select "department" from "account_department" where "userId" = $1`, [p.id])).rows[0].department).toBe('Dept R')
+      const log = await logRows(p.id)
+      expect(log).toHaveLength(1)
+      expect(log[0]).toMatchObject({ verifierId: v.id, source: 'Notification 12 of 2026', before: null })
+      // The person's own page reads the new values.
+      const loaded = await createSampleProfileStore(pool()).load({ id: p.id, email: p.email })
+      expect(loaded.profile.designation).toEqual({ en: 'Assistant Professor', ur: 'اسسٹنٹ پروفیسر' })
+      expect(loaded.profile.department).toBe('Dept R')
+      // A second change records the first as before.
+      expect(await service(v).save({ subjectId: p.id, ...values({ designationEn: 'Associate Professor', source: 'Notification 40 of 2026' }) })).toEqual({ ok: true })
+      const two = await logRows(p.id)
+      expect(two).toHaveLength(2)
+      expect(two[1].before).toMatchObject({ designationEn: 'Assistant Professor' })
+      expect(two[1].after).toMatchObject({ designationEn: 'Associate Professor' })
+      const detail = await service(v).open(p.id)
+      expect(detail).toMatchObject({ ok: true })
+      if (detail.ok) {
+        expect(detail.detail.history.map((h) => h.fields)).toEqual([['designationEn'], ['designationEn', 'designationUr', 'nameUr', 'department']])
+      }
+    })
+    it('a department that differs only in letter case is not a change', async () => {
+      const v = await account('v', { verifier: true })
+      const p = await account('p', { dept: 'Dept R' })
+      expect(await service(v).save({ subjectId: p.id, ...values({ department: 'DEPT r' }) })).toEqual({ ok: true })
+      expect((await pool().query(`select "department" from "account_department" where "userId" = $1`, [p.id])).rows[0].department).toBe('Dept R')
+    })
+    it('refuses bad input and a short source note, naming the field, and writes nothing', async () => {
+      const v = await account('v', { verifier: true })
+      const p = await account('p')
+      const bad = await service(v).save({ subjectId: p.id, ...values({ designationEn: '', department: '', source: 'no' }) })
+      expect(bad).toEqual({ ok: false, error: 'invalid', errors: { designationEn: 'required', department: 'required', source: 'tooShort' } })
+      expect(await service(v).save({ subjectId: p.id, ...values({ designationEn: 'x'.repeat(121) }) })).toMatchObject({ ok: false, error: 'invalid', errors: { designationEn: 'tooLong' } })
+      expect(await service(v).save({ subjectId: p.id, ...values({ nameUr: 'a\u202Eb' }) })).toMatchObject({ ok: false, error: 'invalid', errors: { nameUr: 'invalid' } })
+      expect(await service(v).save({ subjectId: p.id, ...values({ designationEn: 42 }) })).toMatchObject({ ok: false, error: 'invalid' })
+      expect(await service(v).save({ subjectId: '../x', ...values() })).toMatchObject({ ok: false, error: 'invalid', errors: { subject: 'invalid' } })
+      expect(await logRows(p.id)).toEqual([])
+      expect((await pool().query(`select 1 from "account_fixed" where "userId" = $1`, [p.id])).rowCount).toBe(0)
+    })
+    it('will not move a reviewer or a head to another department, but may change their designation', async () => {
+      const v = await account('v', { verifier: true })
+      const h = await account('h', { dept: 'Dept R' })
+      expect(await roles().grantHead(h.email)).toBe('ok')
+      expect(await service(v).save({ subjectId: h.id, ...values({ department: 'Elsewhere' }) })).toEqual({ ok: false, error: 'has-role' })
+      expect((await pool().query(`select "department" from "account_department" where "userId" = $1`, [h.id])).rows[0].department).toBe('Dept R')
+      expect(await logRows(h.id)).toEqual([])
+      expect(await service(v).save({ subjectId: h.id, ...values({ department: 'Dept R' }) })).toEqual({ ok: true })
+    })
+    it('a failure part-way leaves nothing behind', async () => {
+      const v = await account('v', { verifier: true })
+      const p = await account('p')
+      // A designation the table refuses (over 120 characters) reaches the database only if the service is bypassed.
+      await expect(store().save(v.id, { subjectId: p.id, values: { designationEn: 'x'.repeat(121), designationUr: null, nameUr: null, department: 'D' }, source: 'Notification 1' }, NOW)).rejects.toThrow()
+      expect(await logRows(p.id)).toEqual([])
+      expect((await pool().query(`select 1 from "account_department" where "userId" = $1`, [p.id])).rowCount).toBe(0)
+    })
+  })
+
+  describe('search', () => {
+    it('finds by name or email, never the Verifier, treats % and _ as plain text, and needs two letters', async () => {
+      const v = await account('v', { verifier: true })
+      const tag = Math.random().toString(36).slice(2, 8)
+      const id = `vs-${tag}-aaaa`
+      await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Zed ${tag} Khan`, `${id}@example.invalid`])
+      const r = await service(v).search(`ZED ${tag}`)
+      expect(r).toMatchObject({ ok: true })
+      if (r.ok) expect(r.people.map((p) => p.subjectId)).toEqual([id])
+      expect(await service(v).search('z')).toEqual({ ok: true, people: [] })
+      expect(await service(v).search('%%')).toEqual({ ok: true, people: [] })
+      expect(await service(v).search(`${v.email}`)).toEqual({ ok: true, people: [] })
+    })
+  })
+
+  describe('the log and the role', () => {
+    it('the change log refuses an update and a delete', async () => {
+      const v = await account('v', { verifier: true })
+      const p = await account('p')
+      await service(v).save({ subjectId: p.id, ...values() })
+      await expect(pool().query(`update "fixed_change" set "source" = 'tampered here' where "subjectId" = $1`, [p.id])).rejects.toThrow(/append-only/)
+      await expect(pool().query(`delete from "fixed_change" where "subjectId" = $1`, [p.id])).rejects.toThrow(/append-only/)
+      expect(await logRows(p.id)).toHaveLength(1)
+    })
+    it('the database refuses a source note shorter than 5 characters', async () => {
+      const p = await account('p')
+      await expect(pool().query(`insert into "fixed_change" ("subjectId","verifierId","after","source") values ($1,'x','{}','abcd')`, [p.id])).rejects.toThrow()
+    })
+    it('grant and revoke by the operator command, and the listing shows it', async () => {
+      const a = await account('a')
+      expect(await roles().revokeVerifier(a.email)).toBe('not-reviewer')
+      expect(await roles().grantVerifier(a.email)).toBe('ok')
+      expect(await roles().grantVerifier(a.email.toUpperCase())).toBe('ok')
+      expect((await roles().list()).find((r) => r.email === a.email)).toMatchObject({ verifier: true, reviewer: false, head: false })
+      expect(await roles().revokeVerifier(a.email)).toBe('ok')
+      expect(await roles().grantVerifier('nobody@example.invalid')).toBe('no-account')
+      expect(await service(a).search('Person')).toEqual({ ok: false, error: 'unavailable' })
+    })
+    it('a revoked Verifier loses access at once', async () => {
+      const v = await account('v', { verifier: true })
+      const p = await account('p')
+      expect(await service(v).open(p.id)).toMatchObject({ ok: true })
+      await roles().revokeVerifier(v.email)
+      expect(await service(v).save({ subjectId: p.id, ...values() })).toEqual({ ok: false, error: 'unavailable' })
     })
   })
 })

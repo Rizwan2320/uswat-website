@@ -5,6 +5,7 @@ import { getIdentityPool } from '@/modules/identity/db'
 import { COPY } from '@/modules/portal/copy'
 import { isHeadAccount } from '@/modules/portal/activation/wiring'
 import { createSampleProfileStore } from '@/modules/portal/profile/sampleStore'
+import { isVerifierAccount } from '@/modules/portal/registrar/wiring'
 import { isReviewerAccount } from '@/modules/portal/review/wiring'
 import { requirePortalPage } from '@/modules/portal/server'
 import Shell from '@/modules/portal/Shell'
@@ -16,6 +17,7 @@ export default async function PortalHome() {
   const { email, userId } = await requirePortalPage('/portal')
   const reviewer = userId ? await isReviewerAccount(userId) : false
   const head = userId ? await isHeadAccount(userId) : false
+  const registrar = userId ? await isVerifierAccount(userId) : false
   const config = readPortalConfig(process.env)
   // The person's own card. A read failure leaves the card out rather than breaking the page.
   const loaded =
@@ -39,6 +41,9 @@ export default async function PortalHome() {
       : []),
     ...(reviewer
       ? ([['/portal/review', COPY.home.reviewLink, T.review]] as Array<[string, string, string]>)
+      : []),
+    ...(registrar
+      ? ([['/portal/registrar', COPY.home.registrarLink, T.registrar]] as Array<[string, string, string]>)
       : []),
     ['/portal/security', COPY.home.securityLink, T.security],
   ]
