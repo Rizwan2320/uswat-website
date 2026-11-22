@@ -7,7 +7,7 @@ For staff who write and publish content in the University of Swat CMS. Plain wor
 | Role | What you can do |
 | --- | --- |
 | Contributor | Start a draft. You can see and change only your own drafts. |
-| Editor | Write and edit content for your office, and send it for review. You cannot publish. A **programme coordinator** is an Editor with programmes assigned: they edit only those programmes (not the department page, not other programmes) and send them to the head of the department. |
+| Editor | Write and edit content for your office, and send it for review. You cannot publish, except as a coordinator (below). A **programme coordinator** is an Editor with programmes assigned: they edit only those programmes (not the department page, not other programmes) and send them to the head of the department. When the head has approved and verified the programme, the coordinator presses **Publish** on it themselves; that is the only thing a coordinator can publish. |
 | Approver | Review content for your office, approve it, mark it as verified, and publish it. Also the only role (with site manager and platform admin) who can change an image after it is uploaded and record its rights. As head of an office you also manage your own team (see below). A **head of department** (an Approver whose office is the department) reviews the department page and all its programmes, and publishes the department's pages themselves, without sending them to anyone. |
 | Site manager | Everything an approver does for all offices, plus menus, redirects and forms. |
 | Platform admin | Everything, plus user accounts. |
