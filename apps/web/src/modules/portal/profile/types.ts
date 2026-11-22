@@ -28,6 +28,8 @@ export type ProfileFixed = {
   facultyStatus: 'current' | 'former' | 'emeritus'
   /** The person's own address, shown to them; public only if their visibility says so. */
   email: string | null
+  /** A picture in the app's own public folder, or null. Shown only when the person's photo visibility is public (preview) or to the person themself. */
+  photo?: string | null
 }
 
 export type Profile = ProfileFixed & ProfileEdit & {
