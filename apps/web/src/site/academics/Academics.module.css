@@ -255,7 +255,7 @@
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--card-min, 300px), 100%), 1fr));
   gap: 16px;
   margin: 0;
   padding: 0;
@@ -317,11 +317,14 @@
   margin: 0;
   line-height: 1.6;
 }
+.vmCard p + p {
+  margin-top: 10px;
+}
 
 /* picture cards: disciplines and laboratories */
 .pics {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--pic-min, 290px), 100%), 1fr));
   gap: 20px;
   margin: 0;
   padding: 0;

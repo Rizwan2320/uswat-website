@@ -14,6 +14,9 @@ import RichOfficePage from '../offices/RichOfficePage'
 import RichResearchPage from '../offices/RichResearchPage'
 import { ADMINISTRATION_PATH, RESEARCH_PATH } from '../offices/landings'
 import { profileForOffice } from '../offices/profiles'
+import RichFacultyPage from '../faculties/RichFacultyPage'
+import RichFacultyProgrammePage from '../faculties/RichFacultyProgrammePage'
+import { profileForFaculty, profileForFacultyProgramme } from '../faculties'
 
 import { DepartmentsIndex, ProgrammesIndex } from './Lists'
 import { AcademicsPage, CampusPage } from './Landing'
@@ -71,6 +74,8 @@ export async function ProgrammeRoute({ params }: { params: SlugParams }) {
     const feed = await departmentFeed(profile.department)
     return <RichDisciplinePage doc={doc} profile={profile} feed={feed} />
   }
+  const facultyProgramme = profileForFacultyProgramme(str(doc.slug) ?? '')
+  if (facultyProgramme) return <RichFacultyProgrammePage doc={doc} profile={facultyProgramme} />
   return <ProgrammePage doc={doc} />
 }
 export async function programmeMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
@@ -146,4 +151,17 @@ export const messageMetadata: Metadata = {
   title: 'Vice Chancellor’s Message',
   description: 'A message from the Vice Chancellor of the University of Swat, Prof. Dr. Husnul Amin.',
   alternates: { canonical: MESSAGE_PATH },
+}
+
+/* /faculties/{slug}: a faculty landing built from a profile (src/site/faculties). A static route per faculty, so no CMS record is needed. */
+export function FacultyRoute({ slug }: { slug: string }) {
+  const profile = profileForFaculty(slug)
+  if (!profile) notFound()
+  return <RichFacultyPage profile={profile} />
+}
+export function facultyMetadata(slug: string): Metadata {
+  const profile = profileForFaculty(slug)
+  return profile
+    ? { title: profile.name, description: profile.lead, alternates: { canonical: profile.path } }
+    : { title: 'Faculty' }
 }
