@@ -16,7 +16,7 @@ export const CONTENT_SOURCES: Source[] = [
 ]
 
 /** The list pages themselves (News is `/news`). */
-export const LIST_PAGES = ['/news', '/notices', '/events', '/jobs', '/tenders', '/academics/departments', '/academics/programmes', '/contact/directory']
+export const LIST_PAGES = ['/news', '/notices', '/events', '/jobs', '/tenders', '/academics/departments', '/academics/programmes', '/contact/directory', '/research', '/administration']
 
 export const SITEMAP_REVALIDATE_SECONDS = 300
 

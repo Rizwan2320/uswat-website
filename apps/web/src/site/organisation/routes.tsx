@@ -6,6 +6,11 @@ import RichDepartmentPage from '../academics/RichDepartmentPage'
 import RichDisciplinePage from '../academics/RichDisciplinePage'
 import { departmentFeed } from '../academics/feed'
 import { profileForDepartment, profileForDiscipline } from '../academics/profiles'
+import RichAdministrationPage from '../offices/RichAdministrationPage'
+import RichOfficePage from '../offices/RichOfficePage'
+import RichResearchPage from '../offices/RichResearchPage'
+import { ADMINISTRATION_PATH, RESEARCH_PATH } from '../offices/landings'
+import { profileForOffice } from '../offices/profiles'
 
 import { DepartmentsIndex, ProgrammesIndex } from './Lists'
 import { AcademicsPage, CampusPage } from './Landing'
@@ -76,14 +81,34 @@ export async function programmeMetadata({ params }: { params: SlugParams }): Pro
 export async function OfficeRoute({ params }: { params: SlugParams }) {
   const doc = await getOffice(decode((await params).slug ?? ''), await preview())
   if (!doc) notFound()
+  const profile = profileForOffice(str(doc.slug) ?? '')
+  if (profile) return <RichOfficePage doc={doc} profile={profile} feed={await departmentFeed(profile.slug)} />
   return <OfficePage doc={doc} />
 }
 export async function officeMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
   const slug = decode((await params).slug ?? '')
   const doc = await getOffice(slug, await preview())
   return doc
-    ? { title: str(doc.name) ?? 'Office', alternates: { canonical: `${OFFICES_PATH}/${encodeURIComponent(slug)}` } }
+    ? { title: str(doc.name) ?? 'Office', description: profileForOffice(slug)?.lead, alternates: { canonical: `${OFFICES_PATH}/${encodeURIComponent(slug)}` } }
     : { title: 'Office' }
+}
+
+/* /research and /administration: section landings (T2). Static routes, so they win over a Pages record with the same slug. */
+export function ResearchRoute() {
+  return <RichResearchPage />
+}
+export const researchMetadata: Metadata = {
+  title: 'Research',
+  description: 'Research offices, the journal and the digital library of the University of Swat.',
+  alternates: { canonical: RESEARCH_PATH },
+}
+export function AdministrationRoute() {
+  return <RichAdministrationPage />
+}
+export const administrationMetadata: Metadata = {
+  title: 'Administration',
+  description: 'Directorates, offices, boards and centres of the University of Swat.',
+  alternates: { canonical: ADMINISTRATION_PATH },
 }
 
 export async function AcademicsRoute() {
