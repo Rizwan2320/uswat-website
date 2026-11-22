@@ -110,18 +110,18 @@ export async function applySeeds(cms: Cms, actor: SeedActor, run: Run = SEQUENTI
         ...(r.mission ? { mission: r.mission } : {}),
         ...(r.emails ? { emails: r.emails.map((email) => ({ email })) } : {}),
         facultyGroup: id('faculties', r.facultyGroup),
-        head: id('people', r.head),
+        ...(r.head ? { head: id('people', r.head) } : {}),
       }),
     ),
   )
   await stage(
     programmes.map((r) => () =>
       make('programmes', r, {
-        level: r.level,
-        duration: r.duration,
-        eligibility: r.eligibility ?? 'Sample eligibility text. Invented, not a real requirement.',
-        department: id('departments', r.department),
-        campus: id('campuses', r.campus),
+        ...(r.level ? { level: r.level } : {}),
+        ...(r.duration ? { duration: r.duration } : {}),
+        ...(r.eligibility === null ? {} : { eligibility: r.eligibility ?? 'Sample eligibility text. Invented, not a real requirement.' }),
+        ...(r.department ? { department: id('departments', r.department) } : {}),
+        ...(r.campus ? { campus: id('campuses', r.campus) } : {}),
       }),
     ),
   )
@@ -137,7 +137,7 @@ export async function applySeeds(cms: Cms, actor: SeedActor, run: Run = SEQUENTI
     result.linked++
   }
   // Each loop touches different records (a test checks that the heads are distinct), and the loops run one after another.
-  await stage(departments.map((d) => () => link('people', d.head, { department: id('departments', d.slug) })))
+  await stage(departments.filter((d) => d.head).map((d) => () => link('people', d.head as string, { department: id('departments', d.slug) })))
   await stage(people.filter((p) => p.department).map((p) => () => link('people', p.slug, { department: id('departments', p.department as string) })))
   await stage(offices.filter((o) => o.head).map((o) => () => link('people', o.head as string, { office: id('offices', o.slug) })))
   await stage(offices.filter((o) => o.head).map((o) => () => link('offices', o.slug, { head: id('people', o.head as string) })))
