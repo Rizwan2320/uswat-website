@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { STEP_TARGET, workflowView, type StepAction } from '../../src/admin/workflow/rules'
-import { checkTransition } from '../../src/governance/policy'
+import { checkTransition, mayApproveOwn } from '../../src/governance/policy'
 import {
   actorFromUser,
   WORKFLOW_STATUSES,
@@ -28,6 +28,50 @@ const view = (
     author: 'other',
     ...extra,
   })
+
+describe('head of department and coordinator (slice 3ah)', () => {
+  const hod = person('approver', ['Registrar'])
+  const deptPage = { target: { collection: 'departments', id: 4 } }
+
+  it('a head publishes their department page without sending it for review, whoever started the draft', () => {
+    for (const author of ['me', 'other'] as const) {
+      const v = view(hod, 'draft', { ...deptPage, author })
+      expect(v.actions).toEqual(['approve', 'markVerified'])
+      expect(v.banner.en).toMatch(/head of the department you publish it yourself/)
+    }
+    expect(view(hod, 'draft', { target: { collection: 'programmes', id: 9 } }).actions).toEqual([
+      'approve',
+      'markVerified',
+    ])
+    expect(view(hod, 'approved', deptPage).showPublish).toBe(true)
+  })
+
+  it('a head of another kind of page (a notice) is still bound by the draft-belongs-to-its-author rule', () => {
+    const v = view(hod, 'draft', { target: { collection: 'notices', id: 4 }, author: 'other' })
+    expect(v.actions).not.toContain('approve')
+    expect(mayApproveOwn(hod, { collection: 'notices', id: 4 })).toBe(false)
+    expect(mayApproveOwn(hod, { collection: 'departments', id: 4 })).toBe(true)
+    expect(mayApproveOwn(hod, { collection: 'programmes', id: 4 })).toBe(true)
+    expect(mayApproveOwn(person('siteManager'), { collection: 'departments', id: 4 })).toBe(false)
+    expect(mayApproveOwn(person('editor'), { collection: 'programmes', id: 4 })).toBe(false)
+    expect(mayApproveOwn(person('platformAdmin'))).toBe(true)
+  })
+
+  it('a coordinator sees only a read-only note on a sibling programme and on the department', () => {
+    const c = actorFromUser({ id: 2, role: 'editor', offices: [], programmes: [5] })
+    expect(view(c, 'draft', { target: { collection: 'programmes', id: 5 } }).actions).toEqual([
+      'sendForReview',
+    ])
+    for (const target of [
+      { collection: 'programmes', id: 6 },
+      { collection: 'departments', id: 4 },
+    ]) {
+      const v = view(c, 'draft', { target })
+      expect(v.tone).toBe('readonly')
+      expect(v.banner.en).toMatch(/your own programme pages only/)
+    }
+  })
+})
 
 describe('workflow view per role', () => {
   it('editor: Send for review on a draft, nothing on review, never Publish', () => {
