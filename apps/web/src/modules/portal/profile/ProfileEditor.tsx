@@ -172,13 +172,19 @@ export default function ProfileEditor({ initial, forId }: { initial: LoadedProfi
         <section className="portal-card" aria-labelledby={`${uid}-fixed`}>
           <h2 id={`${uid}-fixed`} style={{ marginTop: 0 }}>{C.fixedTitle}</h2>
           <p className="hint">{C.fixedHelp}</p>
-          <dl className="portal-fixed">
-            <dt>{C.nameLabel}</dt><dd>{p.name.en}</dd>
-            <dt>{C.designationLabel}</dt><dd>{p.designation.en}</dd>
-            <dt>{C.departmentLabel}</dt><dd>{p.department}</dd>
-            <dt>{C.statusLabel}</dt><dd>{C.status[p.facultyStatus]}</dd>
-            <dt>{C.emailLabel}</dt><dd>{p.email}</dd>
-          </dl>
+          <div className="portal-fixed-wrap">
+            {p.photo ? (
+              // eslint-disable-next-line @next/next/no-img-element -- a small illustration from the app's own public folder
+              <img className="portal-avatar portal-avatar-lg" src={p.photo} alt="" width={96} height={96} />
+            ) : null}
+            <dl className="portal-fixed">
+              <dt>{C.nameLabel}</dt><dd>{p.name.en}</dd>
+              <dt>{C.designationLabel}</dt><dd>{p.designation.en}</dd>
+              <dt>{C.departmentLabel}</dt><dd>{p.department}</dd>
+              <dt>{C.statusLabel}</dt><dd>{C.status[p.facultyStatus]}</dd>
+              <dt>{C.emailLabel}</dt><dd>{p.email}</dd>
+            </dl>
+          </div>
         </section>
 
         {message ? (

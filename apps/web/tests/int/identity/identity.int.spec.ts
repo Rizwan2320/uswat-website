@@ -85,7 +85,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue', '0012_claim_activation', '0013_delegation', '0014_notifications'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue', '0012_claim_activation', '0013_delegation', '0014_notifications', '0015_profile_fixed'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -1064,6 +1064,22 @@ describe.skipIf(!DB)('faculty profile draft store (FP-11), sample adapter on rea
     expect(l.profile.email).toBe(a.email)
     expect(l.profile.name.en).toBe('Sample new')
     expect(l.profile.visibility).toEqual({ email: 'hidden', photo: 'hidden' })
+  })
+
+  it('set-by-the-university fields come from account_fixed when a row exists, and the picture must be one of the app’s own files', async () => {
+    const a = await account('fixed')
+    expect((await store().load(a)).profile.designation.en).toBe('Lecturer (sample)')
+    expect((await store().load(a)).profile.photo).toBeNull()
+    await pool().query(`insert into "account_fixed" ("userId","nameUr","designationEn","designationUr","photo") values ($1,'نام','Software Engineer','انجینئر','/portal-avatars/rizwan.svg')`, [a.id])
+    const p = (await store().load(a)).profile
+    expect(p.designation).toEqual({ en: 'Software Engineer', ur: 'انجینئر' })
+    expect(p.name.ur).toBe('نام')
+    expect(p.photo).toBe('/portal-avatars/rizwan.svg')
+    // control: an address elsewhere, a path outside the folder, or another file type is refused by the table itself
+    const b = await account('fixed-bad')
+    for (const bad of ['https://example.org/x.svg', '/portal-avatars/../x.svg', '/portal-avatars/x.png', '//example.org/portal-avatars/x.svg']) {
+      await expect(pool().query(`insert into "account_fixed" ("userId","designationEn","photo") values ($1,'x',$2)`, [b.id, bad])).rejects.toThrow()
+    }
   })
 
   it('save then load round-trips every editable field, Urdu included', async () => {

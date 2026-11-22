@@ -20,7 +20,12 @@ export default function PublicPreview({ preview, heading, idSuffix = '', help, t
     <section className="portal-preview" aria-labelledby={`preview-title${idSuffix}`} data-testid={testId}>
       <h2 id={`preview-title${idSuffix}`}>{heading ?? C.previewTitle}{' '}{preview.sample ? <span className="portal-sample">{C.sampleBadge}</span> : null}</h2>
       <p className="hint">{help ?? C.previewHelp}</p>
-      <div className="photo">{preview.showPhoto ? C.previewPhoto : C.previewNoPhoto}</div>
+      <div className="photo">
+        {preview.showPhoto && preview.photo ? (
+          // eslint-disable-next-line @next/next/no-img-element -- a small illustration from the app's own public folder
+          <img className="portal-avatar" src={preview.photo} alt="" width={96} height={96} />
+        ) : preview.showPhoto ? C.previewPhoto : C.previewNoPhoto}
+      </div>
       <h3>{preview.name.en}</h3>
       <p className="role">{preview.designation.en}, {preview.department}</p>
       {preview.bio.en ? <p lang="en">{preview.bio.en}</p> : null}

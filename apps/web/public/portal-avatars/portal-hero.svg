@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 220" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration: green mountains above a river valley">
+  <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3ead2"/><stop offset="1" stop-color="#e7d9ae"/></linearGradient></defs>
+  <rect width="1600" height="220" fill="url(#sky)"/>
+  <circle cx="1280" cy="62" r="34" fill="#e3b94f" opacity=".9"/>
+  <path d="M0 150 220 70 380 120 560 40 760 125 960 60 1180 130 1400 55 1600 120V220H0z" fill="#9fb59a"/>
+  <path d="M0 175 180 108 340 150 520 88 720 160 940 100 1160 165 1380 105 1600 150V220H0z" fill="#4f8161"/>
+  <path d="M0 200 260 150 520 190 800 140 1060 195 1320 150 1600 190V220H0z" fill="#1f5a3a"/>
+  <path d="M0 214c200-10 360-4 560-12s360 6 560-2 340 4 480-2v22H0z" fill="#8cc3d1" opacity=".85"/>
+</svg>

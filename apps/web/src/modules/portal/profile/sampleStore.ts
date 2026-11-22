@@ -20,13 +20,16 @@ export const EMPTY_EDIT: ProfileEdit = {
 }
 
 /** Dummy high-impact fields. Obviously fake on purpose: the person's own account name and address only. */
-function sampleFixed(account: { email: string; name: string }, department: string | null): Profile {
+type FixedRow = { nameUr: string | null; designationEn: string; designationUr: string | null; photo: string | null }
+
+function sampleFixed(account: { email: string; name: string }, department: string | null, fixed: FixedRow | null = null): Profile {
   return {
-    name: { en: account.name || 'Sample Faculty Member', ur: 'نمونہ استاد' },
-    designation: { en: 'Lecturer (sample)', ur: 'لیکچرر (نمونہ)' },
+    name: { en: account.name || 'Sample Faculty Member', ur: fixed?.nameUr ?? 'نمونہ استاد' },
+    designation: fixed ? { en: fixed.designationEn, ur: fixed.designationUr ?? '' } : { en: 'Lecturer (sample)', ur: 'لیکچرر (نمونہ)' },
     department: department ?? 'Sample Department',
     facultyStatus: 'current',
     email: account.email,
+    photo: fixed?.photo ?? null,
     ...EMPTY_EDIT,
     sample: true,
   }
@@ -53,7 +56,8 @@ export function createSampleProfileStore(pool: pg.Pool): ProfileStore {
     async load(account) {
       const user = await pool.query<{ name: string }>(`select "name" from "user" where "id" = $1`, [account.id])
       const dept = await pool.query<{ department: string }>(`select "department" from "account_department" where "userId" = $1`, [account.id])
-      const fixed = sampleFixed({ email: account.email, name: user.rows[0]?.name ?? '' }, dept.rows[0]?.department ?? null)
+      const fx = (await pool.query<FixedRow>(`select "nameUr", "designationEn", "designationUr", "photo" from "account_fixed" where "userId" = $1`, [account.id])).rows[0] ?? null
+      const fixed = sampleFixed({ email: account.email, name: user.rows[0]?.name ?? '' }, dept.rows[0]?.department ?? null, fx)
       const { rows } = await pool.query<Row>(`select "edit", "status", "updatedAt", "reviewNote" from "profile_draft" where "userId" = $1`, [account.id])
       const pub = (await pool.query<{ edit: ProfileEdit; approvedAt: Date }>(`select "edit", "approvedAt" from "profile_published" where "userId" = $1`, [account.id])).rows[0]
       const published = pub ? pickEditable(pub.edit) : null

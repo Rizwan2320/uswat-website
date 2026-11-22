@@ -22,7 +22,7 @@ export type Cv = {
   template: Template
   sample: boolean
   generatedOn: string
-  header: { nameEn: string; nameUr: string; designation: string; department: string; email: string | null }
+  header: { nameEn: string; nameUr: string; designation: string; department: string; email: string | null; photo: string | null }
   bio: { en: string; ur: string }
   interests: string[]
   contact: { officeLocation: string; officeHours: string }
@@ -50,7 +50,7 @@ export function buildCv(input: CvInput, template: Template, now: number): Cv {
     template,
     sample: p.sample,
     generatedOn: formatDate(now),
-    header: { nameEn: p.name.en, nameUr: p.name.ur, designation: p.designation.en, department: p.department, email: p.visibility.email === 'public' ? p.email : null },
+    header: { nameEn: p.name.en, nameUr: p.name.ur, designation: p.designation.en, department: p.department, email: p.visibility.email === 'public' ? p.email : null, photo: p.photo ?? null },
     bio: p.bio,
     interests: p.researchInterests,
     contact: { officeLocation: p.officeLocation, officeHours: p.officeHours },
