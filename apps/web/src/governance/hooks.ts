@@ -148,6 +148,10 @@ export const governanceBeforeChange =
       unpublishing = live._status === 'published'
     }
 
+    const target = {
+      collection: collection.slug,
+      id: (originalDoc?.id ?? null) as string | number | null,
+    }
     const result = evaluateSave({
       operation,
       actor,
@@ -156,9 +160,12 @@ export const governanceBeforeChange =
       expiryRequired: options.expiryRequired,
       prev:
         operation === 'update'
-          ? toRecordState(loader && prevGov ? { ...prevGov, createdBy: null } : prevGov)
+          ? {
+              ...toRecordState(loader && prevGov ? { ...prevGov, createdBy: null } : prevGov),
+              target,
+            }
           : null,
-      next: toRecordState(merged),
+      next: { ...toRecordState(merged), target },
       contentChanged:
         operation === 'create' ? true : contentChanged(data, originalDoc, contentFields),
       now: new Date().toISOString(),
@@ -242,7 +249,11 @@ export const governanceBeforeDelete: CollectionBeforeDeleteHook = async ({
     })
     everPublished = published.totalDocs > 0
   }
-  const denial = checkDelete(actorFromRequest(req), toRecordState(latest.governance), everPublished)
+  const denial = checkDelete(
+    actorFromRequest(req),
+    { ...toRecordState(latest.governance), target: { collection: collection.slug, id } },
+    everPublished,
+  )
   if (denial) throw new APIError(denial.message, denial.httpStatus, { code: denial.code }, true)
 
   // Integrity, not permission: nobody, administrators included, may delete a record that other

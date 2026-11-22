@@ -1,10 +1,10 @@
 import type { CollectionConfig } from 'payload'
 
 import {
-  governedCreate,
+  governedCreateAdminOnly,
   governedDelete,
-  governedRead,
-  governedReadVersions,
+  governedReadFor,
+  governedReadVersionsFor,
   governedUpdate,
 } from '../../governance/access'
 import { withGovernance } from '../../governance/fields'
@@ -31,10 +31,11 @@ export const Pages: CollectionConfig<'pages'> = withGovernance(
   {
     slug: 'pages',
     access: {
-      create: governedCreate,
+      // Main pages are the platform admin's (slice 3ah): only they create one.
+      create: governedCreateAdminOnly,
       delete: governedDelete,
-      read: governedRead,
-      readVersions: governedReadVersions,
+      read: governedReadFor('pages'),
+      readVersions: governedReadVersionsFor('pages'),
       update: governedUpdate,
     },
     // This config controls what's populated by default when a page is referenced

@@ -67,9 +67,27 @@ export interface RecordState {
   pinned: boolean
   /** Who created the record (contributors may only edit their own drafts). */
   createdBy: string | number | null
+  /** Which record this is (collection and id), for the rules that depend on it (slice 3ah). Absent in pure rule tests. */
+  target?: Target
 }
 
-type Scope = Pick<RecordState, 'ownerOffice' | 'risk'>
+/** The record being judged. `id` is null while it is being created. */
+export interface Target {
+  collection: string
+  id: string | number | null
+}
+
+/**
+ * Collections that only a platform admin or a site manager write (slice 3ah): the landing page and
+ * the other main pages. Approvers and editors of an office can read them once published, not change them.
+ */
+export const ADMIN_ONLY_COLLECTIONS: ReadonlySet<string> = new Set(['pages'])
+
+/** An Editor with programmes assigned is a programme coordinator. */
+const isCoordinator = (actor: Extract<Actor, { kind: 'user' }>): boolean =>
+  actor.role === 'editor' && (actor.programmes?.length ?? 0) > 0
+
+type Scope = Pick<RecordState, 'ownerOffice' | 'risk' | 'target'>
 
 const deny = (code: PolicyCode, message: string, httpStatus: 400 | 403 = 403): Denial => ({
   ok: false,
@@ -80,15 +98,34 @@ const deny = (code: PolicyCode, message: string, httpStatus: 400 | 403 = 403): D
 
 const isUser = (a: Actor): a is Extract<Actor, { kind: 'user' }> => a.kind === 'user'
 
-/** Is the record's owner office one of the actor's offices? Global roles are always in scope. */
-export function inScope(actor: Actor, ownerOffice: string | null | undefined): boolean {
+/**
+ * Is this record in the actor's scope? Global roles always. Approvers and editors by owner office,
+ * with two exceptions (slice 3ah): main pages are never in their scope, and a programme coordinator
+ * (an Editor with programmes assigned) has only those programmes, by id, and no department.
+ */
+export function inScope(
+  actor: Actor,
+  ownerOffice: string | null | undefined,
+  target?: Target,
+): boolean {
   if (!isUser(actor)) return false
   if (actor.role === 'platformAdmin' || actor.role === 'siteManager') return true
   if (actor.role === 'approver' || actor.role === 'editor') {
+    if (target && ADMIN_ONLY_COLLECTIONS.has(target.collection)) return false
+    if (target && isCoordinator(actor) && COORDINATED.has(target.collection)) {
+      return (
+        target.collection === 'programmes' &&
+        target.id !== null &&
+        (actor.programmes ?? []).includes(String(target.id))
+      )
+    }
     return Boolean(ownerOffice) && actor.offices.includes(ownerOffice as string)
   }
   return false
 }
+
+/** Collections where a coordinator is limited to their own programmes. */
+const COORDINATED: ReadonlySet<string> = new Set(['programmes', 'departments'])
 
 /** May this actor approve, publish, archive and verify this record? */
 export function isReviewerFor(actor: Actor, rec: Scope): boolean {
@@ -97,7 +134,7 @@ export function isReviewerFor(actor: Actor, rec: Scope): boolean {
     case 'platformAdmin':
       return true
     case 'approver':
-      return inScope(actor, rec.ownerOffice)
+      return inScope(actor, rec.ownerOffice, rec.target)
     case 'siteManager':
       return rec.risk !== 'high_impact'
     default:
@@ -109,7 +146,8 @@ export function isReviewerFor(actor: Actor, rec: Scope): boolean {
 export function canSubmitFor(actor: Actor, rec: Scope): boolean {
   if (!isUser(actor)) return false
   if (actor.role === 'platformAdmin' || actor.role === 'siteManager') return true
-  if (actor.role === 'approver' || actor.role === 'editor') return inScope(actor, rec.ownerOffice)
+  if (actor.role === 'approver' || actor.role === 'editor')
+    return inScope(actor, rec.ownerOffice, rec.target)
   return false
 }
 
@@ -117,7 +155,7 @@ export function canSubmitFor(actor: Actor, rec: Scope): boolean {
 export function canRestore(actor: Actor, rec: Scope): boolean {
   if (!isUser(actor)) return false
   if (actor.role === 'platformAdmin') return true
-  return actor.role === 'approver' && inScope(actor, rec.ownerOffice)
+  return actor.role === 'approver' && inScope(actor, rec.ownerOffice, rec.target)
 }
 
 const stage = (s: WorkflowStatus): string => WORKFLOW_LABELS[s] ?? s
@@ -269,7 +307,7 @@ function evaluateCreate(input: SaveInput): SaveOutcome {
   if (
     isUser(actor) &&
     (actor.role === 'approver' || actor.role === 'editor') &&
-    !inScope(actor, next.ownerOffice)
+    !inScope(actor, next.ownerOffice, next.target)
   ) {
     return deny('OWNER_OUT_OF_SCOPE', 'You can only create items for an office you belong to.')
   }
@@ -324,7 +362,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
   if (isUser(actor)) {
     if (
       (actor.role === 'approver' || actor.role === 'editor') &&
-      !inScope(actor, prev.ownerOffice)
+      !inScope(actor, prev.ownerOffice, prev.target)
     ) {
       return deny('OWNER_OUT_OF_SCOPE', 'This item belongs to another office.')
     }
@@ -341,16 +379,24 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
     }
   }
 
-  const scope: Scope = { ownerOffice: prev.ownerOffice, risk: higherRisk(prev.risk, next.risk) }
+  const scope: Scope = {
+    ownerOffice: prev.ownerOffice,
+    risk: higherRisk(prev.risk, next.risk),
+    target: prev.target ?? next.target,
+  }
   const reviewer = isReviewerFor(actor, scope)
-  const reviewerOnPrev = isReviewerFor(actor, { ownerOffice: prev.ownerOffice, risk: prev.risk })
+  const reviewerOnPrev = isReviewerFor(actor, {
+    ownerOffice: prev.ownerOffice,
+    risk: prev.risk,
+    target: prev.target ?? next.target,
+  })
 
   // Handing a record to an office the actor is not in.
   if (
     isUser(actor) &&
     (actor.role === 'approver' || actor.role === 'editor') &&
     next.ownerOffice !== prev.ownerOffice &&
-    !inScope(actor, next.ownerOffice)
+    !inScope(actor, next.ownerOffice, next.target)
   ) {
     return deny('OWNER_OUT_OF_SCOPE', 'You cannot move an item to an office you do not belong to.')
   }
@@ -508,7 +554,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
  */
 export function checkDelete(
   actor: Actor,
-  rec: Pick<RecordState, 'risk' | 'status' | 'ownerOffice' | 'createdBy'>,
+  rec: Pick<RecordState, 'risk' | 'status' | 'ownerOffice' | 'createdBy' | 'target'>,
   everPublished = false,
 ): Denial | null {
   if (actor.kind === 'system') return null
@@ -517,7 +563,7 @@ export function checkDelete(
   if (rec.status === 'draft' && !everPublished) {
     if (actor.role === 'siteManager') return null
     if (actor.role === 'editor' || actor.role === 'approver') {
-      return inScope(actor, rec.ownerOffice)
+      return inScope(actor, rec.ownerOffice, rec.target)
         ? null
         : deny('OWNER_OUT_OF_SCOPE', 'This draft belongs to another office.')
     }

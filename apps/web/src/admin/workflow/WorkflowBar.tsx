@@ -106,6 +106,7 @@ export function WorkflowBar(): React.ReactElement | null {
     ownerOffice: owner.value ?? null,
     saved,
     author,
+    target: collectionSlug ? { collection: collectionSlug, id: id ?? null } : undefined,
   })
   const language = i18n.language
 

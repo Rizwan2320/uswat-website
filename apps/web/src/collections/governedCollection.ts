@@ -4,8 +4,8 @@ import {
   governedCreate,
   governedCreateAdminOnly,
   governedDelete,
-  governedRead,
-  governedReadVersions,
+  governedReadFor,
+  governedReadVersionsFor,
   governedUpdate,
 } from '../governance/access'
 import { safeHrefValidate, withGovernance } from '../governance/fields'
@@ -24,6 +24,8 @@ export interface GovernedCollectionOptions {
   dbName?: string
   /** Only a platform admin may create a record (departments and programmes). */
   createAdminOnly?: boolean
+  /** Extra collection hooks, merged with the governance hooks. */
+  hooks?: CollectionConfig['hooks']
 }
 
 /** Access, drafts and the governance group, the same for every organisation record. */
@@ -32,6 +34,7 @@ export function governedCollection(o: GovernedCollectionOptions): CollectionConf
     {
       slug: o.slug,
       ...(o.dbName ? { dbName: o.dbName } : {}),
+      ...(o.hooks ? { hooks: o.hooks } : {}),
       labels: { singular: o.singular, plural: o.plural },
       admin: {
         useAsTitle: o.useAsTitle,
@@ -41,8 +44,8 @@ export function governedCollection(o: GovernedCollectionOptions): CollectionConf
       access: {
         create: o.createAdminOnly ? governedCreateAdminOnly : governedCreate,
         delete: governedDelete,
-        read: governedRead,
-        readVersions: governedReadVersions,
+        read: governedReadFor(o.slug),
+        readVersions: governedReadVersionsFor(o.slug),
         update: governedUpdate,
       },
       versions: { drafts: { autosave: { interval: 1000 } }, maxPerDoc: 25 },

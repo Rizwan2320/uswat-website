@@ -6,7 +6,13 @@
  * only authority: pressing a button just sets the Stage and saves, and every hook still runs.
  */
 
-import { canSubmitFor, inScope, isReviewerFor } from '../../governance/policy'
+import {
+  ADMIN_ONLY_COLLECTIONS,
+  canSubmitFor,
+  inScope,
+  isReviewerFor,
+  type Target,
+} from '../../governance/policy'
 import {
   normalizeOffice,
   WORKFLOW_LABELS,
@@ -32,6 +38,8 @@ export interface WorkflowInput {
   saved: boolean
   /** Created by the signed-in person, by someone else, or brought in by the importer (no author). */
   author: Author
+  /** Which record this is; the scope rules for pages and programme coordinators need it (slice 3ah). */
+  target?: Target
 }
 
 export type Tone = 'info' | 'waiting' | 'ready' | 'readonly'
@@ -64,7 +72,7 @@ const readOnly = (banner: Words): WorkflowView => ({
  * (policy.ts, SELF_APPROVAL).
  */
 export function workflowView(input: WorkflowInput): WorkflowView {
-  const { actor, stage, verification, risk, ownerOffice, saved, author } = input
+  const { actor, stage, verification, risk, ownerOffice, saved, author, target } = input
 
   if (actor.kind !== 'user' || actor.role === 'auditor') {
     return readOnly(
@@ -75,7 +83,7 @@ export function workflowView(input: WorkflowInput): WorkflowView {
     )
   }
 
-  const scope = { ownerOffice: normalizeOffice(ownerOffice) || null, risk }
+  const scope = { ownerOffice: normalizeOffice(ownerOffice) || null, risk, target }
   const reviewer = isReviewerFor(actor, scope)
   const submitter = canSubmitFor(actor, scope)
   const role = actor.role
@@ -83,7 +91,27 @@ export function workflowView(input: WorkflowInput): WorkflowView {
   // A platform admin publishes their own work (slice 3ag); everyone else needs a second person.
   const needsAnother = mine && role !== 'platformAdmin'
 
-  if ((role === 'editor' || role === 'approver') && saved && !inScope(actor, scope.ownerOffice)) {
+  if (
+    (role === 'editor' || role === 'approver') &&
+    saved &&
+    !inScope(actor, scope.ownerOffice, target)
+  ) {
+    if (target && ADMIN_ONLY_COLLECTIONS.has(target.collection)) {
+      return readOnly(
+        w(
+          'The landing page and the other main pages are looked after by the platform admin. You can look but not change them.',
+          'مرکزی صفحات پلیٹ فارم ایڈمن سنبھالتا ہے۔ آپ انہیں دیکھ سکتے ہیں، بدل نہیں سکتے۔',
+        ),
+      )
+    }
+    if (role === 'editor' && ((actor as { programmes?: string[] }).programmes?.length ?? 0) > 0) {
+      return readOnly(
+        w(
+          'You look after your own programme pages only. You can look at this one but not change it.',
+          'آپ صرف اپنے پروگرام کے صفحات سنبھالتے ہیں۔ آپ اسے دیکھ سکتے ہیں، بدل نہیں سکتے۔',
+        ),
+      )
+    }
     return readOnly(
       w(
         `This item belongs to ${office(ownerOffice)}, not to your office. You can look but not change it.`,

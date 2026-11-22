@@ -63,7 +63,7 @@ export type Id = string | number
  * - `anonymous`: a REST or GraphQL request with no user. Never allowed to write.
  */
 export type Actor =
-  | { kind: 'user'; id: Id; role: Role; offices: string[] }
+  | { kind: 'user'; id: Id; role: Role; offices: string[]; programmes?: string[] }
   | { kind: 'system' }
   | { kind: 'anonymous' }
 
@@ -80,6 +80,14 @@ interface UserLike {
   id?: Id
   role?: unknown
   offices?: unknown
+  /** The programmes a coordinator looks after: ids, or populated records. */
+  programmes?: unknown
+}
+
+const idOfRef = (v: unknown): string | null => {
+  if (typeof v === 'string' || typeof v === 'number') return String(v)
+  if (typeof v === 'object' && v !== null && 'id' in v) return idOfRef((v as { id: unknown }).id)
+  return null
 }
 
 /**
@@ -90,11 +98,15 @@ export function actorFromUser(user: UserLike): Actor {
   const offices = Array.isArray(user.offices)
     ? [...new Set(user.offices.map(normalizeOffice).filter((o) => o.length > 0))]
     : []
+  const programmes = Array.isArray(user.programmes)
+    ? [...new Set(user.programmes.map(idOfRef).filter((x): x is string => x !== null))]
+    : []
   return {
     kind: 'user',
     id: user.id as Id,
     role: isRole(user.role) ? user.role : 'contributor',
     offices,
+    programmes,
   }
 }
 
