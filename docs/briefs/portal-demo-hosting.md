@@ -8,6 +8,10 @@
 - Three Sample accounts (`ayesha`, `bilal`, `carol` at `.sample@example.invalid`); `bilal` is a reviewer. All in "Sample Department of Computer Science". Passwords are random, given to the owner in chat only, never stored here.
 - Variables are scoped to branch `fp/portal-demo` (preview). Secrets are Vercel "sensitive" values.
 
+**One-time exception (owner approved 2026-11-22).** The portal build also prerenders CMS pages, which need the CMS tables. The first successful build ran `db:migrate` against the demo database only (guarded by its host name); the build command was then set back to plain `pnpm build`. The demo database therefore holds 196 empty CMS tables in `public` beside the `identity` schema.
+
+**Address.** `https://uswat-portal-git-fp-portal-demo-rizwan-khans-projects-0d7ccb85.vercel.app` (branch address; `PORTAL_ORIGIN` and the passkey ID are this host). Only pushes to `fp/portal-demo` that change something under `apps/web` build; others are skipped by an ignore rule.
+
 **Paths touched in the repo.** This brief and `docs/STATUS.md` only. No code change.
 
 **Risks.** The passkey ID is the deployment host, so the owner must use the branch address, not a per-commit address. Neon free compute sleeps, so the first request may be slow. The Payload (CMS) variables point to the same empty database; CMS pages on this deployment are not meant to work.
