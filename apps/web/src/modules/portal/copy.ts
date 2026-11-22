@@ -8,7 +8,27 @@ export const COPY = {
   sampleBanner: 'Sample portal for demonstration. It is not the university’s system and holds no real records.',
   skipLink: 'Skip to the main content',
   signOut: 'Sign out',
-  nav: { home: 'Home', profile: 'Profile', publications: 'Publications', courses: 'Courses', cv: 'CV', delegation: 'Delegation', notifications: 'Notices', security: 'Security' },
+  nav: { home: 'Home', profile: 'Profile', publications: 'Publications', courses: 'Courses', cv: 'CV', delegation: 'Delegation', notifications: 'Notices', security: 'Security', review: 'Review', activate: 'Activate', registrar: 'Registrar' },
+  header: {
+    utilLabel: 'University utility bar',
+    place: 'Swat, Khyber Pakhtunkhwa, Pakistan',
+    tagline: 'Faculty portal',
+    website: 'University website',
+    brandTop: 'University of Swat',
+    brandName: 'Faculty portal',
+    records: 'My records',
+    work: 'Duties',
+    menu: 'Menu',
+    hints: {
+      profile: 'Details, biography, who can see them',
+      publications: 'Claim the works found under your name',
+      courses: 'What you teach, by semester',
+      cv: 'A printable CV from your records',
+      review: 'Profile changes waiting for approval',
+      activate: 'Confirm new accounts in your department',
+      registrar: 'Designations, Urdu names, departments',
+    },
+  },
 
   signIn: {
     sharedLabel: 'This is a shared computer',
