@@ -838,3 +838,8 @@ P3 agent (slice 3a), own entry:
 - **Not run:** axe on the open dialog; the live site.
 - **Finding, not fixed here:** on main, `/this-page-does-not-exist` returns 500 (`DYNAMIC_SERVER_USAGE`) on a freshly migrated empty database, while `/a/b/c` returns a proper 404; the `not-found` visual baselines (ltr and rtl) already fail for that reason. Needs a separate look.
 - **Follow-up (owner, 2026-11-22, branch `fix/topbar-plain-links`):** the two buttons lost their pill outline and now look like the portal links; order is Departments, CMS, Student Portal, Faculty Portal. 390 px rtl baselines (home, news, style-guide) regenerated; topbar e2e (4) and typecheck green.
+
+## P3 slice 3aj, the coordinator publishes what the head approved (2026-11-22, branch `p3/coordinator-publishes-3aj`, on main after 3ah merged)
+- A programme coordinator can press Publish on their own programme once the head of department approved and verified it, and for nothing else. A publishing save that also changes content is refused (`PUBLISH_CHANGED_CONTENT`). Brief: `docs/briefs/p3aj-coordinator-publishes.md`. No schema change.
+- Checks run: typecheck, lint, 7 new integration tests, 3 new screen-rule tests, full suite 1392 pass / 150 skipped / 0 failed (`uswat_ah_fresh`), unit 936 pass. Prediction P3aj-a. Not run: browser check of the coordinator screen, hosted preview.
+- **Next:** 3ai (role banner, role dashboards, one-click Approve and publish), then rebase #127 onto main.

@@ -34,6 +34,7 @@ export type PolicyCode =
   | 'TRANSITION_FORBIDDEN'
   | 'NEEDS_PUBLISH_ACTION'
   | 'EDIT_LIVE_NEEDS_REVIEWER'
+  | 'PUBLISH_CHANGED_CONTENT'
   | 'VERIFY_FORBIDDEN'
   | 'RISK_LOWER_FORBIDDEN'
   | 'PIN_FORBIDDEN'
@@ -94,6 +95,16 @@ export function mayApproveOwn(actor: Actor, target?: Target): boolean {
 /** An Editor with programmes assigned is a programme coordinator. */
 const isCoordinator = (actor: Extract<Actor, { kind: 'user' }>): boolean =>
   actor.role === 'editor' && (actor.programmes?.length ?? 0) > 0
+
+/**
+ * Publishing what the head has already approved (slice 3aj, owner, 2026-11-22): a programme
+ * coordinator presses Publish on their own programme once their head of department approved and
+ * verified it. Only that one step: they never approve, verify, archive or take anything offline.
+ */
+export function mayPublishApproved(actor: Actor, target?: Target): boolean {
+  if (!isUser(actor) || !isCoordinator(actor) || !target) return false
+  return target.collection === 'programmes' && inScope(actor, null, target)
+}
 
 type Scope = Pick<RecordState, 'ownerOffice' | 'risk' | 'target'>
 
@@ -211,6 +222,11 @@ export function checkTransition(
             'a reviewer: an approver of the owning office, a platform admin, or a site manager for items that are not High impact',
           )
     case 'approved>published':
+      return reviewer || system || mayPublishApproved(actor, rec.target)
+        ? null
+        : forbidden(
+            'a reviewer: an approver of the owning office, a platform admin, or a site manager for items that are not High impact',
+          )
     case 'published>archived':
       return reviewer || system
         ? null
@@ -459,6 +475,21 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
     } else {
       const move = checkTransition(actor, scope, prev.status, target)
       if (move) return move
+      // A coordinator publishes exactly what the head approved: edits in the same save would go
+      // live unreviewed, so they are refused (they save as a draft and go back for approval).
+      if (
+        target === 'published' &&
+        contentChanged &&
+        !reviewer &&
+        actor.kind !== 'system' &&
+        mayPublishApproved(actor, scope.target)
+      ) {
+        return deny(
+          'PUBLISH_CHANGED_CONTENT',
+          'You changed this page after it was approved. Save it as a draft and send it to your head of department again.',
+          400,
+        )
+      }
     }
     status = target
 
