@@ -32,7 +32,8 @@ const WRITERS: Role[] = [...REVIEWERS, 'editor', 'contributor']
 /** Editors and contributors also get the two lists that follow their own work through review (3aa). */
 const AUTHORS: Role[] = ['editor', 'contributor']
 
-const noNote = (): Where => any({ 'governance.reviewNote': { exists: false } }, { 'governance.reviewNote': { equals: '' } })
+const noNote = (): Where =>
+  any({ 'governance.reviewNote': { exists: false } }, { 'governance.reviewNote': { equals: '' } })
 
 export interface QueueSpec {
   key: QueueKey

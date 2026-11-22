@@ -78,10 +78,18 @@ export interface Target {
 }
 
 /**
- * Collections that only a platform admin or a site manager write (slice 3ah): the landing page and
- * the other main pages. Approvers and editors of an office can read them once published, not change them.
+ * Who may approve and publish what they created themselves (the four-eyes exception).
+ * - A platform admin: the main pages have no one above them (slice 3ag).
+ * - A head of department on department and programme pages (slice 3ah, owner, 2026-11-22): a head
+ *   writes only their own department's pages, so a second person would never exist. Scope is still
+ *   judged separately; this only lifts the "not your own work" rule.
+ * Heads of other offices (Registrar and the like) and site managers stay bound by it.
  */
-export const ADMIN_ONLY_COLLECTIONS: ReadonlySet<string> = new Set(['pages'])
+export function mayApproveOwn(actor: Actor, target?: Target): boolean {
+  if (!isUser(actor)) return false
+  if (actor.role === 'platformAdmin') return true
+  return actor.role === 'approver' && target !== undefined && COORDINATED.has(target.collection)
+}
 
 /** An Editor with programmes assigned is a programme coordinator. */
 const isCoordinator = (actor: Extract<Actor, { kind: 'user' }>): boolean =>
@@ -100,8 +108,8 @@ const isUser = (a: Actor): a is Extract<Actor, { kind: 'user' }> => a.kind === '
 
 /**
  * Is this record in the actor's scope? Global roles always. Approvers and editors by owner office,
- * with two exceptions (slice 3ah): main pages are never in their scope, and a programme coordinator
- * (an Editor with programmes assigned) has only those programmes, by id, and no department.
+ * with one exception (slice 3ah): a programme coordinator (an Editor with programmes assigned) has
+ * only those programmes, by id, and no department.
  */
 export function inScope(
   actor: Actor,
@@ -111,7 +119,6 @@ export function inScope(
   if (!isUser(actor)) return false
   if (actor.role === 'platformAdmin' || actor.role === 'siteManager') return true
   if (actor.role === 'approver' || actor.role === 'editor') {
-    if (target && ADMIN_ONLY_COLLECTIONS.has(target.collection)) return false
     if (target && isCoordinator(actor) && COORDINATED.has(target.collection)) {
       return (
         target.collection === 'programmes' &&
@@ -353,7 +360,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
   const notes: string[] = []
   const wroteIt =
     isUser(actor) &&
-    actor.role !== 'platformAdmin' &&
+    !mayApproveOwn(actor, prev.target ?? next.target) &&
     prev.createdBy != null &&
     String(prev.createdBy) === String(actor.id)
 

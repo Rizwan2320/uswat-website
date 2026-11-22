@@ -16,7 +16,10 @@ export function historyCutoff(nowMs: number, days: number = SWEEP_HISTORY_DAYS):
 }
 
 /** Returns how many runs were removed. Never throws: failing to tidy must not fail the sweep. */
-export async function pruneSweepHistory(payload: Payload, nowMs: number = Date.now()): Promise<number> {
+export async function pruneSweepHistory(
+  payload: Payload,
+  nowMs: number = Date.now(),
+): Promise<number> {
   try {
     const removed = await payload.delete({
       collection: 'payload-jobs',

@@ -9,7 +9,6 @@
 
 import type { Access, PayloadRequest, Where } from 'payload'
 
-import { ADMIN_ONLY_COLLECTIONS } from './policy'
 import { actorFromRequest, type Actor } from './roles'
 
 const prefixed = (prefix: string, path: string) => `${prefix}${path}`
@@ -18,9 +17,8 @@ const asId = (v: string): string | number => (/^\d+$/.test(v) ? Number(v) : v)
 
 /**
  * Records an actor may see among unpublished ones, as a query filter (or true / false).
- * `slug` (slice 3ah) lets the filter know which collection it is for: main pages are never in an
- * approver's or editor's scope, and a programme coordinator sees their own programmes by id (never by
- * office, and never a department). An id means something different in each collection, so these
+ * `slug` (slice 3ah) lets the filter know which collection it is for: a programme coordinator sees
+ * their own programmes by id (never by office, and never a department). An id means something different in each collection, so these
  * filters are built per collection.
  */
 function scopeFilter(actor: Actor, prefix = '', slug?: string, versions = false): boolean | Where {
@@ -32,7 +30,6 @@ function scopeFilter(actor: Actor, prefix = '', slug?: string, versions = false)
       return true
     case 'approver':
     case 'editor':
-      if (slug && ADMIN_ONLY_COLLECTIONS.has(slug)) return false
       if (slug && actor.role === 'editor' && (actor.programmes?.length ?? 0) > 0) {
         if (slug === 'programmes')
           return { [versions ? 'parent' : 'id']: { in: (actor.programmes ?? []).map(asId) } }

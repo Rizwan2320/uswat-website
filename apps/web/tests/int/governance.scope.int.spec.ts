@@ -1,0 +1,362 @@
+// @vitest-environment node
+/**
+ * Slice 3ah (docs/briefs/p3ah-academic-scope.md): the head of a department reviews its pages and all
+ * its programmes; a programme coordinator writes only their own programme; main pages belong to the
+ * platform admin. Real Postgres, access enforced the way the admin does it.
+ */
+import type { Payload } from 'payload'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
+
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
+  unstable_cache: (fn: unknown) => fn,
+}))
+
+import type { User } from '../../src/payload-types'
+import {
+  as,
+  can,
+  getTestPayload,
+  makeUser,
+  pageData,
+  refusal,
+  system,
+  uniq,
+} from '../helpers/governance'
+
+let payload: Payload
+let admin: User
+let manager: User
+let hod: User
+let otherHod: User
+let coordSe: User
+let coordCs: User
+let officeEditor: User
+let office: string
+let dept: { id: number }
+let otherDept: { id: number }
+let se: { id: number }
+let cs: { id: number }
+let foreign: { id: number }
+
+const source = 'https://example.test/source'
+
+async function reload(u: User): Promise<User> {
+  return (await payload.findByID({
+    collection: 'users',
+    id: u.id,
+    depth: 0,
+    overrideAccess: true,
+  })) as User
+}
+
+async function coordinator(programmes: number[]): Promise<User> {
+  const u = await makeUser(payload, 'editor', [])
+  await payload.update({
+    collection: 'users',
+    id: u.id,
+    data: { programmes } as never,
+    overrideAccess: true,
+  })
+  return reload(u)
+}
+
+const makeDept = (ownerOffice: string) =>
+  payload.create({
+    collection: 'departments',
+    draft: true,
+    data: { name: uniq('dept'), governance: { ownerOffice, source } } as never,
+    ...as(admin),
+  }) as Promise<{ id: number }>
+
+const makeProgramme = (department: number, typedOffice = 'typed-somewhere-else') =>
+  payload.create({
+    collection: 'programmes',
+    draft: true,
+    data: {
+      name: uniq('prog'),
+      department,
+      governance: { ownerOffice: typedOffice, source },
+    } as never,
+    ...as(admin),
+  }) as Promise<{ id: number }>
+
+const edit = (
+  user: User,
+  collection: 'programmes' | 'departments' | 'pages',
+  id: number,
+  data = {},
+) => payload.update({ collection, id, draft: true, data: { ...data } as never, ...as(user) })
+
+const move = (
+  user: User,
+  collection: 'programmes' | 'departments' | 'pages',
+  id: number,
+  governance: Record<string, unknown>,
+) => edit(user, collection, id, { governance })
+
+beforeAll(async () => {
+  payload = await getTestPayload()
+  office = uniq('dcst')
+  ;[admin, manager] = await Promise.all([
+    makeUser(payload, 'platformAdmin'),
+    makeUser(payload, 'siteManager'),
+  ])
+  dept = await makeDept(office)
+  otherDept = await makeDept(uniq('physics'))
+  se = await makeProgramme(dept.id)
+  cs = await makeProgramme(dept.id)
+  foreign = await makeProgramme(otherDept.id)
+  hod = await makeUser(payload, 'approver', [office])
+  otherHod = await makeUser(payload, 'approver', [uniq('other-office')])
+  officeEditor = await makeUser(payload, 'editor', [office])
+  coordSe = await coordinator([se.id])
+  coordCs = await coordinator([cs.id])
+})
+
+describe('a programme takes its department office', () => {
+  it('whatever was typed, the office is the department’s', async () => {
+    const row = (await payload.findByID({
+      collection: 'programmes',
+      id: se.id,
+      draft: true,
+      depth: 0,
+      overrideAccess: true,
+    })) as { governance?: { ownerOffice?: string } }
+    expect(row.governance?.ownerOffice).toBe(office)
+  })
+
+  it('a programme of another department has that department’s office instead', async () => {
+    const row = (await payload.findByID({
+      collection: 'programmes',
+      id: foreign.id,
+      draft: true,
+      depth: 0,
+      overrideAccess: true,
+    })) as { governance?: { ownerOffice?: string } }
+    expect(row.governance?.ownerOffice).not.toBe(office)
+  })
+})
+
+describe('a programme coordinator', () => {
+  it('edits and sends their own programme for review', async () => {
+    await edit(coordSe, 'programmes', se.id, { name: uniq('renamed') })
+    const r = (await move(coordSe, 'programmes', se.id, { status: 'in_review' })) as {
+      governance: { status: string }
+    }
+    expect(r.governance.status).toBe('in_review')
+  })
+
+  it('cannot approve or publish it (that is the head’s)', async () => {
+    expect(await refusal(() => move(coordSe, 'programmes', se.id, { status: 'approved' }))).toBe(
+      'TRANSITION_FORBIDDEN',
+    )
+  })
+
+  it('cannot edit another programme of the same department', async () => {
+    expect(await refusal(() => edit(coordSe, 'programmes', cs.id, { name: uniq('x') }))).toBe(
+      'OWNER_OUT_OF_SCOPE',
+    )
+  })
+
+  it('cannot edit a programme of another department', async () => {
+    expect(await refusal(() => edit(coordSe, 'programmes', foreign.id, { name: uniq('x') }))).toBe(
+      'OWNER_OUT_OF_SCOPE',
+    )
+  })
+
+  it('cannot edit the department page', async () => {
+    expect(await refusal(() => edit(coordSe, 'departments', dept.id, { name: uniq('x') }))).toBe(
+      'OWNER_OUT_OF_SCOPE',
+    )
+  })
+
+  it('cannot create a programme, a department or a page', async () => {
+    expect(await can(() => makeProgramme(dept.id).then(() => null))).toBe(true) // control: admin can
+    for (const [collection, data] of [
+      ['programmes', { name: uniq('p'), department: dept.id, governance: { ownerOffice: office } }],
+      ['departments', { name: uniq('d'), governance: { ownerOffice: office } }],
+      ['pages', pageData({ ownerOffice: office })],
+    ] as const) {
+      expect(
+        await can(() =>
+          payload.create({ collection, draft: true, data: data as never, ...as(coordSe) }),
+        ),
+        collection,
+      ).toBe(false)
+    }
+  })
+
+  it('sees their own programme drafts and versions, not a sibling’s, not the department’s', async () => {
+    const own = await payload.find({
+      collection: 'programmes',
+      draft: true,
+      where: { id: { in: [se.id, cs.id, foreign.id] } },
+      depth: 0,
+      ...as(coordSe),
+    })
+    expect(own.docs.map((d) => d.id)).toEqual([se.id])
+    const versions = await payload.findVersions({
+      collection: 'programmes',
+      where: { parent: { in: [se.id, cs.id, foreign.id] } },
+      depth: 0,
+      ...as(coordSe),
+    })
+    expect([...new Set(versions.docs.map((v) => String(v.parent)))]).toEqual([String(se.id)])
+    // The department is a draft only the head sees: a coordinator gets the published ones only.
+    const depts = await payload.find({
+      collection: 'departments',
+      draft: true,
+      where: { id: { equals: dept.id } },
+      depth: 0,
+      ...as(coordSe),
+    })
+    expect(depts.docs).toHaveLength(0)
+  })
+
+  it('two coordinators are limited to their own programme each', async () => {
+    await edit(coordCs, 'programmes', cs.id, { name: uniq('cs-edit') })
+    expect(await refusal(() => edit(coordCs, 'programmes', se.id, { name: uniq('x') }))).toBe(
+      'OWNER_OUT_OF_SCOPE',
+    )
+  })
+
+  it('an Editor of the whole office, with no programmes assigned, still edits every programme of it (control)', async () => {
+    await edit(officeEditor, 'programmes', se.id, { name: uniq('by-office-editor') })
+    await edit(officeEditor, 'programmes', cs.id, { name: uniq('by-office-editor') })
+  })
+})
+
+describe('the head of the department', () => {
+  it('sees the coordinator’s programme in review, approves, verifies and publishes it', async () => {
+    await move(coordSe, 'programmes', se.id, { status: 'in_review' }).catch(() => null)
+    const seen = await payload.find({
+      collection: 'programmes',
+      draft: true,
+      where: { id: { equals: se.id } },
+      depth: 0,
+      ...as(hod),
+    })
+    expect(seen.docs).toHaveLength(1)
+    await move(hod, 'programmes', se.id, { status: 'approved', verificationStatus: 'verified' })
+    const live = await payload.update({
+      collection: 'programmes',
+      id: se.id,
+      data: { _status: 'published', governance: {} } as never,
+      ...as(hod),
+    })
+    expect((live as { governance?: { status?: string } }).governance?.status).toBe('published')
+  })
+
+  it('reviews the department page and every programme of it', async () => {
+    await move(hod, 'departments', dept.id, { status: 'approved', verificationStatus: 'verified' })
+    await move(hod, 'programmes', cs.id, { status: 'approved', verificationStatus: 'verified' })
+  })
+
+  it('cannot touch a programme or a department of another department', async () => {
+    expect(await refusal(() => edit(hod, 'programmes', foreign.id, { name: uniq('x') }))).toBe(
+      'OWNER_OUT_OF_SCOPE',
+    )
+    expect(await refusal(() => edit(hod, 'departments', otherDept.id, { name: uniq('x') }))).toBe(
+      'OWNER_OUT_OF_SCOPE',
+    )
+    expect(await refusal(() => edit(otherHod, 'programmes', se.id, { name: uniq('x') }))).toBe(
+      'OWNER_OUT_OF_SCOPE',
+    )
+  })
+})
+
+describe('main pages belong to the platform admin', () => {
+  let page: { id: number }
+  beforeAll(async () => {
+    page = (await payload.create({
+      collection: 'pages',
+      draft: true,
+      data: pageData({ ownerOffice: office, source }) as never,
+      ...as(admin),
+    })) as { id: number }
+  })
+
+  it('the admin and the site manager create and edit them', async () => {
+    await edit(admin, 'pages', page.id, { title: uniq('by-admin') })
+    await edit(manager, 'pages', page.id, { title: uniq('by-manager') })
+    expect(
+      await can(() =>
+        payload.create({
+          collection: 'pages',
+          draft: true,
+          data: pageData({ ownerOffice: office, source }) as never,
+          ...as(manager),
+        }),
+      ),
+      'site manager creates',
+    ).toBe(false) // creating is admin only, like departments
+  })
+
+  it('an approver, an editor and a coordinator cannot create, edit or approve one, even in their own office', async () => {
+    for (const [who, label] of [
+      [hod, 'head of department'],
+      [officeEditor, 'office editor'],
+      [coordSe, 'coordinator'],
+    ] as const) {
+      expect(
+        await can(() =>
+          payload.create({
+            collection: 'pages',
+            draft: true,
+            data: pageData({ ownerOffice: office, source }) as never,
+            ...as(who),
+          }),
+        ),
+        `${label} creates`,
+      ).toBe(false)
+      expect(
+        await refusal(() => edit(who, 'pages', page.id, { title: uniq('x') })),
+        `${label} edits`,
+      ).toBe('OWNER_OUT_OF_SCOPE')
+    }
+    expect(await refusal(() => move(hod, 'pages', page.id, { status: 'approved' }))).toBe(
+      'OWNER_OUT_OF_SCOPE',
+    )
+  })
+
+  it('an approver of the office does not see an unpublished main page', async () => {
+    const seen = await payload.find({
+      collection: 'pages',
+      draft: true,
+      where: { id: { equals: page.id } },
+      depth: 0,
+      ...as(hod),
+    })
+    expect(seen.docs).toHaveLength(0)
+    const admins = await payload.find({
+      collection: 'pages',
+      draft: true,
+      where: { id: { equals: page.id } },
+      depth: 0,
+      ...as(admin),
+    })
+    expect(admins.docs).toHaveLength(1)
+  })
+
+  it('a page the admin creates without typing an office gets the IT Directorate as owner', async () => {
+    const row = (await payload.create({
+      collection: 'pages',
+      draft: true,
+      data: { ...pageData({ source }), governance: { source } } as never,
+      ...as(admin),
+    })) as { governance?: { ownerOffice?: string } }
+    expect(row.governance?.ownerOffice).toBe('IT Directorate')
+  })
+
+  it('the system actor (importer, seeds) still works on pages', async () => {
+    const row = await payload.create({
+      collection: 'pages',
+      draft: true,
+      data: pageData({ ownerOffice: office, source }) as never,
+      ...system,
+    })
+    expect(row.id).toBeTruthy()
+  })
+})

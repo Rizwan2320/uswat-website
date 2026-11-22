@@ -7,10 +7,10 @@
  */
 
 import {
-  ADMIN_ONLY_COLLECTIONS,
   canSubmitFor,
   inScope,
   isReviewerFor,
+  mayApproveOwn,
   type Target,
 } from '../../governance/policy'
 import {
@@ -89,21 +89,13 @@ export function workflowView(input: WorkflowInput): WorkflowView {
   const role = actor.role
   const mine = author === 'me'
   // A platform admin publishes their own work (slice 3ag); everyone else needs a second person.
-  const needsAnother = mine && role !== 'platformAdmin'
+  const needsAnother = mine && !mayApproveOwn(actor, target)
 
   if (
     (role === 'editor' || role === 'approver') &&
     saved &&
     !inScope(actor, scope.ownerOffice, target)
   ) {
-    if (target && ADMIN_ONLY_COLLECTIONS.has(target.collection)) {
-      return readOnly(
-        w(
-          'The landing page and the other main pages are looked after by the platform admin. You can look but not change them.',
-          'مرکزی صفحات پلیٹ فارم ایڈمن سنبھالتا ہے۔ آپ انہیں دیکھ سکتے ہیں، بدل نہیں سکتے۔',
-        ),
-      )
-    }
     if (role === 'editor' && ((actor as { programmes?: string[] }).programmes?.length ?? 0) > 0) {
       return readOnly(
         w(
@@ -158,6 +150,28 @@ export function workflowView(input: WorkflowInput): WorkflowView {
   // Editors, approvers, site managers and platform admins from here on.
   switch (stage) {
     case 'draft':
+      // A head of department publishes their own department's pages whoever started the draft (the
+      // admin creates departments and programmes); an admin publishes what they started.
+      if (
+        reviewer &&
+        mayApproveOwn(actor, target) &&
+        author !== 'import' &&
+        (mine || role === 'approver')
+      ) {
+        return {
+          tone: 'info',
+          banner: w(
+            role === 'approver'
+              ? 'Your draft. It saves by itself. As head of the department you publish it yourself: mark it verified, press Approve, then Publish. No one else needs to review it.'
+              : 'Your draft. It saves by itself. You publish it yourself: mark it verified, press Approve, then Publish. No second person is needed for a platform admin.',
+            role === 'approver'
+              ? 'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ شعبے کے سربراہ کے طور پر آپ اسے خود شائع کرتے ہیں: تصدیق شدہ کریں، منظور کریں دبائیں، پھر شائع کریں۔ کسی اور کو جانچنے کی ضرورت نہیں۔'
+              : 'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ آپ اسے خود شائع کرتے ہیں: تصدیق شدہ کریں، منظور کریں دبائیں، پھر شائع کریں۔ پلیٹ فارم ایڈمن کے لیے کسی دوسرے شخص کی ضرورت نہیں۔',
+          ),
+          actions: ['approve', ...verify],
+          showPublish: false,
+        }
+      }
       if (reviewer && !mine) {
         if (author === 'import') {
           return {
@@ -177,17 +191,6 @@ export function workflowView(input: WorkflowInput): WorkflowView {
             'یہ کسی اور کا مسودہ ہے۔ یہ جائزے کے لیے نہیں بھیجا گیا، اس لیے ابھی آپ کے لیے منظوری کو کچھ نہیں۔ بھیجے جانے پر یہ "جائزے کے منتظر" میں آئے گا۔',
           ),
           actions: [],
-          showPublish: false,
-        }
-      }
-      if (role === 'platformAdmin') {
-        return {
-          tone: 'info',
-          banner: w(
-            'Your draft. It saves by itself. You publish it yourself: mark it verified, press Approve, then Publish. No second person is needed for a platform admin.',
-            'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ آپ اسے خود شائع کرتے ہیں: تصدیق شدہ کریں، منظور کریں دبائیں، پھر شائع کریں۔ پلیٹ فارم ایڈمن کے لیے کسی دوسرے شخص کی ضرورت نہیں۔',
-          ),
-          actions: ['approve', ...verify],
           showPublish: false,
         }
       }

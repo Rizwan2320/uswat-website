@@ -483,8 +483,8 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   'Course names, up to 8.': 'کورسز کے نام، زیادہ سے زیادہ 8۔',
   // --- Programme coordinators (slice 3ah)
   'Programmes they coordinate': 'وہ پروگرام جن کے وہ کوآرڈینیٹر ہیں',
-  'For a programme coordinator: the programmes this person writes drafts for. They can edit only these programmes (not the department page, not other programmes) and send them to the head of the department. Leave empty for an Editor of a whole office.':
-    'پروگرام کوآرڈینیٹر کے لیے: وہ پروگرام جن کے مسودے یہ شخص لکھتا ہے۔ وہ صرف انہی پروگراموں میں تبدیلی کر سکتے ہیں (شعبے کا صفحہ نہیں، دوسرے پروگرام نہیں) اور انہیں شعبے کے سربراہ کو بھیجتے ہیں۔ پورے دفتر کے ایڈیٹر کے لیے خالی چھوڑ دیں۔',
+  'For a programme coordinator: the programmes this person writes drafts for. They can edit only these programmes (not the department page, not other programmes) and send them to the head of the department. A head of department can pick only programmes of their own department. Leave empty for an Editor of a whole office.':
+    'پروگرام کوآرڈینیٹر کے لیے: وہ پروگرام جن کے مسودے یہ شخص لکھتا ہے۔ وہ صرف انہی پروگراموں میں تبدیلی کر سکتے ہیں (شعبے کا صفحہ نہیں، دوسرے پروگرام نہیں) اور انہیں شعبے کے سربراہ کو بھیجتے ہیں۔ شعبے کا سربراہ صرف اپنے شعبے کے پروگرام چن سکتا ہے۔ پورے دفتر کے ایڈیٹر کے لیے خالی چھوڑ دیں۔',
 }
 
 /**
