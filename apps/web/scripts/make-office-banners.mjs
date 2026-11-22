@@ -33,6 +33,8 @@ const ICON = {
 
 /* pre: small first line; one: white title line; two: green title line; tag: italic last line. */
 const BANNERS = [
+  { key: 'about', icon: 'book', pre: 'University of Swat', one: 'About', two: '', tag: 'History • Vision • Mission' },
+  { key: 'vice-chancellors-message', icon: 'users', pre: 'University of Swat', one: 'Vice Chancellor’s', two: 'Message', tag: 'Prof. Dr. Husnul Amin' },
   { key: 'research', icon: 'flask', pre: 'University of Swat', one: 'Research', two: '', tag: 'Offices • Journals • Library' },
   { key: 'administration', icon: 'building', pre: 'University of Swat', one: 'Administration', two: '', tag: 'Directorates • Offices • Boards' },
   { key: 'oric-2', icon: 'flask', pre: 'Office of', one: 'Research, Innovation', two: 'and Commercialization', tag: 'ORIC' },
