@@ -11,6 +11,7 @@ import {
   inScope,
   isReviewerFor,
   mayApproveOwn,
+  mayPublishApproved,
   type Target,
 } from '../../governance/policy'
 import {
@@ -256,6 +257,28 @@ export function workflowView(input: WorkflowInput): WorkflowView {
           actions: ['sendBack', ...verify],
           showPublish: true,
         }
+      }
+      // A programme coordinator publishes what their head approved (slice 3aj), once it is verified.
+      if (mayPublishApproved(actor, target)) {
+        return unverified
+          ? {
+              tone: 'waiting',
+              banner: w(
+                'Approved by your head of department. Waiting for them to mark it verified; then you can publish it. If you change this page it goes back to Draft.',
+                'شعبے کے سربراہ نے منظور کر لیا۔ ان کے تصدیق شدہ کرنے کا انتظار ہے؛ پھر آپ اسے شائع کر سکیں گے۔ صفحہ بدلا تو یہ مسودے میں واپس چلا جائے گا۔',
+              ),
+              actions: [],
+              showPublish: false,
+            }
+          : {
+              tone: 'ready',
+              banner: w(
+                'Approved and verified by your head of department. Press Publish to put it on the website. If you change anything first, it goes back to Draft.',
+                'شعبے کے سربراہ نے منظور اور تصدیق کر دی۔ ویب سائٹ پر لانے کے لیے شائع کریں دبائیں۔ پہلے کچھ بدلا تو یہ مسودے میں واپس چلا جائے گا۔',
+              ),
+              actions: [],
+              showPublish: true,
+            }
       }
       return {
         tone: 'waiting',
