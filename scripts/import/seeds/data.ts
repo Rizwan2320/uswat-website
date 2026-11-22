@@ -11,7 +11,7 @@ export const sampleSource = (collection: string, slug: string) =>
 
 export type FacultyGroupSeed = { slug: string; name: string }
 export type CampusSeed = { slug: string; name: string }
-export type OfficeSeed = { slug: string; name: string; group: string; hours: string; email?: string; head: string }
+export type OfficeSeed = { slug: string; name: string; group: string; hours?: string; email?: string; head?: string }
 export type PersonSeed = {
   slug: string
   name: string
@@ -76,6 +76,22 @@ export const offices: OfficeSeed[] = [
   { slug: 'sample-examinations-office', name: 'Sample Examinations Office', group: 'Directorates', hours: 'Sample hours, Monday to Friday', head: 'sample-person-08' },
   { slug: 'sample-library', name: 'Sample Library', group: 'Services', hours: 'Sample hours, Monday to Saturday', head: 'sample-person-10' },
 ]
+
+/** The offices that have a rich page (apps/web/src/site/offices/profiles). Names, groups, hours, phones and e-mails are the university's own,
+    read on 2026-11-05 (docs/plan/official-data-raw-2026-11-05.md). Seeds carry no real phone numbers or e-mails (a test enforces it); the page's contact
+    details come from the profile, with their sources. The record is still seeded under the sample source and has no head person. */
+const realOffices: OfficeSeed[] = [
+  { slug: 'oric-2', name: 'Office of Research, Innovation and Commercialization (ORIC)', group: 'Offices and boards' },
+  { slug: 'advanced-studies-and-research-board', name: 'Directorate of Advanced Studies and Research (DASR)', group: 'Directorates' },
+  { slug: 'directorate-of-it', name: 'Directorate of IT', group: 'Directorates' },
+  { slug: 'controller-of-examination-office', name: 'Office of the Controller of Examinations', group: 'Offices and boards' },
+  { slug: 'directorate-of-works', name: 'Directorate of Works', group: 'Directorates' },
+  { slug: 'proctorial-board', name: 'Proctorial Board', group: 'Offices and boards' },
+  { slug: 'kamyab-jawan-markaz', name: 'Youth Development Centre (YDC)', group: 'Centres and associations' },
+  { slug: 'alumni', name: 'Alumni Association', group: 'Centres and associations' },
+  { slug: 'hunerkada-center-for-excellence', name: 'Hunerkada Center of Excellence', group: 'Centres and associations' },
+]
+offices.push(...realOffices)
 
 const dept = (slug: string, subject: string, facultyGroup: string, head: string): DepartmentSeed => ({
   slug: `sample-department-of-${slug}`,

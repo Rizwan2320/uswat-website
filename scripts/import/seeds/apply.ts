@@ -95,7 +95,7 @@ export async function applySeeds(cms: Cms, actor: SeedActor, run: Run = SEQUENTI
     ...offices.map((r) => () =>
       make('offices', r, {
         group: r.group,
-        hours: r.hours,
+        ...(r.hours ? { hours: r.hours } : {}),
         text: textToLexical(`Sample page text for ${r.name}. Invented, for layout testing.`),
         ...(r.email ? { emails: [{ email: r.email }] } : {}),
       }),
@@ -139,8 +139,8 @@ export async function applySeeds(cms: Cms, actor: SeedActor, run: Run = SEQUENTI
   // Each loop touches different records (a test checks that the heads are distinct), and the loops run one after another.
   await stage(departments.map((d) => () => link('people', d.head, { department: id('departments', d.slug) })))
   await stage(people.filter((p) => p.department).map((p) => () => link('people', p.slug, { department: id('departments', p.department as string) })))
-  await stage(offices.map((o) => () => link('people', o.head, { office: id('offices', o.slug) })))
-  await stage(offices.map((o) => () => link('offices', o.slug, { head: id('people', o.head) })))
+  await stage(offices.filter((o) => o.head).map((o) => () => link('people', o.head as string, { office: id('offices', o.slug) })))
+  await stage(offices.filter((o) => o.head).map((o) => () => link('offices', o.slug, { head: id('people', o.head as string) })))
 
   // 4. Publish: draft, in review, approved and verified, published.
   // Collections go one after another (a department is published after its head), the rows of one collection together.
