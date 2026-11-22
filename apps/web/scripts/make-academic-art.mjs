@@ -158,7 +158,7 @@ function neural(p) {
   return out.join('')
 }
 
-function chip(p, r) {
+function chip(p, r, label = 'DCST') {
   const out = []
   const x0 = 330
   const y0 = 170
@@ -183,11 +183,28 @@ function chip(p, r) {
   }
   out.push(rect(x0, y0, w, h, p.bg[1], 24, `stroke="${p.ink}" stroke-opacity="0.7" stroke-width="4"`))
   out.push(rect(x0 + 18, y0 + 18, w - 36, h - 36, 'none', 14, `stroke="${p.accent}" stroke-width="2" stroke-dasharray="3 8"`))
-  out.push(`<text x="${x0 + w / 2}" y="${y0 + h / 2 + 30}" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="92" font-weight="700" fill="${p.accent}">DCST</text>`)
+  out.push(`<text x="${x0 + w / 2}" y="${y0 + h / 2 + 30}" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="${label.length > 4 ? 66 : 92}" font-weight="700" fill="${p.accent}">${label}</text>`)
   return out.join('')
 }
 
 const MOTIFS = { cs: treeAndCode, se: layersAndBranches, it: network, ds: charts, ai: neural, dcst: chip }
+
+/* Hero pictures for the Research and Administration pages (src/site/offices): the same chip with the office's short name.
+   Keys are the office slugs; they are written to public/images/offices/<slug>-hero.svg. */
+const OFFICES = {
+  research: 'Research',
+  administration: 'Admin',
+  'oric-2': 'ORIC',
+  'advanced-studies-and-research-board': 'DASR',
+  'directorate-of-it': 'IT',
+  'controller-of-examination-office': 'CoE',
+  'directorate-of-works': 'Works',
+  'proctorial-board': 'Proctor',
+  'kamyab-jawan-markaz': 'YDC',
+  alumni: 'Alumni',
+  'hunerkada-center-for-excellence': 'Hunerkada',
+}
+for (const [k, label] of Object.entries(OFFICES)) MOTIFS[k] = (p, r) => chip(p, r, label)
 
 /* ---- canvas ---- */
 function canvas(W, H, p, motifKey, seed, uid) {
@@ -221,4 +238,9 @@ keys.forEach((k, i) => {
   FILES.push([`${k}-lab.svg`, canvas(900, 600, LIGHT, k, 300 + i, `l${i}`)])
 })
 for (const [name, svg] of FILES) writeFileSync(path.join(OUT, name), svg)
+const OFFICE_OUT = path.resolve(process.cwd(), 'public/images/offices')
+mkdirSync(OFFICE_OUT, { recursive: true })
+Object.keys(OFFICES).forEach((k, i) => {
+  writeFileSync(path.join(OFFICE_OUT, `${k}-hero.svg`), canvas(1600, 640, DARK, k, 400 + i, `o${i}`))
+})
 console.log(`wrote ${FILES.length} files to ${OUT}`)
