@@ -348,15 +348,64 @@ describe('the coordinator publishes what the head approved (slice 3aj)', () => {
     expect(await refusal(() => publish(coord, 'programmes', p.id))).toBe('TRANSITION_ILLEGAL')
   })
 
-  it('cannot take it offline or archive it afterwards', async () => {
+  /** A programme that is live, published by its coordinator. */
+  async function live() {
     const { p, coord } = await inReview()
     await move(hod, 'programmes', p.id, { status: 'approved', verificationStatus: 'verified' })
     await publish(coord, 'programmes', p.id)
+    return { p, coord }
+  }
+  const unpublish = (user: User, collection: 'programmes' | 'departments', id: number) =>
+    payload.update({ collection, id, data: { _status: 'draft' } as never, ...as(user) })
+  const wasLive = async (collection: 'programmes' | 'departments', id: number) =>
+    (
+      (await payload.findByID({
+        collection,
+        id,
+        draft: false,
+        depth: 0,
+        overrideAccess: true,
+      })) as { _status?: string }
+    )._status === 'published'
+
+  it('slice 3al: the coordinator takes their own programme offline', async () => {
+    const { p, coord } = await live()
+    await unpublish(coord, 'programmes', p.id)
+    expect(await wasLive('programmes', p.id)).toBe(false)
+  })
+
+  it('slice 3al: the head cannot take a programme page offline, and is told whose job it is', async () => {
+    const { p } = await live()
+    expect(await refusal(() => unpublish(hod, 'programmes', p.id))).toBe('UNPUBLISH_FORBIDDEN')
+    expect(await wasLive('programmes', p.id)).toBe(true)
+    // Nor archive it.
     expect(
-      await refusal(() =>
-        publish(coord, 'programmes', p.id, { governance: { status: 'archived' } }),
-      ),
+      await refusal(() => publish(hod, 'programmes', p.id, { governance: { status: 'archived' } })),
     ).toBe('TRANSITION_FORBIDDEN')
+    expect(await wasLive('programmes', p.id)).toBe(true)
+  })
+
+  it('slice 3al: the head takes their own department page offline', async () => {
+    const d = await makeDept(office)
+    await move(hod, 'departments', d.id, { status: 'approved', verificationStatus: 'verified' })
+    await publish(hod, 'departments', d.id)
+    expect(await wasLive('departments', d.id)).toBe(true)
+    await unpublish(hod, 'departments', d.id)
+    expect(await wasLive('departments', d.id)).toBe(false)
+  })
+
+  it('slice 3al: the admin and a site manager still can; another coordinator and an office editor cannot', async () => {
+    const a = await live()
+    await unpublish(admin, 'programmes', a.p.id)
+    expect(await wasLive('programmes', a.p.id)).toBe(false)
+    const b = await live()
+    await unpublish(manager, 'programmes', b.p.id)
+    expect(await wasLive('programmes', b.p.id)).toBe(false)
+    const c = await live()
+    expect(await refusal(() => unpublish(coordCs, 'programmes', c.p.id))).toBe('OWNER_OUT_OF_SCOPE')
+    expect(await refusal(() => unpublish(officeEditor, 'programmes', c.p.id))).toBe(
+      'UNPUBLISH_FORBIDDEN',
+    )
   })
 
   it('another coordinator, an office editor and the department page stay out', async () => {
