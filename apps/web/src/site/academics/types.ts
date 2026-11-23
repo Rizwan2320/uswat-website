@@ -56,6 +56,10 @@ export type DepartmentProfile = {
   /** One or two sentences in the hero; keep it different from `about`. */
   intro: string
   hero: Art
+  /** Pictures that rotate every seven seconds on the left of the banner band and fade into `banner`. */
+  heroPhotos?: Art[]
+  /** A photograph on the left of the hero card (the green card under the banner) that fades into its green. */
+  campusPhoto?: Art
   /** The wide banner at the top of the page (1672 x 941, the title is in the picture, so `alt` is the page title and tagline). */
   banner: Art
   about: string[]

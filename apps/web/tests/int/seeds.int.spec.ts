@@ -39,7 +39,7 @@ describe('applySeeds', () => {
     await applySeeds(cms, actor)
     const before = Object.fromEntries(await Promise.all(Object.keys(seedRows()).map(async (c) => [c, await versions(c)])))
     const second = await applySeeds(cms, actor)
-    expect(second).toMatchObject({ created: 0, linked: 0, published: 0, unchanged: 48 })
+    expect(second).toMatchObject({ created: 0, linked: 0, published: 0, unchanged: 64 })
     for (const [c, rows] of Object.entries(seedRows())) {
       expect((await count(c)).totalDocs, c).toBe(rows.length)
       expect(await versions(c), c).toBe(before[c])
@@ -48,16 +48,19 @@ describe('applySeeds', () => {
 
   it('shows anonymous readers the published rows with their relations', async () => {
     const depts = await anon('departments')
-    expect(depts.totalDocs).toBe(8)
-    for (const d of depts.docs as unknown as { slug: string; facultyGroup: { name: string }; head: { name: string } }[]) {
-      expect(d.facultyGroup.name, d.slug).toMatch(/^Sample Faculty/)
-      expect(d.head.name, d.slug).toMatch(/^Sample Person/)
+    // 8 departments with invented names and heads, plus the 2 centres of the real Faculty of Allied Health Sciences (no head).
+    expect(depts.totalDocs).toBe(10)
+    for (const d of depts.docs as unknown as { slug: string; facultyGroup: { name: string }; head?: { name: string } | null }[]) {
+      expect(d.facultyGroup.name, d.slug).toMatch(/^(Sample Faculty|Faculty of Allied Health Sciences)/)
+      if (d.head) expect(d.head.name, d.slug).toMatch(/^Sample Person/)
+      else expect(d.facultyGroup.name, d.slug).toBe('Faculty of Allied Health Sciences')
     }
     const progs = await anon('programmes')
-    expect(progs.totalDocs).toBe(16)
-    for (const p of progs.docs as unknown as { department: { name: string }; campus: { name: string } }[]) {
-      expect(p.department.name).toMatch(/^(Sample )?Department/)
-      expect(p.campus.name).toMatch(/Campus$/)
+    // 16 invented programmes plus the 4 of the Faculty of Allied Health Sciences (one has no department or campus).
+    expect(progs.totalDocs).toBe(20)
+    for (const p of progs.docs as unknown as { department?: { name: string } | null; campus?: { name: string } | null }[]) {
+      if (p.department) expect(p.department.name).toMatch(/^(Sample )?(Department|Centre)/)
+      if (p.campus) expect(p.campus.name).toMatch(/Campus$/)
     }
     const heads = (await anon('people')).docs as unknown as { slug: string; department?: { name: string } | null }[]
     expect(heads.find((p) => p.slug === 'sample-person-01')?.department?.name).toBe('Sample Department of Physics')
