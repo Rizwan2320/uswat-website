@@ -5,7 +5,7 @@ Written 2026-11-23 by agent 4 (lanes P4, P5), branch `p4/real-departments`, PR #
 ## 1. Before merging
 
 - [ ] CI is green on each PR. Open PRs known to agent 4: #94, #96, #97, #98, #101, #107, #116. Merge order is the lead's call. #116 edits `Academics.module.css`, `blocks.tsx` and the office template, so check for conflicts with any other PR touching those files.
-- [ ] A production build passes (`pnpm build`). **Not run by agent 4** (only `next dev` and unit tests were used).
+- [ ] A production build passes (`pnpm build`). Agent 4 did not run it locally; Vercel's own build of `f89a0047` finished READY (see section 4).
 - [ ] End-to-end tests and the pack-integrity check in #94 pass. **Not run by agent 4.**
 - [ ] Unit tests: 904 pass and `tsc` is clean on `p4/real-departments` at the time of writing (run 2026-11-23). ESLint shows one old warning in `tests/unit/identity/gate.unit.spec.ts`, not from this branch.
 
@@ -19,7 +19,7 @@ Source: `docs/adr/0012-old-addresses-answered-in-the-proxy.md`, `scripts/import/
 - **Pages built in PR #116 against the map**
   - `/academic-calendar`, `/administration/central-library-office`, `/administration/quality-enhancement-cell`, `/academics/departments/management-commerce`, `/academics/departments/english-and-foreign-languages` match the map's targets. Their old addresses reach a real page.
   - **Two mapped targets have no page and answer 404** (checked locally): `/qec/` goes to `/administration/qec`, and `/digital-library/` goes to `/administration/digital-library`. So an old link to either ends on a 404 after one 301. Options for the lead: change the two map rows (`/qec/` to `/administration/quality-enhancement-cell/`; `/digital-library/` to the external Digital Library the menu already uses, or to `/administration/`) and run `pnpm routemap:build`, or create pages at those addresses. Agent 4 did not edit the map: it is generated and routes are owned by the lead.
-- Affiliated Colleges and the admissions links still point at the old site from the menu (see section 5).
+- Affiliated Colleges and the admissions links still point at the old site from the menu (see section 5). The footer's Library link now goes to the new library page.
 
 ## 3. Sitemap
 
@@ -42,7 +42,8 @@ Pages and what to look for:
 - [ ] The preview URL opens without a Vercel login (Deployment Protection) when judges or the public need it. A preview build can sit queued for several minutes; it finished by itself earlier.
 - [ ] Phone width (about 390 px): plain banner without photographs, no sideways scrolling.
 - [ ] Menu: Management & Commerce, English and Foreign Languages, Academic Calendar, Central Library and QEC open the new pages and not the old site.
-- Local checks run 2026-11-23: axe (WCAG 2 A/AA) shows no violation, no horizontal overflow and no broken image on 10 sample pages at 1440, 1024 and 390 px. **Not run on the preview deployment of the latest push.**
+- Vercel preview of commit `f89a0047` (branch `p4/real-departments`), checked 2026-11-23 by fetching pages with the team's own access: the build is READY; `/administration/central-library-office`, `/academics/departments/management-commerce`, `/academic-calendar` and `/about` return their own title, one `<h1>`, the seven banner photographs and the "Still to be confirmed" list (the last on all four); `/administration/qec` returns 404, as predicted in section 2. The page text was checked, not how it looks; the screenshots in this list are from the local copy. Not checked on the preview: phone width, rotation timing.
+- Local checks run 2026-11-23: axe (WCAG 2 A/AA) shows no violation, no horizontal overflow and no broken image on 10 sample pages at 1440, 1024 and 390 px. 
 
 ## 5. Known gaps to tell the owner
 
