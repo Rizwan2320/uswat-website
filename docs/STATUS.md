@@ -860,3 +860,10 @@ P3 agent (slice 3a), own entry:
 - Checks run: typecheck, lint (0 errors), unit 970 pass, integration 1453 pass / 196 skipped / 0 failed (fresh database migrated to main), production build, browser check (sign-in page, coordinator takes a page offline and it leaves the public API, head has the button on the department page only). Predictions P3al-a and b.
 - Not run: axe, phone width, Urdu rendering review, hosted preview.
 - **Next:** Archive and Restore buttons, axe on the status and Stage boxes, Urdu review, mail setup (then show the forgot-password link again).
+
+## P3 slice 3an, screens and server agree (2026-11-23, branch `p3/ui-server-matrix-3an`, based on the combined scratch branch)
+- A matrix test now runs 2,400 role/stage cases and compares the screen's buttons with the server's check (`tests/unit/uiServerMatrix.unit.spec.ts`). Result: no visible button is refused. The server allows three things the screen hides on purpose (listed in the test). Archive and restore still have no button.
+- Found in the browser and fixed: Payload's own Unpublish showed to every role on every live page, and the server refused it. Replaced; Take offline in the status box stays for the people allowed it (checked: head on own department, coordinator on own programme, admin).
+- Correction: my sweep note said the auditor sees a media upload form. Wrong: they see "Not allowed". Fixed in `docs/evidence/p3-cms-sweep.md` on the 3am branch. A test now pins the auditor's media access.
+- Small thing seen: a coordinator's Publish button on an Approved page is labelled "Publish changes" (Payload's label). Not changed.
+- Not run: Urdu view, keyboard-only pass, tablet width, archive/restore (no buttons yet), hosted preview.
