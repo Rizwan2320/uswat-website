@@ -79,7 +79,7 @@ describe('DashboardView', () => {
     expect(html).toContain('&lt;img')
     expect(html).toContain('Welcome, A &amp; B')
     expect(html).toContain('href="/admin/collections/notices/7"')
-    expect(html).toContain('changed 2026-11-10')
+    expect(html).toContain('2026-11-10')
   })
 
   it('says so when a list could not be read, and when a queue is empty', () => {

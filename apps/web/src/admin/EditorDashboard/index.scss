@@ -1,43 +1,412 @@
+/*
+ * Role dashboards (slice 3am). One structure per kind of person, not one grid of boxes for all:
+ * the admin works a table with a counts rail, the head a tray beside a department board, the
+ * coordinator one programme and its four steps, an editor a desk of columns. Colours come from the
+ * site tokens; logical properties keep Urdu (right to left) correct.
+ */
+
 .editor-dashboard {
   margin-bottom: calc(var(--base) * 1.5);
 
-  &__grid {
-    display: grid;
-    gap: var(--base);
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  &__warn {
+    color: var(--theme-error-600);
   }
 
-  &__card {
-    background: var(--theme-elevation-50);
-    border: 1px solid var(--theme-elevation-150);
-    border-radius: 8px;
-    padding: var(--base);
+  &__who {
+    margin: 0 0 calc(var(--base) / 4);
+    color: var(--theme-elevation-600);
+  }
+}
 
-    h3 {
-      margin: 0 0 calc(var(--base) / 4);
-    }
+.rd {
+  --rd-accent: var(--forest, #003b17);
+  --rd-line: var(--theme-elevation-150);
+  --rd-quiet: var(--theme-elevation-600);
+  display: grid;
+  gap: calc(var(--base) * 1.5);
 
-    ul {
-      margin: 0;
-      padding-left: 1.2em;
-    }
+  &__title {
+    margin: 0 0 calc(var(--base) / 4);
+    font-family: var(--admin-serif);
+    font-size: clamp(1.6rem, 3vw, 2.3rem);
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--rd-accent);
+  }
+
+  h3,
+  h2#rd-board {
+    margin: 0 0 calc(var(--base) / 4);
+    font-size: 1.05rem;
   }
 
   &__count {
-    background: var(--theme-elevation-150);
+    display: inline-block;
+    min-width: 1.6em;
+    padding: 0 0.55em;
     border-radius: 999px;
+    background: var(--theme-elevation-150);
     font-size: 0.8em;
-    margin-left: 0.4em;
-    padding: 0 0.6em;
+    font-weight: 700;
+    text-align: center;
   }
 
   &__help,
   &__meta,
   &__empty {
-    color: var(--theme-elevation-600);
+    color: var(--rd-quiet);
   }
 
-  &__warn {
-    color: var(--theme-error-600);
+  &__help {
+    margin: 0 0 calc(var(--base) / 2);
+    max-width: 62ch;
   }
+
+  &__empty {
+    margin: calc(var(--base) / 2) 0;
+  }
+
+  &__meta {
+    font-size: 0.85em;
+  }
+
+  /* A list of links as lines, not bullets in a box. */
+  &__rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0 1rem;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--rd-line);
+    }
+
+    a {
+      font-weight: 600;
+    }
+  }
+
+  &__more {
+    color: var(--rd-quiet);
+  }
+
+  a:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  &__block {
+    margin-top: calc(var(--base) * 1.25);
+    padding-top: calc(var(--base) / 2);
+    border-top: 2px solid var(--rd-accent);
+  }
+
+  /* ---------------------------------------------------------------- admin: the control room */
+  &--control {
+    --rd-accent: #1a2f5c;
+    grid-template-columns: minmax(0, 1fr) 17rem;
+    align-items: start;
+  }
+
+  &__rail {
+    dl {
+      margin: 0;
+    }
+
+    dl > div {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid var(--rd-line);
+    }
+
+    dt {
+      color: var(--rd-quiet);
+    }
+
+    dd {
+      margin: 0;
+      font-family: var(--admin-serif);
+      font-size: 1.5rem;
+      font-variant-numeric: lining-nums tabular-nums;
+      color: var(--rd-accent);
+    }
+  }
+
+  &__fold {
+    margin-top: calc(var(--base) * 1.5);
+    border-top: 1px solid var(--rd-line);
+
+    details {
+      border-bottom: 1px solid var(--rd-line);
+      padding: 0.6rem 0;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+  }
+
+  /* ------------------------------------------------------- head: the tray and the department */
+  &--head {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    align-items: start;
+
+    .rd__rows li {
+      padding: 0.9rem 0;
+    }
+
+    .rd__rows a {
+      font-size: 1.05rem;
+    }
+  }
+
+  &__board {
+    padding-inline-start: calc(var(--base) * 1.25);
+    border-inline-start: 1px solid var(--rd-line);
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 0.6rem 0.5rem 0.6rem 0;
+      border-bottom: 1px solid var(--rd-line);
+      text-align: start;
+      vertical-align: top;
+    }
+
+    thead th {
+      color: var(--rd-quiet);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    tbody th {
+      font-weight: 600;
+    }
+
+    tbody th .rd__meta {
+      display: block;
+      font-weight: 400;
+    }
+
+    td .rd__meta {
+      display: block;
+    }
+  }
+
+  &__chip {
+    display: inline-block;
+    padding: 0.1em 0.7em;
+    border: 1px solid var(--rd-quiet);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &--in_review {
+      border-color: var(--gold, #f2b705);
+      background: color-mix(in srgb, var(--gold, #f2b705) 35%, transparent);
+    }
+
+    &--approved {
+      border-color: var(--forest-soft, #0b5a27);
+      color: var(--forest-soft, #0b5a27);
+    }
+
+    &--published {
+      border-color: var(--forest, #003b17);
+      background: var(--forest, #003b17);
+      color: var(--ivory, #fcfaf4);
+    }
+  }
+
+  /* ---------------------------------------------------- coordinator: one programme, four steps */
+  &--coordinator {
+    --rd-accent: var(--forest, #003b17);
+    gap: calc(var(--base) * 2);
+  }
+
+  &__programme {
+    max-width: 52rem;
+  }
+
+  &__steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin: calc(var(--base) * 0.75) 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+
+    li {
+      position: relative;
+      padding-top: 2.2rem;
+      color: var(--rd-quiet);
+      counter-increment: step;
+    }
+
+    /* The marker and the line to the next step. */
+    li::before {
+      content: counter(step);
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      width: 1.6rem;
+      height: 1.6rem;
+      border: 2px solid var(--rd-quiet);
+      border-radius: 50%;
+      background: var(--theme-bg, #fff);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    li::after {
+      content: '';
+      position: absolute;
+      inset-block-start: 0.75rem;
+      inset-inline: 1.6rem 0;
+      height: 2px;
+      background: var(--rd-line);
+    }
+
+    li:last-child::after {
+      display: none;
+    }
+
+    li[data-state='done'] {
+      color: var(--rd-accent);
+    }
+
+    li[data-state='done']::before {
+      content: '\2713';
+      border-color: var(--rd-accent);
+      background: var(--rd-accent);
+      color: var(--ivory, #fcfaf4);
+    }
+
+    li[data-state='done']::after {
+      background: var(--rd-accent);
+    }
+
+    li[data-state='now'] {
+      color: var(--theme-text);
+      font-weight: 700;
+    }
+
+    li[data-state='now']::before {
+      border-color: var(--gold, #f2b705);
+      background: var(--gold, #f2b705);
+      color: var(--forest-deep, #002a10);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--gold, #f2b705) 30%, transparent);
+    }
+  }
+
+  &__now {
+    margin: calc(var(--base) / 2) 0;
+    font-size: 1.1rem;
+    max-width: 52ch;
+  }
+
+  &__sentback {
+    margin: calc(var(--base) / 2) 0;
+    padding: 0.75rem 1rem;
+    border-inline-start: 4px solid var(--maroon, #7a1f26);
+    background: color-mix(in srgb, var(--maroon, #7a1f26) 8%, transparent);
+
+    p {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    footer {
+      margin-top: 0.25rem;
+      color: var(--rd-quiet);
+      font-size: 0.85rem;
+    }
+  }
+
+  &__action {
+    display: inline-block;
+    padding: 0.7rem 1.4rem;
+    border-radius: 6px;
+    background: var(--forest, #003b17);
+    color: var(--ivory, #fcfaf4);
+    font-weight: 700;
+    text-decoration: none;
+
+    &:hover {
+      background: var(--forest-soft, #0b5a27);
+    }
+  }
+
+  /* ------------------------------------------------------------- editor: a desk of columns */
+  &--desk {
+    --rd-accent: var(--maroon, #7a1f26);
+  }
+
+  &__columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: calc(var(--base) * 1.5);
+  }
+
+  &__column {
+    padding-top: calc(var(--base) / 2);
+    border-top: 2px solid var(--rd-quiet);
+
+    &--sentBack {
+      border-top-color: var(--maroon, #7a1f26);
+    }
+
+    &--myDrafts {
+      border-top-color: var(--forest, #003b17);
+    }
+  }
+}
+
+@media (max-width: 52rem) {
+  .rd--control,
+  .rd--head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rd__board {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+  }
+
+  .rd__steps {
+    grid-template-columns: minmax(0, 1fr);
+
+    li {
+      padding: 0 0 1.2rem;
+      padding-inline-start: 2.4rem;
+    }
+
+    li::after {
+      inset-block: 1.6rem 0;
+      inset-inline: 0.75rem auto;
+      width: 2px;
+      height: auto;
+    }
+  }
+}
+
+[data-theme='dark'] .rd {
+  --rd-accent: var(--gold, #f2b705);
 }
