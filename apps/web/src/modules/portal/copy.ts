@@ -55,8 +55,23 @@ export const COPY = {
     recoverLink: 'Lost your device? Sign in with a recovery code',
   },
 
+  auth: {
+    line: 'Your page, your publications and your courses, kept in one place.',
+    foot: 'Sample portal for demonstration. It holds no real records.',
+    passkeyHint: 'Fingerprint, face or screen lock. Nothing to type.',
+  },
+
   home: {
     title: 'Your portal',
+    groups: { page: 'Your page', account: 'Your account', duties: 'Duties' },
+    state: {
+      'not-started': { label: 'Profile not started', next: 'Start your profile', nextHelp: 'Add a short biography and your research interests. You choose what is public.' },
+      'saved-draft': { label: 'Draft saved', next: 'Send your draft for review', nextHelp: 'Your department editor approves changes before anything becomes public.' },
+      'changes-requested': { label: 'Changes requested', next: 'Read what your department editor asked for', nextHelp: 'Change what they asked about, then send it again.' },
+      'with-reviewer': { label: 'With your department editor', next: 'Your profile is waiting for approval', nextHelp: 'You can take it back to edit from the profile page.' },
+      'unpublished-self': { label: 'Saved, not published', next: 'Publish your latest changes', nextHelp: 'Nobody reviews your own page, so Save and publish takes effect at once.' },
+      published: { label: 'Published' },
+    },
     intro: 'You are signed in. This sample page will later show your profile, publications and requests.',
     signedInAs: 'Signed in as',
     tiles: {
@@ -167,6 +182,15 @@ export const COPY = {
     publishedAt: 'Approved on',
     submit: 'Save and send for review',
     submitted: 'Sent for review.',
+    selfIntro: 'Change the details you are allowed to change. As head of department or Registrar you publish your own page: nobody reviews it, and every publish is recorded with your name.',
+    selfNote: 'This profile is sample data for demonstration. Nothing you publish here goes to the public site.',
+    statusSelfDraft: 'Saved. It is not published yet.',
+    statusSelfLive: 'Published. Your latest save is what the public would see.',
+    publish: 'Save and publish',
+    publishedMsg: 'Published.',
+    publishedNowSelfHelp: 'This is the version you last published.',
+    publishedNowSelfNone: 'You have not published anything yet.',
+    publishedBy: 'Published on',
     withdraw: 'Take it back to edit',
     withdrawn: 'Taken back. You can edit again.',
     previewTitle: 'What the public would see',
@@ -189,6 +213,7 @@ export const COPY = {
       session: 'Your session ended. Sign in again to continue.',
       locked: 'It was sent for review, so it cannot be changed. Take it back first.',
       nothing: 'There was nothing to do. Reload the page.',
+      'not-allowed': 'This account cannot publish its own page. Use Save and send for review.',
       invalid: 'Some fields need attention.',
       generic: 'Something went wrong. Please try again in a moment.',
     } as Record<string, string>,

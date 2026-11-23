@@ -9,9 +9,9 @@ export type Account = { id: string; email: string }
 
 export type ActionResult =
   | { ok: true }
-  | { ok: false; error: 'session' | 'invalid' | 'locked' | 'nothing'; errors?: FieldErrors }
+  | { ok: false; error: 'session' | 'invalid' | 'locked' | 'nothing' | 'not-allowed'; errors?: FieldErrors }
 
-export function createProfileService(deps: { store: ProfileStore; getAccount: () => Promise<Account | null> }) {
+export function createProfileService(deps: { store: ProfileStore; getAccount: () => Promise<Account | null>; now?: () => number }) {
   return {
     async save(input: unknown): Promise<ActionResult> {
       const account = await deps.getAccount()
@@ -24,6 +24,13 @@ export function createProfileService(deps: { store: ProfileStore; getAccount: ()
       const account = await deps.getAccount()
       if (!account) return { ok: false, error: 'session' }
       return (await deps.store.submit(account.id)) ? { ok: true } : { ok: false, error: 'nothing' }
+    },
+    /** The head's and the Registrar's own page has no reviewer, so they publish it themselves. The store checks the role in the same transaction. */
+    async publish(): Promise<ActionResult> {
+      const account = await deps.getAccount()
+      if (!account) return { ok: false, error: 'session' }
+      const r = await deps.store.publishOwn(account.id, deps.now?.())
+      return r === 'ok' ? { ok: true } : { ok: false, error: r }
     },
     async withdraw(): Promise<ActionResult> {
       const account = await deps.getAccount()

@@ -867,6 +867,14 @@ P3 agent (slice 3a), own entry:
 - This changes the repo's rules only. It does not change anyone's GitHub or Vercel permissions; if FP's credentials cannot merge or push to `main`, the owner has to grant that in GitHub. Not run: no check of FP's actual permissions.
 - Note for FP: each merge to `main` redeploys both projects, so look at the public home page too.
 
+
+## FP: passkey redirect, own-page publishing, sign-in and home redesign (2026-11-23, branch `fp/self-publish-redesign`, not merged)
+- Owner feedback after the first hosted sign-in: (1) after saving a passkey the page stayed on "saved"; (2) Registrar and head saw "send for review" with nobody to review; (3) redesign sign-in and home.
+- (1) Cause: the recovery-codes step sat below the fold. Fixed: codes are issued as soon as the passkey or authenticator is saved, the page shows them at the top, Continue goes to Home. Checked in a real browser with a virtual authenticator on four fresh accounts (codes appeared by themselves, Continue reached `/portal`).
+- (2) Head and Registrar now have Save and publish (audit row, owner as approver); sending for review is refused for them. 7 new database tests and 1 new unit test pass. See `docs/briefs/fp-self-publish-and-redesign.md`.
+- (3) New sign-in, recovery and home pages (valley picture from tokens, no new colours). Checked at 1440 and 390: no horizontal scroll. Screenshots in the session only.
+- Not run: anything on the hosted live portal (this is not deployed), a screen reader pass, the Urdu interface. `tests/unit/env.unit.spec.ts` needs CMS secrets absent from the FP shell (also fails without these changes).
+- The live test accounts (Imran Shah, Dr. Bilal Ahmad) are unchanged and still not signed in by the owner as far as I know. After this is merged they will use the new pages.
 ### Research and Administration pages (2026-11-22, branch `p4/real-departments`, prediction A4-x, brief `docs/briefs/p5-research-administration.md`)
 - Built `/research`, `/administration` and nine office pages (`/administration/{oric-2, advanced-studies-and-research-board, directorate-of-it, controller-of-examination-office, directorate-of-works, proctorial-board, kamyab-jawan-markaz, alumni, hunerkada-center-for-excellence}`) in the DCST style from `src/site/offices/`. Data is in typed profiles with source URLs and `verifiedAt` 2026-11-05; open conflicts are shown as "Still to be confirmed" (ORIC director name). QEC has no data (external link only).
 - Seeds add the nine office records (names real, source still `sample.invalid`); `SEED_SAMPLE_ON_PREVIEW` must be true for one preview build for the office routes to render there.

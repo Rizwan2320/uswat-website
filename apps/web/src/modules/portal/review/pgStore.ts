@@ -4,19 +4,13 @@
  */
 import type pg from 'pg'
 
+import { samplePublisher } from '../profile/publisher'
 import { pickEditable } from '../profile/sampleStore'
 import type { ProfileEdit } from '../profile/types'
 import { compareEdits, isSubjectId } from './rules'
 import type { DecideInput, DecideOutcome, Publisher, QueueItem, ReviewDetail, ReviewStore } from './types'
 
-/** The sample publisher: the last approved edit lives in `identity.profile_published`. The real one writes People instead. */
-export const samplePublisher: Publisher = async (tx, p) => {
-  await tx.query(
-    `insert into "profile_published" ("userId", "edit", "approvedBy", "approvedAt") values ($1, $2, $3, $4)
-     on conflict ("userId") do update set "edit" = excluded."edit", "approvedBy" = excluded."approvedBy", "approvedAt" = excluded."approvedAt"`,
-    [p.subjectId, JSON.stringify(p.edit), p.reviewerId, p.at],
-  )
-}
+export { samplePublisher }
 
 const QUEUE_LIMIT = 200
 
