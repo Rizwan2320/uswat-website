@@ -868,7 +868,7 @@ P3 agent (slice 3a), own entry:
 - Note for FP: each merge to `main` redeploys both projects, so look at the public home page too.
 
 
-## FP: passkey redirect, own-page publishing, sign-in and home redesign (2026-11-23, branch `fp/self-publish-redesign`, not merged)
+## FP: passkey redirect, own-page publishing, sign-in and home redesign (2026-11-23, PR #154, merged to `main` by fast-forward at the owner's instruction)
 - Owner feedback after the first hosted sign-in: (1) after saving a passkey the page stayed on "saved"; (2) Registrar and head saw "send for review" with nobody to review; (3) redesign sign-in and home.
 - (1) Cause: the recovery-codes step sat below the fold. Fixed: codes are issued as soon as the passkey or authenticator is saved, the page shows them at the top, Continue goes to Home. Checked in a real browser with a virtual authenticator on four fresh accounts (codes appeared by themselves, Continue reached `/portal`).
 - (2) Head and Registrar now have Save and publish (audit row, owner as approver); sending for review is refused for them. 7 new database tests and 1 new unit test pass. See `docs/briefs/fp-self-publish-and-redesign.md`.
@@ -915,4 +915,4 @@ P3 agent (slice 3a), own entry:
 - **Fix (owner chose "render from code"):** the office, department and programme routes now use the profile in code when no record exists (a record, when added, still overrides the fields it fills). A department with no stored programmes lists its profile disciplines. Unknown addresses are still 404. New e2e spec `tests/e2e/profile-pages.e2e.spec.ts` runs against an empty database in the browser job: 11 pages answer 200 and one unknown office answers 404 (12 passed locally).
 - Links still going to the official site on purpose (no page here yet): Management & Commerce, English and Foreign Languages, Academic Calendar, Central Library, the admissions notices, scholarships, loans, downloads, Quality Enhancement Cell, Press Releases, Affiliated Colleges, Student Services, Faculty Resources. Nothing was invented to replace them.
 - Still true: production holds no content, so News, Notices, Events, Jobs, Tenders and `/academics` show their empty states there. Putting Sample content in production is a separate decision (ADR-0026 says never).
-
+- Merge record (ADR-0027): CI and admin-e2e green on the exact commit 641e4ab; main fast-forwarded 7f12c52 to 641e4ab; both production deployments READY on that commit (`uswat-website` dpl_Ek8nqtnh, `uswat-faculty-portal` dpl_FbSJkDZn). Live `/portal/sign-in` returns 200 with the new markup; the public home page returns 200 and its Faculty Portal link still points at the portal sign-in. Checked by fetching through the Vercel connector, not in a browser. Not run: a signed-in visit to the live portal.
