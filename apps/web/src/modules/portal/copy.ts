@@ -55,8 +55,23 @@ export const COPY = {
     recoverLink: 'Lost your device? Sign in with a recovery code',
   },
 
+  auth: {
+    line: 'Your page, your publications and your courses, kept in one place.',
+    foot: 'Sample portal for demonstration. It holds no real records.',
+    passkeyHint: 'Fingerprint, face or screen lock. Nothing to type.',
+  },
+
   home: {
     title: 'Your portal',
+    groups: { page: 'Your page', account: 'Your account', duties: 'Duties' },
+    state: {
+      'not-started': { label: 'Profile not started', next: 'Start your profile', nextHelp: 'Add a short biography and your research interests. You choose what is public.' },
+      'saved-draft': { label: 'Draft saved', next: 'Send your draft for review', nextHelp: 'Your department editor approves changes before anything becomes public.' },
+      'changes-requested': { label: 'Changes requested', next: 'Read what your department editor asked for', nextHelp: 'Change what they asked about, then send it again.' },
+      'with-reviewer': { label: 'With your department editor', next: 'Your profile is waiting for approval', nextHelp: 'You can take it back to edit from the profile page.' },
+      'unpublished-self': { label: 'Saved, not published', next: 'Publish your latest changes', nextHelp: 'Nobody reviews your own page, so Save and publish takes effect at once.' },
+      published: { label: 'Published' },
+    },
     intro: 'You are signed in. This sample page will later show your profile, publications and requests.',
     signedInAs: 'Signed in as',
     tiles: {

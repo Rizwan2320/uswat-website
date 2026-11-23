@@ -13,7 +13,8 @@
 .portal-field { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; margin: 10px 0; }
 .portal-field label { font-weight: 600; color: var(--forest); }
 .portal-field .hint { font-size: 0.9rem; }
-.portal-field input { font: inherit; padding: 8px 12px; border: 2px solid var(--forest); border-radius: 10px; background: #fff; color: var(--forest); min-height: 44px; }
+.portal-field input { font: inherit; padding: 8px 14px; border: 1.5px solid color-mix(in srgb, var(--forest) 40%, #fff); border-radius: 12px; background: #fff; color: var(--forest); min-height: 48px; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+.portal-field input:focus, .portal-field textarea:focus, .portal-field select:focus { border-color: var(--forest); box-shadow: 0 0 0 4px color-mix(in srgb, var(--forest) 14%, transparent); }
 .portal-btn { font: inherit; font-family: var(--stack-nav); font-weight: 600; min-height: 44px; padding: 10px 22px; border-radius: 999px; border: 2px solid var(--forest); background: var(--forest); color: var(--ivory); cursor: pointer; }
 .portal-btn:hover { background: var(--forest-soft); }
 .portal-btn[disabled] { opacity: 0.6; cursor: not-allowed; }
@@ -50,7 +51,7 @@ a.portal-btn { display: inline-flex; align-items: center; box-sizing: border-box
 .portal-profile { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
 .portal-profile > * { min-width: 0; }
 @media (min-width: 900px) { .portal-profile { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: start; } .portal-preview { position: sticky; top: 16px; } }
-.portal-field textarea, .portal-field select { font: inherit; padding: 8px 12px; border: 2px solid var(--forest); border-radius: 10px; background: #fff; color: var(--forest); min-height: 44px; }
+.portal-field textarea, .portal-field select { font: inherit; padding: 8px 14px; border: 1.5px solid color-mix(in srgb, var(--forest) 40%, #fff); border-radius: 12px; background: #fff; color: var(--forest); min-height: 48px; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
 .portal-field textarea { min-height: 84px; resize: vertical; }
 .portal-field [aria-invalid='true'] { border-color: var(--maroon); }
 .portal-field .field-error { color: var(--maroon-deep); font-weight: 600; font-size: 0.95rem; }
@@ -154,19 +155,99 @@ a.portal-btn { display: inline-flex; align-items: center; box-sizing: border-box
 .cv-head > * { grid-column: 1; }
 .cv-head > .cv-photo { grid-column: 2; grid-row: 1 / span 4; width: 96px; height: 96px; }
 
-/* Home (FP-11): hero picture with the person's card, then link tiles. */
-.portal-hero { position: relative; border-radius: var(--radius); overflow: hidden; margin: 0 0 14px; background: var(--ivory-deep); }
-.portal-hero > img { display: block; width: 100%; height: 150px; object-fit: cover; }
-.portal-hero-card { position: absolute; inset-inline-start: 16px; max-width: min(620px, calc(100% - 32px)); bottom: 12px; display: flex; gap: 16px; align-items: center; background: rgba(255, 255, 255, 0.94); border-radius: 12px; padding: 10px 16px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12); }
-.portal-hero-card h1 { margin: 0; }
-.portal-hero-card p { margin: 0; }
-.portal-hero-card .portal-avatar-lg { width: 72px; height: 72px; }
-.portal-tiles { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
-.portal-tile { display: grid; gap: 2px; height: 100%; box-sizing: border-box; background: #fff; border: 1px solid var(--ivory-deep); border-inline-start: 4px solid var(--forest); border-radius: 10px; padding: 10px 14px; text-decoration: none; color: var(--text); }
-.portal-tile:hover { background: var(--ivory-deep); }
-.portal-tile-title { font-family: var(--stack-nav); font-weight: 600; color: var(--forest); text-decoration: underline; text-underline-offset: 3px; }
-.portal-tile-hint { font-size: 0.9rem; }
-@media (max-width: 520px) { .portal-hero > img { height: 110px; } .portal-hero-card { position: static; border-radius: 0; box-shadow: none; } }
+/* The valley picture (Valley.tsx): every colour is a token, so the picture follows the palette. */
+.vy-sky { fill: var(--forest-deep); }
+.vy-halo { fill: var(--gold); fill-opacity: 0.09; }
+.vy-sun { fill: var(--gold); }
+.vy-r1 { fill: color-mix(in srgb, var(--forest-soft) 78%, var(--ivory)); }
+.vy-r2 { fill: var(--forest-soft); }
+.vy-r3 { fill: var(--forest); }
+.vy-r4 { fill: color-mix(in srgb, var(--forest) 45%, var(--forest-deep)); }
+.vy-river { fill: color-mix(in srgb, var(--gold) 26%, var(--forest-deep)); }
+.vy-glint path { stroke: var(--gold); stroke-opacity: 0.6; stroke-width: 3; stroke-linecap: round; fill: none; }
+@media (prefers-reduced-motion: no-preference) {
+  /* The one moment of motion on the sign-in page: the sun comes up once, slowly. */
+  .auth-valley .vy-sunrise { animation: vy-rise 2.2s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  @keyframes vy-rise { from { transform: translateY(60px); opacity: 0; } to { transform: none; opacity: 1; } }
+}
+
+/* Before you sign in (AuthShell): the valley on one side, the form on the other. */
+.auth { flex: 1; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+.auth-art { position: relative; overflow: hidden; background: var(--forest-deep); color: var(--ivory); min-height: 640px; display: flex; flex-direction: column; gap: clamp(20px, 5vh, 48px); }
+.auth-valley { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.auth-valley-band { display: none; }
+.auth-brand { position: relative; display: flex; align-items: center; gap: 14px; padding: clamp(24px, 4vw, 48px) clamp(24px, 4vw, 48px) 0; }
+.auth-crest { border-radius: 50%; display: block; box-shadow: 0 0 0 2px rgb(252 250 244 / 0.55); }
+.auth-brand-name { margin: 0; display: grid; line-height: 1.15; font-family: var(--stack-serif, Georgia, serif); font-size: 1.35rem; font-weight: 600; }
+.auth-brand-name span { font-family: var(--stack-nav); font-size: 0.8rem; font-weight: 500; opacity: 0.85; }
+.auth-line { position: relative; margin: 0; padding: 0 clamp(24px, 4vw, 48px); max-width: 11em; font-family: var(--stack-serif, Georgia, serif); font-size: clamp(1.7rem, 2.7vw, 2.6rem); line-height: 1.18; font-weight: 500; }
+.auth-main { display: flex; flex-direction: column; padding: 20px clamp(20px, 5vw, 64px) 16px; background: var(--ivory); }
+.auth-main:focus { outline: none; }
+.auth-top { text-align: end; font-family: var(--stack-nav); font-size: 0.85rem; }
+.auth-top a { color: var(--forest); text-underline-offset: 4px; padding: 10px 4px; display: inline-block; }
+.auth-body { flex: 1; display: flex; flex-direction: column; justify-content: center; width: 100%; max-width: 420px; margin: 0 auto; padding: 16px 0 24px; }
+.auth-body h1 { font-family: var(--stack-serif, Georgia, serif); color: var(--forest); font-size: clamp(1.9rem, 3vw, 2.4rem); line-height: 1.1; margin: 0 0 10px; }
+.auth-body h2 { font-family: var(--stack-serif, Georgia, serif); color: var(--forest); font-size: 1.3rem; margin: 18px 0 6px; }
+.auth-body > p:first-of-type { margin: 0 0 18px; }
+.auth-body form .portal-btn, .auth-body .portal-btn-lg { width: 100%; }
+.auth-foot { margin: 0; text-align: center; font-size: 0.8rem; opacity: 0.8; }
+.portal-btn-lg { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 54px; font-size: 1rem; }
+.portal-passkey-hint { margin: 8px 0 0; text-align: center; font-size: 0.85rem; }
+.portal-icon { flex: none; display: block; }
+.auth-body .portal-divider { display: flex; align-items: center; gap: 12px; margin: 22px 0 8px; font-size: 0.85rem; }
+.auth-body .portal-divider::before, .auth-body .portal-divider::after { content: ''; flex: 1; height: 1px; background: color-mix(in srgb, var(--forest) 22%, #fff); }
+@media (max-width: 859px) {
+  .auth { grid-template-columns: minmax(0, 1fr); }
+  .auth-art { min-height: 0; height: 170px; }
+  .auth-valley-tall, .auth-line { display: none; }
+  .auth-valley-band { display: block; }
+  .auth-brand { padding: 20px var(--gutter) 0; }
+  .auth-main { padding-top: 8px; }
+  .auth-body { justify-content: flex-start; }
+}
+
+/* Home: the person in the valley, what to do next, then the links in three groups of different weight. */
+.home-hero { position: relative; overflow: hidden; border-radius: 22px; min-height: 300px; display: flex; align-items: flex-start; color: var(--ivory); background: var(--forest-deep); margin: 0 0 20px; }
+.home-valley { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.home-who { position: relative; display: flex; align-items: center; gap: 20px; padding: clamp(18px, 3vw, 32px); min-width: 0; }
+.home-avatar { width: 104px; height: 104px; border-radius: 50%; object-fit: cover; background: var(--ivory-deep); border: 4px solid var(--gold); flex: none; }
+.portal-main .home-who h1 { margin: 0; color: var(--ivory); font-size: clamp(1.7rem, 3.4vw, 2.6rem); line-height: 1.1; overflow-wrap: anywhere; }
+.home-role { margin: 6px 0 0; font-family: var(--stack-nav); font-size: 0.95rem; color: rgb(252 250 244 / 0.9); }
+.home-chip { position: absolute; inset-block-end: 16px; inset-inline-end: 16px; margin: 0; display: inline-flex; align-items: center; gap: 8px; background: var(--ivory); color: var(--forest); border-radius: 999px; padding: 7px 16px 7px 12px; font-family: var(--stack-nav); font-size: 0.82rem; font-weight: 600; }
+.home-chip::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--gold); }
+.home-chip.is-published::before { background: var(--forest-soft); }
+.home-chip.is-changes-requested::before { background: var(--maroon); }
+.home-next { display: block; text-decoration: none; color: var(--forest); background: color-mix(in srgb, var(--gold) 16%, #fff); border: 1px solid color-mix(in srgb, var(--gold) 55%, #fff); border-inline-start: 5px solid var(--gold); border-radius: 14px; padding: 14px 18px; margin: 0 0 4px; }
+.home-next span > strong { display: block; font-family: var(--stack-nav); font-size: 1.02rem; }
+.home-next span > span { display: block; margin-top: 2px; font-size: 0.92rem; color: var(--text); }
+.home-next:hover { background: color-mix(in srgb, var(--gold) 28%, #fff); }
+.portal-main .home-group { font-size: 1.25rem; margin: 30px 0 12px; }
+.portal-tiles { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.portal-tiles-page { grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); }
+.portal-tiles-account { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.portal-tiles-duties { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.portal-tile { display: grid; gap: 6px 14px; align-content: start; height: 100%; box-sizing: border-box; background: #fff; border: 1px solid color-mix(in srgb, var(--forest) 14%, #fff); border-radius: 18px; padding: 18px; text-decoration: none; color: var(--text); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+.portal-tile:hover { border-color: var(--forest); box-shadow: 0 12px 26px -16px rgb(0 42 16 / 0.5); }
+.portal-tile-icon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: color-mix(in srgb, var(--forest) 8%, #fff); color: var(--forest); transition: background-color 0.2s ease; }
+.portal-tile:hover .portal-tile-icon { background: var(--gold); color: var(--forest-deep); }
+.portal-tile-title { font-family: var(--stack-nav); font-weight: 600; font-size: 1rem; line-height: 1.3; color: var(--forest); }
+.portal-tile-hint { font-size: 0.9rem; line-height: 1.4; }
+.portal-tiles-account .portal-tile { grid-template-columns: 46px minmax(0, 1fr); padding: 14px 16px; }
+.portal-tiles-account .portal-tile-icon { grid-row: span 2; align-self: center; }
+.portal-tile.is-duty { background: var(--forest); border-color: var(--forest); }
+.portal-tile.is-duty:hover { background: var(--forest-soft); }
+.portal-tile.is-duty .portal-tile-title { color: var(--ivory); }
+.portal-tile.is-duty .portal-tile-hint { color: rgb(252 250 244 / 0.85); }
+.portal-tile.is-duty .portal-tile-icon, .portal-tile.is-duty:hover .portal-tile-icon { background: color-mix(in srgb, var(--gold) 22%, transparent); color: var(--gold-light); }
+@media (max-width: 640px) {
+  /* On a phone the picture sits in the lower half, so the name and role keep plain sky behind them. */
+  .home-hero { min-height: 310px; }
+  .home-valley { top: auto; height: 50%; }
+  .home-avatar { width: 76px; height: 76px; }
+  .home-who { gap: 14px; }
+  .home-chip { inset-inline-start: 16px; inset-inline-end: auto; }
+}
+@media (prefers-reduced-motion: reduce) { .portal-tile, .portal-tile-icon { transition: none; } }
 
 /* The grant form: email and days side by side, the three parts in one row. */
 [data-testid='grant-form'] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; align-items: start; max-width: 900px; }
