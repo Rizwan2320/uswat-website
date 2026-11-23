@@ -19,12 +19,13 @@ test.beforeEach(async ({ page }) => {
   )
 })
 
-test('has a CMS link to the Campus Management System and a Departments button', async ({
+test('has a CMS link to this site\'s own admin sign-in and a Departments button', async ({
   page,
 }) => {
   await page.goto('http://localhost:3000/', { waitUntil: 'networkidle' })
   const bar = page.getByRole('navigation', { name: 'Portals and language' })
-  await expect(bar.getByRole('link', { name: 'CMS' })).toHaveAttribute(
+  await expect(bar.getByRole('link', { name: 'CMS' })).toHaveAttribute('href', '/admin')
+  await expect(bar.getByRole('link', { name: 'Student Portal' })).toHaveAttribute(
     'href',
     /^https:\/\/cms1\.uswat\.edu\.pk/,
   )

@@ -44,7 +44,8 @@ export const site = {
   mapHref: 'https://www.openstreetmap.org/search?query=University%20of%20Swat',
   portalLinks: {
     /** Campus Management System (host crawled 2026-11-06, see portals.ts). TODO(content): confirm the landing page the university wants here. */
-    cms: 'https://cms1.uswat.edu.pk/',
+    /** This site's own CMS (Payload admin sign-in). The old campus system stays behind the Student Portal link. */
+    cms: '/admin',
     student: 'https://cms1.uswat.edu.pk/web/login',
     /** Sample faculty portal (own Vercel project, ADR-0020). TODO(content): move to the university's own subdomain once DNS is set. */
     faculty: 'https://uswat-faculty-portal.vercel.app/portal/sign-in',

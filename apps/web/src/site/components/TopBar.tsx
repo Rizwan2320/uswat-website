@@ -3,6 +3,7 @@ import DepartmentSearch from './DepartmentSearch'
 import { LanguageToggle, T } from './I18n'
 import { PinIcon } from './icons'
 import SearchOverlay from './SearchOverlay'
+import SiteLink from './SiteLink'
 import styles from './TopBar.module.css'
 
 /* Darkest green utility bar. Sticks with the header (see .site-head) so the "Established in 2010" line is always visible.
@@ -23,9 +24,9 @@ export default function TopBar() {
           <span aria-hidden="true" className={styles.sep}>
             |
           </span>
-          <a href={site.portalLinks.cms} rel="noopener noreferrer">
+          <SiteLink href={site.portalLinks.cms}>
             <T k="CMS" />
-          </a>
+          </SiteLink>
           <span aria-hidden="true" className={styles.sep}>
             |
           </span>
