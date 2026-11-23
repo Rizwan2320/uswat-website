@@ -14,6 +14,11 @@ const pages = [
   '/administration/alumni',
   '/academics/departments/dcst',
   '/academics/programmes/bs-computer-science',
+  '/academic-calendar',
+  '/administration/central-library-office',
+  '/administration/quality-enhancement-cell',
+  '/academics/departments/management-commerce',
+  '/academics/departments/english-and-foreign-languages',
 ]
 for (const path of pages) {
   test(`${path} opens from its profile with no CMS record`, async ({ page }) => {
