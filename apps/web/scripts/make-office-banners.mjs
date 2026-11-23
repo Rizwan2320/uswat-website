@@ -54,6 +54,11 @@ const BANNERS = [
   { key: 'bs-dental-technology', icon: 'tooth', pre: 'Allied Health Sciences', one: 'BS Dental', two: 'Technology', tag: 'University of Swat' },
   { key: 'doctor-of-physical-therapy', icon: 'users', pre: 'Allied Health Sciences', one: 'Doctor of', two: 'Physical Therapy (DPT)', tag: 'University of Swat' },
   { key: 'bs-radiography-and-imaging-technology', icon: 'scan', pre: 'Allied Health Sciences', one: 'BS Radiography &', two: 'Imaging Technology', tag: 'University of Swat' },
+  { key: 'management-and-commerce', icon: 'users', pre: 'Department of', one: 'Management', two: 'and Commerce', tag: 'University of Swat' },
+  { key: 'english-and-foreign-languages', icon: 'globe', pre: 'Department of', one: 'English and', two: 'Foreign Languages', tag: 'University of Swat' },
+  { key: 'central-library-office', icon: 'book', pre: 'University of Swat', one: 'Central', two: 'Library', tag: 'Hours • Staff • Contact' },
+  { key: 'quality-enhancement-cell', icon: 'shield', pre: 'University of Swat', one: 'Quality', two: 'Enhancement Cell', tag: 'QEC' },
+  { key: 'academic-calendar', icon: 'clipboard', pre: 'University of Swat', one: 'Academic', two: 'Calendar', tag: 'Semesters • Dates' },
 ]
 
 const circuit = (flip) => {

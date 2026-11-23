@@ -212,6 +212,11 @@ const OFFICES = {
   'bs-dental-technology': 'Dental',
   'doctor-of-physical-therapy': 'DPT',
   'bs-radiography-and-imaging-technology': 'Imaging',
+  'management-and-commerce': 'Commerce',
+  'english-and-foreign-languages': 'English',
+  'central-library-office': 'Library',
+  'quality-enhancement-cell': 'QEC',
+  'academic-calendar': 'Calendar',
 }
 for (const [k, label] of Object.entries(OFFICES)) MOTIFS[k] = (p, r) => chip(p, r, label)
 
