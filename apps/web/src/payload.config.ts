@@ -4,6 +4,7 @@ import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 import { en } from 'payload/i18n/en'
+import { forCoordinators } from './governance/adminMenu'
 import { completeUrdu, urAdminLanguage, urTranslations } from './i18n/ur'
 
 import { AffiliatedColleges } from './collections/AffiliatedColleges'
@@ -130,6 +131,7 @@ const built = buildConfig({
     defaultLocale: 'en',
     fallback: true,
   },
+  // A coordinator sees only their programme pages and media in the menu (slice 3am).
   collections: [
     Pages,
     Posts,
@@ -151,9 +153,9 @@ const built = buildConfig({
     Campuses,
     People,
     AuditLogs,
-  ],
+  ].map(forCoordinators),
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer, HomeContent],
+  globals: [Header, Footer, HomeContent].map(forCoordinators),
   plugins: [...plugins, governancePlugin],
   // Write paths go through REST and the admin only, where draft versus unpublish is visible to
   // the policy hook (docs/adr/0010). Nothing in the site uses GraphQL.
