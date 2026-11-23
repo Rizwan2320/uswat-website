@@ -272,27 +272,28 @@
   object-fit: cover;
 }
 
-/* head of department, in the green card that holds the chip picture on other pages */
+/* head of department, in the card that holds the chip picture on other pages: white, with a gold offset behind the portrait */
 .aboutHead {
   display: grid;
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
-  gap: clamp(16px, 2.5vw, 26px);
+  gap: clamp(20px, 3vw, 34px);
   align-items: center;
   aspect-ratio: 3 / 2;
   margin: 0;
   padding: clamp(18px, 3vw, 28px);
   border-radius: var(--radius);
-  background: var(--forest);
-  color: var(--ivory);
-  box-shadow: 0 16px 28px -18px rgb(0 42 16 / 0.5);
+  background: radial-gradient(120% 90% at 100% 0%, rgb(242 183 5 / 0.1) 0%, rgb(242 183 5 / 0) 55%), #fff;
+  border: 1px solid rgb(0 59 23 / 0.08);
+  box-shadow: 0 16px 28px -18px rgb(0 42 16 / 0.35);
 }
 .aboutHeadPhoto {
   position: relative;
   aspect-ratio: 4 / 5;
   overflow: hidden;
   border-radius: var(--radius);
-  border: 2px solid rgb(255 255 255 / 0.4);
-  background: var(--forest-deep);
+  border: 1px solid rgb(0 59 23 / 0.12);
+  background: #fff;
+  box-shadow: 9px 9px 0 rgb(242 183 5 / 0.35);
 }
 .aboutHeadPhoto img {
   object-fit: cover;
@@ -305,20 +306,32 @@
 }
 .aboutHeadKicker {
   font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-weight: 800;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--maroon);
 }
 .aboutHeadName {
   font-family: var(--stack-serif);
-  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+  font-size: clamp(1.25rem, 2.3vw, 1.65rem);
   line-height: 1.2;
   font-weight: 600;
+  color: var(--forest);
+}
+.aboutHeadName::after {
+  content: '';
+  display: block;
+  width: 44px;
+  height: 3px;
+  margin-top: 10px;
+  border-radius: 2px;
+  background: var(--gold);
 }
 .aboutHeadTitle {
+  margin-top: 4px;
   font-size: 0.98rem;
   line-height: 1.4;
+  color: var(--text);
 }
 
 .cards {
