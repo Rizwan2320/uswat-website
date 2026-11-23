@@ -59,6 +59,10 @@ const BANNERS = [
   { key: 'central-library-office', icon: 'book', pre: 'University of Swat', one: 'Central', two: 'Library', tag: 'Hours • Staff • Contact' },
   { key: 'quality-enhancement-cell', icon: 'shield', pre: 'University of Swat', one: 'Quality', two: 'Enhancement Cell', tag: 'QEC' },
   { key: 'academic-calendar', icon: 'clipboard', pre: 'University of Swat', one: 'Academic', two: 'Calendar', tag: 'Semesters • Dates' },
+  { key: 'geology', icon: 'globe', pre: 'Department of', one: 'Geology', two: '', tag: 'University of Swat' },
+  { key: 'archaeology', icon: 'building', pre: 'Department of', one: 'Archaeology', two: '', tag: 'University of Swat' },
+  { key: 'environmental-sciences', icon: 'flask', pre: 'Department of', one: 'Environmental', two: 'Sciences', tag: 'University of Swat' },
+  { key: 'economics-and-development-studies', icon: 'clipboard', pre: 'Department of', one: 'Economics and', two: 'Development Studies', tag: 'University of Swat' },
 ]
 
 const circuit = (flip) => {

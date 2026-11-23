@@ -217,6 +217,10 @@ const OFFICES = {
   'central-library-office': 'Library',
   'quality-enhancement-cell': 'QEC',
   'academic-calendar': 'Calendar',
+  geology: 'Geology',
+  archaeology: 'Archaeology',
+  'environmental-sciences': 'Environment',
+  'economics-and-development-studies': 'Economics',
 }
 for (const [k, label] of Object.entries(OFFICES)) MOTIFS[k] = (p, r) => chip(p, r, label)
 
