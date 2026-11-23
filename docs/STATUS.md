@@ -977,3 +977,10 @@ P3 agent (slice 3a), own entry:
 - Not run: Urdu (right-to-left) view of the new dashboards, axe on them, keyboard-only pass, hosted preview. The Urdu lines still need a native reader.
 - Merge order: #135, #136, #138, #140, then this one (it needs #136).
 - Open: Archive and Restore buttons; mail setup (then show the forgot-password link); heads can no longer take a programme page offline, and still see Payload's Publish menu on programme pages (Unpublish is refused with a message).
+## CMS agent PRs merged (2026-11-23, main agent; owner asked for the CMS to go to production)
+- Merged #135 (coordinator publishes the programme the head approved), #136 ("You are..." bar and role lists), #138 (one press to approve and publish, read-only Stage box), #140 (coordinator takes a programme offline, plain sign-in wording), #147 (a dashboard for each role) and #152 (screen and server rules checked against each other, Payload's own Unpublish control no longer drawn, Publish button label). Merged as the two tips `p3/ui-server-matrix-3an` (contains the other four) and `p3/role-dashboards-3am`. The scratch merge commit from the agent's combined check came in with 3an's history; it is only a merge.
+- No migration, collection, global, dependency or token change in any of them (checked on the diff: `payload.config.ts` and `importMap.js` only add admin components). The production build's `payload migrate` therefore has nothing to run on the production database.
+- Local checks on the merged tree: typecheck, lint (0 errors), 1750 tests, types drift clean, production build, visual baselines. Browser admin tests run in CI.
+- **Not done (the agent's own list):** Archive and Restore still have no button; Urdu view and keyboard-only pass of the new screens; axe on the new dashboards and the status box; the Departments search box a11y check; a native reader for the Urdu lines. These stay with the CMS agent.
+- Production has no users yet, so the role screens cannot be seen there until accounts are created (separate owner step).
+
