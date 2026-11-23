@@ -813,3 +813,12 @@ P3 agent (slice 3a), own entry:
 - The gold label on the chip pictures ("DCST", office and programme names) is a third smaller; 21 SVGs regenerated, text changes only.
 - Checks run: tsc, eslint, 895 unit tests, axe and overflow on 6 pages. Not run: production build, e2e, preview deployment of this commit, contrast of text over photographs (judged by eye only).
 - Open question for the owner: the large "Software Engineering" / "Computer and Software Technologies" title is part of the banner picture. It is smaller on the DCST and programme pages now; it can be made smaller still, or the other pages (offices, About, Allied Health faculty) can get the same banner layout.
+
+### Five more pages from the old site's menu (2026-11-23, branch `p4/real-departments`, prediction A4-z5)
+- New static pages, built from the saved copies of the old pages (Drive, read 2026-11-06), no CMS record needed: `/academics/departments/management-commerce`, `/academics/departments/english-and-foreign-languages`, `/academic-calendar`, `/administration/central-library-office`, `/administration/quality-enhancement-cell`. Profiles in `src/site/offices/profiles/{cmc,defl,calendar,library,qec}.ts`, looked up through `profileForPage` and rendered by `PageProfileRoute` in `src/site/organisation/routes.tsx`.
+- The office template gained optional statements (vision, mission), item lists, optional people, a custom breadcrumb trail and a services kicker. Existing offices render as before.
+- The five menu entries now point at the new internal paths; the five paths are in the sitemap list.
+- Checks run: tsc, eslint, 902 unit tests, axe, overflow and broken-image checks at 1440, 1024 and 390 px. Not run: production build, e2e, preview of this commit.
+- Not built: Affiliated Colleges (the saved copy is a 65-byte stub, no college list), the admissions links; Digital Library stays an external menu entry.
+- The QEC and Calendar pages name their documents but do not link the PDFs: the links live on the live site, which this work does not fetch. Listed under each page's `openPoints`.
+- Next: the lead merges PR #116 and deploys; a source for the college list is needed before Affiliated Colleges.
