@@ -117,6 +117,6 @@ export const footerUseful: { label: string; href: string }[] = [
   { label: 'News & Events', href: '/news' },
   { label: 'Student Services', href: `${U}/campus-management-system-uswat/` },
   { label: 'Faculty Resources', href: `${U}/e-office/` },
-  { label: 'Library', href: `${U}/central-library-office/` },
+  { label: 'Library', href: '/administration/central-library-office' },
   { label: 'Contact Us', href: '/contact/directory' },
 ]
