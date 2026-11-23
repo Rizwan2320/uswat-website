@@ -1,12 +1,17 @@
 import type { OfficeArea, OfficeGroup, OfficeProfile } from '../types'
 
 import { alumni } from './alumni'
+import { calendar } from './calendar'
+import { cmc } from './cmc'
 import { coe } from './coe'
 import { dasr } from './dasr'
+import { defl } from './defl'
 import { dit } from './dit'
 import { hunerkada } from './hunerkada'
+import { library } from './library'
 import { oric } from './oric'
 import { proctor } from './proctor'
+import { qec } from './qec'
 import { works } from './works'
 import { ydc } from './ydc'
 
@@ -21,3 +26,8 @@ export function officesByGroup(area: OfficeArea): { group: OfficeGroup; items: O
   const all = officesListedOn(area)
   return GROUP_ORDER.map((group) => ({ group, items: all.filter((p) => p.group === group) })).filter((g) => g.items.length)
 }
+
+/* Pages served at their own static address (not under /administration/{slug}), built with the same template. They are not listed on the
+   Research or Administration landings (`lists` is empty) and need no CMS record. */
+export const PAGE_PROFILES: OfficeProfile[] = [cmc, defl, library, qec, calendar]
+export const profileForPage = (slug: string): OfficeProfile | undefined => PAGE_PROFILES.find((p) => p.slug === slug)

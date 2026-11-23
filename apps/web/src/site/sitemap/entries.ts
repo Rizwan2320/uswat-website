@@ -16,7 +16,7 @@ export const CONTENT_SOURCES: Source[] = [
 ]
 
 /** The list pages themselves (News is `/news`). */
-export const LIST_PAGES = ['/news', '/notices', '/events', '/jobs', '/tenders', '/academics/departments', '/academics/programmes', '/contact/directory', '/research', '/administration', '/about', '/about/vice-chancellors-message', '/faculties/allied-health-sciences']
+export const LIST_PAGES = ['/news', '/notices', '/events', '/jobs', '/tenders', '/academics/departments', '/academics/programmes', '/contact/directory', '/research', '/administration', '/about', '/about/vice-chancellors-message', '/faculties/allied-health-sciences', '/academics/departments/management-commerce', '/academics/departments/english-and-foreign-languages', '/academic-calendar', '/administration/central-library-office', '/administration/quality-enhancement-cell']
 
 export const SITEMAP_REVALIDATE_SECONDS = 300
 

@@ -15,10 +15,10 @@ export const nav: NavItem[] = [
       { label: 'All faculties and programmes', href: '/academics', icon: 'cap' },
       { label: 'Faculty of Allied Health Sciences', href: '/faculties/allied-health-sciences', icon: 'heart' },
       { label: 'Computer and Software Technologies', href: '/academics/departments/dcst', icon: 'laptop' },
-      { label: 'Management & Commerce', href: `${U}/department-of-management-commerce/`, external: true, icon: 'trending' },
-      { label: 'English and Foreign Languages', href: `${U}/department-of-english-and-foreign-languages/`, external: true, icon: 'book' },
-      { label: 'Academic Calendar', href: `${U}/academic-calendar/`, external: true, icon: 'calendar' },
-      { label: 'Central Library', href: `${U}/central-library-office/`, external: true, icon: 'layers' },
+      { label: 'Management & Commerce', href: '/academics/departments/management-commerce', icon: 'trending' },
+      { label: 'English and Foreign Languages', href: '/academics/departments/english-and-foreign-languages', icon: 'book' },
+      { label: 'Academic Calendar', href: '/academic-calendar', icon: 'calendar' },
+      { label: 'Central Library', href: '/administration/central-library-office', icon: 'layers' },
     ],
   },
   {
@@ -38,7 +38,7 @@ export const nav: NavItem[] = [
     href: '/research',
     children: [
       { label: 'Office of Research, Innovation & Commercialization', href: '/administration/oric-2', icon: 'flask' },
-      { label: 'Quality Enhancement Cell', href: `${U}/quality-enhancement-cell/`, external: true, icon: 'badge' },
+      { label: 'Quality Enhancement Cell', href: '/administration/quality-enhancement-cell', icon: 'badge' },
       { label: 'SUJRIS Journal', href: 'https://sujris.uswat.edu.pk/', external: true, icon: 'book' },
       { label: 'Digital Library', href: 'http://www.digitallibrary.edu.pk/uniofswat.html', external: true, icon: 'layers' },
     ],
