@@ -865,5 +865,5 @@ P3 agent (slice 3a), own entry:
 - A matrix test now runs 2,400 role/stage cases and compares the screen's buttons with the server's check (`tests/unit/uiServerMatrix.unit.spec.ts`). Result: no visible button is refused. The server allows three things the screen hides on purpose (listed in the test). Archive and restore still have no button.
 - Found in the browser and fixed: Payload's own Unpublish showed to every role on every live page, and the server refused it. Replaced; Take offline in the status box stays for the people allowed it (checked: head on own department, coordinator on own programme, admin).
 - Correction: my sweep note said the auditor sees a media upload form. Wrong: they see "Not allowed". Fixed in `docs/evidence/p3-cms-sweep.md` on the 3am branch. A test now pins the auditor's media access.
-- Small thing seen: a coordinator's Publish button on an Approved page is labelled "Publish changes" (Payload's label). Not changed.
+- The Publish button now says "Publish" (it said "Publish changes", Payload's default) in English and in the Urdu draft. Checked in a browser for head and admin; e2e specs updated to the new name (e2e not run here).
 - Not run: Urdu view, keyboard-only pass, tablet width, archive/restore (no buttons yet), hosted preview.

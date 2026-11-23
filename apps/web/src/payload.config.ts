@@ -109,6 +109,11 @@ const built = buildConfig({
     translations: {
       ...({ ur: urTranslations } as object),
       en: {
+        version: {
+          // Payload labels the button "Publish changes" even for a page never published. The status box
+          // says what it does in the sentence above it; the button just says Publish (3an).
+          publishChanges: 'Publish',
+        },
         error: {
           // Payload's own text says "you must be logged in" even to a signed-in auditor who may only read.
           unauthorized:

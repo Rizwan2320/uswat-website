@@ -565,7 +565,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
       } else {
         return deny(
           'NEEDS_PUBLISH_ACTION',
-          'Publishing and archiving take effect immediately. Use the Publish changes button for this.',
+          'Publishing and archiving take effect immediately. Use the Publish button for this.',
           400,
         )
       }
