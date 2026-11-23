@@ -908,3 +908,19 @@ P3 agent (slice 3a), own entry:
 - Links still going to the official site on purpose (no page here yet): Management & Commerce, English and Foreign Languages, Academic Calendar, Central Library, the admissions notices, scholarships, loans, downloads, Quality Enhancement Cell, Press Releases, Affiliated Colleges, Student Services, Faculty Resources. Nothing was invented to replace them.
 - Still true: production holds no content, so News, Notices, Events, Jobs, Tenders and `/academics` show their empty states there. Putting Sample content in production is a separate decision (ADR-0026 says never).
 
+
+### Five more pages from the old site's menu (2026-11-23, branch `p4/real-departments`, prediction A4-z5)
+- New static pages, built from the saved copies of the old pages (Drive, read 2026-11-06), no CMS record needed: `/academics/departments/management-commerce`, `/academics/departments/english-and-foreign-languages`, `/academic-calendar`, `/administration/central-library-office`, `/administration/quality-enhancement-cell`. Profiles in `src/site/offices/profiles/{cmc,defl,calendar,library,qec}.ts`, looked up through `profileForPage` and rendered by `PageProfileRoute` in `src/site/organisation/routes.tsx`.
+- The office template gained optional statements (vision, mission), item lists, optional people, a custom breadcrumb trail and a services kicker. Existing offices render as before.
+- The five menu entries now point at the new internal paths; the five paths are in the sitemap list.
+- Checks run: tsc, eslint, 902 unit tests, axe, overflow and broken-image checks at 1440, 1024 and 390 px. Not run: production build, e2e, preview of this commit.
+- Not built: Affiliated Colleges (the saved copy is a 65-byte stub, no college list), the admissions links; Digital Library stays an external menu entry.
+- The QEC and Calendar pages name their documents but do not link the PDFs: the links live on the live site, which this work does not fetch. Listed under each page's `openPoints`.
+- Next: the lead merges PR #116 and deploys; a source for the college list is needed before Affiliated Colleges.
+
+### Banner photos on every page, smaller title, go-live checklist (2026-11-23, branch `p4/real-departments`, prediction A4-z6)
+- `BannerHeader` now defaults to rotating photographs on the right of the band and no green crumb strip, so offices, About, messages, research, administration, faculty and the five new pages match DCST. Pages without their own photos use the landing page's seven (`src/site/academics/campusPhotos.ts`); DCST keeps its own set. Pass `photos={[]}` for the plain banner or `hideCrumbs={false}` for the strip.
+- The banner picture keeps 60% of the band (was 68%), so the title is about 12% smaller. Phones still show the plain banner.
+- New `docs/briefs/go-live-checklist-for-the-lead.md`: merge checks, redirects, sitemap, preview checks, owner items, after-cutover checks.
+- Found, not fixed (route map is the lead's): old `/qec/` redirects to `/administration/qec` and old `/digital-library/` to `/administration/digital-library`; neither page exists, so both end on a 404.
+- Checks run: tsc, eslint, 904 unit tests, axe/overflow/broken-image on 10 pages at 3 widths. Not run: production build, e2e, preview of this commit.

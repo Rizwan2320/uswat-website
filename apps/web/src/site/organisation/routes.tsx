@@ -13,7 +13,7 @@ import RichAdministrationPage from '../offices/RichAdministrationPage'
 import RichOfficePage from '../offices/RichOfficePage'
 import RichResearchPage from '../offices/RichResearchPage'
 import { ADMINISTRATION_PATH, RESEARCH_PATH } from '../offices/landings'
-import { profileForOffice } from '../offices/profiles'
+import { profileForOffice, profileForPage } from '../offices/profiles'
 import RichFacultyPage from '../faculties/RichFacultyPage'
 import RichFacultyProgrammePage from '../faculties/RichFacultyProgrammePage'
 import { profileForFaculty, profileForFacultyProgramme } from '../faculties'
@@ -168,6 +168,20 @@ export const messageMetadata: Metadata = {
   title: 'Vice Chancellor’s Message',
   description: 'A message from the Vice Chancellor of the University of Swat, Prof. Dr. Husnul Amin.',
   alternates: { canonical: MESSAGE_PATH },
+}
+
+/* Pages built from an office-style profile and served at their own static address (PAGE_PROFILES): two departments, the Central Library,
+   the Quality Enhancement Cell and the Academic Calendar. No CMS record is needed; the route files pass the slug. */
+export async function PageProfileRoute({ slug }: { slug: string }) {
+  const profile = profileForPage(slug)
+  if (!profile) notFound()
+  return <RichOfficePage doc={{ id: profile.slug }} profile={profile} feed={await departmentFeed(profile.slug)} />
+}
+export function pageProfileMetadata(slug: string): Metadata {
+  const profile = profileForPage(slug)
+  return profile
+    ? { title: profile.name, description: profile.lead, alternates: { canonical: profile.path } }
+    : { title: 'Page' }
 }
 
 /* /faculties/{slug}: a faculty landing built from a profile (src/site/faculties). A static route per faculty, so no CMS record is needed. */

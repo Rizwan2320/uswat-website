@@ -678,7 +678,7 @@
 }
 .bannerPic {
   left: 0;
-  width: 68%;
+  width: 60%;
   /* fades out on the right, and at the bottom so the row of small icons in the picture is not cut in half */
   -webkit-mask-image:
     linear-gradient(to right, #000 62%, transparent 100%),
@@ -785,6 +785,27 @@
   color: var(--gold);
   font-size: 0.78rem;
   font-weight: 700;
+}
+.cardText + .cardText {
+  margin-top: 12px;
+}
+.listGroup + .listGroup {
+  margin-top: 32px;
+}
+.listGroup .cardTitle {
+  margin-bottom: 10px;
+}
+.plainList {
+  list-style: disc;
+  margin: 0 0 12px;
+  padding-inline-start: 1.2em;
+  display: grid;
+  gap: 8px;
+  max-width: 78ch;
+  line-height: 1.55;
+}
+.plainList li::marker {
+  color: var(--gold);
 }
 .note {
   margin: 14px 0 0;

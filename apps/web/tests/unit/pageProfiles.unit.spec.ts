@@ -1,0 +1,77 @@
+import { existsSync, readFileSync } from 'node:fs'
+import path from 'node:path'
+
+import { describe, expect, it } from 'vitest'
+
+import { PAGE_PROFILES, OFFICE_PROFILES, profileForPage } from '../../src/site/offices/profiles'
+
+const root = process.cwd()
+const nav = readFileSync(path.join(root, 'src/site/content/nav.ts'), 'utf8')
+
+describe('office-style pages at their own address (PAGE_PROFILES)', () => {
+  it('has the five pages, each with a unique slug and a path that starts with a slash', () => {
+    expect(PAGE_PROFILES.map((p) => p.slug).sort()).toEqual(
+      ['academic-calendar', 'central-library-office', 'english-and-foreign-languages', 'management-commerce', 'quality-enhancement-cell'].sort(),
+    )
+    expect(new Set(PAGE_PROFILES.map((p) => p.path)).size).toBe(PAGE_PROFILES.length)
+    for (const p of PAGE_PROFILES) {
+      expect(p.path?.startsWith('/')).toBe(true)
+      expect(p.lists).toEqual([])
+      expect(profileForPage(p.slug)).toBe(p)
+    }
+  })
+
+  it('does not reuse the slug of an office that has a CMS record', () => {
+    const office = new Set(OFFICE_PROFILES.map((o) => o.slug))
+    for (const p of PAGE_PROFILES) expect(office.has(p.slug)).toBe(false)
+  })
+
+  it('has a route file, a menu entry, a banner and a hero picture for every page', () => {
+    for (const p of PAGE_PROFILES) {
+      expect(existsSync(path.join(root, 'src/app/(site)/(cms)', p.path!, 'page.tsx')), `${p.slug} route`).toBe(true)
+      expect(nav.includes(`'${p.path}'`), `${p.slug} menu`).toBe(true)
+      expect(existsSync(path.join(root, 'public', p.banner.src)), `${p.slug} banner`).toBe(true)
+      expect(existsSync(path.join(root, 'public', p.hero.src)), `${p.slug} hero`).toBe(true)
+    }
+  })
+
+  it('gives every fact a source address and a day it was read (rule 3)', () => {
+    for (const p of PAGE_PROFILES) {
+      expect(p.sources.length).toBeGreaterThan(0)
+      for (const s of p.sources) expect(s.url.startsWith('https://uswat.edu.pk/')).toBe(true)
+      expect(p.officialPage.startsWith('https://uswat.edu.pk/')).toBe(true)
+      expect(p.verifiedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(p.openPoints?.length ?? 0).toBeGreaterThan(0)
+    }
+  })
+
+  it('shows only the department or office address, never a person’s address, and no placeholder text', () => {
+    for (const p of PAGE_PROFILES) {
+      for (const e of p.emails ?? []) expect(e).toMatch(/^(cmc|defl|librarian|qec)@uswat\.edu\.pk$/)
+      for (const person of p.people) {
+        expect(person.name + person.title).not.toMatch(/@/)
+      }
+      expect(JSON.stringify(p)).not.toMatch(/sample|lorem|tbd|gmail/i)
+    }
+  })
+
+  it('has unique person ids per page and ISO dates in the dated lists', () => {
+    for (const p of PAGE_PROFILES) {
+      expect(new Set(p.people.map((x) => x.id)).size).toBe(p.people.length)
+      for (const m of p.milestones ?? []) expect(m.date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    }
+  })
+
+  it('counts in the stats match the lists on the page', () => {
+    const cmc = profileForPage('management-commerce')!
+    expect(cmc.stats?.[0].value).toBe(cmc.itemLists?.[0].items.length)
+    expect(cmc.stats?.[1].value).toBe(cmc.people.length)
+    const defl = profileForPage('english-and-foreign-languages')!
+    expect(defl.stats?.[0].value).toBe(defl.itemLists?.[0].items.length)
+    expect(defl.stats?.[1].value).toBe(defl.people.length)
+    const qec = profileForPage('quality-enhancement-cell')!
+    expect(qec.stats?.[0].value).toBe(qec.people.length)
+    expect(qec.stats?.[1].value).toBe(qec.milestones?.length)
+    expect(qec.stats?.[2].value).toBe(qec.itemLists?.[0].items.length)
+  })
+})
