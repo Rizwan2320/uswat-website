@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import { STEP_TARGET, workflowView, type StepAction } from '../../src/admin/workflow/rules'
-import { checkTransition, mayApproveOwn } from '../../src/governance/policy'
+import {
+  checkTransition,
+  mayApproveOwn,
+  mayPublishApproved,
+  mayTakeOffline,
+} from '../../src/governance/policy'
 import {
   actorFromUser,
   WORKFLOW_STATUSES,
@@ -33,16 +38,17 @@ describe('head of department and coordinator (slice 3ah)', () => {
   const hod = person('approver', ['Registrar'])
   const deptPage = { target: { collection: 'departments', id: 4 } }
 
-  it('a head publishes their department page without sending it for review, whoever started the draft', () => {
+  it('a head publishes their department page without sending it for review, in one press, whoever started the draft', () => {
     for (const author of ['me', 'other'] as const) {
       const v = view(hod, 'draft', { ...deptPage, author })
-      expect(v.actions).toEqual(['approve', 'markVerified'])
+      expect(v.actions).toEqual(['approveAndPublish'])
       expect(v.banner.en).toMatch(/head of the department you publish it yourself/)
+      expect(v.banner.en).toMatch(/Approve and publish/)
     }
-    expect(view(hod, 'draft', { target: { collection: 'programmes', id: 9 } }).actions).toEqual([
-      'approve',
-      'markVerified',
-    ])
+    // A programme the head started themselves: one press. A coordinator's unsent draft: separate steps.
+    const prog = { target: { collection: 'programmes', id: 9 } }
+    expect(view(hod, 'draft', { ...prog, author: 'me' }).actions).toEqual(['approveAndPublish'])
+    expect(view(hod, 'draft', prog).actions).toEqual(['approve', 'markVerified'])
     expect(view(hod, 'approved', deptPage).showPublish).toBe(true)
   })
 
@@ -69,6 +75,106 @@ describe('head of department and coordinator (slice 3ah)', () => {
       const v = view(c, 'draft', { target })
       expect(v.tone).toBe('readonly')
       expect(v.banner.en).toMatch(/your own programme pages only/)
+    }
+  })
+})
+
+describe('coordinator publishes what the head approved (slice 3aj)', () => {
+  const c = actorFromUser({ id: 2, role: 'editor', offices: [], programmes: [5] })
+  const own = { target: { collection: 'programmes', id: 5 } }
+
+  it('Publish appears when approved and verified, not before', () => {
+    const ready = view(c, 'approved', { ...own, verification: 'verified' })
+    expect(ready).toMatchObject({ tone: 'ready', actions: [], showPublish: true })
+    expect(ready.banner.en).toMatch(/Press Publish/)
+    const waiting = view(c, 'approved', { ...own, verification: 'unverified' })
+    expect(waiting).toMatchObject({ tone: 'waiting', showPublish: false })
+    expect(waiting.banner.en).toMatch(/mark it verified/)
+  })
+
+  it('no Publish on draft, in review, live, a sibling programme or the department', () => {
+    for (const s of ['draft', 'in_review', 'published'] as const) {
+      expect(view(c, s, { ...own, verification: 'verified' }).showPublish, s).toBe(false)
+    }
+    for (const target of [
+      { collection: 'programmes', id: 6 },
+      { collection: 'departments', id: 4 },
+    ]) {
+      expect(view(c, 'approved', { target, verification: 'verified' }).showPublish).toBe(false)
+    }
+  })
+
+  it('an office editor and a contributor never see Publish; the rule is policy-backed', () => {
+    expect(view(person('editor'), 'approved', own).showPublish).toBe(false)
+    expect(view(person('contributor'), 'approved', own).showPublish).toBe(false)
+    expect(mayPublishApproved(c, own.target)).toBe(true)
+    expect(mayPublishApproved(c, { collection: 'programmes', id: 6 })).toBe(false)
+    expect(mayPublishApproved(c, { collection: 'departments', id: 5 })).toBe(false)
+    expect(mayPublishApproved(c)).toBe(false)
+    expect(
+      checkTransition(
+        c,
+        { ownerOffice: 'x', risk: 'standard', target: own.target },
+        'approved',
+        'published',
+      ),
+    ).toBeNull()
+    expect(
+      checkTransition(
+        c,
+        { ownerOffice: 'x', risk: 'standard', target: own.target },
+        'in_review',
+        'approved',
+      ),
+    ).not.toBeNull()
+  })
+})
+
+describe('taking a page offline (slice 3al)', () => {
+  const c = actorFromUser({ id: 2, role: 'editor', offices: [], programmes: [5] })
+  const hod = person('approver', ['Registrar'])
+  const prog = { target: { collection: 'programmes', id: 5 } }
+  const dept = { target: { collection: 'departments', id: 4 } }
+  const scope = (t: { collection: string; id: number }) => ({
+    ownerOffice: 'registrar',
+    risk: 'standard' as const,
+    target: t,
+  })
+
+  it('the coordinator is offered Take offline on their own live programme, the head is not', () => {
+    expect(view(c, 'published', prog).actions).toEqual(['takeOffline'])
+    expect(view(hod, 'published', prog).actions).not.toContain('takeOffline')
+    expect(view(hod, 'published', prog).banner.en).toMatch(/taken offline by its coordinator/)
+  })
+
+  it('the head is offered it on the department page; the admin and site manager everywhere', () => {
+    expect(view(hod, 'published', dept).actions).toContain('takeOffline')
+    for (const r of ['platformAdmin', 'siteManager'] as const) {
+      expect(view(person(r, []), 'published', prog).actions).toContain('takeOffline')
+    }
+  })
+
+  it('no one is offered it on a page that is not live, or on a sibling programme', () => {
+    expect(view(c, 'approved', prog).actions).not.toContain('takeOffline')
+    expect(view(c, 'published', { target: { collection: 'programmes', id: 6 } }).actions).toEqual(
+      [],
+    )
+  })
+
+  it('the screen offers exactly what the policy allows', () => {
+    for (const [a, t] of [
+      [c, prog.target],
+      [c, { collection: 'programmes', id: 6 }],
+      [hod, prog.target],
+      [hod, dept.target],
+      [person('editor'), prog.target],
+    ] as const) {
+      const offered = (view(a, 'published', { target: t }).actions as string[]).includes(
+        'takeOffline',
+      )
+      expect(offered, `${a.kind === 'user' ? a.role : ''} ${t.collection}${t.id}`).toBe(
+        mayTakeOffline(a, scope(t)),
+      )
     }
   })
 })
@@ -123,7 +229,7 @@ describe('workflow view per role', () => {
   it('a platform admin publishes their own work: Approve on a draft, Approve on their item in review, no waiting', () => {
     const p = person('platformAdmin')
     const draft = view(p, 'draft', { author: 'me' })
-    expect(draft.actions).toEqual(['approve', 'markVerified'])
+    expect(draft.actions).toEqual(['approveAndPublish'])
     expect(draft.banner.en).toMatch(/No second person is needed/)
     const review = view(p, 'in_review', { author: 'me' })
     expect(review.actions).toEqual(['approve', 'sendBack', 'markVerified'])
@@ -213,7 +319,7 @@ describe('workflow view per role', () => {
         for (const risk of ['standard', 'high_impact'] as const) {
           const v = view(actor, stage, { risk, author: 'other' })
           for (const a of v.actions as StepAction[]) {
-            if (a === 'markVerified') continue
+            if (a === 'markVerified' || a === 'approveAndPublish' || a === 'takeOffline') continue
             expect(
               checkTransition(actor, { ownerOffice: 'registrar', risk }, stage, STEP_TARGET[a]),
               `${r} ${stage} ${risk} ${a}`,

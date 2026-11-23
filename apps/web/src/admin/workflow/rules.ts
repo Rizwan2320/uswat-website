@@ -11,6 +11,8 @@ import {
   inScope,
   isReviewerFor,
   mayApproveOwn,
+  mayPublishApproved,
+  mayTakeOffline,
   type Target,
 } from '../../governance/policy'
 import {
@@ -22,7 +24,8 @@ import {
   type WorkflowStatus,
 } from '../../governance/roles'
 
-export type StepAction = 'sendForReview' | 'approve' | 'sendBack' | 'markVerified'
+export type StepAction =
+  'sendForReview' | 'approve' | 'approveAndPublish' | 'sendBack' | 'markVerified' | 'takeOffline'
 export type Words = { en: string; ur: string }
 
 /** Who wrote the item, as far as the signed-in person is concerned. */
@@ -162,13 +165,18 @@ export function workflowView(input: WorkflowInput): WorkflowView {
           tone: 'info',
           banner: w(
             role === 'approver'
-              ? 'Your draft. It saves by itself. As head of the department you publish it yourself: mark it verified, press Approve, then Publish. No one else needs to review it.'
-              : 'Your draft. It saves by itself. You publish it yourself: mark it verified, press Approve, then Publish. No second person is needed for a platform admin.',
+              ? 'Your draft. It saves by itself. As head of the department you publish it yourself: fill in the source of the facts, then press Approve and publish. It marks the facts verified, approves and publishes in one step. No one else needs to review it.'
+              : 'Your draft. It saves by itself. You publish it yourself: fill in the source of the facts, then press Approve and publish. It marks the facts verified, approves and publishes in one step. No second person is needed for a platform admin.',
             role === 'approver'
-              ? 'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ شعبے کے سربراہ کے طور پر آپ اسے خود شائع کرتے ہیں: تصدیق شدہ کریں، منظور کریں دبائیں، پھر شائع کریں۔ کسی اور کو جانچنے کی ضرورت نہیں۔'
-              : 'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ آپ اسے خود شائع کرتے ہیں: تصدیق شدہ کریں، منظور کریں دبائیں، پھر شائع کریں۔ پلیٹ فارم ایڈمن کے لیے کسی دوسرے شخص کی ضرورت نہیں۔',
+              ? 'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ شعبے کے سربراہ کے طور پر آپ اسے خود شائع کرتے ہیں: حقائق کا ماخذ بھریں، پھر منظور کریں اور شائع کریں دبائیں۔ یہ ایک ہی قدم میں تصدیق، منظوری اور اشاعت کرتا ہے۔ کسی اور کو جانچنے کی ضرورت نہیں۔'
+              : 'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ آپ اسے خود شائع کرتے ہیں: حقائق کا ماخذ بھریں، پھر منظور کریں اور شائع کریں دبائیں۔ یہ ایک ہی قدم میں تصدیق، منظوری اور اشاعت کرتا ہے۔ پلیٹ فارم ایڈمن کے لیے کسی دوسرے شخص کی ضرورت نہیں۔',
           ),
-          actions: ['approve', ...verify],
+          // One press for the owner of the page (slice 3ak): mark verified, approve and publish. A head
+          // looking at a draft a coordinator has not sent yet keeps the separate steps.
+          actions:
+            mine || target?.collection === 'departments'
+              ? ['approveAndPublish']
+              : ['approve', ...verify],
           showPublish: false,
         }
       }
@@ -257,6 +265,28 @@ export function workflowView(input: WorkflowInput): WorkflowView {
           showPublish: true,
         }
       }
+      // A programme coordinator publishes what their head approved (slice 3aj), once it is verified.
+      if (mayPublishApproved(actor, target)) {
+        return unverified
+          ? {
+              tone: 'waiting',
+              banner: w(
+                'Approved by your head of department. Waiting for them to mark it verified; then you can publish it. If you change this page it goes back to Draft.',
+                'شعبے کے سربراہ نے منظور کر لیا۔ ان کے تصدیق شدہ کرنے کا انتظار ہے؛ پھر آپ اسے شائع کر سکیں گے۔ صفحہ بدلا تو یہ مسودے میں واپس چلا جائے گا۔',
+              ),
+              actions: [],
+              showPublish: false,
+            }
+          : {
+              tone: 'ready',
+              banner: w(
+                'Approved and verified by your head of department. Press Publish to put it on the website. If you change anything first, it goes back to Draft.',
+                'شعبے کے سربراہ نے منظور اور تصدیق کر دی۔ ویب سائٹ پر لانے کے لیے شائع کریں دبائیں۔ پہلے کچھ بدلا تو یہ مسودے میں واپس چلا جائے گا۔',
+              ),
+              actions: [],
+              showPublish: true,
+            }
+      }
       return {
         tone: 'waiting',
         banner: w(
@@ -266,15 +296,22 @@ export function workflowView(input: WorkflowInput): WorkflowView {
         actions: [],
         showPublish: false,
       }
-    case 'published':
+    case 'published': {
+      const offline: StepAction[] = mayTakeOffline(actor, scope) ? ['takeOffline'] : []
       if (reviewer) {
         return {
           tone: 'ready',
-          banner: w(
-            'Live on the website. Changes save as a new draft first; Publish puts them live.',
-            'ویب سائٹ پر شائع ہے۔ تبدیلیاں پہلے نئے مسودے کے طور پر محفوظ ہوتی ہیں؛ شائع کریں دبانے پر لائیو ہوتی ہیں۔',
-          ),
-          actions: verify,
+          banner:
+            target?.collection === 'programmes' && role === 'approver'
+              ? w(
+                  'Live on the website. Changes save as a new draft first; Publish puts them live. A programme page is taken offline by its coordinator, not by the head.',
+                  'ویب سائٹ پر شائع ہے۔ تبدیلیاں پہلے نئے مسودے کے طور پر محفوظ ہوتی ہیں؛ شائع کریں دبانے پر لائیو ہوتی ہیں۔ پروگرام کا صفحہ اس کا کوآرڈینیٹر آف لائن کرتا ہے، سربراہ نہیں۔',
+                )
+              : w(
+                  'Live on the website. Changes save as a new draft first; Publish puts them live.',
+                  'ویب سائٹ پر شائع ہے۔ تبدیلیاں پہلے نئے مسودے کے طور پر محفوظ ہوتی ہیں؛ شائع کریں دبانے پر لائیو ہوتی ہیں۔',
+                ),
+          actions: [...verify, ...offline],
           showPublish: true,
         }
       }
@@ -284,9 +321,10 @@ export function workflowView(input: WorkflowInput): WorkflowView {
           'Live on the website. Your changes are saved as a draft and must be approved before they go live.',
           'ویب سائٹ پر شائع ہے۔ آپ کی تبدیلیاں مسودے کے طور پر محفوظ ہوں گی اور لائیو ہونے سے پہلے منظور ہونی چاہئیں۔',
         ),
-        actions: [],
+        actions: offline,
         showPublish: false,
       }
+    }
     case 'archived':
     default:
       return readOnly(
@@ -299,7 +337,10 @@ export function workflowView(input: WorkflowInput): WorkflowView {
 }
 
 /** The Stage each step button asks for. The policy decides whether the save is allowed. */
-export const STEP_TARGET: Record<Exclude<StepAction, 'markVerified'>, WorkflowStatus> = {
+export const STEP_TARGET: Record<
+  Exclude<StepAction, 'markVerified' | 'approveAndPublish' | 'takeOffline'>,
+  WorkflowStatus
+> = {
   sendForReview: 'in_review',
   approve: 'approved',
   sendBack: 'draft',
@@ -308,8 +349,10 @@ export const STEP_TARGET: Record<Exclude<StepAction, 'markVerified'>, WorkflowSt
 export const STEP_LABEL: Record<StepAction, Words> = {
   sendForReview: w('Send for review', 'جائزے کے لیے بھیجیں'),
   approve: w('Approve', 'منظور کریں'),
+  approveAndPublish: w('Approve and publish', 'منظور کریں اور شائع کریں'),
   sendBack: w('Send back', 'واپس بھیجیں'),
   markVerified: w('Mark verified', 'تصدیق شدہ کریں'),
+  takeOffline: w('Take offline', 'آف لائن کریں'),
 }
 
 /** What the banner says right after a step succeeded. */
@@ -322,9 +365,17 @@ export const STEP_DONE: Record<StepAction, Words> = {
     'Approved. An approver can now publish it.',
     'منظور ہو گیا۔ اب منظوری دہندہ اسے شائع کر سکتا ہے۔',
   ),
+  approveAndPublish: w(
+    'Approved, verified and published. It is live on the website.',
+    'منظور، تصدیق شدہ اور شائع ہو گیا۔ یہ ویب سائٹ پر لائیو ہے۔',
+  ),
   sendBack: w(
     'Sent back to Draft. The editor can change it and send it again.',
     'مسودے میں واپس بھیج دیا گیا۔',
   ),
   markVerified: w('Marked as verified.', 'تصدیق شدہ نشان زد ہو گیا۔'),
+  takeOffline: w(
+    'Taken offline. It is a draft again and no longer on the website. To bring it back, send it for approval again.',
+    'آف لائن کر دیا گیا۔ یہ دوبارہ مسودہ ہے اور ویب سائٹ پر نہیں۔ واپس لانے کے لیے دوبارہ منظوری کے لیے بھیجیں۔',
+  ),
 }

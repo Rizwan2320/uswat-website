@@ -45,6 +45,7 @@ const recentlyAccepted = new Map<
 /** Outside the component so the render stays free of clock reads. */
 const fiveSecondsFromNow = (): number => Date.now() + 5000
 
+const w = (en: string, ur: string): Words => ({ en, ur })
 const pick = (words: Words, language: string): string => (language === 'ur' ? words.ur : words.en)
 const idOf = (v: unknown): string | null =>
   v && typeof v === 'object' && 'id' in v
@@ -78,6 +79,7 @@ export function WorkflowBar(): React.ReactElement | null {
   const createdBy = useField<unknown>({ path: 'governance.createdBy' })
   const reviewNote = useField<string>({ path: 'governance.reviewNote' })
   const [asking, setAsking] = useState(false)
+  const [askingOffline, setAskingOffline] = useState(false)
   const [draftNote, setDraftNote] = useState('')
   const [busy, setBusy] = useState<StepAction | null>(null)
   const [done, setDone] = useState<Words | null>(null)
@@ -110,8 +112,11 @@ export function WorkflowBar(): React.ReactElement | null {
   })
   const language = i18n.language
 
-  const run = async (action: StepAction, note?: string) => {
-    if (!collectionSlug || id == null) return
+  const run = async (
+    action: Exclude<StepAction, 'approveAndPublish' | 'takeOffline'>,
+    note?: string,
+  ): Promise<boolean> => {
+    if (!collectionSlug || id == null) return false
     const before = { stage: stage.value, verification: verification.value, note: reviewNote.value }
     setBusy(action)
     setDone(null)
@@ -166,6 +171,84 @@ export function WorkflowBar(): React.ReactElement | null {
       reviewNote.setValue(before.note ?? '', true)
     }
     setBusy(null)
+    return Boolean(result?.res?.ok)
+  }
+
+  /**
+   * One press for the owner of a page (slice 3ak): mark verified, approve, then publish, each through
+   * the same save the separate buttons use, so the policy still decides every step. It stops at the
+   * first step the server refuses (Payload shows why) and the screen stays at the last accepted step.
+   */
+  const approveAndPublish = async () => {
+    if (!collectionSlug || id == null) return
+    // Checked first so a press never leaves the page half-way (verified and approved but not live).
+    const source = getField('governance.source')?.value
+    if (typeof source !== 'string' || source.trim() === '') {
+      setDone(
+        w(
+          'Fill in "Source of the facts" (on the right) first, then press Approve and publish. The source is how readers can trust the page.',
+          'پہلے دائیں طرف "حقائق کا ماخذ" بھریں، پھر منظور کریں اور شائع کریں دبائیں۔ ماخذ سے قارئین کو صفحے پر اعتماد ہوتا ہے۔',
+        ),
+      )
+      return
+    }
+    if (verification.value !== 'verified' && !(await run('markVerified'))) return
+    if (!(await run('approve'))) return
+    setBusy('approveAndPublish')
+    setDone(null)
+    for (let i = 0; i < 200 && processingRef.current; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 25))
+    }
+    const url = formatAdminURL({
+      apiRoute: config.routes.api,
+      path: `/${collectionSlug}/${id}?locale=${locale}&depth=0&fallback-locale=null`,
+    })
+    const result = await submit({
+      action: url,
+      method: 'PATCH',
+      overrides: { _status: 'published' },
+    })
+    if (result?.res?.ok) {
+      recentlyAccepted.set(key, { until: fiveSecondsFromNow(), stage: 'published' })
+      setDone(STEP_DONE.approveAndPublish)
+    } else {
+      setDone(
+        w(
+          'Approved and verified, but not published: the message that appeared says why. Fix it, then press Publish.',
+          'منظور اور تصدیق شدہ، لیکن شائع نہیں ہوا: جو پیغام آیا اس میں وجہ ہے۔ درست کریں، پھر شائع کریں دبائیں۔',
+        ),
+      )
+    }
+    setBusy(null)
+  }
+
+  /**
+   * Take a live page offline (slice 3al): the same save as Payload's Unpublish, asked for once more
+   * first because it removes the page from the website. The server decides who may (policy.ts).
+   */
+  const takeOffline = async () => {
+    if (!collectionSlug || id == null) return
+    setAskingOffline(false)
+    setBusy('takeOffline')
+    setDone(null)
+    for (let i = 0; i < 200 && processingRef.current; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 25))
+    }
+    const url = formatAdminURL({
+      apiRoute: config.routes.api,
+      path: `/${collectionSlug}/${id}?locale=${locale}&depth=0&fallback-locale=null`,
+    })
+    const result = await submit({
+      action: url,
+      method: 'PATCH',
+      overrides: { _status: 'draft' },
+      skipValidation: true,
+    })
+    if (result?.res?.ok) {
+      recentlyAccepted.set(key, { until: fiveSecondsFromNow(), stage: 'draft' })
+      setDone(STEP_DONE.takeOffline)
+    }
+    setBusy(null)
   }
 
   return (
@@ -209,6 +292,31 @@ export function WorkflowBar(): React.ReactElement | null {
             </button>
           </div>
         </div>
+      ) : askingOffline ? (
+        <div className="workflow-bar__ask">
+          <p role="alert">
+            {language === 'ur'
+              ? 'یہ صفحہ ویب سائٹ سے ہٹ جائے گا اور مسودہ بن جائے گا۔ واپس لانے کے لیے دوبارہ منظوری درکار ہوگی۔ کیا آف لائن کریں؟'
+              : 'This removes the page from the website and makes it a draft. Bringing it back needs approval again. Take it offline?'}
+          </p>
+          <div className="workflow-bar__actions">
+            <button
+              type="button"
+              className="workflow-bar__button workflow-bar__button--takeOffline"
+              disabled={busy !== null}
+              onClick={() => void takeOffline()}
+            >
+              {language === 'ur' ? 'ہاں، آف لائن کریں' : 'Yes, take it offline'}
+            </button>
+            <button
+              type="button"
+              className="workflow-bar__button"
+              onClick={() => setAskingOffline(false)}
+            >
+              {language === 'ur' ? 'منسوخ کریں' : 'Cancel'}
+            </button>
+          </div>
+        </div>
       ) : view.actions.length > 0 || view.showPublish ? (
         <div className="workflow-bar__actions">
           {view.actions.map((a) => (
@@ -217,7 +325,15 @@ export function WorkflowBar(): React.ReactElement | null {
               type="button"
               className={`workflow-bar__button workflow-bar__button--${a}`}
               disabled={busy !== null}
-              onClick={() => (a === 'sendBack' ? setAsking(true) : void run(a))}
+              onClick={() =>
+                a === 'sendBack'
+                  ? setAsking(true)
+                  : a === 'approveAndPublish'
+                    ? void approveAndPublish()
+                    : a === 'takeOffline'
+                      ? setAskingOffline(true)
+                      : void run(a)
+              }
             >
               {pick(STEP_LABEL[a], language)}
             </button>

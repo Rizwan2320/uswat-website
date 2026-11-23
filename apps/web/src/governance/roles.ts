@@ -118,3 +118,7 @@ export function actorFromRequest(req: { user?: UserLike | null; payloadAPI?: str
 
 /** Importers, jobs and other trusted server code. */
 export const SYSTEM_ACTOR: Actor = { kind: 'system' }
+
+/** An Editor with programmes assigned looks after those programme pages only (slice 3ah). */
+export const isCoordinatorActor = (actor: Actor): boolean =>
+  actor.kind === 'user' && actor.role === 'editor' && (actor.programmes?.length ?? 0) > 0

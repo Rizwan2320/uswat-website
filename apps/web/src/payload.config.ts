@@ -51,6 +51,8 @@ const built = buildConfig({
       // The editor dashboard (CMS-09): my drafts, review queue, expiring soon, stale, needs alt.
       // Operations (3v): sweep status and work by office, for admin, site manager and auditor only.
       beforeDashboard: ['@/admin/EditorDashboard', '@/admin/OperationsPanel'],
+      // "You are...": who you are and what that means, on every screen (slice 3ai).
+      header: ['@/admin/RoleBanner'],
     },
     importMap: {
       baseDir: path.resolve(dirname),
@@ -107,6 +109,11 @@ const built = buildConfig({
     translations: {
       ...({ ur: urTranslations } as object),
       en: {
+        version: {
+          // Payload labels the button "Publish changes" even for a page never published. The status box
+          // says what it does in the sentence above it; the button just says Publish (3an).
+          publishChanges: 'Publish',
+        },
         error: {
           // Payload's own text says "you must be logged in" even to a signed-in auditor who may only read.
           unauthorized:

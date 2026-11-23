@@ -99,7 +99,7 @@ test.describe('editor and approver in the admin', () => {
     await choose(ap, 'field-governance__status', 'Approved')
     await choose(ap, 'field-governance__verificationStatus', 'Verified')
     await eventually(async () => (await notice(title)).governance.status).toBe('approved')
-    await ap.getByRole('button', { name: 'Publish changes' }).click()
+    await ap.getByRole('button', { name: 'Publish', exact: true }).click()
     await expect
       .poll(async () => (await api(`notices/${saved.id}?depth=0`))._status, { timeout: 20000 })
       .toBe('published')

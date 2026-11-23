@@ -941,3 +941,32 @@ P3 agent (slice 3a), own entry:
 - **Vercel free plan: 100 deployments a day.** It was reached on 2026-11-23, so a push to `main` may not deploy until the limit resets; deploy by hand from the dashboard if needed. Agents pushing many branches use it up.
 - Items from agent 4's checklist still for the lead and owner: confirm the 33 held-page redirects, open `/content-sitemap.xml` on the real domain, turn Deployment Protection off for judges, Search Console submission, rotate the Neon password.
 
+
+## P3 slice 3aj, the coordinator publishes what the head approved (2026-11-22, branch `p3/coordinator-publishes-3aj`, on main after 3ah merged)
+- A programme coordinator can press Publish on their own programme once the head of department approved and verified it, and for nothing else. A publishing save that also changes content is refused (`PUBLISH_CHANGED_CONTENT`). Brief: `docs/briefs/p3aj-coordinator-publishes.md`. No schema change.
+- Checks run: typecheck, lint, 7 new integration tests, 3 new screen-rule tests, full suite 1392 pass / 150 skipped / 0 failed (`uswat_ah_fresh`), unit 936 pass. Prediction P3aj-a. Not run: browser check of the coordinator screen, hosted preview.
+- **Next:** 3ai (role banner, role dashboards, one-click Approve and publish), then rebase #127 onto main.
+
+## P3 slice 3ai, role screens (2026-11-22, branch `p3/role-screens-3ai`, on main)
+- A "You are..." bar on every admin screen, role-specific dashboard lists (a head's "Waiting for your review", "Approved, ready to publish", a coordinator's "Ready for you to publish"), your own item no longer shown as something for you to review, expiring and stale lists limited to your own pages. Brief: `docs/briefs/p3ai-role-screens.md`. No schema change.
+- Checks run: typecheck, lint (0 errors), dashboard unit and integration tests, full suite 1455 pass / 196 skipped / 0 failed (`uswat_aj`, fresh and migrated to main), unit 970 pass, production build, browser check as admin, head of department and coordinator (banner, lists, Publish button on the coordinator's approved page). Prediction P3ai-a.
+- Not run: Urdu rendering of the banner in a browser, phone width, hosted preview. The Urdu lines need a native reader.
+- **Next:** one-click Approve and publish (own slice), the login screen wording, Urdu review.
+
+## P3 slice 3ak, one press to publish (2026-11-22, branch `p3/one-click-publish-3ak`, on main)
+- "Approve and publish" for a page's owner (admin; head of department on department pages and their own programme pages), source checked first; the Stage box is read-only except for the platform admin. Brief: `docs/briefs/p3ak-one-click-publish.md`. No schema change.
+- Checks run: typecheck, lint (0 errors), unit 963 pass, integration 1436 pass / 196 skipped / 0 failed (fresh database migrated to main), production build, browser check as head and admin (publish, source-empty stop, Stage box states). Prediction P3ak-a.
+- Not run: automated browser test, axe, Urdu rendering, phone width, hosted preview.
+- **Next:** Archive and Restore buttons, axe on the status and Stage boxes, Urdu review, login screen wording.
+## P3 slice 3al, who takes a page offline, and sign-in wording (2026-11-22, branch `p3/offline-and-login-3al`, stacked on 3aj)
+- A programme page is taken offline by its coordinator; the head takes offline only the department page; admin and site manager unchanged. New Take offline button with a confirm step. Sign-in page: plain English and Urdu text, forgot-password link hidden until mail exists. Brief: `docs/briefs/p3al-offline-and-sign-in.md`. No schema change.
+- Checks run: typecheck, lint (0 errors), unit 970 pass, integration 1453 pass / 196 skipped / 0 failed (fresh database migrated to main), production build, browser check (sign-in page, coordinator takes a page offline and it leaves the public API, head has the button on the department page only). Predictions P3al-a and b.
+- Not run: axe, phone width, Urdu rendering review, hosted preview.
+- **Next:** Archive and Restore buttons, axe on the status and Stage boxes, Urdu review, mail setup (then show the forgot-password link again).
+
+## P3 slice 3an, screens and server agree (2026-11-23, branch `p3/ui-server-matrix-3an`, based on the combined scratch branch)
+- A matrix test now runs 2,400 role/stage cases and compares the screen's buttons with the server's check (`tests/unit/uiServerMatrix.unit.spec.ts`). Result: no visible button is refused. The server allows three things the screen hides on purpose (listed in the test). Archive and restore still have no button.
+- Found in the browser and fixed: Payload's own Unpublish showed to every role on every live page, and the server refused it. Replaced; Take offline in the status box stays for the people allowed it (checked: head on own department, coordinator on own programme, admin).
+- Correction: my sweep note said the auditor sees a media upload form. Wrong: they see "Not allowed". Fixed in `docs/evidence/p3-cms-sweep.md` on the 3am branch. A test now pins the auditor's media access.
+- The Publish button now says "Publish" (it said "Publish changes", Payload's default) in English and in the Urdu draft. Checked in a browser for head and admin; e2e specs updated to the new name (e2e not run here).
+- Not run: Urdu view, keyboard-only pass, tablet width, archive/restore (no buttons yet), hosted preview.
