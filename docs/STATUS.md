@@ -862,4 +862,8 @@ P3 agent (slice 3a), own entry:
 - `portalLinks.faculty` now points to that sign-in page (PR #148, merged, production deployment READY). The live home page shows it on both the top bar and the Faculty Portal card; Student Portal and CMS links are unchanged. Typecheck, lint, 1662 integration tests and CI passed.
 - **Not done: step 4, the DNS record.** I have no DNS access (rule 5). The portal works on the Vercel address without it. Later: owner chooses a host such as `faculty.uswat.edu.pk`, I add it to the portal project, the owner adds the record, then `PORTAL_ORIGIN` and `NEXT_PUBLIC_SERVER_URL` change and everyone re-enrols passkeys. `PORTAL_ORIGIN` refuses `uswat.edu.pk` hosts today, so that guard needs a deliberate change at that point.
 - Demo project `uswat-portal` and the production CMS site were not touched.
+## FP agent may merge its own portal PRs (2026-11-23, main agent, owner instruction)
+- ADR-0027 and `CLAUDE.md` rule 8 now let the FP agent merge portal-lane pull requests itself (portal paths only, CI green, fast-forward only, no Vercel settings, secrets, DNS or CMS schema). Public site, CMS, Vercel settings and applying migrations to the live portal database stay with the lead.
+- This changes the repo's rules only. It does not change anyone's GitHub or Vercel permissions; if FP's credentials cannot merge or push to `main`, the owner has to grant that in GitHub. Not run: no check of FP's actual permissions.
+- Note for FP: each merge to `main` redeploys both projects, so look at the public home page too.
 
