@@ -48,6 +48,25 @@
     rgb(0 42 16 / 0) 74%
   );
 }
+/* Hero card with a photograph (the campus). The photograph takes the illustration's place on the physical right and a
+   mask fades it out towards the left, into the card's green, so there is no hard edge: the same arrangement as the
+   landing page, where the pictures sit on the right and fade into the green behind the text. */
+.heroCardPhoto {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 0;
+  width: 58%;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.55) 26%, #000 56%);
+  mask-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.55) 26%, #000 56%);
+}
+.heroCardPhoto img {
+  object-fit: cover;
+  object-position: center 62%;
+}
+
 /* The text sits on the physical left, where the illustration is empty, in both reading directions. */
 .heroText {
   position: relative;
@@ -255,7 +274,7 @@
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--card-min, 300px), 100%), 1fr));
   gap: 16px;
   margin: 0;
   padding: 0;
@@ -317,11 +336,14 @@
   margin: 0;
   line-height: 1.6;
 }
+.vmCard p + p {
+  margin-top: 10px;
+}
 
 /* picture cards: disciplines and laboratories */
 .pics {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--pic-min, 290px), 100%), 1fr));
   gap: 20px;
   margin: 0;
   padding: 0;
@@ -641,11 +663,82 @@
   /* centre the title block (about 26% to 64% of the picture) in the band */
   object-position: center 40%;
 }
+/* Banner band with rotating photographs on its right (HeroPhotos), the way the landing page does it: the banner picture
+   keeps the left of the band, with its title, and the photographs fade in from the right. The picture is narrower than
+   the band, so its title is smaller than in the full-width banner, and it fades out on its right edge under the photographs. */
+.bannerPic,
+.bannerPicFull {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+.bannerPicFull {
+  left: 0;
+  right: 0;
+}
+.bannerPic {
+  left: 0;
+  width: 68%;
+  /* fades out on the right, and at the bottom so the row of small icons in the picture is not cut in half */
+  -webkit-mask-image:
+    linear-gradient(to right, #000 62%, transparent 100%),
+    linear-gradient(to bottom, #000 82%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, #000 62%, transparent 100%),
+    linear-gradient(to bottom, #000 82%, transparent 100%);
+  mask-composite: intersect;
+}
+.bannerPic .bannerImg {
+  /* keep the title block in the band and leave out the row of small icons along the bottom of the picture */
+  object-position: left 30%;
+}
+.bannerPhotos {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 1;
+  width: 54%;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.55) 28%, #000 58%);
+  mask-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.55) 28%, #000 58%);
+}
+.heroPhoto {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+.heroPhoto[data-active] {
+  opacity: 1;
+}
+.heroPhoto img {
+  object-fit: cover;
+}
+@media (prefers-reduced-motion: reduce) {
+  .heroPhoto {
+    transition: none;
+  }
+}
 /* breadcrumbs sit in a slim strip above the picture so they never cover the title */
 .bannerCrumbs {
   order: 0;
   padding-block: 9px;
   background: var(--forest);
+}
+
+/* The strip is not drawn on academic pages; the trail stays in the page for screen readers. */
+.bannerCrumbs.crumbsHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* curriculum */
@@ -824,6 +917,18 @@
   .hero::after {
     display: none;
   }
+  /* On phones the photograph is a strip along the bottom of the card, fading upwards into the green. */
+  .heroWithPhotos {
+    padding-bottom: 170px;
+  }
+  .heroCardPhoto {
+    top: auto;
+    left: 0;
+    width: 100%;
+    height: 190px;
+    -webkit-mask-image: linear-gradient(to top, #000 0%, #000 35%, transparent 100%);
+    mask-image: linear-gradient(to top, #000 0%, #000 35%, transparent 100%);
+  }
   .heroText {
     width: 100%;
     margin-right: 0;
@@ -846,6 +951,17 @@
   .bannerTitle {
     height: auto;
     aspect-ratio: 16 / 9;
+  }
+  /* phones show the plain banner, whole */
+  .bannerPhotos {
+    display: none;
+  }
+  .bannerPic {
+    left: 0;
+    width: auto;
+    right: 0;
+    -webkit-mask-image: none;
+    mask-image: none;
   }
   .bannerCrumbs {
     padding-block: 12px;

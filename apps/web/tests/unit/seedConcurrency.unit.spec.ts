@@ -106,7 +106,7 @@ describe('seeds with records written at once', () => {
     const cms = new FakeCms()
     await seed(cms, { concurrency: 6 })
     const published = cms.recs.filter((r) => r._status === 'published')
-    expect(published.length).toBe(93) // 48 organisation (DCST and its five programmes included), 6 contacts, 35 articles, tags and merit lists (DCST news included), 4 pages
+    expect(published.length).toBe(109) // 64 organisation (DCST and its five programmes, the nine offices with a rich page, and the Allied Health faculty group with two centres and four programmes, included), 6 contacts, 35 articles, tags and merit lists (DCST news included), 4 pages
     for (const r of published) {
       const flow = r.steps.filter((s) => s !== 'ur' && s !== 'create')
       // organisation records are also linked while still drafts, which adds no workflow step
@@ -133,7 +133,7 @@ describe('seeds with records written at once', () => {
     const first = await seed(cms, { concurrency: 6, deadline: Date.now() + 1 })
     expect(first.partial).toBe(true)
     // the organisation data is never cut short, so it is complete; the articles are not
-    expect(first.created).toBe(48)
+    expect(first.created).toBe(64)
     expect(first.articles.created).toBeLessThan(50)
     const second = await seed(cms, { concurrency: 6 })
     expect(second.partial).toBe(false)
@@ -143,8 +143,9 @@ describe('seeds with records written at once', () => {
 
 describe('seed data the concurrent links rely on', () => {
   it('has a different head for every department and every office', () => {
-    const dept = departments.map((d) => d.head)
-    const off = offices.map((o) => o.head)
+    const dept = departments.flatMap((d) => (d.head ? [d.head] : []))
+    // the nine offices with a rich page have no seeded head (their people live in src/site/offices/profiles)
+    const off = offices.flatMap((o) => (o.head ? [o.head] : []))
     expect(new Set(dept).size).toBe(dept.length)
     expect(new Set(off).size).toBe(off.length)
   })

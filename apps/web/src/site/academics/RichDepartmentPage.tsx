@@ -91,9 +91,12 @@ export default function RichDepartmentPage({
           { label: 'Departments', href: DEPARTMENTS_PATH },
           { label: profile.shortName },
         ]}
+        hideCrumbs
+        photos={profile.heroPhotos}
       />
       <Hero
         art={profile.hero}
+        photo={profile.campusPhoto}
         badge={profile.shortName}
         lead={profile.intro}
         facts={[

@@ -6,6 +6,17 @@ import RichDepartmentPage from '../academics/RichDepartmentPage'
 import RichDisciplinePage from '../academics/RichDisciplinePage'
 import { departmentFeed } from '../academics/feed'
 import { profileForDepartment, profileForDiscipline } from '../academics/profiles'
+import RichAboutPage from '../about/RichAboutPage'
+import RichMessagePage from '../about/RichMessagePage'
+import { ABOUT_PATH, MESSAGE_PATH } from '../about/data'
+import RichAdministrationPage from '../offices/RichAdministrationPage'
+import RichOfficePage from '../offices/RichOfficePage'
+import RichResearchPage from '../offices/RichResearchPage'
+import { ADMINISTRATION_PATH, RESEARCH_PATH } from '../offices/landings'
+import { profileForOffice } from '../offices/profiles'
+import RichFacultyPage from '../faculties/RichFacultyPage'
+import RichFacultyProgrammePage from '../faculties/RichFacultyProgrammePage'
+import { profileForFaculty, profileForFacultyProgramme } from '../faculties'
 
 import { DepartmentsIndex, ProgrammesIndex } from './Lists'
 import { AcademicsPage, CampusPage } from './Landing'
@@ -63,6 +74,8 @@ export async function ProgrammeRoute({ params }: { params: SlugParams }) {
     const feed = await departmentFeed(profile.department)
     return <RichDisciplinePage doc={doc} profile={profile} feed={feed} />
   }
+  const facultyProgramme = profileForFacultyProgramme(str(doc.slug) ?? '')
+  if (facultyProgramme) return <RichFacultyProgrammePage doc={doc} profile={facultyProgramme} />
   return <ProgrammePage doc={doc} />
 }
 export async function programmeMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
@@ -76,14 +89,34 @@ export async function programmeMetadata({ params }: { params: SlugParams }): Pro
 export async function OfficeRoute({ params }: { params: SlugParams }) {
   const doc = await getOffice(decode((await params).slug ?? ''), await preview())
   if (!doc) notFound()
+  const profile = profileForOffice(str(doc.slug) ?? '')
+  if (profile) return <RichOfficePage doc={doc} profile={profile} feed={await departmentFeed(profile.slug)} />
   return <OfficePage doc={doc} />
 }
 export async function officeMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
   const slug = decode((await params).slug ?? '')
   const doc = await getOffice(slug, await preview())
   return doc
-    ? { title: str(doc.name) ?? 'Office', alternates: { canonical: `${OFFICES_PATH}/${encodeURIComponent(slug)}` } }
+    ? { title: str(doc.name) ?? 'Office', description: profileForOffice(slug)?.lead, alternates: { canonical: `${OFFICES_PATH}/${encodeURIComponent(slug)}` } }
     : { title: 'Office' }
+}
+
+/* /research and /administration: section landings (T2). Static routes, so they win over a Pages record with the same slug. */
+export function ResearchRoute() {
+  return <RichResearchPage />
+}
+export const researchMetadata: Metadata = {
+  title: 'Research',
+  description: 'Research offices, the journal and the digital library of the University of Swat.',
+  alternates: { canonical: RESEARCH_PATH },
+}
+export function AdministrationRoute() {
+  return <RichAdministrationPage />
+}
+export const administrationMetadata: Metadata = {
+  title: 'Administration',
+  description: 'Directorates, offices, boards and centres of the University of Swat.',
+  alternates: { canonical: ADMINISTRATION_PATH },
 }
 
 export async function AcademicsRoute() {
@@ -100,4 +133,35 @@ export async function campusMetadata({ params }: { params: SlugParams }): Promis
   const slug = decode((await params).slug ?? '')
   const doc = await getCampus(slug, await preview())
   return doc ? { title: str(doc.name) ?? 'Campus', alternates: { canonical: `${CAMPUSES_PATH}/${encodeURIComponent(slug)}` } } : { title: 'Campus' }
+}
+
+/* /about and /about/vice-chancellors-message: static routes, so they win over a Pages record with the same slug (the seeded Sample About page). */
+export function AboutRoute() {
+  return <RichAboutPage />
+}
+export const aboutMetadata: Metadata = {
+  title: 'About the University',
+  description: 'History, vision and mission of the University of Swat.',
+  alternates: { canonical: ABOUT_PATH },
+}
+export function MessageRoute() {
+  return <RichMessagePage />
+}
+export const messageMetadata: Metadata = {
+  title: 'Vice Chancellor’s Message',
+  description: 'A message from the Vice Chancellor of the University of Swat, Prof. Dr. Husnul Amin.',
+  alternates: { canonical: MESSAGE_PATH },
+}
+
+/* /faculties/{slug}: a faculty landing built from a profile (src/site/faculties). A static route per faculty, so no CMS record is needed. */
+export function FacultyRoute({ slug }: { slug: string }) {
+  const profile = profileForFaculty(slug)
+  if (!profile) notFound()
+  return <RichFacultyPage profile={profile} />
+}
+export function facultyMetadata(slug: string): Metadata {
+  const profile = profileForFaculty(slug)
+  return profile
+    ? { title: profile.name, description: profile.lead, alternates: { canonical: profile.path } }
+    : { title: 'Faculty' }
 }

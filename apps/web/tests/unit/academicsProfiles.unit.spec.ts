@@ -37,10 +37,18 @@ describe('department and discipline profiles', () => {
 
   it('names pictures that exist and describes the informative ones', () => {
     const all: Art[] = []
-    for (const p of departmentProfiles) all.push(p.hero, p.banner, ...p.labs.map((l) => l.art))
+    for (const p of departmentProfiles)
+      all.push(p.hero, p.banner, ...p.labs.map((l) => l.art), ...(p.heroPhotos ?? []), ...(p.campusPhoto ? [p.campusPhoto] : []))
     for (const d of disciplineProfiles) all.push(d.hero, d.banner, d.tile, d.figure)
     for (const src of arts(all)) expect(existsSync(pub(src)), src).toBe(true)
     for (const d of disciplineProfiles) expect(d.tile.alt.length, d.slug).toBeGreaterThan(10)
+  })
+
+  it('gives the DCST hero five rotating photographs, decorative (empty alt), and a campus photograph for the hero card', () => {
+    const dcst = departmentProfiles.find((p) => p.slug === 'dcst')!
+    expect(dcst.heroPhotos).toHaveLength(5)
+    for (const ph of dcst.heroPhotos ?? []) expect(ph.alt).toBe('')
+    expect(dcst.campusPhoto?.alt.length).toBeGreaterThan(10)
   })
 
   it('has a four-year plan of eight semesters with no repeated course in a year', () => {

@@ -42,7 +42,7 @@ export const heroSlides: HeroSlide[] = [
   },
   {
     image: images.heroSlides[2]!,
-    primary: { label: 'Research', href: `${U}/oric-2/`, icon: 'book' },
+    primary: { label: 'Research', href: '/research', icon: 'book' },
     secondary: { label: 'Digital Library', href: 'http://www.digitallibrary.edu.pk/uniofswat.html', icon: 'book' },
   },
   {
@@ -62,7 +62,7 @@ export const heroSlides: HeroSlide[] = [
   },
   {
     image: images.heroSlides[6]!,
-    primary: { label: 'Alumni', href: `${U}/alumni/`, icon: 'people' },
+    primary: { label: 'Alumni', href: '/administration/alumni', icon: 'people' },
     secondary: { label: 'Affiliated Colleges', href: `${U}/public-sector-affiliated-colleges/`, icon: 'badge' },
   },
 ]

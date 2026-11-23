@@ -13,3 +13,8 @@ export function art(key: ArtKey, kind: keyof typeof SIZE, alt = ''): Art {
 export function banner(key: ArtKey, alt: string): Art {
   return { src: `/images/academics/banner-${key}.webp`, alt, width: 1672, height: 941 }
 }
+
+/** A photograph in public/images/academics/<name>.webp. Pictures in the hero rotation are decoration, so their `alt` is empty. */
+export function photo(name: string, width: number, height: number, alt = ''): Art {
+  return { src: `/images/academics/${name}.webp`, alt, width, height }
+}
