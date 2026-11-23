@@ -1,7 +1,7 @@
 import { officeBanner, officeHero } from '../art'
 import type { OfficeProfile } from '../types'
 
-const PAGE = 'https://uswat.edu.pk/department-of-geology/'
+const PAGE = 'https://uswat.edu.pk/department_of_geology/'
 
 export const geology: OfficeProfile = {
   slug: 'geology',

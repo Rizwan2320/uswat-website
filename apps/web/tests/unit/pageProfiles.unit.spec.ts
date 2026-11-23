@@ -70,6 +70,14 @@ describe('office-style pages at their own address (PAGE_PROFILES)', () => {
     }
   })
 
+  it('cites a source address that is an old address in the route map (so the redirect and the source agree)', () => {
+    const csv = readFileSync(path.join(root, '../../scripts/import/data/route_map.csv'), 'utf8')
+    for (const p of PAGE_PROFILES) {
+      expect(csv.includes(`${p.officialPage},`), `${p.slug}: ${p.officialPage}`).toBe(true)
+      for (const s of p.sources) expect(csv.includes(`${s.url},`), `${p.slug}: ${s.url}`).toBe(true)
+    }
+  })
+
   it('has unique person ids per page and ISO dates in the dated lists', () => {
     for (const p of PAGE_PROFILES) {
       expect(new Set(p.people.map((x) => x.id)).size).toBe(p.people.length)
