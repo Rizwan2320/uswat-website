@@ -319,6 +319,9 @@ export function withGovernance<T extends CollectionConfig>(
           ...config.admin?.components?.edit,
           // Publish is drawn only for roles that may publish (3aa).
           PublishButton: '@/admin/workflow/PublishGate',
+          // Payload's own Unpublish is not drawn either: the status box offers Take offline, and only to
+          // roles the server lets take a page down (a head cannot on a programme page) (3an).
+          UnpublishButton: '@/admin/workflow/PublishGate',
         },
       },
     },
