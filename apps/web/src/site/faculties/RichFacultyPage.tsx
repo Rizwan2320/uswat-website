@@ -28,6 +28,7 @@ export default function RichFacultyPage({ profile }: { profile: FacultyProfile }
       <BannerHeader
         banner={profile.banner}
         crumbs={[{ label: 'Home', href: '/' }, { label: 'Academics', href: '/academics' }, { label: profile.shortName }]}
+        hideCrumbs
       />
       <Hero
         art={profile.hero}

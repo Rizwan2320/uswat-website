@@ -9,6 +9,7 @@ import {
 } from '../organisation/shape'
 
 import styles from './Academics.module.css'
+import { dcst } from './profiles/dcst'
 import {
   BannerHeader,
   Band,
@@ -96,6 +97,8 @@ export default function RichDisciplinePage({
             : [{ label: 'Departments', href: DEPARTMENTS_PATH }]),
           { label: profile.shortName },
         ]}
+        hideCrumbs
+        photos={dcst.heroPhotos}
       />
       <Hero
         art={profile.hero}

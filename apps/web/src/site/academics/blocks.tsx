@@ -15,6 +15,7 @@ import eventStyles from '../components/NewsEvents.module.css'
 import feedStyles from '../components/FeedCards.module.css'
 
 import AcademicIcon from './AcademicIcon'
+import HeroPhotos from './HeroPhotos'
 import styles from './Academics.module.css'
 import type { DepartmentFeed } from './feed'
 import type { Art, Faq, IconTitled, TeamMember, Titled, Year } from './types'
@@ -90,8 +91,11 @@ export function Hero({
   lead,
   facts,
   actions,
+  photo,
 }: {
   art: Art
+  /** A photograph on the left of the card that fades into the green illustration on its right. */
+  photo?: Art
   badge: string
   lead: string
   facts?: [string, string][]
@@ -100,7 +104,12 @@ export function Hero({
   return (
     <div className="container">
       <div className={styles.heroWrap}>
-        <div className={styles.hero}>
+        <div className={photo ? `${styles.hero} ${styles.heroWithPhotos}` : styles.hero}>
+          {photo ? (
+            <div className={styles.heroCardPhoto} aria-hidden="true">
+              <SafeImage src={photo.src} alt="" fill sizes="(max-width: 860px) 100vw, 720px" priority />
+            </div>
+          ) : null}
           <div className={styles.heroArt}>
             <SafeImage
               src={art.src}
@@ -514,20 +523,37 @@ export function CoordinatorNote({ member }: { member: TeamMember }) {
 /** The first hero section: the page's banner fills the whole band edge to edge, with the breadcrumbs over its top edge.
     The title is in the picture, so the h1 holds the picture and its alt text is the title. On phones the picture is
     shown whole (16:9) under the breadcrumbs. */
-export function BannerHeader({ banner, crumbs }: { banner: Art; crumbs: Crumb[] }) {
+export function BannerHeader({
+  banner,
+  crumbs,
+  hideCrumbs = false,
+  photos,
+}: {
+  banner: Art
+  crumbs: Crumb[]
+  /** Pictures that rotate every seven seconds on the left of the band and fade into the banner on their right, the way
+      the landing page's pictures fade into its green. The banner picture then fills the right part of the band, so its
+      title is set smaller. Phones show the plain banner. */
+  photos?: Art[]
+  /** Academic pages show no green strip under the navigation. The trail stays in the page for screen readers. */
+  hideCrumbs?: boolean
+}) {
   return (
     <header className={styles.bannerHeader}>
-      <h1 className={styles.bannerTitle}>
-        <SafeImage
-          src={banner.src}
-          alt={banner.alt}
-          fill
-          sizes="100vw"
-          priority
-          className={styles.bannerImg}
-        />
+      <h1 className={photos?.length ? `${styles.bannerTitle} ${styles.bannerSplit}` : styles.bannerTitle}>
+        {photos?.length ? <HeroPhotos photos={photos} className={styles.bannerPhotos} /> : null}
+        <div className={photos?.length ? styles.bannerPic : styles.bannerPicFull}>
+          <SafeImage
+            src={banner.src}
+            alt={banner.alt}
+            fill
+            sizes="100vw"
+            priority
+            className={styles.bannerImg}
+          />
+        </div>
       </h1>
-      <div className={styles.bannerCrumbs}>
+      <div className={hideCrumbs ? `${styles.bannerCrumbs} ${styles.crumbsHidden}` : styles.bannerCrumbs}>
         <div className="container">
           <Breadcrumbs items={crumbs} tone="dark" />
         </div>

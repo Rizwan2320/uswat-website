@@ -48,6 +48,7 @@ export default function RichFacultyProgrammePage({ doc, profile }: { doc: Doc; p
           ...(faculty ? [{ label: faculty.shortName, href: faculty.path }] : []),
           { label: profile.shortName },
         ]}
+        hideCrumbs
       />
       <Hero
         art={profile.hero}
