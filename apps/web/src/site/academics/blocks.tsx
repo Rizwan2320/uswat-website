@@ -16,6 +16,7 @@ import feedStyles from '../components/FeedCards.module.css'
 
 import AcademicIcon from './AcademicIcon'
 import HeroPhotos from './HeroPhotos'
+import { CAMPUS_PHOTOS } from './campusPhotos'
 import styles from './Academics.module.css'
 import type { DepartmentFeed } from './feed'
 import type { Art, Faq, IconTitled, TeamMember, Titled, Year } from './types'
@@ -528,16 +529,17 @@ export function CoordinatorNote({ member }: { member: TeamMember }) {
 export function BannerHeader({
   banner,
   crumbs,
-  hideCrumbs = false,
-  photos,
+  hideCrumbs = true,
+  photos = CAMPUS_PHOTOS,
 }: {
   banner: Art
   crumbs: Crumb[]
-  /** Pictures that rotate every seven seconds on the left of the band and fade into the banner on their right, the way
-      the landing page's pictures fade into its green. The banner picture then fills the right part of the band, so its
-      title is set smaller. Phones show the plain banner. */
+  /** Pictures that rotate every seven seconds on the right of the band and fade into the banner on their left, the way
+      the landing page's pictures fade into its green. The banner picture keeps the left 60% of the band, so its title is
+      set smaller. Defaults to the university's own photographs (CAMPUS_PHOTOS); pass `[]` for the plain banner. Phones
+      show the plain banner. */
   photos?: Art[]
-  /** Academic pages show no green strip under the navigation. The trail stays in the page for screen readers. */
+  /** No green strip under the navigation on any page. The trail stays in the page for screen readers; pass `false` to show it. */
   hideCrumbs?: boolean
 }) {
   return (
