@@ -183,7 +183,9 @@ function chip(p, r, label = 'DCST') {
   }
   out.push(rect(x0, y0, w, h, p.bg[1], 24, `stroke="${p.ink}" stroke-opacity="0.7" stroke-width="4"`))
   out.push(rect(x0 + 18, y0 + 18, w - 36, h - 36, 'none', 14, `stroke="${p.accent}" stroke-width="2" stroke-dasharray="3 8"`))
-  out.push(`<text x="${x0 + w / 2}" y="${y0 + h / 2 + 30}" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="${label.length > 4 ? 66 : 92}" font-weight="700" fill="${p.accent}">${label}</text>`)
+  // the label was 92 / 66 units; reduced by a third so it reads as a mark on the chip, not as a headline
+  const size = label.length > 4 ? 44 : 60
+  out.push(`<text x="${x0 + w / 2}" y="${y0 + h / 2 + Math.round(size * 0.33)}" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="${size}" font-weight="700" fill="${p.accent}">${label}</text>`)
   return out.join('')
 }
 
