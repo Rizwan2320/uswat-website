@@ -29,6 +29,9 @@ export default function EnrolFlow() {
   const [saved, setSaved] = useState(false)
   const errorRef = useRef<HTMLParagraphElement>(null)
   useEffect(() => { if (error) errorRef.current?.focus() }, [error])
+  const codesRef = useRef<HTMLHeadingElement>(null)
+  // The codes screen replaces a long page: bring the person to its top so they see it at once.
+  useEffect(() => { if (stage === 'codes') { window.scrollTo(0, 0); codesRef.current?.focus() } }, [stage])
 
   async function guard(fn: () => Promise<boolean>) {
     setBusy(true)
@@ -42,12 +45,27 @@ export default function EnrolFlow() {
     }
   }
 
+  /**
+   * Issues the recovery codes and moves to the screen that shows them. Called by itself the moment a second factor is saved,
+   * so the person is carried straight on and is never left on "saved" with the next step out of sight (found in the first
+   * hosted run: the codes card sat below the fold and the page looked finished). The "Get my recovery codes" button stays as
+   * the fallback if this call fails.
+   */
+  async function issueCodes(): Promise<boolean> {
+    const res = await postJson('/recovery/issue', {})
+    const list = res.body?.codes
+    if (res.status !== 200 || !Array.isArray(list)) { setError(mapAuthError({ status: res.status })); return false }
+    setCodes(list.map(String))
+    setStage('codes')
+    return true
+  }
+
   const addPasskey = () =>
     guard(async () => {
       const res = await authClient().passkey.addPasskey({ name: 'My passkey' })
       if (res?.error) { setError(mapAuthError(res.error)); return false }
       setPasskeyDone(true)
-      return true
+      return issueCodes()
     })
 
   const startTotp = (e: React.FormEvent<HTMLFormElement>) => {
@@ -68,26 +86,19 @@ export default function EnrolFlow() {
       const res = await authClient().twoFactor.verifyTotp({ code })
       if (res?.error) { setError(mapAuthError(res.error)); return false }
       setTotpDone(true)
-      return true
+      return issueCodes()
     })
   }
 
-  const getCodes = () =>
-    guard(async () => {
-      const res = await postJson('/recovery/issue', {})
-      const list = res.body?.codes
-      if (res.status !== 200 || !Array.isArray(list)) { setError(mapAuthError({ status: res.status })); return false }
-      setCodes(list.map(String))
-      setStage('codes')
-      return true
-    })
+  const getCodes = () => guard(issueCodes)
 
   const secondFactorReady = passkeyDone || totpDone
 
   if (stage === 'codes') {
     return (
       <section aria-labelledby="codes-h">
-        <h2 id="codes-h">{COPY.enrol.codesTitle}</h2>
+        <h2 id="codes-h" ref={codesRef} tabIndex={-1}>{COPY.enrol.codesTitle}</h2>
+        {passkeyDone ? <p className="portal-notice" role="status">{COPY.enrol.passkeyDone}</p> : null}
         <p>{COPY.enrol.codesHelp}</p>
         <p className="portal-notice">{COPY.enrol.codesWarning}</p>
         <ul className="portal-codes" aria-label={COPY.enrol.codesTitle}>
