@@ -17,7 +17,9 @@ Each account opened the dashboard, account page, and for 20 collections the list
 - Nobody was sent to the login screen by mistake; the closed pages show Payload's plain "Nothing found".
 - Phone width (390 px, admin, head, coordinator): sideways scrolling on the account page, a media record, department and programme records. Cause in every case is Payload's own header (language picker pushed past the right edge) or the account page's details row, not our screens. Not fixed.
 - Accessibility (axe, desktop): all flags sit in Payload's widgets (select, date picker, buttons, landmarks). The ones inside our fields are Payload's Stage select and Verified-on date picker (hidden focusable input; missing label). Not fixed.
-- Finding: the auditor can open the Media upload form, but the server refuses the upload (403, checked). Screen should hide or lock it.
+- Correction (2026-11-23): an earlier version of this note said the auditor sees a media upload form. That was wrong. The screenshot shows a clear "Not allowed" page for the auditor, and the server refuses the upload (403). I had recorded that the page loaded without looking at what it showed.
 - Side effect: opening each Create form made Payload autosave an empty draft in the local test database (not a product change).
+
+A later check (slice 3an, PR #152) found one real mismatch the sweep could not see: Payload's own Unpublish control showed to every role on every live page.
 
 Not run: Urdu (right-to-left) view, keyboard-only pass, tablet width, filling and saving forms per role, workflow buttons at every stage for every role, hosted preview.
