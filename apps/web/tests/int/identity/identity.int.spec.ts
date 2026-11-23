@@ -3164,6 +3164,118 @@ describe.skipIf(!DB)('notification digest and notice log (FP-43, ABU-03), Postgr
   })
 })
 
+describe.skipIf(!DB)('own page of a head or the Registrar: publish without a reviewer (FP-SP), PostgreSQL', () => {
+  const pool = () => getIdentityPool(DB!)
+  const profiles = () => createSampleProfileStore(pool())
+  const roles = () => createPgRoleStore(pool())
+  const edit = (over: Partial<ProfileEdit> = {}): ProfileEdit => ({ ...EMPTY_EDIT, bio: { en: 'Hello', ur: '' }, ...over })
+  const NOW = Date.UTC(2026, 10, 23, 12)
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  async function account(tag: string, opts: { head?: boolean; verifier?: boolean; reviewer?: boolean; dept?: string } = {}): Promise<{ id: string; email: string }> {
+    const id = `sp-${tag}-${Math.random().toString(36).slice(2, 8)}`
+    const email = `${id}@example.invalid`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Person ${tag}`, email])
+    if (opts.dept) await roles().setDepartment(email, opts.dept)
+    if (opts.reviewer || opts.head) expect(await roles().grantReviewer(email)).toBe('ok')
+    if (opts.head) expect(await roles().grantHead(email)).toBe('ok')
+    if (opts.verifier) expect(await roles().grantVerifier(email)).toBe('ok')
+    return { id, email }
+  }
+  const dept = () => `Dept ${Math.random().toString(36).slice(2, 8)}`
+  const rows = async (id: string) => (await pool().query(`select "reviewerId","decision","note","before","after" from "profile_review" where "userId" = $1 order by "at"`, [id])).rows
+
+  it('a head publishes at once: the page is published, the draft is plain again, and the log names the owner', async () => {
+    const h = await account('h', { head: true, dept: dept() })
+    expect((await profiles().load(h)).selfPublishing).toBe(true)
+    expect(await profiles().saveDraft(h.id, edit({ bio: { en: 'First', ur: '' } }))).toBe(true)
+    expect(await profiles().publishOwn(h.id, NOW)).toBe('ok')
+    const l = await profiles().load(h)
+    expect(l.published!.bio.en).toBe('First')
+    expect(l.publishedAt).toBe(NOW)
+    expect(l.status).toBe('draft')
+    expect(l.draftIsPublished).toBe(true)
+    const log = await rows(h.id)
+    expect(log).toHaveLength(1)
+    expect(log[0]).toMatchObject({ reviewerId: h.id, decision: 'approved', note: null, before: null })
+    // A second publish records the earlier published version as "before".
+    expect(await profiles().saveDraft(h.id, edit({ bio: { en: 'Second', ur: '' } }))).toBe(true)
+    expect((await profiles().load(h)).draftIsPublished).toBe(false)
+    expect(await profiles().publishOwn(h.id, NOW + 1000)).toBe('ok')
+    const log2 = await rows(h.id)
+    expect(log2).toHaveLength(2)
+    expect(log2[1]!.before.bio.en).toBe('First')
+    expect(log2[1]!.after.bio.en).toBe('Second')
+  })
+
+  it('the Registrar publishes the same way', async () => {
+    const v = await account('v', { verifier: true, dept: 'Registrar’s Office' })
+    expect((await profiles().load(v)).selfPublishing).toBe(true)
+    await profiles().saveDraft(v.id, edit())
+    expect(await profiles().publishOwn(v.id, NOW)).toBe('ok')
+    expect((await profiles().load(v)).published!.bio.en).toBe('Hello')
+  })
+
+  it('refuses everyone else, and leaves nothing behind: plain faculty, a reviewer who is not head, a person with no account', async () => {
+    const d = dept()
+    const f = await account('f', { dept: d })
+    const r = await account('r', { reviewer: true, dept: d })
+    for (const who of [f, r]) {
+      expect((await profiles().load(who)).selfPublishing).toBe(false)
+      await profiles().saveDraft(who.id, edit())
+      expect(await profiles().publishOwn(who.id, NOW)).toBe('not-allowed')
+      expect((await profiles().load(who)).published).toBeNull()
+      expect(await rows(who.id)).toHaveLength(0)
+    }
+    expect(await profiles().publishOwn('no-such-person', NOW)).toBe('not-allowed')
+  })
+
+  it('says nothing to publish when there is no saved draft', async () => {
+    const h = await account('h', { head: true, dept: dept() })
+    expect(await profiles().publishOwn(h.id, NOW)).toBe('nothing')
+    expect(await rows(h.id)).toHaveLength(0)
+  })
+
+  it('sending for review is refused for a head and the Registrar, so nobody is ever left locked with no reviewer', async () => {
+    const d = dept()
+    const h = await account('h', { head: true, dept: d })
+    const v = await account('v', { verifier: true, dept: 'Registrar’s Office' })
+    const peer = await account('peer', { reviewer: true, dept: d })
+    for (const who of [h, v]) {
+      await profiles().saveDraft(who.id, edit())
+      expect(await profiles().submit(who.id)).toBe(false)
+      expect((await profiles().load(who)).status).toBe('draft')
+    }
+    // Nothing reached the peer reviewer's queue either.
+    expect((await pool().query(`select count(*)::int as n from "notification" where "userId" = $1 and "kind" = 'review-waiting'`, [peer.id])).rows[0].n).toBe(0)
+  })
+
+  it('a head whose role is revoked can no longer publish, and goes back to sending for review', async () => {
+    const d = dept()
+    const h = await account('h', { head: true, dept: d })
+    await profiles().saveDraft(h.id, edit())
+    await roles().revokeHead(h.email)
+    expect(await profiles().publishOwn(h.id, NOW)).toBe('not-allowed')
+    expect(await profiles().submit(h.id)).toBe(true)
+  })
+
+  it('a head who had a submission waiting is released by publishing', async () => {
+    const h = await account('h', { head: true, dept: dept() })
+    await profiles().saveDraft(h.id, edit())
+    // A legacy submission made before the rule: set the state directly, as an older build would have left it.
+    await pool().query(`update "profile_draft" set "status" = 'submitted' where "userId" = $1`, [h.id])
+    expect(await profiles().publishOwn(h.id, NOW)).toBe('ok')
+    expect((await profiles().load(h)).status).toBe('draft')
+  })
+})
+
 describe.skipIf(!DB)('Registrar’s office, the Verifier role (FP-V, AUTH-07), PostgreSQL', () => {
   const pool = () => getIdentityPool(DB!)
   const roles = () => createPgRoleStore(pool())

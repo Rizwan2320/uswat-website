@@ -10,6 +10,7 @@ function setup(account: { id: string; email: string } | null = { id: 'u1', email
     saveDraft: vi.fn(async () => true),
     submit: vi.fn(async () => true),
     withdraw: vi.fn(async () => true),
+    publishOwn: vi.fn(async () => 'ok' as const),
     ...store,
   }
   return { full, service: createProfileService({ store: full, getAccount: async () => account }) }
@@ -21,6 +22,8 @@ describe('profile service', () => {
     expect(await service.save(EMPTY_EDIT)).toEqual({ ok: false, error: 'session' })
     expect(await service.submit()).toEqual({ ok: false, error: 'session' })
     expect(await service.withdraw()).toEqual({ ok: false, error: 'session' })
+    expect(await service.publish()).toEqual({ ok: false, error: 'session' })
+    expect(full.publishOwn).not.toHaveBeenCalled()
     expect(full.saveDraft).not.toHaveBeenCalled()
     expect(full.submit).not.toHaveBeenCalled()
     expect(full.withdraw).not.toHaveBeenCalled()
@@ -60,5 +63,15 @@ describe('profile service', () => {
     expect(await service.withdraw()).toEqual({ ok: true })
     expect(full.submit).toHaveBeenCalledWith('u1')
     expect(full.withdraw).toHaveBeenCalledWith('u1')
+  })
+
+  it('publish acts on the session account, and passes on the store answer when the role is missing or there is no draft', async () => {
+    const ok = setup()
+    expect(await ok.service.publish()).toEqual({ ok: true })
+    expect(ok.full.publishOwn).toHaveBeenCalledWith('u1', undefined)
+    const denied = setup(undefined, { publishOwn: vi.fn(async () => 'not-allowed' as const) })
+    expect(await denied.service.publish()).toEqual({ ok: false, error: 'not-allowed' })
+    const none = setup(undefined, { publishOwn: vi.fn(async () => 'nothing' as const) })
+    expect(await none.service.publish()).toEqual({ ok: false, error: 'nothing' })
   })
 })

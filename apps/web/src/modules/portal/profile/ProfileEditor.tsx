@@ -1,8 +1,9 @@
 'use client'
+import { useRouter } from 'next/navigation'
 import { useId, useMemo, useState, useTransition } from 'react'
 
 import { COPY } from '../copy'
-import { saveProfile, submitProfile, withdrawProfile } from './actions'
+import { publishProfile, saveProfile, submitProfile, withdrawProfile } from './actions'
 import PublicPreview from './PublicPreview'
 import { LIMITS, buildPreview, tidyInterests, type FieldErrors } from './rules'
 import type { LoadedProfile, Visibility } from './types'
@@ -57,6 +58,8 @@ function toEdit(f: Form) {
 /** `forId`: set when a delegate edits the grantor's draft. Only saving is delegated; submitting and withdrawing stay with the owner. */
 export default function ProfileEditor({ initial, forId }: { initial: LoadedProfile; forId?: string }) {
   const delegated = forId !== undefined
+  const self = initial.selfPublishing
+  const router = useRouter()
   const uid = useId()
   const [form, setForm] = useState<Form>(() => toForm(initial))
   const [status, setStatus] = useState(initial.status)
@@ -64,7 +67,11 @@ export default function ProfileEditor({ initial, forId }: { initial: LoadedProfi
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
   const [pending, start] = useTransition()
   const locked = status === 'submitted'
-  const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v }))
+  const [live, setLive] = useState(initial.draftIsPublished)
+  const set = <K extends keyof Form>(k: K, v: Form[K]) => {
+    setLive(false)
+    setForm((f) => ({ ...f, [k]: v }))
+  }
 
   const preview = useMemo(() => buildPreview({ ...initial.profile, ...toEdit(form) }), [initial.profile, form])
   const published = useMemo(() => (initial.published ? buildPreview({ ...initial.profile, ...initial.published }) : null), [initial.profile, initial.published])
@@ -103,6 +110,19 @@ export default function ProfileEditor({ initial, forId }: { initial: LoadedProfi
       setErrors({})
       setStatus('submitted')
       setMessage({ kind: 'ok', text: C.submitted })
+    })
+
+  const publish = () =>
+    run(async () => {
+      const saved = await saveProfile(toEdit(form))
+      if (!saved.ok) return fail(saved.error, saved.errors)
+      const r = await publishProfile()
+      if (!r.ok) return fail(r.error)
+      setErrors({})
+      setStatus('draft')
+      setLive(true)
+      setMessage({ kind: 'ok', text: C.publishedMsg })
+      router.refresh()
     })
 
   const withdraw = () =>
@@ -153,13 +173,15 @@ export default function ProfileEditor({ initial, forId }: { initial: LoadedProfi
   }
 
   const p = initial.profile
-  const statusText = status === 'submitted' ? C.statusSubmitted : status === 'draft' ? C.statusDraft : C.statusNone
+  const statusText = self
+    ? status === 'none' && !live ? C.statusNone : live ? C.statusSelfLive : C.statusSelfDraft
+    : status === 'submitted' ? C.statusSubmitted : status === 'draft' ? C.statusDraft : C.statusNone
 
   return (
     <div className="portal-profile">
       <div>
-        <p>{C.intro}</p>
-        {p.sample ? <div className="portal-notice" role="note">{C.sampleNote}</div> : null}
+        <p>{self ? C.selfIntro : C.intro}</p>
+        {p.sample ? <div className="portal-notice" role="note">{self ? C.selfNote : C.sampleNote}</div> : null}
         <p data-testid="profile-status"><strong>{statusText}</strong></p>
         {initial.reviewNote && status === 'draft' ? (
           <section className="portal-notice" role="note" aria-labelledby={`${uid}-note`} data-testid="review-note">
@@ -224,7 +246,9 @@ export default function ProfileEditor({ initial, forId }: { initial: LoadedProfi
             ) : (
               <>
                 <button type="submit" className="portal-btn secondary" disabled={pending}>{pending ? C.saving : C.save}</button>
-                {delegated ? null : <button type="button" className="portal-btn" onClick={submit} disabled={pending}>{C.submit}</button>}
+                {delegated ? null : self
+                  ? <button type="button" className="portal-btn" onClick={publish} disabled={pending}>{C.publish}</button>
+                  : <button type="button" className="portal-btn" onClick={submit} disabled={pending}>{C.submit}</button>}
               </>
             )}
           </div>
@@ -233,9 +257,9 @@ export default function ProfileEditor({ initial, forId }: { initial: LoadedProfi
       <div className="portal-previews">
         <PublicPreview preview={preview} />
         {published ? (
-          <PublicPreview preview={published} heading={C.publishedNowTitle} idSuffix="-published" testId="published-now" help={`${C.publishedNowHelp} ${C.publishedAt} ${new Date(initial.publishedAt ?? 0).toISOString().slice(0, 10)}.`} />
+          <PublicPreview preview={published} heading={C.publishedNowTitle} idSuffix="-published" testId="published-now" help={`${self ? C.publishedNowSelfHelp : C.publishedNowHelp} ${self ? C.publishedBy : C.publishedAt} ${new Date(initial.publishedAt ?? 0).toISOString().slice(0, 10)}.`} />
         ) : (
-          <p className="hint" data-testid="published-none">{C.publishedNowNone}</p>
+          <p className="hint" data-testid="published-none">{self ? C.publishedNowSelfNone : C.publishedNowNone}</p>
         )}
       </div>
     </div>
