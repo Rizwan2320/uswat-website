@@ -18,6 +18,7 @@ import {
   DraftNote,
   FaqList,
   HeadCard,
+  HeadIntroCard,
   Hero,
   IconCards,
   IconRows,
@@ -115,9 +116,11 @@ export default function RichDepartmentPage({
       <Band id="overview" kicker="About" title={`About ${profile.shortName}`}>
         <div className={styles.split}>
           <Prose paragraphs={profile.about} />
-          <Photo
-            art={art('dcst', 'tile', 'Illustration of a computer chip with the letters DCST')}
-          />
+          {head?.photo ? (
+            <HeadIntroCard name={head.name} title={head.title} photo={head.photo} />
+          ) : (
+            <Photo art={art('dcst', 'tile', 'Illustration of a computer chip with the letters DCST')} />
+          )}
         </div>
         <div className={styles.vm}>
           <div className={styles.vmCard}>

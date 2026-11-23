@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 
 import { describe, expect, it } from 'vitest'
@@ -124,6 +124,16 @@ describe('department and discipline profiles', () => {
   it('names a photo file only when it exists', () => {
     for (const p of departmentProfiles)
       for (const m of p.team) if (m.photo) expect(existsSync(pub(m.photo)), m.id).toBe(true)
+  })
+
+  it('has a head of department with a portrait, whom the About band shows in the green card (RichDepartmentPage)', () => {
+    const dcst = departmentProfiles.find((p) => p.slug === 'dcst')!
+    const heads = dcst.team.filter((m) => m.role === 'head')
+    expect(heads).toHaveLength(1)
+    expect(heads[0].photo, 'portrait path').toMatch(/^\/images\/faculty\/.+\.jpg$/)
+    expect(existsSync(pub(heads[0].photo!))).toBe(true)
+    const page = readFileSync(path.join(process.cwd(), 'src/site/academics/RichDepartmentPage.tsx'), 'utf8')
+    expect(page).toContain('<HeadIntroCard')
   })
 
   it('is still a draft until the department approves it', () => {

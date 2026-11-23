@@ -214,6 +214,23 @@ export function Photo({
   )
 }
 
+/** The head of department in a green card, in the place the chip picture takes on the other pages: portrait on the left,
+    name and title on the right. The portrait and the words come from the profile's team entry with role `head`. */
+export function HeadIntroCard({ name, title, photo }: { name: string; title: string; photo: string }) {
+  return (
+    <figure className={styles.aboutHead}>
+      <div className={styles.aboutHeadPhoto}>
+        <SafeImage src={photo} alt={`Portrait of ${name}`} fill sizes="(max-width: 860px) 45vw, 230px" />
+      </div>
+      <figcaption className={styles.aboutHeadText}>
+        <span className={styles.aboutHeadKicker}>Head of the department</span>
+        <strong className={styles.aboutHeadName}>{name}</strong>
+        <span className={styles.aboutHeadTitle}>{title}</span>
+      </figcaption>
+    </figure>
+  )
+}
+
 /** Four cards sit in one row where there is room; other counts fill rows of three. */
 const cardMin = (n: number) =>
   ({ '--card-min': n === 4 ? '230px' : '300px' }) as React.CSSProperties

@@ -272,6 +272,55 @@
   object-fit: cover;
 }
 
+/* head of department, in the green card that holds the chip picture on other pages */
+.aboutHead {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  gap: clamp(16px, 2.5vw, 26px);
+  align-items: center;
+  aspect-ratio: 3 / 2;
+  margin: 0;
+  padding: clamp(18px, 3vw, 28px);
+  border-radius: var(--radius);
+  background: var(--forest);
+  color: var(--ivory);
+  box-shadow: 0 16px 28px -18px rgb(0 42 16 / 0.5);
+}
+.aboutHeadPhoto {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 2px solid rgb(255 255 255 / 0.4);
+  background: var(--forest-deep);
+}
+.aboutHeadPhoto img {
+  object-fit: cover;
+  object-position: center top;
+}
+.aboutHeadText {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.aboutHeadKicker {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.aboutHeadName {
+  font-family: var(--stack-serif);
+  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+  line-height: 1.2;
+  font-weight: 600;
+}
+.aboutHeadTitle {
+  font-size: 0.98rem;
+  line-height: 1.4;
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(var(--card-min, 300px), 100%), 1fr));
@@ -917,6 +966,9 @@
 }
 
 @media (max-width: 860px) {
+  .aboutHead {
+    aspect-ratio: auto;
+  }
   .split,
   .vm,
   .sems,
