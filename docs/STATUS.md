@@ -841,3 +841,11 @@ P3 agent (slice 3a), own entry:
 - Checks run: typecheck, lint (0 errors), dashboard unit and integration tests, full suite 1455 pass / 196 skipped / 0 failed (`uswat_aj`, fresh and migrated to main), unit 970 pass, production build, browser check as admin, head of department and coordinator (banner, lists, Publish button on the coordinator's approved page). Prediction P3ai-a.
 - Not run: Urdu rendering of the banner in a browser, phone width, hosted preview. The Urdu lines need a native reader.
 - **Next:** one-click Approve and publish (own slice), the login screen wording, Urdu review.
+
+## P3 slice 3am, a dashboard for each role (2026-11-23, branch `p3/role-dashboards-3am`, stacked on `p3/role-screens-3ai`, PR #136)
+- Request (owner): "every role should not have same dashboard and everything". Admin and site manager get a control room; the auditor a read-only version; a head gets "Your tray" plus a department board (page, coordinator, status chip); a coordinator gets a step rail per programme and a short menu (Programmes, Media); editors and contributors get a writing desk. Brief: `docs/briefs/p3am-role-dashboards.md`. No schema change.
+- Found in the browser: the head's board listed another department's live page (published rows are public). Fixed with an explicit owner filter and a test that fails without it (P3am-a).
+- Checks run: typecheck; lint 0 errors; unit 981 pass; integration 1469 pass, 196 skipped, 4 failed on a reused database (`uswat_ak`): the 4 are `seeds` specs that fail on leftover rows; seeds, board and dashboard specs 26/26 pass on a fresh database (`uswat_al`); drift check clean; production build; browser screenshots of admin, head, coordinator (desktop and phone), editor, contributor and auditor.
+- Not run: Urdu (right-to-left) view of the new dashboards, axe on them, keyboard-only pass, hosted preview. The Urdu lines still need a native reader.
+- Merge order: #135, #136, #138, #140, then this one (it needs #136).
+- Open: Archive and Restore buttons; mail setup (then show the forgot-password link); heads can no longer take a programme page offline, and still see Payload's Publish menu on programme pages (Unpublish is refused with a message).
