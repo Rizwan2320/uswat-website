@@ -77,6 +77,7 @@ describe('header menu and footer links', () => {
     expect(at('Academics > Central Library')).toBe('/administration/central-library-office')
     expect(at('Research > Quality Enhancement Cell')).toBe('/administration/quality-enhancement-cell')
     expect(at('footer Research')).toBe('/research')
+    expect(at('footer Library')).toBe('/administration/central-library-office')
     expect(at('footer Contact Us')).toBe('/contact/directory')
     expect(at('hero Explore Programs')).toBe('/academics')
     expect(at('hero Latest News')).toBe('/news')
