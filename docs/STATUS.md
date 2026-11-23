@@ -999,3 +999,9 @@ P3 agent (slice 3a), own entry:
 - **Checks run (local, empty database):** typecheck, lint, 137 files / 1752 tests, types drift clean, production build, 12 visual baselines, 24 browser specs (top bar, profile pages, not-found). The four department pages and `/admin` link checked with `next start`: 200.
 - **Vercel free plan:** 100 deployments a day. When the limit is hit, pushes to main do not build (error 402). Trigger the production deployment by hand for the exact commit. The portal project hits this limit most often.
 - **Still open:** PR #94 (agent 4), delete the `previewcheck` branch (owner), CMS agent's list above (Archive/Restore buttons, Urdu and keyboard pass, axe on new dashboards, native Urdu reader), production CMS accounts (owner), custom portal domain and DNS (owner).
+
+## Production test accounts (2026-11-24, main agent; owner asked for them)
+- Three test accounts were added to the production CMS database (users 2 to 4): Ahmed Khan (`admin.ahmed@sample.invalid`, Platform Admin), Usman Ali (`head.usman@sample.invalid`, Approver, office "sample owner office"), Bilal Hussain (`coordinator.bilal@sample.invalid`, Editor, no programmes yet). Passwords were given to the owner in chat and are not stored in the repo.
+- Made with Payload's own hashing on a scratch database, then inserted with SQL (the sandbox cannot reach Neon over TCP). Login on production not run from here.
+- Production still has no departments or programmes, so the head and coordinator have no records to work on until sample content is seeded.
+- **Before launch: delete these three accounts and rotate or remove the old `testeditor@gmail.com` admin if it is a throwaway.**
