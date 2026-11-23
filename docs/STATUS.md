@@ -836,3 +836,7 @@ P3 agent (slice 3a), own entry:
 - Not in the header menu (the Academics menu is full); in the sitemap. The departments list is CMS-driven, so they appear there only when a CMS department with the same slug exists.
 - Still to build: 25 more department pages in the route map (the map has 33 department rows; DCST, Management and Commerce, English and Foreign Languages and these four are done). Saved copies exist on Drive for most of them.
 - Checks run: tsc, eslint, 905 unit tests, axe/overflow/broken-image at 1440, 1024 and 390 px. Not run: production build, e2e, preview of this commit.
+
+### DCST About band shows the head of department (2026-11-23, branch `p4/real-departments`, prediction A4-z8)
+- On the DCST department page only, the green chip picture in the "About DCST" band is replaced by a green card with the head of department's portrait, name and title (`HeadIntroCard` in `blocks.tsx`, from the team entry with role `head`; photo `/images/faculty/sana-ullah.jpg`). Departments without such a team entry still show the chip picture. Programme pages are unchanged.
+- Checks run: tsc, eslint, 907 unit tests, axe/overflow/broken-image at 1440, 1024 and 390 px. Not run: production build, e2e, preview of this commit.
