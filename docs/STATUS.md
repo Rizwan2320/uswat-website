@@ -857,4 +857,9 @@ P3 agent (slice 3a), own entry:
 - **Trade-off to know:** the portal project holds a write-capable CMS role for the previews branch (ADR-0020 wants none). Acceptable only because that branch is Sample data; replace it with a read-only role before real content moves there.
 - **Host:** the default `uswat-faculty-portal.vercel.app` for now. A custom domain needs the owner's DNS record, then `PORTAL_ORIGIN` and `NEXT_PUBLIC_SERVER_URL` changed and everyone re-enrols passkeys.
 - **Next:** first production build of the portal project, check `/portal/sign-in`, then point `portalLinks.faculty` at it.
+## Faculty portal live, landing page linked (2026-11-23, main agent)
+- First production build of `uswat-faculty-portal` was READY (commit 3b7920f). `https://uswat-faculty-portal.vercel.app/portal/sign-in` loads the sign-in page (passkey and password options, no "disabled" message). The public home page on that host also loads. Checked by fetching the pages, not in a browser; no sign-in was tried.
+- `portalLinks.faculty` now points to that sign-in page (PR #148, merged, production deployment READY). The live home page shows it on both the top bar and the Faculty Portal card; Student Portal and CMS links are unchanged. Typecheck, lint, 1662 integration tests and CI passed.
+- **Not done: step 4, the DNS record.** I have no DNS access (rule 5). The portal works on the Vercel address without it. Later: owner chooses a host such as `faculty.uswat.edu.pk`, I add it to the portal project, the owner adds the record, then `PORTAL_ORIGIN` and `NEXT_PUBLIC_SERVER_URL` change and everyone re-enrols passkeys. `PORTAL_ORIGIN` refuses `uswat.edu.pk` hosts today, so that guard needs a deliberate change at that point.
+- Demo project `uswat-portal` and the production CMS site were not touched.
 
