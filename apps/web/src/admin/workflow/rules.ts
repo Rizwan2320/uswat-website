@@ -7,6 +7,7 @@
  */
 
 import {
+  canRestore,
   canSubmitFor,
   inScope,
   isReviewerFor,
@@ -25,7 +26,14 @@ import {
 } from '../../governance/roles'
 
 export type StepAction =
-  'sendForReview' | 'approve' | 'approveAndPublish' | 'sendBack' | 'markVerified' | 'takeOffline'
+  | 'sendForReview'
+  | 'approve'
+  | 'approveAndPublish'
+  | 'sendBack'
+  | 'markVerified'
+  | 'takeOffline'
+  | 'archive'
+  | 'restore'
 export type Words = { en: string; ur: string }
 
 /** Who wrote the item, as far as the signed-in person is concerned. */
@@ -298,6 +306,9 @@ export function workflowView(input: WorkflowInput): WorkflowView {
       }
     case 'published': {
       const offline: StepAction[] = mayTakeOffline(actor, scope) ? ['takeOffline'] : []
+      // Archive (off the website, kept on record) is a reviewer step; a coordinator takes their own
+      // programme offline instead, because only a head or the admin can undo an archive (slice 3ao).
+      const archive: StepAction[] = reviewer && mayTakeOffline(actor, scope) ? ['archive'] : []
       if (reviewer) {
         return {
           tone: 'ready',
@@ -311,7 +322,7 @@ export function workflowView(input: WorkflowInput): WorkflowView {
                   'Live on the website. Changes save as a new draft first; Publish puts them live.',
                   'ویب سائٹ پر شائع ہے۔ تبدیلیاں پہلے نئے مسودے کے طور پر محفوظ ہوتی ہیں؛ شائع کریں دبانے پر لائیو ہوتی ہیں۔',
                 ),
-          actions: [...verify, ...offline],
+          actions: [...verify, ...offline, ...archive],
           showPublish: true,
         }
       }
@@ -327,6 +338,17 @@ export function workflowView(input: WorkflowInput): WorkflowView {
     }
     case 'archived':
     default:
+      if (canRestore(actor, scope)) {
+        return {
+          tone: 'info',
+          banner: w(
+            'Archived. It is not shown on the website, and it is kept on record. Press Restore to put it back on the website as it was.',
+            'آرکائیو شدہ۔ یہ ویب سائٹ پر نہیں دکھتا، مگر ریکارڈ میں محفوظ ہے۔ جیسا تھا ویسا ہی ویب سائٹ پر واپس لانے کے لیے بحال کریں دبائیں۔',
+          ),
+          actions: ['restore'],
+          showPublish: false,
+        }
+      }
       return readOnly(
         w(
           'Archived. It is no longer shown on the website. Only an approver or a platform admin can restore it.',
@@ -338,7 +360,7 @@ export function workflowView(input: WorkflowInput): WorkflowView {
 
 /** The Stage each step button asks for. The policy decides whether the save is allowed. */
 export const STEP_TARGET: Record<
-  Exclude<StepAction, 'markVerified' | 'approveAndPublish' | 'takeOffline'>,
+  Exclude<StepAction, 'markVerified' | 'approveAndPublish' | 'takeOffline' | 'archive' | 'restore'>,
   WorkflowStatus
 > = {
   sendForReview: 'in_review',
@@ -353,6 +375,8 @@ export const STEP_LABEL: Record<StepAction, Words> = {
   sendBack: w('Send back', 'واپس بھیجیں'),
   markVerified: w('Mark verified', 'تصدیق شدہ کریں'),
   takeOffline: w('Take offline', 'آف لائن کریں'),
+  archive: w('Archive', 'آرکائیو کریں'),
+  restore: w('Restore', 'بحال کریں'),
 }
 
 /** What the banner says right after a step succeeded. */
@@ -377,5 +401,13 @@ export const STEP_DONE: Record<StepAction, Words> = {
   takeOffline: w(
     'Taken offline. It is a draft again and no longer on the website. To bring it back, send it for approval again.',
     'آف لائن کر دیا گیا۔ یہ دوبارہ مسودہ ہے اور ویب سائٹ پر نہیں۔ واپس لانے کے لیے دوبارہ منظوری کے لیے بھیجیں۔',
+  ),
+  archive: w(
+    'Archived. It is off the website and kept on record. A head of department or a platform admin can restore it.',
+    'آرکائیو ہو گیا۔ یہ ویب سائٹ سے ہٹ گیا اور ریکارڈ میں محفوظ ہے۔ شعبے کا سربراہ یا پلیٹ فارم ایڈمن اسے بحال کر سکتا ہے۔',
+  ),
+  restore: w(
+    'Restored. It is live on the website again.',
+    'بحال ہو گیا۔ یہ دوبارہ ویب سائٹ پر لائیو ہے۔',
   ),
 }

@@ -80,6 +80,7 @@ export function WorkflowBar(): React.ReactElement | null {
   const reviewNote = useField<string>({ path: 'governance.reviewNote' })
   const [asking, setAsking] = useState(false)
   const [askingOffline, setAskingOffline] = useState(false)
+  const [askingMove, setAskingMove] = useState<'archive' | 'restore' | null>(null)
   const [draftNote, setDraftNote] = useState('')
   const [busy, setBusy] = useState<StepAction | null>(null)
   const [done, setDone] = useState<Words | null>(null)
@@ -113,7 +114,7 @@ export function WorkflowBar(): React.ReactElement | null {
   const language = i18n.language
 
   const run = async (
-    action: Exclude<StepAction, 'approveAndPublish' | 'takeOffline'>,
+    action: Exclude<StepAction, 'approveAndPublish' | 'takeOffline' | 'archive' | 'restore'>,
     note?: string,
   ): Promise<boolean> => {
     if (!collectionSlug || id == null) return false
@@ -251,6 +252,44 @@ export function WorkflowBar(): React.ReactElement | null {
     setBusy(null)
   }
 
+  /**
+   * Archive a live page, or restore an archived one (slice 3ao). Both are a publishing save with the Stage
+   * set to Archived or Published, which is what the server accepts for these two moves; it checks who may
+   * and, for a restore, the publish checks again. Asked for once more first: both change what the public sees.
+   */
+  const archiveOrRestore = async (kind: 'archive' | 'restore') => {
+    if (!collectionSlug || id == null) return
+    const want: WorkflowStatus = kind === 'archive' ? 'archived' : 'published'
+    const before = stage.value
+    setAskingMove(null)
+    setBusy(kind)
+    setDone(null)
+    stage.setValue(want)
+    for (let i = 0; i < 40 && getField('governance.status')?.value !== want; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 25))
+    }
+    for (let i = 0; i < 200 && processingRef.current; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 25))
+    }
+    const url = formatAdminURL({
+      apiRoute: config.routes.api,
+      path: `/${collectionSlug}/${id}?locale=${locale}&depth=0&fallback-locale=null`,
+    })
+    const result = await submit({
+      action: url,
+      method: 'PATCH',
+      overrides: { _status: 'published' },
+    })
+    if (result?.res?.ok) {
+      recentlyAccepted.set(key, { until: fiveSecondsFromNow(), stage: want })
+      setDone(STEP_DONE[kind])
+    } else {
+      // The server refused (Payload has shown why): the screen goes back to what is true.
+      stage.setValue((before ?? 'draft') as WorkflowStatus, true)
+    }
+    setBusy(null)
+  }
+
   return (
     <section
       className={`workflow-bar workflow-bar--${view.tone}`}
@@ -317,6 +356,42 @@ export function WorkflowBar(): React.ReactElement | null {
             </button>
           </div>
         </div>
+      ) : askingMove ? (
+        <div className="workflow-bar__ask">
+          <p role="alert">
+            {askingMove === 'archive'
+              ? language === 'ur'
+                ? 'یہ صفحہ ویب سائٹ سے ہٹ جائے گا مگر ریکارڈ میں محفوظ رہے گا۔ اسے صرف شعبے کا سربراہ یا پلیٹ فارم ایڈمن بحال کر سکتا ہے۔ کیا آرکائیو کریں؟'
+                : 'This takes the page off the website and keeps it on record. Only a head of department or a platform admin can restore it. Archive it?'
+              : language === 'ur'
+                ? 'یہ صفحہ جیسا آرکائیو ہوا تھا ویسا ہی ویب سائٹ پر واپس آ جائے گا۔ کیا بحال کریں؟'
+                : 'This puts the page back on the website exactly as it was archived. Restore it?'}
+          </p>
+          <div className="workflow-bar__actions">
+            <button
+              type="button"
+              className={`workflow-bar__button workflow-bar__button--${askingMove}`}
+              disabled={busy !== null}
+              onClick={() => void archiveOrRestore(askingMove)}
+              autoFocus
+            >
+              {askingMove === 'archive'
+                ? language === 'ur'
+                  ? 'ہاں، آرکائیو کریں'
+                  : 'Yes, archive it'
+                : language === 'ur'
+                  ? 'ہاں، بحال کریں'
+                  : 'Yes, restore it'}
+            </button>
+            <button
+              type="button"
+              className="workflow-bar__button"
+              onClick={() => setAskingMove(null)}
+            >
+              {language === 'ur' ? 'منسوخ کریں' : 'Cancel'}
+            </button>
+          </div>
+        </div>
       ) : view.actions.length > 0 || view.showPublish ? (
         <div className="workflow-bar__actions">
           {view.actions.map((a) => (
@@ -332,7 +407,9 @@ export function WorkflowBar(): React.ReactElement | null {
                     ? void approveAndPublish()
                     : a === 'takeOffline'
                       ? setAskingOffline(true)
-                      : void run(a)
+                      : a === 'archive' || a === 'restore'
+                        ? setAskingMove(a)
+                        : void run(a)
               }
             >
               {pick(STEP_LABEL[a], language)}
