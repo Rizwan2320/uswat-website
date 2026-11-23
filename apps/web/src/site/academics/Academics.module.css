@@ -48,57 +48,23 @@
     rgb(0 42 16 / 0) 74%
   );
 }
-/* Hero card with a photograph (the campus). The photograph sits on the physical left, above the illustration, and a
-   mask fades it out towards the right so the photograph and the green picture merge with no hard edge, the way the
-   landing page's pictures fade into its green. Stacking, bottom to top: illustration, photograph, wash, text. */
+/* Hero card with a photograph (the campus). The photograph takes the illustration's place on the physical right and a
+   mask fades it out towards the left, into the card's green, so there is no hard edge: the same arrangement as the
+   landing page, where the pictures sit on the right and fade into the green behind the text. */
 .heroCardPhoto {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 0;
-  z-index: 1;
-  width: 36%;
+  right: 0;
+  z-index: 0;
+  width: 58%;
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to right, #000 0%, #000 45%, rgb(0 0 0 / 0.5) 75%, transparent 100%);
-  mask-image: linear-gradient(to right, #000 0%, #000 45%, rgb(0 0 0 / 0.5) 75%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.55) 26%, #000 56%);
+  mask-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.55) 26%, #000 56%);
 }
 .heroCardPhoto img {
   object-fit: cover;
   object-position: center 62%;
-}
-/* With a photograph on the left the text moves right of it, and the illustration gets less room. A light wash keeps the
-   join between photograph and text area smooth. */
-.heroWithPhotos::after {
-  z-index: 2;
-  background: linear-gradient(
-    90deg,
-    rgb(0 42 16 / 0) 0%,
-    rgb(0 42 16 / 0.12) 24%,
-    rgb(0 42 16 / 0.5) 40%,
-    rgb(0 42 16 / 0.3) 56%,
-    rgb(0 42 16 / 0) 72%
-  );
-}
-.heroWithPhotos .heroArt {
-  width: 46%;
-  /* no visible edge where the illustration starts */
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 22%);
-  mask-image: linear-gradient(to right, transparent 0%, #000 22%);
-}
-.heroWithPhotos .heroArt img {
-  object-position: 72% center;
-}
-.heroWithPhotos .heroText {
-  z-index: 3;
-  width: 37%;
-  margin-left: 28%;
-  margin-right: 0;
-  text-shadow: 0 1px 8px rgb(0 20 8 / 0.7);
-}
-.heroWithPhotos .heroText .btn,
-.heroWithPhotos .heroText .btnGhost,
-.heroWithPhotos .heroText .badge {
-  text-shadow: none;
 }
 
 /* The text sits on the physical left, where the illustration is empty, in both reading directions. */
@@ -697,9 +663,9 @@
   /* centre the title block (about 26% to 64% of the picture) in the band */
   object-position: center 40%;
 }
-/* Banner band with rotating photographs on its left (HeroPhotos). The banner picture fills the right part of the band,
-   so its title is smaller than in the full-width banner, and fades in on its left edge; the photographs fade out on
-   their right edge. The two overlap, so there is no hard line between them (the landing page does the same). */
+/* Banner band with rotating photographs on its right (HeroPhotos), the way the landing page does it: the banner picture
+   keeps the left of the band, with its title, and the photographs fade in from the right. The picture is narrower than
+   the band, so its title is smaller than in the full-width banner, and it fades out on its right edge under the photographs. */
 .bannerPic,
 .bannerPicFull {
   position: absolute;
@@ -711,34 +677,32 @@
   right: 0;
 }
 .bannerPic {
-  /* the picture starts at the middle of the band and runs past its right edge (clipped), so the title sits in the
-     right half and the laptop is mostly cropped away */
-  left: 57%;
-  width: 54%;
-  /* fades in on the left, and fades out at the bottom so the row of small icons in the picture is not cut in half */
+  left: 0;
+  width: 68%;
+  /* fades out on the right, and at the bottom so the row of small icons in the picture is not cut in half */
   -webkit-mask-image:
-    linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.6) 6%, #000 12%),
+    linear-gradient(to right, #000 62%, transparent 100%),
     linear-gradient(to bottom, #000 82%, transparent 100%);
   -webkit-mask-composite: source-in;
   mask-image:
-    linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.6) 6%, #000 12%),
+    linear-gradient(to right, #000 62%, transparent 100%),
     linear-gradient(to bottom, #000 82%, transparent 100%);
   mask-composite: intersect;
 }
 .bannerPic .bannerImg {
   /* keep the title block in the band and leave out the row of small icons along the bottom of the picture */
-  object-position: center 28%;
+  object-position: left 30%;
 }
 .bannerPhotos {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 0;
+  right: 0;
   z-index: 1;
-  width: 60%;
+  width: 54%;
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to right, #000 0%, #000 50%, rgb(0 0 0 / 0.5) 78%, transparent 100%);
-  mask-image: linear-gradient(to right, #000 0%, #000 50%, rgb(0 0 0 / 0.5) 78%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.55) 28%, #000 58%);
+  mask-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.55) 28%, #000 58%);
 }
 .heroPhoto {
   position: absolute;
@@ -953,27 +917,17 @@
   .hero::after {
     display: none;
   }
-  /* On phones the card stacks: the photograph fills it and fade out downwards into the illustration. */
+  /* On phones the photograph is a strip along the bottom of the card, fading upwards into the green. */
+  .heroWithPhotos {
+    padding-bottom: 170px;
+  }
   .heroCardPhoto {
+    top: auto;
+    left: 0;
     width: 100%;
-    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 45%, transparent 100%);
-    mask-image: linear-gradient(to bottom, #000 0%, #000 45%, transparent 100%);
-  }
-  .heroWithPhotos .heroArt {
-    width: 100%;
-  }
-  .heroWithPhotos .heroText {
-    width: 100%;
-    margin-left: 0;
-  }
-  .heroWithPhotos::after {
-    display: block;
-    background: linear-gradient(
-      180deg,
-      rgb(0 42 16 / 0.86) 0%,
-      rgb(0 42 16 / 0.8) 55%,
-      rgb(0 42 16 / 0) 100%
-    );
+    height: 190px;
+    -webkit-mask-image: linear-gradient(to top, #000 0%, #000 35%, transparent 100%);
+    mask-image: linear-gradient(to top, #000 0%, #000 35%, transparent 100%);
   }
   .heroText {
     width: 100%;

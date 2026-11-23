@@ -94,7 +94,7 @@ export function Hero({
   photo,
 }: {
   art: Art
-  /** A photograph on the left of the card that fades into the green illustration on its right. */
+  /** A photograph on the right of the card, in place of the illustration, that fades into the green on its left. */
   photo?: Art
   badge: string
   lead: string
@@ -110,15 +110,17 @@ export function Hero({
               <SafeImage src={photo.src} alt="" fill sizes="(max-width: 860px) 100vw, 720px" priority />
             </div>
           ) : null}
-          <div className={styles.heroArt}>
-            <SafeImage
-              src={art.src}
-              alt={art.alt}
-              fill
-              sizes="(max-width: 860px) 100vw, 1200px"
-              priority
-            />
-          </div>
+          {photo ? null : (
+            <div className={styles.heroArt}>
+              <SafeImage
+                src={art.src}
+                alt={art.alt}
+                fill
+                sizes="(max-width: 860px) 100vw, 1200px"
+                priority
+              />
+            </div>
+          )}
           <div className={styles.heroText}>
             <span className={styles.badge}>{badge}</span>
             <p className={styles.heroLead}>{lead}</p>
