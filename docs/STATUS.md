@@ -924,3 +924,12 @@ P3 agent (slice 3a), own entry:
 - New `docs/briefs/go-live-checklist-for-the-lead.md`: merge checks, redirects, sitemap, preview checks, owner items, after-cutover checks.
 - Found, not fixed (route map is the lead's): old `/qec/` redirects to `/administration/qec` and old `/digital-library/` to `/administration/digital-library`; neither page exists, so both end on a 404.
 - Checks run: tsc, eslint, 904 unit tests, axe/overflow/broken-image on 10 pages at 3 widths. Not run: production build, e2e, preview of this commit.
+## Agent 4 second wave merged (2026-11-23, main agent; owner asked for all phase 4 and 5 work)
+- Merged `p4/real-departments` again (5 more commits, tip f89a004): five pages built from saved copies of the old pages (Management & Commerce, English and Foreign Languages, Academic Calendar, Central Library, Quality Enhancement Cell), their banners, rotating banner photographs and no crumb strip on banner pages, five sitemap entries, and `docs/briefs/go-live-checklist-for-the-lead.md`. These five pages need no CMS record. The menu now opens them instead of the official site.
+- Route map: two rows from the checklist pointed at pages that do not exist. `/qec/` now goes to `/administration/quality-enhancement-cell/` and `/digital-library/` to `/administration/central-library-office/` (the Digital Library itself stays an external menu entry). Rebuilt with `pnpm routemap:build`. The choice of the Central Library page for the old digital-library address is mine; the owner can change it.
+- The e2e spec `profile-pages.e2e.spec.ts` now also opens the five new pages on an empty database. Local: typecheck, lint, 1686 tests, build, visual baselines and 24 browser tests passed.
+- **Still not on the new site (no page, source needed):** Affiliated Colleges (the saved copy of the old page is empty), the admissions links, the QEC and calendar PDFs.
+- **Not merged:** #94 (`p4/sample-pack-checks`, search check out of date); older `p4/data-dictionary`, `p5/nav-internal`, `p5/offices` carry only superseded copies of work already on main.
+- **Vercel free plan: 100 deployments a day.** It was reached on 2026-11-23, so a push to `main` may not deploy until the limit resets; deploy by hand from the dashboard if needed. Agents pushing many branches use it up.
+- Items from agent 4's checklist still for the lead and owner: confirm the 33 held-page redirects, open `/content-sitemap.xml` on the real domain, turn Deployment Protection off for judges, Search Console submission, rotate the Neon password.
+
