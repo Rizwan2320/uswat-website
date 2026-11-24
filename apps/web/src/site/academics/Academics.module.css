@@ -1183,6 +1183,44 @@
   }
 }
 
+/* the page of one piece of alumni work: an all-green hero that carries the headline of the work */
+.workHero {
+  padding: clamp(40px, 6vw, 72px) 0 clamp(36px, 5vw, 60px);
+  color: #fff;
+  background:
+    radial-gradient(60% 120% at 100% 0%, rgb(242 183 5 / 0.14) 0%, rgb(242 183 5 / 0) 60%),
+    linear-gradient(135deg, var(--forest) 0%, var(--forest-deep) 100%);
+}
+.workHeroKicker {
+  margin: 0 0 12px;
+  color: var(--gold);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.workHeroTitle {
+  max-width: 26ch;
+  margin: 0;
+  font-family: var(--stack-serif);
+  font-size: clamp(1.8rem, 4.4vw, 3.1rem);
+  font-weight: 700;
+  line-height: 1.18;
+}
+.workHeroTitle::after {
+  content: '';
+  display: block;
+  width: 56px;
+  height: 3px;
+  margin-top: 20px;
+  background: var(--gold);
+}
+.workHeroMeta {
+  margin: 16px 0 0;
+  color: rgb(255 255 255 / 0.9);
+  font-size: 1.05rem;
+}
+
 /* the page of one piece of alumni work */
 .workGrid {
   display: grid;
