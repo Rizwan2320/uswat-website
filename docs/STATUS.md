@@ -1005,3 +1005,8 @@ P3 agent (slice 3a), own entry:
 - Made with Payload's own hashing on a scratch database, then inserted with SQL (the sandbox cannot reach Neon over TCP). Login on production not run from here.
 - Production still has no departments or programmes, so the head and coordinator have no records to work on until sample content is seeded.
 - **Before launch: delete these three accounts and rotate or remove the old `testeditor@gmail.com` admin if it is a throwaway.**
+
+## Departments search fixed (2026-11-24, PR #158, main agent)
+- The top-bar Departments search read only CMS records, so it showed nothing on production. `/api/department-options` now adds the pages written in code (`src/site/organisation/codeOptions.ts`): DCST, six department pages, five BS programmes, Allied Health programmes (16 in all, departments first). A CMS record with the same address wins; CMS failure still returns the code pages.
+- Checked: unit tests, 25 browser specs on an empty database (one opens every address the search offers), live `/api/department-options` returns the 16 items.
+- When a new department or programme page is added in code, register it in its profile index and it appears in the search with no other change. CMS records appear within 5 minutes (cache).
