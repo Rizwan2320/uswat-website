@@ -96,7 +96,8 @@ export const Programmes = governedCollection({
   singular: 'Programme',
   plural: 'Programmes',
   useAsTitle: 'name',
-  createAdminOnly: true,
+  // A platform admin or a head of department (slice 3ap); departments stay admin-only.
+  createAdminOrHead: true,
   hooks: { beforeValidate: [inheritDepartmentOffice] },
   group: 'Organisation',
   defaultColumns: ['name', 'department', 'campus', 'updatedAt'],

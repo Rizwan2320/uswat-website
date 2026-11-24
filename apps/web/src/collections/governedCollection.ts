@@ -3,6 +3,7 @@ import type { CollectionConfig, Field } from 'payload'
 import {
   governedCreate,
   governedCreateAdminOnly,
+  governedCreateAdminOrHead,
   governedDelete,
   governedReadFor,
   governedReadVersionsFor,
@@ -24,6 +25,8 @@ export interface GovernedCollectionOptions {
   dbName?: string
   /** Only a platform admin may create a record (departments and programmes). */
   createAdminOnly?: boolean
+  /** A platform admin, or a head of department (programmes, slice 3ap). Wins over `createAdminOnly`. */
+  createAdminOrHead?: boolean
   /** Extra collection hooks, merged with the governance hooks. */
   hooks?: CollectionConfig['hooks']
 }
@@ -42,7 +45,11 @@ export function governedCollection(o: GovernedCollectionOptions): CollectionConf
         group: o.group,
       },
       access: {
-        create: o.createAdminOnly ? governedCreateAdminOnly : governedCreate,
+        create: o.createAdminOrHead
+          ? governedCreateAdminOrHead
+          : o.createAdminOnly
+            ? governedCreateAdminOnly
+            : governedCreate,
         delete: governedDelete,
         read: governedReadFor(o.slug),
         readVersions: governedReadVersionsFor(o.slug),
