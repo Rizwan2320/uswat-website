@@ -1,6 +1,6 @@
 /* Pure helpers for the top-bar department search (no React, no CMS), so they can be unit-tested. */
 
-export type DepartmentOption = { name: string; slug: string; group?: string }
+export type DepartmentOption = { name: string; slug: string; group?: string; /** Where the option leads; a department address when missing. */ href?: string }
 
 const fold = (s: string) =>
   s

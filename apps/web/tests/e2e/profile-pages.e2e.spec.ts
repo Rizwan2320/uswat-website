@@ -33,3 +33,14 @@ test('an office address with no profile and no record is still a 404', async ({ 
   const res = await page.goto('http://localhost:3000/administration/no-such-office', { waitUntil: 'networkidle' })
   expect(res?.status()).toBe(404)
 })
+
+test('every address the top-bar Departments search offers opens (empty CMS)', async ({ request }) => {
+  const res = await request.get('http://localhost:3000/api/department-options')
+  expect(res.status()).toBe(200)
+  const { departments } = (await res.json()) as { departments: { name: string; href: string }[] }
+  expect(departments.length).toBeGreaterThanOrEqual(10)
+  for (const d of departments) {
+    const page = await request.get(`http://localhost:3000${d.href}`)
+    expect(page.status(), `${d.name} -> ${d.href}`).toBe(200)
+  }
+})

@@ -52,7 +52,7 @@ export default function DepartmentSearch({ triggerClassName }: { triggerClassNam
 
   function go(d: DepartmentOption) {
     dialog.current?.close()
-    router.push(departmentHref(d.slug))
+    router.push(d.href ?? departmentHref(d.slug))
   }
 
   // Keep the highlighted option in view while arrowing through a long list.
@@ -132,7 +132,7 @@ export default function DepartmentSearch({ triggerClassName }: { triggerClassNam
           >
             {matches.map((d, i) => (
               <li
-                key={d.slug}
+                key={d.href ?? d.slug}
                 id={`${listId}-${i}`}
                 role="option"
                 aria-selected={i === current}
