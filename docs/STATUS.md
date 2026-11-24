@@ -1038,3 +1038,10 @@ P3 agent (slice 3a), own entry:
 - Search is by **name only** (live, `?q=`); department filter removed. Portrait cards in one grid; profile has a side card, numbered publications and a sign-in strip.
 - Sample fill: `scripts/portal-people-sample-fill.ts` prints SQL for the 14 Sample people. Applied to the Neon `previews` branch (CMS project `uswat-website`) and a local DB only. Never run on production. The repo seeds are unchanged (the seeds int test needs them as is).
 - Checks: tsc clean; people unit tests 17 pass; full unit run 1049 pass, `env.unit.spec.ts` fails without env vars (also fails without my changes). Not run: Playwright e2e for these pages.
+
+## Wave 4 merged (2026-11-24, branch `integ/wave4`, main agent)
+- **CMS agent slice 3ao (PR #160):** Archive and Restore buttons in the status box and an accessibility pass; evidence in `docs/evidence/p3ao-a11y.md`.
+- **Portal agent public people pages (PR #159):** `/people` directory and `/people/{slug}` profile, read from the CMS People collection under its own public rules (published records only, private email or photo never returned). The top-bar Faculty Portal link now opens `/people`, which carries the sign-in button to the portal (`site.portalLinks.facultySignIn`). Production holds no People records, so the directory shows "No profiles are published yet" until some are published. `scripts/portal-people-sample-fill.ts` prints SQL for local or preview databases only.
+- Sitemap conflict resolved by keeping both `/people` and `/alumni/research`.
+- Checks run: typecheck, lint (0 errors), 140 files / 1783 tests (the identity file failed once on a two-factor code check, `verify-totp` 401, then passed twice at 218 of 218: a timing flake at the 30-second code boundary, not caused by this merge), types drift clean, build, 24 visual against `next start`, 25 browser specs (top bar, alumni, profile pages).
+- Not run locally: the CMS editor browser specs (they need the editor fixtures; CI runs them).
