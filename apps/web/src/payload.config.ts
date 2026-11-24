@@ -53,7 +53,8 @@ const built = buildConfig({
       // Operations (3v): sweep status and work by office, for admin, site manager and auditor only.
       beforeDashboard: ['@/admin/EditorDashboard', '@/admin/OperationsPanel'],
       // "You are...": who you are and what that means, on every screen (slice 3ai).
-      header: ['@/admin/RoleBanner'],
+      // Back and Sign out, always visible (slice 3ap).
+      header: ['@/admin/RoleBanner', '@/admin/TopBar'],
     },
     importMap: {
       baseDir: path.resolve(dirname),
