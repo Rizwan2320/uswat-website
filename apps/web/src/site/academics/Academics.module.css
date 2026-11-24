@@ -1079,3 +1079,163 @@
       color 0.15s;
   }
 }
+
+/* Our alumni: three whole-card links (Alumni.tsx) */
+.alumniNote {
+  margin: 0 0 18px;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.alumniNote :global(.sample-tag) {
+  margin-inline-end: 10px;
+}
+.alumniGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.alumniCard {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+  overflow: hidden;
+  color: var(--text);
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid rgb(0 59 23 / 0.08);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 14px -10px rgb(0 42 16 / 0.3);
+}
+.alumniCard:hover,
+.alumniCard:focus-visible {
+  border-color: var(--gold);
+  box-shadow: 0 16px 26px -16px rgb(0 42 16 / 0.45);
+}
+.alumniCard:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+.alumniPhoto {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--forest) 0%, var(--forest-deep) 100%);
+}
+.alumniPhoto img {
+  object-fit: cover;
+  object-position: center top;
+}
+.alumniInitials {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--gold);
+  font-family: var(--stack-serif);
+  font-weight: 700;
+  font-size: clamp(2.6rem, 6vw, 3.8rem);
+  letter-spacing: 0.04em;
+}
+.alumniBody {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 18px 20px 20px;
+}
+.alumniKind {
+  color: var(--maroon);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.alumniHeadline {
+  color: var(--forest);
+  font-family: var(--stack-serif);
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.alumniMeta {
+  font-size: 0.9rem;
+}
+.alumniMore {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  color: var(--forest);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.alumniMore svg {
+  width: 16px;
+  height: 16px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .alumniCard {
+    transition:
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+}
+
+/* the page of one piece of alumni work */
+.workGrid {
+  display: grid;
+  margin-top: 26px;
+  grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
+  gap: clamp(20px, 4vw, 44px);
+  align-items: start;
+}
+.workPortrait .alumniPhoto {
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius);
+}
+.workOthers {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.workOthers li {
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgb(0 59 23 / 0.1);
+}
+.workOthers .cardTitle {
+  margin: 0 0 2px;
+}
+.workBack {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--forest);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.workBack:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+.workFacts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+@media (max-width: 700px) {
+  .workGrid {
+    grid-template-columns: 1fr;
+  }
+  .workPortrait {
+    max-width: 240px;
+  }
+}

@@ -840,3 +840,10 @@ P3 agent (slice 3a), own entry:
 ### DCST About band shows the head of department (2026-11-23, branch `p4/real-departments`, prediction A4-z8)
 - On the DCST department page only, the green chip picture in the "About DCST" band is replaced by a card (white since 2026-11-24, prediction A4-z9) with the head of department's portrait, name and title (`HeadIntroCard` in `blocks.tsx`, from the team entry with role `head`; photo `/images/faculty/sana-ullah.jpg`). Departments without such a team entry still show the chip picture. Programme pages are unchanged.
 - Checks run: tsc, eslint, 907 unit tests, axe/overflow/broken-image at 1440, 1024 and 390 px. Not run: production build, e2e, preview of this commit.
+
+### "Our alumni" band on the DCST pages (2026-11-24, branch `p4/real-departments`, prediction A4-z10, hand-off `docs/briefs/alumni-work-cms-handoff.md`)
+- Three cards (portrait, headline of the work, one link each) on the DCST department page and on each of the five DCST programme pages. A card opens `/academics/alumni-work/<slug>` (summary, tags, "Read the full work" button only when the entry has an https link). The 15 work pages are in the sitemap.
+- Data is a plain list, `src/site/academics/alumni.ts`: 15 made-up sample entries (three per programme), one "Sample" tag on each band, initials tiles until real portraits are added at `public/images/alumni/<slug>.jpg`. No real people, photos or external links were invented.
+- Component `Alumni.tsx` takes any list, so another department needs one line per page. The Payload schema is not touched; the CMS collection is described in the hand-off brief for the lead.
+- Checks run: tsc, eslint, 914 unit tests, axe/overflow/broken-image at 1440, 1024 and 390 px on the department page, five programme pages and a work page. Not run: production build, e2e, preview of this commit.
+- Next: real alumni, consent and links from the department; the band on the other departments once they have entries; CMS collection (lead/P3).

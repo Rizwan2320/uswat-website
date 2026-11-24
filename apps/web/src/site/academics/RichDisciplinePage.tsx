@@ -9,6 +9,8 @@ import {
 } from '../organisation/shape'
 
 import styles from './Academics.module.css'
+import AlumniShowcase from './Alumni'
+import { alumniForProgramme } from './alumni'
 import { dcst } from './profiles/dcst'
 import {
   BannerHeader,
@@ -69,6 +71,8 @@ export default function RichDisciplinePage({
   )
   const coordinator = coordinatorOf(profile.department, profile.slug)
 
+  const alumni = alumniForProgramme(profile.slug).slice(0, 3)
+
   const facts: [string, string][] = [
     ['Level', str(doc.level) ?? 'BS'],
     ['Duration', str(doc.duration) ?? '4 years'],
@@ -81,6 +85,7 @@ export default function RichDisciplinePage({
     { id: 'curriculum', label: 'Curriculum' },
     { id: 'tracks', label: 'Tracks' },
     { id: 'careers', label: 'Careers' },
+    ...(alumni.length ? [{ id: 'alumni', label: 'Alumni' }] : []),
     { id: 'admission', label: 'Admission' },
     { id: 'faq', label: 'Questions' },
     { id: 'news', label: 'News and notices' },
@@ -174,7 +179,12 @@ export default function RichDisciplinePage({
         <IconRows items={profile.careers} />
       </Band>
 
-      <Band id="admission" kicker="Admission" title="Eligibility and how to apply">
+      <AlumniShowcase
+        items={alumni}
+        lede={`Theses, projects and papers by graduates of BS ${profile.shortName}. Select a card to read about the work.`}
+      />
+
+      <Band id="admission" tint kicker="Admission" title="Eligibility and how to apply">
         {eligibility ? <Prose paragraphs={paragraphs(eligibility)} /> : null}
         <ol className={styles.steps} style={{ marginTop: 20 }}>
           {STEPS.map((s) => (
@@ -186,7 +196,7 @@ export default function RichDisciplinePage({
         </ol>
       </Band>
 
-      <Band id="faq" tint kicker="Good to know" title="Questions">
+      <Band id="faq" kicker="Good to know" title="Questions">
         <FaqList items={profile.faq} />
       </Band>
 

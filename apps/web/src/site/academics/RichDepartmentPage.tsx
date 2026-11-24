@@ -29,6 +29,8 @@ import {
   Stats,
   TitledCards,
 } from './blocks'
+import AlumniShowcase from './Alumni'
+import { DCST_FEATURED, alumniBySlugs } from './alumni'
 import { art } from './profiles/art'
 import { disciplinesOf } from './profiles'
 import type { DepartmentFeed } from './feed'
@@ -65,6 +67,8 @@ export default function RichDepartmentPage({
     return { p, d }
   })
 
+  const alumni = profile.slug === 'dcst' ? alumniBySlugs(DCST_FEATURED) : []
+
   const stats = [
     { value: programmes.length, label: 'degree programmes' },
     { value: '4 years', label: 'eight semesters each' },
@@ -79,6 +83,7 @@ export default function RichDepartmentPage({
     { id: 'careers', label: 'Careers' },
     { id: 'student-life', label: 'Student life' },
     { id: 'people', label: 'Faculty' },
+    ...(alumni.length ? [{ id: 'alumni', label: 'Alumni' }] : []),
     { id: 'news', label: 'News and notices' },
     { id: 'faq', label: 'Questions' },
   ]
@@ -226,8 +231,14 @@ export default function RichDepartmentPage({
         ) : null}
       </Band>
 
+      <AlumniShowcase
+        items={alumni}
+        lede="Theses, projects and papers by graduates of the department's programmes. Select a card to read about the work."
+      />
+
       <Band
         id="news"
+        tint
         kicker="Latest"
         title="News, events and notices"
         lede={`Announcements from ${profile.shortName}. Items tagged "${profile.shortName}" in the CMS appear here.`}
