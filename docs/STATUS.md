@@ -964,6 +964,16 @@ P3 agent (slice 3a), own entry:
 - Not run: axe, phone width, Urdu rendering review, hosted preview.
 - **Next:** Archive and Restore buttons, axe on the status and Stage boxes, Urdu review, mail setup (then show the forgot-password link again).
 
+## P3 slice 3ap, Back and Sign out on every admin screen; a head of department creates programmes (2026-11-24, branch `p3/admin-nav-and-programme-create-3ap`, from main, draft PR; brief `docs/briefs/p3ap-top-bar-and-programme-create.md`, predictions P3ap-a, b)
+- **Owner's three requests.** (1) No Back button. (2) Admin should create heads and departments; a head should create programmes and coordinator accounts. (3) No Sign out.
+- **Done.** A top bar under the role bar: Back (not on the dashboard or sign-in screens) and Sign out, always visible, English and Urdu draft, one line at 390 px, axe 0 findings, keyboard order Back then Sign out. Payload's own Log out was only inside the side menu, folded away on narrow screens.
+- **Already existed, checked in a browser:** the admin creates departments and head accounts; a head creates Editor and Contributor accounts for their own office (the head created a coordinator with one programme in the browser).
+- **Rule change (owner, 2026-11-24, reverses part of 2026-11-21):** a head of department (Approver holding an office) now creates programmes. Departments stay admin-only. The programme takes its department's office, so another office's department is refused by the existing scope rule. New access function `governedCreateAdminOrHead`, option `createAdminOrHead`. The head's role text now says so.
+- **Found by the browser, not by tests:** Payload's Create screen saves an empty draft first. A "department required" check I first wrote blanked the whole Create screen for a head; removed (P3ap-a).
+- **Tests:** unit 86 files, 1,045 pass; related integration (access matrix, all governance, admin menu, dashboards, REST access) 363 pass; structure test rewritten per role (22).
+- **Not run:** full integration suite, Playwright e2e specs, Urdu native review, a screen reader, the bar at tablet width, the production site (nothing was touched there). Known wart, not changed: a head's Role dropdown lists all six roles, though the server only lets them grant Editor or Contributor.
+- **For the lead:** `payload.config.ts` has one new entry in `admin.components.header` and the import map was regenerated. This branch and `p3/archive-restore-a11y-3ao` both add a section to STATUS.md; expect a trivial conflict.
+
 ## P3 slice 3an, screens and server agree (2026-11-23, branch `p3/ui-server-matrix-3an`, based on the combined scratch branch)
 - A matrix test now runs 2,400 role/stage cases and compares the screen's buttons with the server's check (`tests/unit/uiServerMatrix.unit.spec.ts`). Result: no visible button is refused. The server allows three things the screen hides on purpose (listed in the test). Archive and restore still have no button.
 - Found in the browser and fixed: Payload's own Unpublish showed to every role on every live page, and the server refused it. Replaced; Take offline in the status box stays for the people allowed it (checked: head on own department, coordinator on own programme, admin).
