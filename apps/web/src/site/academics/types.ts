@@ -2,6 +2,8 @@
    Names, level, duration, head, people and e-mail still come from the CMS records. A profile is matched by slug.
    To add another department, copy profiles/dcst.ts, change the content, and register it in profiles/index.ts. */
 
+import type { OfficePhone, Source } from '../offices/types'
+
 export type IconName =
   | 'code'
   | 'layers'
@@ -41,16 +43,32 @@ export type TeamMember = {
   id: string
   name: string
   title: string
-  role: 'head' | 'coordinator'
+  role: 'head' | 'coordinator' | 'member'
+  /** The tag over the name. Defaults: "Head of Department (HoD)", "Coordinator", "Faculty". */
+  roleLabel?: string
   /** Programme slugs this person coordinates. */
   coordinates?: string[]
   qualifications?: string[]
   photo?: string
 }
 
+/** Facts a department page takes from the university's own pages: each has its source address and the day it was read (CLAUDE.md rule 3). */
+export type DepartmentReference = {
+  sources: Source[]
+  verifiedAt: string
+  /** What the sources do not say: shown as "Still to be confirmed". */
+  openPoints: string[]
+  phones?: OfficePhone[]
+  emails?: string[]
+}
+
 export type DepartmentProfile = {
   slug: string
+  /** The page's address when it is not /academics/departments/<slug>. */
+  path?: string
   status: ProfileStatus
+  /** The page title when it is longer than `shortName`, for example "Faculty of Allied Health Sciences". */
+  fullName?: string
   shortName: string
   tagline: string
   /** One or two sentences in the hero; keep it different from `about`. */
@@ -69,6 +87,20 @@ export type DepartmentProfile = {
   highlights: IconTitled[]
   /** Programme slugs in the order they are shown. */
   disciplines: string[]
+  /** The line over the programme cards. Default: the DCST wording. */
+  programmesLede?: string
+  /** Level and duration in the hero card and the stats strip. Defaults: BS, 4 years, eight semesters each. */
+  levelText?: string
+  durationText?: string
+  durationNote?: string
+  /** The picture in the About band when the head of department has no portrait yet. Default: the DCST chip. */
+  tile?: Art
+  /** Slugs of the alumni work shown on the department page (see alumni.ts). */
+  alumni?: string[]
+  /** The faculty band: its title and the line under it. Defaults: the DCST wording (head and programme coordinators). */
+  peopleTitle?: string
+  peopleLede?: string
+  reference?: DepartmentReference
   labs: Lab[]
   research: ResearchArea[]
   careers: IconTitled[]
@@ -86,7 +118,18 @@ export type DisciplineProfile = {
   slug: string
   department: string
   status: ProfileStatus
+  /** The programme's full name, for lists built without a CMS record. Default: "BS <shortName>". */
+  name?: string
   shortName: string
+  /** The badge in the hero card. Default: "BS <shortName>". */
+  badge?: string
+  /** The centre or school that runs the programme, when the university's pages say. */
+  centre?: string
+  /** Level and duration for the hero card when the CMS record has none. Defaults: BS, 4 years. */
+  level?: string
+  duration?: string
+  /** The line under "Curriculum by year". Default: the first year is shared with the department's other programmes. */
+  curriculumLede?: string
   tagline: string
   /** One or two sentences for the card on the department page. */
   summary: string

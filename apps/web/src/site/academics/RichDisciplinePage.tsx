@@ -11,7 +11,6 @@ import {
 import styles from './Academics.module.css'
 import AlumniShowcase from './Alumni'
 import { alumniForProgramme } from './alumni'
-import { dcst } from './profiles/dcst'
 import {
   BannerHeader,
   Band,
@@ -31,7 +30,7 @@ import {
   Stats,
   TitledCards,
 } from './blocks'
-import { coordinatorOf } from './profiles'
+import { coordinatorOf, departmentPath, profileForDepartment } from './profiles'
 import type { DepartmentFeed } from './feed'
 import type { DisciplineProfile } from './types'
 
@@ -70,12 +69,15 @@ export default function RichDisciplinePage({
     0,
   )
   const coordinator = coordinatorOf(profile.department, profile.slug)
+  const department = profileForDepartment(profile.department)
+  const deptHref = department ? departmentPath(department) : null
 
   const alumni = alumniForProgramme(profile.slug).slice(0, 3)
 
   const facts: [string, string][] = [
-    ['Level', str(doc.level) ?? 'BS'],
-    ['Duration', str(doc.duration) ?? '4 years'],
+    ['Level', str(doc.level) ?? profile.level ?? 'BS'],
+    ['Duration', str(doc.duration) ?? profile.duration ?? '4 years'],
+    ...(profile.centre ? ([['Centre', profile.centre]] as [string, string][]) : []),
     ...(campus && str(campus.name) ? ([['Campus', str(campus.name)!]] as [string, string][]) : []),
   ]
   const nav = [
@@ -97,17 +99,19 @@ export default function RichDisciplinePage({
         crumbs={[
           { label: 'Home', href: '/' },
           { label: 'Academics', href: '/academics' },
-          ...(dept && str(dept.slug)
-            ? [{ label: str(dept.name) ?? 'Department', href: departmentHref(str(dept.slug)!) }]
-            : [{ label: 'Departments', href: DEPARTMENTS_PATH }]),
+          ...(deptHref
+            ? [{ label: (dept && str(dept.name)) || department?.shortName || 'Department', href: deptHref }]
+            : dept && str(dept.slug)
+              ? [{ label: str(dept.name) ?? 'Department', href: departmentHref(str(dept.slug)!) }]
+              : [{ label: 'Departments', href: DEPARTMENTS_PATH }]),
           { label: profile.shortName },
         ]}
         hideCrumbs
-        photos={dcst.heroPhotos}
+        photos={department?.heroPhotos}
       />
       <Hero
         art={profile.hero}
-        badge={`BS ${profile.shortName}`}
+        badge={profile.badge ?? `BS ${profile.shortName}`}
         lead={profile.summary}
         facts={facts}
         actions={[
@@ -117,8 +121,8 @@ export default function RichDisciplinePage({
       />
       <Stats
         items={[
-          { value: 4, label: 'years' },
-          { value: 8, label: 'semesters' },
+          { value: profile.years.length, label: 'years' },
+          { value: profile.years.length * 2, label: 'semesters' },
           { value: courseCount, label: 'courses in the plan' },
           { value: profile.tracks.length, label: 'elective tracks' },
         ]}
@@ -162,7 +166,10 @@ export default function RichDisciplinePage({
         tint
         kicker="Study plan"
         title="Curriculum by year"
-        lede="The first year is shared with the other programmes of the department. Elective courses are chosen from the tracks below."
+        lede={
+          profile.curriculumLede ??
+          'The first year is shared with the other programmes of the department. Elective courses are chosen from the tracks below.'
+        }
       >
         <Curriculum years={profile.years} />
         <p className={styles.note}>
@@ -216,11 +223,11 @@ export default function RichDisciplinePage({
           text="Applications open through the university admissions portal. Merit lists and announcements are posted on the notices page."
           actions={[
             { label: 'Apply online', href: admissions.applyUrl },
-            ...(dept && str(dept.slug)
+            ...(deptHref || (dept && str(dept.slug))
               ? [
                   {
                     label: 'Visit the department',
-                    href: departmentHref(str(dept.slug)!),
+                    href: deptHref ?? departmentHref(str(dept!.slug)!),
                     ghost: true,
                   },
                 ]

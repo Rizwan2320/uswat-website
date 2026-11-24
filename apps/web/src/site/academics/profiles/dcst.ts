@@ -62,6 +62,7 @@ export const dcst: DepartmentProfile = {
       text: 'The curriculum prepares graduates for MS and PhD study in computing at home or abroad.',
     },
   ],
+  alumni: ['pashto-spelling-checker', 'clinic-queue-and-records-app', 'crop-disease-detection-from-photos'],
   disciplines: [
     'bs-computer-science',
     'bs-software-engineering',

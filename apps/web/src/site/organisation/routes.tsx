@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import RichDepartmentPage from '../academics/RichDepartmentPage'
 import RichDisciplinePage from '../academics/RichDisciplinePage'
 import { departmentFeed } from '../academics/feed'
-import { profileForDepartment, profileForDiscipline } from '../academics/profiles'
+import { departmentPath, disciplinesOf, profileForDepartment, profileForDiscipline } from '../academics/profiles'
 import RichAboutPage from '../about/RichAboutPage'
 import RichMessagePage from '../about/RichMessagePage'
 import { ABOUT_PATH, MESSAGE_PATH } from '../about/data'
@@ -14,16 +14,13 @@ import RichOfficePage from '../offices/RichOfficePage'
 import RichResearchPage from '../offices/RichResearchPage'
 import { ADMINISTRATION_PATH, RESEARCH_PATH } from '../offices/landings'
 import { profileForOffice, profileForPage } from '../offices/profiles'
-import RichFacultyPage from '../faculties/RichFacultyPage'
-import RichFacultyProgrammePage from '../faculties/RichFacultyProgrammePage'
-import { profileForFaculty, profileForFacultyProgramme } from '../faculties'
 
 import { DepartmentsIndex, ProgrammesIndex } from './Lists'
 import { AcademicsPage, CampusPage } from './Landing'
 import OfficePage from './Office'
 import { DepartmentPage, ProgrammePage } from './Pages'
 import { getCampus, getDepartment, getOffice, getProgramme, listDepartments, listProgrammes, peopleOfDepartment, programmesAtCampus, programmesOfDepartment } from './queries'
-import { ACADEMICS_PATH, CAMPUSES_PATH, DEPARTMENTS_PATH, OFFICES_PATH, PROGRAMMES_PATH, str } from './shape'
+import { ACADEMICS_PATH, CAMPUSES_PATH, DEPARTMENTS_PATH, OFFICES_PATH, PROGRAMMES_PATH, str, type ProgrammeCard } from './shape'
 
 /* The route files under (site)/(cms)/academics/{departments,programmes} are one-liners over these. */
 
@@ -74,8 +71,6 @@ export async function ProgrammeRoute({ params }: { params: SlugParams }) {
     const feed = await departmentFeed(profile.department)
     return <RichDisciplinePage doc={doc} profile={profile} feed={feed} />
   }
-  const facultyProgramme = profileForFacultyProgramme(str(doc.slug) ?? '')
-  if (facultyProgramme) return <RichFacultyProgrammePage doc={doc} profile={facultyProgramme} />
   return <ProgrammePage doc={doc} />
 }
 export async function programmeMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
@@ -167,15 +162,27 @@ export function pageProfileMetadata(slug: string): Metadata {
     : { title: 'Page' }
 }
 
-/* /faculties/{slug}: a faculty landing built from a profile (src/site/faculties). A static route per faculty, so no CMS record is needed. */
-export function FacultyRoute({ slug }: { slug: string }) {
-  const profile = profileForFaculty(slug)
-  if (!profile) notFound()
-  return <RichFacultyPage profile={profile} />
+/* /faculties/{slug}: a faculty landing built from a department profile with a `path` (src/site/academics/profiles/allied). A static route per faculty, so no CMS record is needed. */
+export async function FacultyRoute({ slug }: { slug: string }) {
+  const profile = profileForDepartment(slug)
+  if (!profile?.path) notFound()
+  // No CMS record is needed: the programme cards are built from the programme profiles of the faculty.
+  const programmes: ProgrammeCard[] = disciplinesOf(profile.slug).map((d) => ({
+    id: d.slug,
+    name: d.name ?? `BS ${d.shortName}`,
+    slug: d.slug,
+    level: d.level ?? 'BS',
+    duration: d.duration ?? '4 years',
+    campus: null,
+    departmentId: profile.slug,
+    departmentName: profile.shortName,
+    sample: false,
+  }))
+  return <RichDepartmentPage doc={{ id: profile.slug }} profile={profile} programmes={programmes} feed={await departmentFeed(profile.slug)} />
 }
 export function facultyMetadata(slug: string): Metadata {
-  const profile = profileForFaculty(slug)
-  return profile
-    ? { title: profile.name, description: profile.lead, alternates: { canonical: profile.path } }
+  const profile = profileForDepartment(slug)
+  return profile?.path
+    ? { title: profile.fullName ?? profile.shortName, description: profile.intro, alternates: { canonical: departmentPath(profile) } }
     : { title: 'Faculty' }
 }

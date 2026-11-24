@@ -38,7 +38,7 @@ Pages and what to look for:
 | `/administration/directorate-of-it`, `/administration/central-library-office`, `/administration/quality-enhancement-cell`, `/academic-calendar` | Same banner; hero card with gold label; "Still to be confirmed" list at the end |
 | `/academics/departments/dcst` and one programme page | DCST coding photographs on the banner, campus photograph on the hero card |
 | `/academics/departments/management-commerce`, `/academics/departments/english-and-foreign-languages`, and the four above (geology, archaeology, environmental-sciences, economics-and-development-studies) | Programme lists, people, vision and mission, "Still to be confirmed" list |
-| `/faculties/allied-health-sciences` | Banner and hero as above |
+| `/faculties/allied-health-sciences` and its four programme pages (`/academics/programmes/bs-medical-laboratory-technology`, `bs-dental-technology`, `doctor-of-physical-therapy`, `bs-radiography-and-imaging-technology`) | Same bands as the DCST pages; draft line at the foot; the faculty page ends with Contact and Sources. The four programme pages need their seeded CMS records, as before |
 
 - [ ] The preview URL opens without a Vercel login (Deployment Protection) when judges or the public need it. A preview build can sit queued for several minutes; it finished by itself earlier.
 - [ ] Phone width (about 390 px): plain banner without photographs, no sideways scrolling.
@@ -52,6 +52,7 @@ Pages and what to look for:
 - Admissions links: not built. Digital Library stays an external menu entry.
 - The QEC and Academic Calendar pages name their documents but do not link the PDFs, because those links exist only on the live site, which agent 4 does not fetch.
 - Photographs on pages other than DCST are the seven the landing page already uses (supplied by the owner on 2026-11-08, see `src/site/content/images.ts`; people are visible in them).
+- Allied Health Sciences and its four programmes follow the DCST layout with illustrative text (laboratories, research, careers, study plans); only the facts listed under Sources on the faculty page come from the university's pages. No eligibility, fee or seat count is shown.
 - All institutional data is dummy or taken from saved copies dated 2026-11-06; every page lists its source and `verifiedAt`.
 
 ## 6. Owner and lead items already recorded in STATUS.md (not done by agent 4)

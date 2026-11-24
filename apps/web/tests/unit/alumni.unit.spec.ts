@@ -5,11 +5,11 @@ import { describe, expect, it } from 'vitest'
 
 import {
   ALUMNI_WORKS,
-  DCST_FEATURED,
   alumniBySlugs,
   alumniForProgramme,
   alumniHref,
 } from '../../src/site/academics/alumni'
+import { dcst } from '../../src/site/academics/profiles/dcst'
 import { disciplineProfiles } from '../../src/site/academics/profiles'
 import { LIST_PAGES } from '../../src/site/sitemap/entries'
 
@@ -35,7 +35,7 @@ describe('alumni work (sample data)', () => {
     }
   })
 
-  it('gives each of the five DCST programmes exactly three entries', () => {
+  it('gives each of the nine programmes exactly three entries', () => {
     expect(disciplineProfiles.map((p) => p.slug).sort()).toEqual(
       [
         'bs-artificial-intelligence',
@@ -43,15 +43,19 @@ describe('alumni work (sample data)', () => {
         'bs-data-science',
         'bs-information-technology',
         'bs-software-engineering',
+        'bs-medical-laboratory-technology',
+        'bs-dental-technology',
+        'doctor-of-physical-therapy',
+        'bs-radiography-and-imaging-technology',
       ].sort(),
     )
     for (const p of disciplineProfiles) expect(alumniForProgramme(p.slug)).toHaveLength(3)
-    expect(ALUMNI_WORKS).toHaveLength(15)
+    expect(ALUMNI_WORKS).toHaveLength(27)
   })
 
   it('features three different works on the department page', () => {
-    expect(DCST_FEATURED).toHaveLength(3)
-    expect(alumniBySlugs(DCST_FEATURED)).toHaveLength(3)
+    expect(dcst.alumni).toHaveLength(3)
+    expect(alumniBySlugs(dcst.alumni ?? [])).toHaveLength(3)
   })
 
   it('links out only over https, and a portrait path points at a file that exists', () => {
@@ -73,6 +77,11 @@ describe('alumni work (sample data)', () => {
       existsSync(path.resolve(process.cwd(), 'src/app/(site)/(cms)/academics/alumni-work/[slug]/page.tsx')),
     ).toBe(true)
     for (const w of ALUMNI_WORKS) expect(LIST_PAGES).toContain(alumniHref(w.slug))
+  })
+
+  it('gives the names a portrait of a man only where the stand-in portraits are used', () => {
+    const female = /\b(Ayesha|Zainab|Mahnoor|Sidra|Faiza|Laiba|Mariam|Rabia|Bibi|Naz)\b/
+    for (const w of ALUMNI_WORKS) if (w.photo) expect(w.name, w.slug).not.toMatch(female)
   })
 
   it('is shown on the department page and on every programme page', () => {

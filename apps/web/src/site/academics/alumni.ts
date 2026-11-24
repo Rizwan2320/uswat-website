@@ -41,7 +41,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
   /* Computer Science */
   {
     slug: 'graph-routing-for-valley-transport',
-    name: 'Ayesha Rehman',
+    name: 'Asif Rehman',
     classOf: 2024,
     programme: 'bs-computer-science',
     photo: SAMPLE_PORTRAITS[1],
@@ -65,7 +65,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
   },
   {
     slug: 'compiler-for-a-teaching-language',
-    name: 'Zainab Bibi',
+    name: 'Zubair Khan',
     classOf: 2025,
     programme: 'bs-computer-science',
     photo: SAMPLE_PORTRAITS[0],
@@ -90,7 +90,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
   },
   {
     slug: 'automated-testing-for-student-portals',
-    name: 'Mahnoor Shah',
+    name: 'Mehran Shah',
     classOf: 2023,
     programme: 'bs-software-engineering',
     photo: SAMPLE_PORTRAITS[2],
@@ -115,7 +115,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
   /* Information Technology */
   {
     slug: 'campus-wifi-coverage-survey',
-    name: 'Sidra Naz',
+    name: 'Saad Nawaz',
     classOf: 2024,
     programme: 'bs-information-technology',
     photo: SAMPLE_PORTRAITS[1],
@@ -139,7 +139,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
   },
   {
     slug: 'smart-water-tank-monitor',
-    name: 'Faiza Gul',
+    name: 'Farhan Gul',
     classOf: 2025,
     programme: 'bs-information-technology',
     photo: SAMPLE_PORTRAITS[0],
@@ -164,7 +164,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
   },
   {
     slug: 'exam-results-dashboard',
-    name: 'Laiba Tariq',
+    name: 'Luqman Tariq',
     classOf: 2023,
     programme: 'bs-data-science',
     photo: SAMPLE_PORTRAITS[2],
@@ -189,7 +189,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
   /* Artificial Intelligence */
   {
     slug: 'urdu-handwriting-recognition',
-    name: 'Mariam Ahmad',
+    name: 'Mazhar Ahmad',
     classOf: 2024,
     programme: 'bs-artificial-intelligence',
     photo: SAMPLE_PORTRAITS[1],
@@ -213,7 +213,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
   },
   {
     slug: 'answering-admission-questions-in-urdu',
-    name: 'Rabia Anwar',
+    name: 'Raheel Anwar',
     classOf: 2023,
     programme: 'bs-artificial-intelligence',
     photo: SAMPLE_PORTRAITS[2],
@@ -223,6 +223,151 @@ export const ALUMNI_WORKS: AlumniWork[] = [
       'The paper builds an assistant that answers common admission questions from the published prospectus. It measures how often the answer was right and how often it correctly said it did not know.',
     tags: ['Language models', 'Urdu', 'Question answering'],
   },
+  /* Allied Health Sciences */
+  {
+    slug: 'clinical-chemistry-quality-audit',
+    name: 'Jawad Ahmad',
+    classOf: 2025,
+    photo: SAMPLE_PORTRAITS[0],
+    programme: 'bs-medical-laboratory-technology',
+    kind: 'Final-year project',
+    headline: 'Auditing the quality of routine blood chemistry tests in a district laboratory',
+    summary:
+      'The project checks a laboratory’s daily controls and repeat tests over three months and lists where results drifted. It ends with a one-page routine that the laboratory staff can follow to catch drift sooner.',
+    tags: ['Quality control', 'Clinical chemistry', 'Audit'],
+  },
+  {
+    slug: 'anaemia-screening-in-schoolchildren',
+    name: 'Faisal Rahim',
+    classOf: 2024,
+    photo: SAMPLE_PORTRAITS[1],
+    programme: 'bs-medical-laboratory-technology',
+    kind: 'Research paper',
+    headline: 'Screening schoolchildren for anaemia with a simple blood count and iron check',
+    summary:
+      'The paper describes a school screening day: a finger-prick blood count followed by an iron test for children with low readings. It reports how many children needed follow-up and how the process could be shortened.',
+    tags: ['Haematology', 'Public health', 'Screening'],
+  },
+  {
+    slug: 'water-borne-bacteria-in-village-wells',
+    name: 'Salman Khalil',
+    classOf: 2023,
+    photo: SAMPLE_PORTRAITS[2],
+    programme: 'bs-medical-laboratory-technology',
+    kind: 'Thesis',
+    headline: 'Finding disease-causing bacteria in village well water across a valley',
+    summary:
+      'The thesis collects well-water samples from villages and cultures them for common disease-causing bacteria. It compares results before and after a simple chlorine treatment and explains the findings to the village committees.',
+    tags: ['Microbiology', 'Water quality', 'Infection control'],
+  },
+  {
+    slug: 'dental-crown-fit-checking',
+    name: 'Waqar Alam',
+    classOf: 2025,
+    photo: SAMPLE_PORTRAITS[0],
+    programme: 'bs-dental-technology',
+    kind: 'Final-year project',
+    headline: 'A simple jig for checking how well a crown fits before it leaves the laboratory',
+    summary:
+      'The project builds a low-cost jig that holds a crown on its die and measures the gap at the edge. Technologists tried it on a set of crowns and compared the readings with a dentist’s check.',
+    tags: ['Crowns', 'Quality check', 'Dental laboratory'],
+  },
+  {
+    slug: 'denture-acrylic-strength-comparison',
+    name: 'Tahir Mehmood',
+    classOf: 2024,
+    photo: SAMPLE_PORTRAITS[1],
+    programme: 'bs-dental-technology',
+    kind: 'Thesis',
+    headline: 'Comparing the strength of denture acrylics after repeated heating and cooling',
+    summary:
+      'The thesis makes test bars from three denture acrylics and cycles them between hot and cold water. It compares how much each weakens and what that means for dentures worn in hot and cold seasons.',
+    tags: ['Biomaterials', 'Dentures', 'Testing'],
+  },
+  {
+    slug: 'low-cost-digital-impression-workflow',
+    name: 'Owais Hassan',
+    classOf: 2023,
+    photo: SAMPLE_PORTRAITS[2],
+    programme: 'bs-dental-technology',
+    kind: 'Research paper',
+    headline: 'A low-cost route from a digital impression to a printed dental model',
+    summary:
+      'The paper sets out the steps from a scanned impression to a printed model using affordable equipment. It compares the printed models with plaster ones for accuracy and cost.',
+    tags: ['Digital dentistry', '3D printing', 'Cost'],
+  },
+  {
+    slug: 'gait-analysis-after-knee-injury',
+    name: 'Danish Iqbal',
+    classOf: 2025,
+    photo: SAMPLE_PORTRAITS[0],
+    programme: 'doctor-of-physical-therapy',
+    kind: 'Thesis',
+    headline: 'Measuring how people walk after a knee injury with a phone camera',
+    summary:
+      'The thesis films patients walking and measures their knee movement with free video-analysis software. It compares the readings with a therapist’s observations and shows how recovery can be tracked between visits.',
+    tags: ['Gait', 'Knee injury', 'Rehabilitation'],
+  },
+  {
+    slug: 'home-exercise-programme-after-stroke',
+    name: 'Ihsan Ullah',
+    classOf: 2024,
+    photo: SAMPLE_PORTRAITS[1],
+    programme: 'doctor-of-physical-therapy',
+    kind: 'Research paper',
+    headline: 'A home exercise programme for stroke patients in villages with no clinic',
+    summary:
+      'The paper designs a set of exercises that a family member can help with at home, with picture cards in Pashto and Urdu. It reports how well patients kept to the programme over eight weeks.',
+    tags: ['Stroke', 'Community care', 'Exercise'],
+  },
+  {
+    slug: 'back-pain-among-office-workers',
+    name: 'Naveed Khan',
+    classOf: 2023,
+    photo: SAMPLE_PORTRAITS[2],
+    programme: 'doctor-of-physical-therapy',
+    kind: 'Final-year project',
+    headline: 'Back pain among office and school staff, and which stretching routine helps most',
+    summary:
+      'The project surveys staff in offices and schools about back pain and tries two short stretching routines for six weeks. It reports which routine staff found easier to keep up and how their pain scores changed.',
+    tags: ['Back pain', 'Ergonomics', 'Prevention'],
+  },
+  {
+    slug: 'ct-dose-for-children-audit',
+    name: 'Yasir Ali',
+    classOf: 2025,
+    photo: SAMPLE_PORTRAITS[0],
+    programme: 'bs-radiography-and-imaging-technology',
+    kind: 'Final-year project',
+    headline: 'Checking radiation doses for children’s CT scans against reference levels',
+    summary:
+      'The project collects the settings and doses of children’s CT scans in one hospital and compares them with published reference levels. It suggests settings to bring the highest doses down.',
+    tags: ['CT', 'Radiation dose', 'Children'],
+  },
+  {
+    slug: 'chest-xray-positioning-errors',
+    name: 'Rehman Gul',
+    classOf: 2024,
+    photo: SAMPLE_PORTRAITS[1],
+    programme: 'bs-radiography-and-imaging-technology',
+    kind: 'Research paper',
+    headline: 'Counting positioning errors in chest X-rays and why they lead to repeat exposures',
+    summary:
+      'The paper reviews rejected chest X-ray images and sorts the reasons, such as rotation, poor breath-hold and cut-off lungs. It proposes a checklist for the technologist to use before each exposure.',
+    tags: ['X-ray', 'Positioning', 'Repeat exposures'],
+  },
+  {
+    slug: 'ultrasound-practice-simulator',
+    name: 'Sheraz Khan',
+    classOf: 2023,
+    photo: SAMPLE_PORTRAITS[2],
+    programme: 'bs-radiography-and-imaging-technology',
+    kind: 'Thesis',
+    headline: 'A low-cost simulator to practise ultrasound scanning before working with patients',
+    summary:
+      'The thesis builds a practice phantom from gelatin and household materials with hidden shapes to find. Students scanned it and rated how realistic and useful it was for learning probe control.',
+    tags: ['Ultrasound', 'Training', 'Simulation'],
+  },
 ]
 
 export const alumniWork = (slug: string) => ALUMNI_WORKS.find((w) => w.slug === slug) ?? null
@@ -231,12 +376,6 @@ export const alumniWork = (slug: string) => ALUMNI_WORKS.find((w) => w.slug === 
 export const alumniForProgramme = (programme: string) =>
   ALUMNI_WORKS.filter((w) => w.programme === programme).sort((a, b) => b.classOf - a.classOf)
 
-/** Three for the department page: the first of each of three programmes, so the department shows a spread. */
-export const DCST_FEATURED = [
-  'pashto-spelling-checker',
-  'clinic-queue-and-records-app',
-  'crop-disease-detection-from-photos',
-]
 export const alumniBySlugs = (slugs: string[]) =>
   slugs.flatMap((s) => {
     const w = alumniWork(s)

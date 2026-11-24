@@ -18,7 +18,7 @@ describe('Sample seed data', () => {
     // (Research and Administration, 2026-11-22; their facts and sources live in src/site/offices/profiles). Their source is still sample.invalid,
     // the machine marker, because their text is not yet checked.
     const REAL_OFFICES = ['oric-2', 'advanced-studies-and-research-board', 'directorate-of-it', 'controller-of-examination-office', 'directorate-of-works', 'proctorial-board', 'kamyab-jawan-markaz', 'alumni', 'hunerkada-center-for-excellence']
-    // 2026-11-22: the Faculty of Allied Health Sciences, its two centres and four programmes (src/site/faculties; sources and dates are there).
+    // 2026-11-22: the Faculty of Allied Health Sciences, its two centres and four programmes (src/site/academics/profiles/allied; sources and dates are there).
     const REAL_ALLIED = ['faculty-of-allied-health-sciences', 'centre-for-medical-technologies', 'centre-for-pharmaceutical-and-rehabilitation-sciences', 'bs-medical-laboratory-technology', 'bs-dental-technology', 'doctor-of-physical-therapy', 'bs-radiography-and-imaging-technology']
     const real = (r: { c: string; slug: string }) =>
       REAL_ALLIED.includes(r.slug) || r.c === 'campuses' || (r.c === 'offices' && REAL_OFFICES.includes(r.slug)) || (r.c === 'departments' && r.slug === 'dcst') || (r.c === 'programmes' && programmes.find((p) => p.slug === r.slug)?.department === 'dcst')
