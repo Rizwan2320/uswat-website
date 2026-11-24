@@ -1011,9 +1011,11 @@ P3 agent (slice 3a), own entry:
 - Checked: unit tests, 25 browser specs on an empty database (one opens every address the search offers), live `/api/department-options` returns the 16 items.
 - When a new department or programme page is added in code, register it in its profile index and it appears in the search with no other change. CMS records appear within 5 minutes (cache).
 
-## Our Alumni section (2026-11-24, branch `feat/alumni-showcase`, not merged: waiting for the owner to test the preview)
+## Our Alumni section (2026-11-24, PR from `feat/alumni-showcase`)
 - Owner asked for an "Our Alumni" section on the landing page: three cards, each a photograph of a graduate and the headline of their thesis or research, opening the work. Built with three SAMPLE entries (invented names, the owner's stand-in photographs, invented research); every card and the section carry a Sample tag.
 - Data: `src/site/content/alumni.ts` (set `url` on an entry to open a real work held elsewhere; without it the card opens `/alumni/research/{slug}`). Section: `components/AlumniShowcase.tsx`, placed after News & Events. Pages: `/alumni/research` (list) and `/alumni/research/{slug}`; both in the sitemap. Photos in `public/images/alumni/` (640 px square WebP).
 - Checks run: typecheck, lint, 139 files / 1760 tests, types drift clean, build, 12 visual (six home baselines regenerated on purpose), 3 new browser specs (`alumni.e2e.spec.ts`, added to the admin-e2e workflow), screenshots at 1440 and 390 px.
 - Not run: axe on the new section and pages; Urdu view (three Urdu strings are a first draft for a native reader); a preview of the final commit until pushed.
 - Before real entries: the graduate's written consent, the department's confirmation of the thesis, a source and `verifiedAt`; replace the sample photographs.
+- 2026-11-24 later: owner asked for a smaller gap under "View All News & Events" and slightly shorter cards, then to deploy. Gap 90 -> 38 px (desktop) and cards about 515 -> 464 px tall (photo 3:2, tighter text). Home baselines regenerated against `next start`.
+- Visual baselines must be made against the production server (`next build` then `next start -p 3000`, which Playwright reuses). Without a server on port 3000 Playwright starts `pnpm dev`, which adds a Next.js dev badge to the 404 page and fails its baselines.
