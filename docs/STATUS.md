@@ -1010,3 +1010,10 @@ P3 agent (slice 3a), own entry:
 - The top-bar Departments search read only CMS records, so it showed nothing on production. `/api/department-options` now adds the pages written in code (`src/site/organisation/codeOptions.ts`): DCST, six department pages, five BS programmes, Allied Health programmes (16 in all, departments first). A CMS record with the same address wins; CMS failure still returns the code pages.
 - Checked: unit tests, 25 browser specs on an empty database (one opens every address the search offers), live `/api/department-options` returns the 16 items.
 - When a new department or programme page is added in code, register it in its profile index and it appears in the search with no other change. CMS records appear within 5 minutes (cache).
+
+## Our Alumni section (2026-11-24, branch `feat/alumni-showcase`, not merged: waiting for the owner to test the preview)
+- Owner asked for an "Our Alumni" section on the landing page: three cards, each a photograph of a graduate and the headline of their thesis or research, opening the work. Built with three SAMPLE entries (invented names, the owner's stand-in photographs, invented research); every card and the section carry a Sample tag.
+- Data: `src/site/content/alumni.ts` (set `url` on an entry to open a real work held elsewhere; without it the card opens `/alumni/research/{slug}`). Section: `components/AlumniShowcase.tsx`, placed after News & Events. Pages: `/alumni/research` (list) and `/alumni/research/{slug}`; both in the sitemap. Photos in `public/images/alumni/` (640 px square WebP).
+- Checks run: typecheck, lint, 139 files / 1760 tests, types drift clean, build, 12 visual (six home baselines regenerated on purpose), 3 new browser specs (`alumni.e2e.spec.ts`, added to the admin-e2e workflow), screenshots at 1440 and 390 px.
+- Not run: axe on the new section and pages; Urdu view (three Urdu strings are a first draft for a native reader); a preview of the final commit until pushed.
+- Before real entries: the graduate's written consent, the department's confirmation of the thesis, a source and `verifiedAt`; replace the sample photographs.
