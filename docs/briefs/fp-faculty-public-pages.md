@@ -10,7 +10,7 @@ Date 2026-11-24. From the FP agent (faculty portal) to the lead and the main age
 - **Address: `/people` and `/people/[slug]`**, as in the plan (Addendum section 5, route 9; Addendum C FP-05). The first version of this brief said `/faculty`, which is wrong: `/faculty/` is an old address that now redirects to the Allied Health Sciences page.
 - `/people`: current people with a published record, grouped by department, filtered by `?q=` (name) and `?department=` (whitelisted); designation and photo only if the person made the photo public. `/people/[slug]`: the profile (name, designation, department, bio in English and Urdu, research interests, office and hours, ORCID iD and Google Scholar link as links, CV link, claimed publications, email only if public).
 - Read from the People collection (already has name, designation, department, details, email, photo, cvLink, publications, facultyStatus and `visibility`). Respect `visibleWhenPublic` for email and photo. List only people with a published record and `facultyStatus` current. Draft or unpublished records are never listed.
-- Works today on the 10 Sample People records, before Part B exists. Route addresses are proposed (`/faculty`, `/faculty/[slug]`); the route map decides.
+- Works today on the Sample People records, before Part B exists.
 - Needs the usual page rules: Urdu and English, plain-text rendering of free text, no private fields, canonical URL, sitemap entry.
 
 ## Part B: bridge (decision needed)
