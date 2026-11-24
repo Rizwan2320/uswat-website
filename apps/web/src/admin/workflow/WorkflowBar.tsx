@@ -46,6 +46,7 @@ const recentlyAccepted = new Map<
 const fiveSecondsFromNow = (): number => Date.now() + 5000
 
 const w = (en: string, ur: string): Words => ({ en, ur })
+const MORE_PUBLISH: Words = w('More publish choices', 'شائع کرنے کے مزید اختیارات')
 const pick = (words: Words, language: string): string => (language === 'ur' ? words.ur : words.en)
 const idOf = (v: unknown): string | null =>
   v && typeof v === 'object' && 'id' in v
@@ -95,6 +96,28 @@ export function WorkflowBar(): React.ReactElement | null {
       reviewNote.setValue(a.note, true)
   })
 
+  // Payload's Publish button has a small arrow that opens more choices. It is a button with only an
+  // icon and no name, which a screen reader announces as just "button" (axe: button-name, slice 3ao).
+  // The markup is Payload's, so the name is added here, in the language of the screen.
+  const publishRef = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    publishRef.current?.querySelectorAll<HTMLButtonElement>('button.popup-button').forEach((b) => {
+      if (!b.getAttribute('aria-label') && !b.textContent?.trim()) {
+        b.setAttribute('aria-label', pick(MORE_PUBLISH, i18n.language))
+      }
+    })
+  })
+
+  // Keyboard: Escape closes an "are you sure" question, and focus goes back to the first button of the
+  // box, so a person using only the keyboard is not left on a button that has just disappeared.
+  const barRef = useRef<HTMLElement>(null)
+  const anyAsk = asking || askingOffline || askingMove !== null
+  const closeAsks = () => {
+    setAsking(false)
+    setAskingOffline(false)
+    setAskingMove(null)
+    requestAnimationFrame(() => barRef.current?.querySelector<HTMLElement>('button')?.focus())
+  }
   if (!user) return null
   const actor = actorFromUser(user as never)
   const saved = id != null
@@ -297,6 +320,13 @@ export function WorkflowBar(): React.ReactElement | null {
 
   return (
     <section
+      ref={barRef}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' && anyAsk) {
+          e.stopPropagation()
+          closeAsks()
+        }
+      }}
       className={`workflow-bar workflow-bar--${view.tone}`}
       aria-label={language === 'ur' ? 'آئٹم کی حالت' : 'Item status'}
     >
@@ -331,7 +361,7 @@ export function WorkflowBar(): React.ReactElement | null {
             >
               {pick(STEP_LABEL.sendBack, language)}
             </button>
-            <button type="button" className="workflow-bar__button" onClick={() => setAsking(false)}>
+            <button type="button" className="workflow-bar__button" onClick={closeAsks}>
               {language === 'ur' ? 'منسوخ کریں' : 'Cancel'}
             </button>
           </div>
@@ -352,11 +382,7 @@ export function WorkflowBar(): React.ReactElement | null {
             >
               {language === 'ur' ? 'ہاں، آف لائن کریں' : 'Yes, take it offline'}
             </button>
-            <button
-              type="button"
-              className="workflow-bar__button"
-              onClick={() => setAskingOffline(false)}
-            >
+            <button type="button" className="workflow-bar__button" onClick={closeAsks}>
               {language === 'ur' ? 'منسوخ کریں' : 'Cancel'}
             </button>
           </div>
@@ -388,11 +414,7 @@ export function WorkflowBar(): React.ReactElement | null {
                   ? 'ہاں، بحال کریں'
                   : 'Yes, restore it'}
             </button>
-            <button
-              type="button"
-              className="workflow-bar__button"
-              onClick={() => setAskingMove(null)}
-            >
+            <button type="button" className="workflow-bar__button" onClick={closeAsks}>
               {language === 'ur' ? 'منسوخ کریں' : 'Cancel'}
             </button>
           </div>
@@ -425,6 +447,7 @@ export function WorkflowBar(): React.ReactElement | null {
             // hold the old stage on screen over what this save returns (found in the browser, slice 3ao:
             // Publish within five seconds of Approve left the box saying Approved on a live page).
             <span
+              ref={publishRef}
               className="workflow-bar__publish"
               onClickCapture={() => recentlyAccepted.delete(key)}
             >
