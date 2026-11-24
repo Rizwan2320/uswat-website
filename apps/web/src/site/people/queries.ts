@@ -4,8 +4,9 @@ import { getPayload } from 'payload'
 
 import { previewReadOptions } from '@/governance/preview'
 
-import { byName, type Doc } from '../organisation/shape'
+import { byName, rel, str, type Doc } from '../organisation/shape'
 
+import type { Area } from './browse'
 import { PEOPLE_REVALIDATE_SECONDS, toPersonCard, toPersonProfile, type PersonCard, type PersonProfile } from './shape'
 
 /**
@@ -46,3 +47,25 @@ export async function getPerson(slug: string, args: PreviewArgs): Promise<Person
   const live = await payload.find({ collection: 'people', draft: false, overrideAccess: false, limit: 1, pagination: false, where, depth: 1 })
   return live.docs[0] ? toPersonProfile(live.docs[0] as unknown as Doc) : null
 }
+
+/** Every published department and programme, for the "by department or programme" way in. A programme carries its department. */
+async function areasUncached(): Promise<Area[]> {
+  const payload = await getPayload({ config: configPromise })
+  const read = { draft: false, overrideAccess: false, depth: 1, limit: 2000, pagination: false, sort: 'name' } as const
+  const [deps, progs] = await Promise.all([payload.find({ collection: 'departments', ...read }), payload.find({ collection: 'programmes', ...read })])
+  const out: Area[] = []
+  for (const d of deps.docs as unknown as Doc[]) {
+    const name = str(d.name)
+    const slug = str(d.slug)
+    if (name && slug) out.push({ id: `d:${slug}`, kind: 'department', label: name, departmentSlug: slug, departmentName: name })
+  }
+  for (const p of progs.docs as unknown as Doc[]) {
+    const name = str(p.name)
+    const slug = str(p.slug)
+    const dept = rel(p.department)
+    if (name && slug) out.push({ id: `p:${slug}`, kind: 'programme', label: name, departmentSlug: str(dept?.slug), departmentName: str(dept?.name) })
+  }
+  return out
+}
+export const listAreas = () =>
+  unstable_cache(areasUncached, ['people', 'areas'], { revalidate: PEOPLE_REVALIDATE_SECONDS, tags: ['list:people', 'list:departments', 'list:programmes'] })()
