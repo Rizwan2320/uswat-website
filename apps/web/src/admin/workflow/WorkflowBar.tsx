@@ -119,6 +119,10 @@ export function WorkflowBar(): React.ReactElement | null {
   ): Promise<boolean> => {
     if (!collectionSlug || id == null) return false
     const before = { stage: stage.value, verification: verification.value, note: reviewNote.value }
+    // The five-second guard below holds the last accepted value on screen. A new press must not be
+    // undone by it, so it is dropped first (found in the browser in slice 3ao: Archive pressed within
+    // five seconds of publishing was put back to Published by the guard).
+    recentlyAccepted.delete(key)
     setBusy(action)
     setDone(null)
     setAsking(false)
@@ -261,6 +265,7 @@ export function WorkflowBar(): React.ReactElement | null {
     if (!collectionSlug || id == null) return
     const want: WorkflowStatus = kind === 'archive' ? 'archived' : 'published'
     const before = stage.value
+    recentlyAccepted.delete(key)
     setAskingMove(null)
     setBusy(kind)
     setDone(null)
@@ -416,7 +421,13 @@ export function WorkflowBar(): React.ReactElement | null {
             </button>
           ))}
           {view.showPublish ? (
-            <span className="workflow-bar__publish">
+            // Payload's own Publish press starts a new save: the guard from the step before must not
+            // hold the old stage on screen over what this save returns (found in the browser, slice 3ao:
+            // Publish within five seconds of Approve left the box saying Approved on a live page).
+            <span
+              className="workflow-bar__publish"
+              onClickCapture={() => recentlyAccepted.delete(key)}
+            >
               <PublishButton />
             </span>
           ) : null}

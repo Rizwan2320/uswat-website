@@ -96,6 +96,8 @@ test('approver: another person’s unsent draft has nothing to approve; their ow
 test('whole path: editor sends, approver sends back with a note, editor fixes and sends again, approver publishes', async ({
   browser,
 }) => {
+  // Six sign-ins and two archive steps after the old ending: more than the default 30 seconds.
+  test.setTimeout(120_000)
   const ed = await browser.newPage()
   await signIn(ed, fx.editor)
   await open(ed, fx.flowNotice.id)
@@ -157,6 +159,26 @@ test('whole path: editor sends, approver sends back with a note, editor fixes an
   await expect(ap2.getByText(/Published|updated successfully/i).first()).toBeVisible({
     timeout: 30_000,
   })
+
+  // The box itself must say so (the toast alone passed while the box still said Approved).
+  await expect(bar(ap2)).toContainText('Published', { timeout: 30_000 })
+
+  // Slice 3ao: archive straight after publishing (inside the five seconds that once undid it), then
+  // restore. Each asks "are you sure" first, and the result is still there after a reload.
+  await press(ap2, 'Archive', 'Archive it?')
+  await btn(ap2, 'Yes, archive it').click()
+  await expect(bar(ap2)).toContainText('Archived.', { timeout: 30_000 })
+  await expect(btn(ap2, 'Restore')).toBeVisible()
+  await expect(btn(ap2, 'Archive')).toHaveCount(0)
+  await ap2.reload()
+  await expect(bar(ap2)).toContainText('Archived', { timeout: 60_000 })
+  await takeOverIfLocked(ap2)
+  await press(ap2, 'Restore', 'Restore it?')
+  await btn(ap2, 'Yes, restore it').click()
+  await expect(bar(ap2)).toContainText('Restored.', { timeout: 30_000 })
+  await ap2.reload()
+  await expect(bar(ap2)).toContainText('Published', { timeout: 60_000 })
+  await expect(btn(ap2, 'Archive')).toBeVisible()
   await ap2.close()
 })
 
