@@ -61,6 +61,13 @@ describe('alumni work (sample data)', () => {
     }
   })
 
+  it('shows three different portraits on every programme page', () => {
+    for (const p of disciplineProfiles) {
+      const photos = alumniForProgramme(p.slug).map((w) => w.photo)
+      expect(new Set(photos).size).toBe(3)
+    }
+  })
+
   it('has a route file, and the sitemap lists every work page', () => {
     expect(
       existsSync(path.resolve(process.cwd(), 'src/app/(site)/(cms)/academics/alumni-work/[slug]/page.tsx')),

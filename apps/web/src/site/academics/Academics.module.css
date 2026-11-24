@@ -1120,13 +1120,13 @@
 }
 .alumniPhoto {
   position: relative;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   background: linear-gradient(160deg, var(--forest) 0%, var(--forest-deep) 100%);
 }
 .alumniPhoto img {
   object-fit: cover;
-  object-position: center top;
+  object-position: center 15%;
 }
 .alumniInitials {
   position: absolute;

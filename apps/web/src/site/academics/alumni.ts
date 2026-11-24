@@ -26,6 +26,14 @@ export type AlumniWork = {
   workUrl?: string
 }
 
+/** Three stand-in portraits supplied by the owner on 2026-11-24 (not real alumni). Each programme page shows them in turn, so a page never
+    shows the same face twice. Replace an entry's `photo` with the alumnus's own portrait when the department supplies it. */
+export const SAMPLE_PORTRAITS = [
+  '/images/alumni/sample-portrait-1.webp',
+  '/images/alumni/sample-portrait-2.webp',
+  '/images/alumni/sample-portrait-3.webp',
+]
+
 export const ALUMNI_PATH = '/academics/alumni-work'
 export const alumniHref = (slug: string) => `${ALUMNI_PATH}/${slug}`
 
@@ -36,6 +44,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
     name: 'Ayesha Rehman',
     classOf: 2024,
     programme: 'bs-computer-science',
+    photo: SAMPLE_PORTRAITS[1],
     kind: 'Thesis',
     headline: 'Finding the quickest bus route through a valley with a graph algorithm',
     summary:
@@ -47,6 +56,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
     name: 'Imran Khattak',
     classOf: 2023,
     programme: 'bs-computer-science',
+    photo: SAMPLE_PORTRAITS[2],
     kind: 'Research paper',
     headline: 'A spelling checker for Pashto text built from a word list and edit distance',
     summary:
@@ -58,6 +68,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
     name: 'Zainab Bibi',
     classOf: 2025,
     programme: 'bs-computer-science',
+    photo: SAMPLE_PORTRAITS[0],
     kind: 'Final-year project',
     headline: 'A small compiler that teaches first-year students how programs are translated',
     summary:
@@ -70,6 +81,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
     name: 'Hamza Yousafzai',
     classOf: 2024,
     programme: 'bs-software-engineering',
+    photo: SAMPLE_PORTRAITS[1],
     kind: 'Final-year project',
     headline: 'A queue and patient-record app for a small rural clinic that works without internet',
     summary:
@@ -81,6 +93,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
     name: 'Mahnoor Shah',
     classOf: 2023,
     programme: 'bs-software-engineering',
+    photo: SAMPLE_PORTRAITS[2],
     kind: 'Thesis',
     headline: 'Cutting regression testing time for a university portal with automated test selection',
     summary:
@@ -92,6 +105,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
     name: 'Bilal Afridi',
     classOf: 2025,
     programme: 'bs-software-engineering',
+    photo: SAMPLE_PORTRAITS[0],
     kind: 'Final-year project',
     headline: 'A light requirements tool that links each feature request to its tests and tasks',
     summary:
@@ -104,6 +118,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
     name: 'Sidra Naz',
     classOf: 2024,
     programme: 'bs-information-technology',
+    photo: SAMPLE_PORTRAITS[1],
     kind: 'Final-year project',
     headline: 'Mapping wireless coverage across a campus and where to add access points',
     summary:
@@ -115,6 +130,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
     name: 'Rashid Ali',
     classOf: 2023,
     programme: 'bs-information-technology',
+    photo: SAMPLE_PORTRAITS[2],
     kind: 'Thesis',
     headline: 'A low-cost security set-up for small offices with open-source tools',
     summary:
@@ -126,6 +142,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
     name: 'Faiza Gul',
     classOf: 2025,
     programme: 'bs-information-technology',
+    photo: SAMPLE_PORTRAITS[0],
     kind: 'Final-year project',
     headline: 'A sensor and phone alert system that tells households when the water tank runs low',
     summary:
@@ -138,6 +155,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
     name: 'Noman Khan',
     classOf: 2024,
     programme: 'bs-data-science',
+    photo: SAMPLE_PORTRAITS[1],
     kind: 'Thesis',
     headline: 'Predicting orchard yield from weather records and satellite images',
     summary:
@@ -149,6 +167,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
     name: 'Laiba Tariq',
     classOf: 2023,
     programme: 'bs-data-science',
+    photo: SAMPLE_PORTRAITS[2],
     kind: 'Final-year project',
     headline: 'A dashboard that shows where students struggle across courses and semesters',
     summary:
@@ -160,6 +179,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
     name: 'Usman Ghani',
     classOf: 2025,
     programme: 'bs-data-science',
+    photo: SAMPLE_PORTRAITS[0],
     kind: 'Research paper',
     headline: 'Looking for early rainfall patterns that come before flooding in the Swat river basin',
     summary:
@@ -172,6 +192,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
     name: 'Mariam Ahmad',
     classOf: 2024,
     programme: 'bs-artificial-intelligence',
+    photo: SAMPLE_PORTRAITS[1],
     kind: 'Thesis',
     headline: 'Teaching a neural network to read handwritten Urdu numerals and words',
     summary:
@@ -183,6 +204,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
     name: 'Adnan Hussain',
     classOf: 2025,
     programme: 'bs-artificial-intelligence',
+    photo: SAMPLE_PORTRAITS[0],
     kind: 'Final-year project',
     headline: 'A phone app that spots common leaf diseases in crops from one photograph',
     summary:
@@ -194,6 +216,7 @@ export const ALUMNI_WORKS: AlumniWork[] = [
     name: 'Rabia Anwar',
     classOf: 2023,
     programme: 'bs-artificial-intelligence',
+    photo: SAMPLE_PORTRAITS[2],
     kind: 'Research paper',
     headline: 'A question-answering assistant for admission queries in Urdu and English',
     summary:
