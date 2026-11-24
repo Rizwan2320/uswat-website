@@ -4,7 +4,7 @@ import { AlumniWorkList } from '@/site/components/AlumniWorkPage'
 import { alumniWorks } from '@/site/content/alumni'
 
 export const metadata: Metadata = {
-  title: 'Alumni research | University of Swat',
+  title: 'Alumni research',
   description: 'Thesis and research by graduates of the University of Swat.',
 }
 

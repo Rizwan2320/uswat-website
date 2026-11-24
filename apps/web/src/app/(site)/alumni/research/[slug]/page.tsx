@@ -11,8 +11,8 @@ export const generateStaticParams = () => alumniWorks.map((w) => ({ slug: w.slug
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const work = getAlumniWork((await params).slug)
-  if (!work) return { title: 'Page not found | University of Swat' }
-  return { title: `${work.title} | University of Swat`, description: work.summary }
+  if (!work) return { title: 'Page not found' }
+  return { title: work.title, description: work.summary }
 }
 
 export default async function Page({ params }: Props) {
