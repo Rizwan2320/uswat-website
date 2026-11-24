@@ -320,13 +320,118 @@ describe('workflow view per role', () => {
           const v = view(actor, stage, { risk, author: 'other' })
           for (const a of v.actions as StepAction[]) {
             if (a === 'markVerified' || a === 'approveAndPublish' || a === 'takeOffline') continue
+            const to: WorkflowStatus =
+              a === 'archive' ? 'archived' : a === 'restore' ? 'published' : STEP_TARGET[a]
             expect(
-              checkTransition(actor, { ownerOffice: 'registrar', risk }, stage, STEP_TARGET[a]),
+              checkTransition(actor, { ownerOffice: 'registrar', risk }, stage, to),
               `${r} ${stage} ${risk} ${a}`,
             ).toBeNull()
           }
         }
       }
     }
+  })
+})
+
+describe('archive and restore (slice 3ao)', () => {
+  const admin = person('platformAdmin', ['IT Directorate'])
+  const manager = person('siteManager', ['IT Directorate'])
+  const hod = person('approver', ['Registrar'])
+  const editor = person('editor', ['Registrar'])
+  const coordinator = actorFromUser({
+    id: 6,
+    role: 'editor',
+    offices: ['Registrar'],
+    programmes: ['9'],
+  })
+  const dept = { target: { collection: 'departments', id: 4 } }
+  const ownProgramme = { target: { collection: 'programmes', id: 9 } }
+  const notice = { target: { collection: 'notices', id: 3 } }
+
+  it('a reviewer who may take a live page offline is also offered Archive', () => {
+    expect(view(admin, 'published', dept).actions).toContain('archive')
+    expect(view(hod, 'published', dept).actions).toEqual(
+      expect.arrayContaining(['takeOffline', 'archive']),
+    )
+    expect(view(manager, 'published', notice).actions).toContain('archive')
+  })
+
+  it('Archive is never offered where the server would refuse it for a role reason', () => {
+    // A head does not archive (or take offline) a programme page; that is the coordinator's step.
+    const headOnProgramme = view(hod, 'published', ownProgramme).actions
+    expect(headOnProgramme).not.toContain('archive')
+    expect(headOnProgramme).not.toContain('takeOffline')
+    // A site manager is not a reviewer for High impact items.
+    expect(view(manager, 'published', { ...notice, risk: 'high_impact' }).actions).not.toContain(
+      'archive',
+    )
+    // A head of another office, an editor and a contributor have no say over this page.
+    expect(view(person('approver', ['Library']), 'published', dept).actions).not.toContain(
+      'archive',
+    )
+    expect(view(editor, 'published', notice).actions).not.toContain('archive')
+    expect(view(person('contributor'), 'published', notice).actions).toEqual([])
+    expect(view(person('auditor', []), 'published', notice).actions).toEqual([])
+  })
+
+  it('a coordinator takes their own programme offline but is not offered Archive', () => {
+    expect(
+      mayTakeOffline(coordinator, { ownerOffice: 'registrar', risk: 'standard', ...ownProgramme }),
+    ).toBe(true)
+    const a = view(coordinator, 'published', ownProgramme).actions
+    expect(a).toContain('takeOffline')
+    expect(a).not.toContain('archive')
+  })
+
+  it('an archived page offers Restore to the platform admin and to the head of its office only', () => {
+    expect(view(admin, 'archived', dept).actions).toEqual(['restore'])
+    expect(view(hod, 'archived', dept).actions).toEqual(['restore'])
+    expect(view(hod, 'archived', ownProgramme).actions).toEqual(['restore'])
+    for (const who of [
+      manager,
+      editor,
+      coordinator,
+      person('contributor'),
+      person('auditor', []),
+      person('approver', ['Library']),
+    ]) {
+      const v = view(who, 'archived', notice)
+      expect(v.actions).toEqual([])
+      expect(v.showPublish).toBe(false)
+    }
+  })
+
+  it('the Restore banner says what happens, and an archived page is never offered Publish', () => {
+    const v = view(admin, 'archived', dept)
+    expect(v.banner.en).toMatch(/Restore/)
+    expect(v.showPublish).toBe(false)
+    expect(v.banner.ur.length).toBeGreaterThan(10)
+  })
+
+  it('both steps agree with the policy that the server runs', () => {
+    expect(
+      checkTransition(
+        hod,
+        { ownerOffice: 'registrar', risk: 'standard', ...dept },
+        'published',
+        'archived',
+      ),
+    ).toBeNull()
+    expect(
+      checkTransition(
+        hod,
+        { ownerOffice: 'registrar', risk: 'standard', ...dept },
+        'archived',
+        'published',
+      ),
+    ).toBeNull()
+    expect(
+      checkTransition(
+        manager,
+        { ownerOffice: 'registrar', risk: 'standard', ...notice },
+        'archived',
+        'published',
+      ),
+    ).not.toBeNull()
   })
 })
