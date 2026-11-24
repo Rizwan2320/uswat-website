@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import PeopleDirectory from './PeopleDirectory'
 import PersonPage from './PersonPage'
 import { getPerson, listPeople } from './queries'
-import { PEOPLE_PATH, departmentsOf, filterPeople, parseFilters, personHref } from './shape'
+import { PEOPLE_PATH, parseFilters, personHref } from './shape'
 
 /* The route files under (site)/(cms)/people are one-liners over these (same pattern as organisation/routes). */
 
@@ -21,15 +21,13 @@ const decode = (slug: string) => {
 
 export async function PeopleListRoute({ searchParams }: { searchParams: Search }) {
   const all = await listPeople()
-  const departments = departmentsOf(all)
-  const filters = parseFilters(await searchParams, departments.map((d) => d.slug))
-  return <PeopleDirectory people={filterPeople(all, filters)} departments={departments} filters={filters} total={all.length} />
+  return <PeopleDirectory people={all} initialQuery={parseFilters(await searchParams).q} />
 }
 
 /** Filtered results are not separate pages: they point to the plain list and ask not to be indexed. */
 export async function peopleListMetadata({ searchParams }: { searchParams: Search }): Promise<Metadata> {
   const s = await searchParams
-  const filtered = Boolean(s.q || s.department)
+  const filtered = Boolean(s.q)
   return { title: 'Faculty and staff', alternates: { canonical: PEOPLE_PATH }, ...(filtered ? { robots: { index: false, follow: true } } : {}) }
 }
 

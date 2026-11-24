@@ -1,28 +1,41 @@
+import { site } from '../content/site'
 import PageHeader from '../components/kit/PageHeader'
 import { T } from '../components/I18n'
 import { departmentHref } from '../organisation/shape'
 import { SampleNote } from '../organisation/SamplePill'
 
 import styles from './People.module.css'
-import { PEOPLE_PATH, initialsOf, type PersonProfile } from './shape'
+import { PEOPLE_PATH, initialsOf, toneOf } from './browse'
+import type { PersonProfile } from './shape'
 
 /* One public profile: what the person wrote in the faculty portal and had approved. Nothing private is read here: the email
    and photo are absent from the record unless the person made them public. */
+const TONES = [styles.tone0, styles.tone1, styles.tone2] as const
+
 export default function PersonPage({ person: p }: { person: PersonProfile }) {
   return (
     <>
       <PageHeader
         title={p.name}
-        lede={p.designation ?? undefined}
-        crumbs={[{ label: 'Home', href: '/' }, { label: 'People', href: PEOPLE_PATH }, { label: p.name }]}
+        lede={[p.designation, p.departmentName].filter(Boolean).join(' · ') || undefined}
+        crumbs={[{ label: 'Home', href: '/' }, { label: 'Faculty portal', href: PEOPLE_PATH }, { label: p.name }]}
       />
       <div className="container">
         <div className={styles.page}>
-          <aside className={styles.side} aria-label="Contact and links">
-            <div className={styles.portrait} aria-hidden={p.photo ? undefined : true}>
-              {p.photo ? <img src={p.photo.src} alt={p.photo.alt} width={240} height={300} decoding="async" /> : initialsOf(p.name)}
+          <aside className={styles.side} aria-label="Details">
+            <div className={styles.portrait}>
+              {p.sample ? <span className={styles.pill}>Sample</span> : null}
+              <div className={`${styles.tile} ${TONES[toneOf(p.slug)]}`} aria-hidden={p.photo ? undefined : true}>
+                {p.photo ? <img src={p.photo.src} alt={p.photo.alt} width={300} height={300} decoding="async" /> : initialsOf(p.name)}
+              </div>
             </div>
             <dl className={styles.facts}>
+              {p.designation ? (
+                <div>
+                  <dt><T k="Designation" /></dt>
+                  <dd>{p.designation}</dd>
+                </div>
+              ) : null}
               {p.departmentName ? (
                 <div>
                   <dt><T k="Department" /></dt>
@@ -49,14 +62,14 @@ export default function PersonPage({ person: p }: { person: PersonProfile }) {
               ) : null}
             </dl>
           </aside>
-          <div>
+          <div className={styles.main}>
             {p.sample ? <SampleNote /> : null}
             {p.status !== 'current' ? (
               <p className={styles.notice} role="note">
                 {p.status === 'emeritus' ? 'Emeritus faculty.' : 'Former faculty. This profile is kept for reference.'}
               </p>
             ) : null}
-            <section className={styles.section} aria-labelledby="about">
+            <section aria-labelledby="about">
               <h2 id="about" className={styles.heading}><T k="About" /></h2>
               {p.about.length ? (
                 <div className={styles.text}>{p.about.map((t, i) => <p key={i}>{t}</p>)}</div>
@@ -65,16 +78,20 @@ export default function PersonPage({ person: p }: { person: PersonProfile }) {
               )}
             </section>
             {p.publications.length ? (
-              <section className={styles.section} aria-labelledby="pubs">
+              <section aria-labelledby="pubs">
                 <h2 id="pubs" className={styles.heading}><T k="Publications" /></h2>
-                <ul className={styles.links}>
+                <ol className={styles.pubs}>
                   {p.publications.map((x) => (
                     <li key={x.key}>{x.href ? <a href={x.href} rel="noopener noreferrer">{x.title}</a> : x.title}</li>
                   ))}
-                </ul>
+                </ol>
               </section>
             ) : null}
-            <a className={styles.back} href={PEOPLE_PATH}><T k="All people" /></a>
+            <aside className={styles.strip} aria-label="Sign in">
+              <p><T k="Is this your profile? Sign in to the faculty portal to update it." /></p>
+              <a className={styles.stripBtn} href={site.portalLinks.facultySignIn} rel="noopener noreferrer"><T k="Faculty sign in" /></a>
+            </aside>
+            <a className={styles.back} href={PEOPLE_PATH}><T k="All faculty and staff" /></a>
           </div>
         </div>
       </div>

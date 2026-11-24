@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { SAMPLE_HOST } from '../../../../scripts/import/seeds/data'
-import { departmentsOf, filterPeople, initialsOf, parseFilters, personHref, photoOf, toPersonCard, toPersonProfile, type PersonCard } from '../../src/site/people/shape'
+import { filterPeople, initialsOf, parseFilters, personHref, photoOf, toPersonCard, toPersonProfile, toneOf, type PersonCard } from '../../src/site/people/shape'
 
 const dept = { id: 7, name: 'Department of Computer Science', slug: 'computer-science' }
 const base = { id: 1, name: 'Dr. Hina Farooq', slug: 'hina-farooq', designation: 'Assistant Professor', department: dept, facultyStatus: 'current' }
@@ -73,26 +73,30 @@ describe('filters', () => {
     { id: 2, slug: 'zahid-karim', name: 'Prof. Zahid Karim', designation: 'Professor and Head of Department', departmentSlug: 'cs', departmentName: 'Computer Science', photo: null, sample: false },
     { id: 3, slug: 'tariq', name: 'Tariq Mehmood', designation: 'Registrar', departmentSlug: null, departmentName: null, photo: null, sample: false },
   ]
-  it('keeps a known department and drops an unknown one', () => {
-    expect(parseFilters({ department: 'cs' }, ['cs'])).toEqual({ q: '', department: 'cs' })
-    expect(parseFilters({ department: 'nope' }, ['cs'])).toEqual({ q: '', department: null })
+  it('reads only a name from the address, trimmed, collapsed and capped at 60 characters', () => {
+    expect(parseFilters({ q: '  hina   farooq ' }).q).toBe('hina farooq')
+    expect(parseFilters({ q: 'x'.repeat(200) }).q).toHaveLength(60)
+    expect(parseFilters({ q: ['a', 'b'] }).q).toBe('a')
+    expect(parseFilters({ department: 'cs' })).toEqual({ q: '' })
   })
-  it('trims, collapses spaces and caps the name at 60 characters', () => {
-    expect(parseFilters({ q: '  hina   farooq ' }, []).q).toBe('hina farooq')
-    expect(parseFilters({ q: 'x'.repeat(200) }, []).q).toHaveLength(60)
-    expect(parseFilters({ q: ['a', 'b'] }, []).q).toBe('a')
+  it('matches every word of the name, in any order, ignoring case and accents', () => {
+    expect(filterPeople(people, { q: 'FAROOQ hina' }).map((p) => p.slug)).toEqual(['hina-farooq'])
+    expect(filterPeople(people, { q: 'prof' }).map((p) => p.slug)).toEqual(['zahid-karim'])
   })
-  it('matches every word, in any order, ignoring case', () => {
-    expect(filterPeople(people, { q: 'FAROOQ hina', department: null }).map((p) => p.slug)).toEqual(['hina-farooq'])
-    expect(filterPeople(people, { q: 'professor', department: null }).map((p) => p.slug)).toEqual(['hina-farooq', 'zahid-karim'])
+  it('does not search the designation or the department', () => {
+    expect(filterPeople(people, { q: 'registrar' })).toEqual([])
+    expect(filterPeople(people, { q: 'computer science' })).toEqual([])
   })
-  it('filters by department and by both together', () => {
-    expect(filterPeople(people, { q: '', department: 'cs' })).toHaveLength(2)
-    expect(filterPeople(people, { q: 'zahid', department: 'cs' }).map((p) => p.slug)).toEqual(['zahid-karim'])
-    expect(filterPeople(people, { q: 'tariq', department: 'cs' })).toEqual([])
+  it('lists everyone when nothing is typed', () => {
+    expect(filterPeople(people, { q: '' })).toHaveLength(3)
+    expect(filterPeople(people, { q: '   ' })).toHaveLength(3)
   })
-  it('lists only departments that have people', () => {
-    expect(departmentsOf(people)).toEqual([{ slug: 'cs', name: 'Computer Science' }])
+})
+
+describe('picture tone', () => {
+  it('is the same for the same person and always one of three', () => {
+    expect(toneOf('hina-farooq')).toBe(toneOf('hina-farooq'))
+    for (const s of ['a', 'bb', 'ccc', 'sample-person-01', 'sample-person-14']) expect([0, 1, 2]).toContain(toneOf(s))
   })
 })
 
