@@ -53,6 +53,7 @@ Pages and what to look for:
 - The QEC and Academic Calendar pages name their documents but do not link the PDFs, because those links exist only on the live site, which agent 4 does not fetch.
 - Photographs on pages other than DCST are the seven the landing page already uses (supplied by the owner on 2026-11-08, see `src/site/content/images.ts`; people are visible in them).
 - Allied Health Sciences and its four programmes follow the DCST layout with illustrative text (laboratories, research, careers, study plans); only the facts listed under Sources on the faculty page come from the university's pages. No eligibility, fee or seat count is shown.
+- Research and Administration round 2 (2026-11-25, `docs/STATUS.md` has the list): 16 more office-style pages built from the old pages' own text (`/research-group` and 15 under `/administration/`). Each shows its source and date; contacts are office mailboxes only. An office with a profile now renders without a CMS record; the 15 seed rows are only for editing in the CMS. Nine old pages that are empty on the university's site are not built. The two broken map targets above (`/qec/`, `/digital-library/`) are still open.
 - All institutional data is dummy or taken from saved copies dated 2026-11-06; every page lists its source and `verifiedAt`.
 
 ## 6. Owner and lead items already recorded in STATUS.md (not done by agent 4)
