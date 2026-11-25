@@ -7,6 +7,7 @@ import {
   useDocumentInfo,
   useField,
   useForm,
+  useFormFields,
   useFormProcessing,
   useLocale,
   useTranslation,
@@ -20,6 +21,7 @@ import {
   type VerificationStatus,
   type WorkflowStatus,
 } from '../../governance/roles'
+import { youAreLine } from './youAre'
 import {
   STEP_DONE,
   STEP_LABEL,
@@ -61,7 +63,7 @@ const idOf = (v: unknown): string | null =>
  */
 export function WorkflowBar(): React.ReactElement | null {
   const { user } = useAuth()
-  const { id, collectionSlug } = useDocumentInfo()
+  const { id, collectionSlug, docConfig } = useDocumentInfo()
   const { config } = useConfig()
   const { code: locale } = useLocale()
   const { i18n } = useTranslation()
@@ -78,6 +80,9 @@ export function WorkflowBar(): React.ReactElement | null {
   const owner = useField<string>({ path: 'governance.ownerOffice' })
   const createdBy = useField<unknown>({ path: 'governance.createdBy' })
   const reviewNote = useField<string>({ path: 'governance.reviewNote' })
+  // The page's title as typed on the form right now (not the saved one, which is the id until the first save).
+  const titleField = (docConfig?.admin as { useAsTitle?: string } | undefined)?.useAsTitle ?? 'title'
+  const title = useFormFields(([fields]) => fields?.[titleField]?.value)
   const [asking, setAsking] = useState(false)
   const [askingOffline, setAskingOffline] = useState(false)
   const [draftNote, setDraftNote] = useState('')
@@ -111,6 +116,14 @@ export function WorkflowBar(): React.ReactElement | null {
     target: collectionSlug ? { collection: collectionSlug, id: id ?? null } : undefined,
   })
   const language = i18n.language
+  const who = youAreLine({
+    actor,
+    collection: collectionSlug,
+    id,
+    title: typeof title === 'string' ? title : undefined,
+    ownerOffice: owner.value ?? null,
+    saved,
+  })
 
   const run = async (
     action: Exclude<StepAction, 'approveAndPublish' | 'takeOffline'>,
@@ -256,6 +269,7 @@ export function WorkflowBar(): React.ReactElement | null {
       className={`workflow-bar workflow-bar--${view.tone}`}
       aria-label={language === 'ur' ? 'آئٹم کی حالت' : 'Item status'}
     >
+      {who ? <p className="workflow-bar__who">{pick(who, language)}</p> : null}
       <p className="workflow-bar__stage">
         <span className="workflow-bar__badge">{stageLabel(stage.value ?? 'draft', language)}</span>
         <span role="status">{done ? pick(done, language) : pick(view.banner, language)}</span>

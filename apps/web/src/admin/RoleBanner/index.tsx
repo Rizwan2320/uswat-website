@@ -1,7 +1,7 @@
 import type { ServerProps } from 'payload'
 import React from 'react'
 
-import { actorFromUser } from '../../governance/roles'
+import { actorFromUser, normalizeOffice } from '../../governance/roles'
 import { whoAmI } from '../../governance/whoAmI'
 
 import './index.scss'
@@ -32,7 +32,30 @@ export default async function RoleBanner({ payload, user, i18n }: ServerProps) {
       names = []
     }
   }
-  const me = whoAmI(actor, names)
+  // A head's bar names the department whose office they hold, not just the office word (slice 3aq).
+  let departments: string[] = []
+  if (actor.kind === 'user' && actor.role === 'approver' && actor.offices.length > 0) {
+    try {
+      const res = await payload.find({
+        collection: 'departments',
+        depth: 0,
+        limit: 200,
+        pagination: false,
+        user: { ...user, collection: 'users' } as never,
+        overrideAccess: false,
+      })
+      departments = res.docs
+        .filter((d) => {
+          const o = (d as { governance?: { ownerOffice?: unknown } }).governance?.ownerOffice
+          return typeof o === 'string' && actor.offices.includes(normalizeOffice(o))
+        })
+        .map((d) => (d as { name?: unknown }).name)
+        .filter((n): n is string => typeof n === 'string' && n.trim() !== '')
+    } catch {
+      departments = []
+    }
+  }
+  const me = whoAmI(actor, names, departments)
   const ur = i18n?.language === 'ur'
   return (
     <section

@@ -27,8 +27,14 @@ const list = (names: string[]): string => names.join(', ')
 /**
  * @param programmeNames names of the programmes a coordinator looks after (looked up by the caller;
  *   empty when they could not be read, in which case the count is shown instead).
+ * @param departmentNames names of the departments whose office the head holds (slice 3aq); when
+ *   empty the office word is shown instead.
  */
-export function whoAmI(actor: Actor, programmeNames: string[] = []): WhoAmI {
+export function whoAmI(
+  actor: Actor,
+  programmeNames: string[] = [],
+  departmentNames: string[] = [],
+): WhoAmI {
   if (actor.kind !== 'user') {
     return {
       kind: 'auditor',
@@ -60,7 +66,10 @@ export function whoAmI(actor: Actor, programmeNames: string[] = []): WhoAmI {
       return {
         kind: 'head',
         title: offices
-          ? w(`You are the head of ${offices}`, `آپ ${offices} کے سربراہ ہیں`)
+          ? w(
+              `You are the head of ${departmentNames.length > 0 ? list(departmentNames) : offices}`,
+              `آپ ${departmentNames.length > 0 ? list(departmentNames) : offices} کے سربراہ ہیں`,
+            )
           : w('You are an Approver', 'آپ منظوری دہندہ ہیں'),
         detail: w(
           'You review what your coordinators and editors send you, and you publish. For your own department page and its programme pages you publish yourself, with no one else reviewing. You add programmes to your department and create accounts for your coordinators and editors. You cannot change main pages or other offices.',
