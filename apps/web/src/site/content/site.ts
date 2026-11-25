@@ -47,7 +47,9 @@ export const site = {
     /** This site's own CMS (Payload admin sign-in). The old campus system stays behind the Student Portal link. */
     cms: '/admin',
     student: 'https://cms1.uswat.edu.pk/web/login',
-    /** Sample faculty portal (own Vercel project, ADR-0020). TODO(content): move to the university's own subdomain once DNS is set. */
-    faculty: 'https://uswat-faculty-portal.vercel.app/portal/sign-in',
+    /** The Faculty Portal link opens the public people directory, which carries the sign-in button (owner, 2026-11-24). */
+    faculty: '/people',
+    /** Sample faculty portal sign-in (own Vercel project, ADR-0020). TODO(content): move to the university's own subdomain once DNS is set. */
+    facultySignIn: 'https://uswat-faculty-portal.vercel.app/portal/sign-in',
   },
 } as const

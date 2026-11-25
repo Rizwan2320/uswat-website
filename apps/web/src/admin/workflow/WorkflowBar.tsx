@@ -48,6 +48,7 @@ const recentlyAccepted = new Map<
 const fiveSecondsFromNow = (): number => Date.now() + 5000
 
 const w = (en: string, ur: string): Words => ({ en, ur })
+const MORE_PUBLISH: Words = w('More publish choices', 'شائع کرنے کے مزید اختیارات')
 const pick = (words: Words, language: string): string => (language === 'ur' ? words.ur : words.en)
 const idOf = (v: unknown): string | null =>
   v && typeof v === 'object' && 'id' in v
@@ -85,6 +86,7 @@ export function WorkflowBar(): React.ReactElement | null {
   const title = useFormFields(([fields]) => fields?.[titleField]?.value)
   const [asking, setAsking] = useState(false)
   const [askingOffline, setAskingOffline] = useState(false)
+  const [askingMove, setAskingMove] = useState<'archive' | 'restore' | null>(null)
   const [draftNote, setDraftNote] = useState('')
   const [busy, setBusy] = useState<StepAction | null>(null)
   const [done, setDone] = useState<Words | null>(null)
@@ -99,6 +101,28 @@ export function WorkflowBar(): React.ReactElement | null {
       reviewNote.setValue(a.note, true)
   })
 
+  // Payload's Publish button has a small arrow that opens more choices. It is a button with only an
+  // icon and no name, which a screen reader announces as just "button" (axe: button-name, slice 3ao).
+  // The markup is Payload's, so the name is added here, in the language of the screen.
+  const publishRef = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    publishRef.current?.querySelectorAll<HTMLButtonElement>('button.popup-button').forEach((b) => {
+      if (!b.getAttribute('aria-label') && !b.textContent?.trim()) {
+        b.setAttribute('aria-label', pick(MORE_PUBLISH, i18n.language))
+      }
+    })
+  })
+
+  // Keyboard: Escape closes an "are you sure" question, and focus goes back to the first button of the
+  // box, so a person using only the keyboard is not left on a button that has just disappeared.
+  const barRef = useRef<HTMLElement>(null)
+  const anyAsk = asking || askingOffline || askingMove !== null
+  const closeAsks = () => {
+    setAsking(false)
+    setAskingOffline(false)
+    setAskingMove(null)
+    requestAnimationFrame(() => barRef.current?.querySelector<HTMLElement>('button')?.focus())
+  }
   if (!user) return null
   const actor = actorFromUser(user as never)
   const saved = id != null
@@ -126,11 +150,15 @@ export function WorkflowBar(): React.ReactElement | null {
   })
 
   const run = async (
-    action: Exclude<StepAction, 'approveAndPublish' | 'takeOffline'>,
+    action: Exclude<StepAction, 'approveAndPublish' | 'takeOffline' | 'archive' | 'restore'>,
     note?: string,
   ): Promise<boolean> => {
     if (!collectionSlug || id == null) return false
     const before = { stage: stage.value, verification: verification.value, note: reviewNote.value }
+    // The five-second guard below holds the last accepted value on screen. A new press must not be
+    // undone by it, so it is dropped first (found in the browser in slice 3ao: Archive pressed within
+    // five seconds of publishing was put back to Published by the guard).
+    recentlyAccepted.delete(key)
     setBusy(action)
     setDone(null)
     setAsking(false)
@@ -264,8 +292,54 @@ export function WorkflowBar(): React.ReactElement | null {
     setBusy(null)
   }
 
+  /**
+   * Archive a live page, or restore an archived one (slice 3ao). Both are a publishing save with the Stage
+   * set to Archived or Published, which is what the server accepts for these two moves; it checks who may
+   * and, for a restore, the publish checks again. Asked for once more first: both change what the public sees.
+   */
+  const archiveOrRestore = async (kind: 'archive' | 'restore') => {
+    if (!collectionSlug || id == null) return
+    const want: WorkflowStatus = kind === 'archive' ? 'archived' : 'published'
+    const before = stage.value
+    recentlyAccepted.delete(key)
+    setAskingMove(null)
+    setBusy(kind)
+    setDone(null)
+    stage.setValue(want)
+    for (let i = 0; i < 40 && getField('governance.status')?.value !== want; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 25))
+    }
+    for (let i = 0; i < 200 && processingRef.current; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 25))
+    }
+    const url = formatAdminURL({
+      apiRoute: config.routes.api,
+      path: `/${collectionSlug}/${id}?locale=${locale}&depth=0&fallback-locale=null`,
+    })
+    const result = await submit({
+      action: url,
+      method: 'PATCH',
+      overrides: { _status: 'published' },
+    })
+    if (result?.res?.ok) {
+      recentlyAccepted.set(key, { until: fiveSecondsFromNow(), stage: want })
+      setDone(STEP_DONE[kind])
+    } else {
+      // The server refused (Payload has shown why): the screen goes back to what is true.
+      stage.setValue((before ?? 'draft') as WorkflowStatus, true)
+    }
+    setBusy(null)
+  }
+
   return (
     <section
+      ref={barRef}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' && anyAsk) {
+          e.stopPropagation()
+          closeAsks()
+        }
+      }}
       className={`workflow-bar workflow-bar--${view.tone}`}
       aria-label={language === 'ur' ? 'آئٹم کی حالت' : 'Item status'}
     >
@@ -301,7 +375,7 @@ export function WorkflowBar(): React.ReactElement | null {
             >
               {pick(STEP_LABEL.sendBack, language)}
             </button>
-            <button type="button" className="workflow-bar__button" onClick={() => setAsking(false)}>
+            <button type="button" className="workflow-bar__button" onClick={closeAsks}>
               {language === 'ur' ? 'منسوخ کریں' : 'Cancel'}
             </button>
           </div>
@@ -322,11 +396,39 @@ export function WorkflowBar(): React.ReactElement | null {
             >
               {language === 'ur' ? 'ہاں، آف لائن کریں' : 'Yes, take it offline'}
             </button>
+            <button type="button" className="workflow-bar__button" onClick={closeAsks}>
+              {language === 'ur' ? 'منسوخ کریں' : 'Cancel'}
+            </button>
+          </div>
+        </div>
+      ) : askingMove ? (
+        <div className="workflow-bar__ask">
+          <p role="alert">
+            {askingMove === 'archive'
+              ? language === 'ur'
+                ? 'یہ صفحہ ویب سائٹ سے ہٹ جائے گا مگر ریکارڈ میں محفوظ رہے گا۔ اسے صرف شعبے کا سربراہ یا پلیٹ فارم ایڈمن بحال کر سکتا ہے۔ کیا آرکائیو کریں؟'
+                : 'This takes the page off the website and keeps it on record. Only a head of department or a platform admin can restore it. Archive it?'
+              : language === 'ur'
+                ? 'یہ صفحہ جیسا آرکائیو ہوا تھا ویسا ہی ویب سائٹ پر واپس آ جائے گا۔ کیا بحال کریں؟'
+                : 'This puts the page back on the website exactly as it was archived. Restore it?'}
+          </p>
+          <div className="workflow-bar__actions">
             <button
               type="button"
-              className="workflow-bar__button"
-              onClick={() => setAskingOffline(false)}
+              className={`workflow-bar__button workflow-bar__button--${askingMove}`}
+              disabled={busy !== null}
+              onClick={() => void archiveOrRestore(askingMove)}
+              autoFocus
             >
+              {askingMove === 'archive'
+                ? language === 'ur'
+                  ? 'ہاں، آرکائیو کریں'
+                  : 'Yes, archive it'
+                : language === 'ur'
+                  ? 'ہاں، بحال کریں'
+                  : 'Yes, restore it'}
+            </button>
+            <button type="button" className="workflow-bar__button" onClick={closeAsks}>
               {language === 'ur' ? 'منسوخ کریں' : 'Cancel'}
             </button>
           </div>
@@ -346,14 +448,23 @@ export function WorkflowBar(): React.ReactElement | null {
                     ? void approveAndPublish()
                     : a === 'takeOffline'
                       ? setAskingOffline(true)
-                      : void run(a)
+                      : a === 'archive' || a === 'restore'
+                        ? setAskingMove(a)
+                        : void run(a)
               }
             >
               {pick(STEP_LABEL[a], language)}
             </button>
           ))}
           {view.showPublish ? (
-            <span className="workflow-bar__publish">
+            // Payload's own Publish press starts a new save: the guard from the step before must not
+            // hold the old stage on screen over what this save returns (found in the browser, slice 3ao:
+            // Publish within five seconds of Approve left the box saying Approved on a live page).
+            <span
+              ref={publishRef}
+              className="workflow-bar__publish"
+              onClickCapture={() => recentlyAccepted.delete(key)}
+            >
               <PublishButton />
             </span>
           ) : null}

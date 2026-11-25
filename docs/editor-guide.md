@@ -133,11 +133,20 @@ On a page or post, two buttons sit beside **Publish changes**: the **eye** (Live
 
 Opening **Create New** saves an empty draft straight away. If you start something and leave without a title, it shows on your dashboard as **Untitled (started ...)**. Open it to finish it, or delete it: open the draft, use the **...** menu beside the title, and choose **Delete**.
 
+## Archive and Restore
+
+On a **live** page the status box has **Take offline** and **Archive**. They differ:
+
+- **Take offline** puts the page back to a draft. It needs approval again before it returns. A programme's coordinator does this for their own programme.
+- **Archive** takes the page off the website and keeps it on record, as it was. It is for a head of department (not on a programme page), a site manager (not on High impact items) and a platform admin. A coordinator does not see Archive.
+
+An archived page shows **Restore** to the head of the office that owns it and to the platform admin only. Restore puts the page back on the website exactly as it was archived; the usual checks run again (verified, source, owner office, and a review date for High impact items), and if one fails the message says which. Both buttons ask "are you sure" first; press Escape or Cancel to leave without changing anything.
+
 ## Deleting
 
 You can delete a **draft that was never published**, if it belongs to your office (a contributor can delete only drafts they started). Nothing public is lost, because the public never saw it.
 
-Anything that has been sent for review, approved, published or archived cannot be deleted by editors, approvers or contributors. To remove something that was published, ask an approver to archive it (it then leaves the public pages and search), or ask a platform administrator to delete it. Site managers can delete these too, except High impact items.
+Anything that has been sent for review, approved, published or archived cannot be deleted by editors, approvers or contributors. To remove something that was published, a head of department, site manager or platform admin presses **Archive** in the status box (see "Archive and Restore" below); an editor asks them to. (it then leaves the public pages and search), or ask a platform administrator to delete it. Site managers can delete these too, except High impact items.
 
 Nobody can delete an item that other items still use. For example, a department that people or programmes point to cannot be deleted; the message says how many of what. Remove those links first, or archive the item instead.
 

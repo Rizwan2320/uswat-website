@@ -1,4 +1,5 @@
 import AdmissionsBanner from '@/site/components/AdmissionsBanner'
+import AlumniShowcase from '@/site/components/AlumniShowcase'
 import FeedCards from '@/site/components/FeedCards'
 import Hero from '@/site/components/Hero'
 import LeadershipMessage from '@/site/components/LeadershipMessage'
@@ -30,6 +31,7 @@ export default function HomePage() {
       <PortalsGrid />
       <FeedCards />
       <NewsEvents />
+      <AlumniShowcase />
     </>
   )
 }
