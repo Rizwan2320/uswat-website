@@ -1045,3 +1045,15 @@ P3 agent (slice 3a), own entry:
 - Sitemap conflict resolved by keeping both `/people` and `/alumni/research`.
 - Checks run: typecheck, lint (0 errors), 140 files / 1783 tests (the identity file failed once on a two-factor code check, `verify-totp` 401, then passed twice at 218 of 218: a timing flake at the 30-second code boundary, not caused by this merge), types drift clean, build, 24 visual against `next start`, 25 browser specs (top bar, alumni, profile pages).
 - Not run locally: the CMS editor browser specs (they need the editor fixtures; CI runs them).
+
+## Overview deck, people directory live, Sample data in production (2026-11-25, main agent)
+- A 24-slide PDF about the whole public website was made for the owner's presentation (kept outside the repo).
+- PR #164 (people directory: name search, Department or programme buttons, four Sample portraits) merged through integration PR #165. Main was 9249d3a; production deployed by hand (the same SHA had already built as a branch preview, so no automatic production build).
+- **Sample data inserted into the production CMS database at the owner's request, for a presentation** (prediction `PROD-SAMPLE-a`). Remove before launch.
+  - Ids are offset by 100 so they sit beside the old empty draft shells. People `sample-person-01` to `-14` (ids 101-114, published, 20 publications, no media; portraits come from `samplePortraits.ts` on the public site). Departments ids 101-103 and 106-110 (physics, chemistry, computer technologies, mathematics, english, history, economics, business administration). Faculties ids 101-103. Offices ids 101-104 (registrar, admissions, examinations, library). Child rows: locales, emails, publications.
+  - The computer department got slug `sample-department-of-computer-technologies` and the name "Sample Department of Computer Technologies" so it does not replace the real code page for DCST.
+  - `governance_verified_by` is user 2, `governance_created_by` is empty, versions tables were not filled, all sources are `https://sample.invalid/seed/...`.
+  - To remove: delete the rows with these ids (children first, set `head_id` to null on offices and departments before deleting people). Easy filter: `governance_source like 'https://sample.invalid/seed/%'`.
+  - Side effect: the live departments, faculties and administration listings now also show these Sample entries.
+- Live check: `/people` shows 14 people, four with portraits.
+- Open: confirm the right to use the four portraits (they look generated); remove the five portal test accounts and all Sample data before launch.
