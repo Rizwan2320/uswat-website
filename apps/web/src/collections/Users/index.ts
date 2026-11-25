@@ -159,6 +159,8 @@ export const Users: CollectionConfig = {
       hasMany: true,
       access: { update: adminOrHead },
       admin: {
+        // Chosen from the departments, not typed (slice 3aq). The stored value is the same list of words.
+        components: { Field: '@/admin/OfficePicker' },
         description:
           "Offices this person works for (matched against a record's owner office). Stored lower-case. A head of an office can add or take away only their own offices.",
       },
@@ -179,6 +181,17 @@ export const Users: CollectionConfig = {
       // The platform admin, or a head of department for their own team (checked in the hook below:
       // only programmes of the head's own offices, and only on an Editor).
       access: { update: adminOrHead },
+      // A head is offered only programmes of their own office (slice 3aq); the hook below still refuses others.
+      filterOptions: ({ user }) => {
+        const u = user as { role?: string; offices?: unknown } | null
+        const offices = Array.isArray(u?.offices) ? (u.offices as string[]) : []
+        if (u?.role !== 'approver' || offices.length === 0) return true
+        return { 'governance.ownerOffice': { in: offices } }
+      },
+      // Payload checks a chosen value against filterOptions by reading it back as the person saving, which a
+      // coordinator cannot do for a department that is still a draft or no longer published (found by the scope
+      // tests). The list only narrows what is offered; the scope rule and the team hook still refuse the rest on save.
+      validate: () => true as const,
       admin: {
         condition: (data) => data?.role === 'editor',
         description:

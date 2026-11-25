@@ -105,7 +105,23 @@ export const Programmes = governedCollection({
     { name: 'name', type: 'text', required: true, localized: true },
     plainSlugField({ useAsSlug: 'name', position: undefined }),
     legacyUrlField,
-    { name: 'department', type: 'relationship', relationTo: 'departments' },
+    {
+      name: 'department',
+      type: 'relationship',
+      relationTo: 'departments',
+      // A head of department is offered only the departments of their own office (slice 3aq); the scope
+      // rule in policy.ts still refuses any other on save. Everyone else sees every department.
+      filterOptions: ({ user }) => {
+        const u = user as { role?: string; offices?: unknown } | null
+        const offices = Array.isArray(u?.offices) ? (u.offices as string[]) : []
+        if (u?.role !== 'approver' || offices.length === 0) return true
+        return { 'governance.ownerOffice': { in: offices } }
+      },
+      // Payload checks a chosen value against filterOptions by reading it back as the person saving, which a
+      // coordinator cannot do for a department that is still a draft or no longer published (found by the scope
+      // tests). The list only narrows what is offered; the scope rule and the team hook still refuse the rest on save.
+      validate: () => true as const,
+    },
     { name: 'campus', type: 'relationship', relationTo: 'campuses' },
     { name: 'level', type: 'text' },
     { name: 'duration', type: 'text', localized: true },
