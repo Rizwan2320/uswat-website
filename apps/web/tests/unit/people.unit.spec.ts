@@ -120,6 +120,19 @@ describe('department and programme way in', () => {
   })
 })
 
+describe('stand-in portraits', () => {
+  const base = { id: 1, name: 'Dr. Farhan Yousafzai', facultyStatus: 'current' }
+  it('a Sample person with no CMS photo gets the stand-in, a real person never does', () => {
+    const sample = toPersonCard({ ...base, slug: 'sample-person-03', governance: { source: `https://${SAMPLE_HOST}/x` } } as never)
+    expect(sample?.photo?.src).toBe('/images/people/sample-person-03.webp')
+    expect(sample?.photo?.alt).toContain('Sample')
+    expect(toPersonCard({ ...base, slug: 'sample-person-03' } as never)?.photo).toBeNull()
+  })
+  it('a Sample person without a mapped picture keeps the initials', () => {
+    expect(toPersonCard({ ...base, slug: 'sample-person-02', governance: { source: `https://${SAMPLE_HOST}/x` } } as never)?.photo).toBeNull()
+  })
+})
+
 describe('picture tone', () => {
   it('is the same for the same person and always one of three', () => {
     expect(toneOf('hina-farooq')).toBe(toneOf('hina-farooq'))

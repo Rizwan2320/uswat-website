@@ -3,6 +3,8 @@ import { safeHref } from '@/utilities/safeHref'
 
 import { isSample, paragraphs, rel, str, type Doc } from '../organisation/shape'
 
+import { samplePortraitOf } from './samplePortraits'
+
 /* Pure side of the public people pages (plan section 5, route 9: `/people/` and `/people/{slug}/`). Nothing here opens the
    CMS, so unit tests can use it. Every personal detail arrives already filtered by the People field rules (an email or photo
    whose visibility is not Public is not in the record an anonymous reader gets); this file only decides how to draw what is left. */
@@ -57,7 +59,7 @@ export function toPersonCard(doc: Doc): PersonCard | null {
     designation: str(doc.designation),
     departmentSlug: str(dept?.slug),
     departmentName: str(dept?.name),
-    photo: photoOf(doc, name),
+    photo: photoOf(doc, name) ?? (isSample(doc) ? samplePortraitOf(slug, name) : null),
     sample: isSample(doc),
   }
 }
