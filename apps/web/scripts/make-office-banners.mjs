@@ -79,6 +79,9 @@ const BANNERS = [
   { key: 'press-release', icon: 'globe', pre: 'University of Swat', one: 'Press', two: 'Releases', tag: 'Headlines' },
   { key: 'developmental-projects', icon: 'building', pre: 'University of Swat', one: 'Developmental', two: 'Projects', tag: 'Campus buildings' },
   { key: 'research-group', icon: 'flask', pre: 'Research Group', one: 'Ecological Risk', two: 'Assessment', tag: 'and Environmental Management' },
+  { key: 'directorate-of-sports', icon: 'users', pre: 'Directorate of', one: 'Sports', two: '', tag: 'University of Swat' },
+  { key: 'office-365', icon: 'laptop', pre: 'University of Swat', one: 'Office 365', two: '', tag: 'University of Swat' },
+  { key: 'office-of-the-deans', icon: 'cap', pre: 'Office of the', one: 'Deans', two: '', tag: 'University of Swat' },
 ]
 
 const circuit = (flip) => {
