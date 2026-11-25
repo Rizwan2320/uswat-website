@@ -18,7 +18,7 @@ import {
 } from '../../src/governance/roles'
 
 /**
- * Slice 3an: the screen and the server must agree.
+ * Slice 3an: the screen and the server must agree. (3ao added Archive and Restore.)
  *
  * `workflowView` decides which buttons a person sees; `evaluateSave` is what the server runs when a
  * button is pressed. This test walks every role, kind of page, stage, fact-check state, author and
@@ -130,6 +130,10 @@ function press(c: Ctx, what: StepAction | 'publish'): SaveOutcome {
         { status: c.stage === 'published' ? 'published' : 'approved' },
         { publishing: true, contentChanged: c.stage === 'published' },
       )
+    case 'archive':
+      return save(c, prev, { status: 'archived' }, { publishing: true })
+    case 'restore':
+      return save(c, prev, { status: 'published' }, { publishing: true })
     case 'approveAndPublish': {
       // Mark verified, approve, publish: each step is its own save, the next one sees the last.
       let state = prev
@@ -219,6 +223,13 @@ describe('screen and server agree (slice 3an)', () => {
         (shown.has('approve') || shown.has('approveAndPublish')),
     },
     {
+      // A coordinator may take their own programme offline; the screen offers that, not Archive, because
+      // only a head or the platform admin can undo an archive (slice 3ao).
+      why: 'a coordinator takes their programme offline instead of archiving it',
+      covers: (c, _s, what) =>
+        c.stage === 'published' && what === 'archive' && c.actorKey === 'coordinator',
+    },
+    {
       // Waiting for another approver: the screen says so and offers nothing, even though the server
       // would let the reviewer who wrote it send it back or mark it verified.
       why: 'a reviewer who wrote the item waits for another approver',
@@ -252,6 +263,8 @@ describe('screen and server agree (slice 3an)', () => {
       check('sendBack', c.stage === 'in_review' || c.stage === 'approved')
       check('publish', c.stage === 'approved' && c.verification === 'verified')
       check('takeOffline', c.stage === 'published')
+      check('archive', c.stage === 'published')
+      check('restore', c.stage === 'archived')
       check(
         'markVerified',
         c.verification === 'unverified' && c.stage !== 'archived' && c.stage !== 'draft',
@@ -260,13 +273,22 @@ describe('screen and server agree (slice 3an)', () => {
     expect(gaps.slice(0, 20)).toEqual([])
   })
 
-  it('archive and restore are on no screen yet, so the server allows them to reviewers only', () => {
-    // Documented gap (docs/STATUS.md, "Archive and Restore buttons"): not a drift, a missing feature.
+  it('archive and restore are offered only where the server allows them, and only at the right stage', () => {
+    let archives = 0
+    let restores = 0
     for (const c of contexts()) {
       const v = viewOf(c)
-      expect(
-        v.actions.some((a) => (a as string) === 'archive' || (a as string) === 'restore'),
-      ).toBe(false)
+      if (v.actions.includes('archive')) {
+        archives++
+        expect(c.stage).toBe('published')
+      }
+      if (v.actions.includes('restore')) {
+        restores++
+        expect(c.stage).toBe('archived')
+      }
     }
+    // Both buttons really appear somewhere in the matrix (a mutation that hides them fails here).
+    expect(archives).toBeGreaterThan(0)
+    expect(restores).toBeGreaterThan(0)
   })
 })
