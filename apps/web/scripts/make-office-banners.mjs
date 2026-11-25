@@ -63,6 +63,22 @@ const BANNERS = [
   { key: 'archaeology', icon: 'building', pre: 'Department of', one: 'Archaeology', two: '', tag: 'University of Swat' },
   { key: 'environmental-sciences', icon: 'flask', pre: 'Department of', one: 'Environmental', two: 'Sciences', tag: 'University of Swat' },
   { key: 'economics-and-development-studies', icon: 'clipboard', pre: 'Department of', one: 'Economics and', two: 'Development Studies', tag: 'University of Swat' },
+  { key: 'directorate-of-admissions', icon: 'cap', pre: 'Directorate of', one: 'Admissions', two: '', tag: 'University of Swat' },
+  { key: 'directorate-of-administration', icon: 'building', pre: 'Directorate of', one: 'Administration', two: '', tag: 'University of Swat' },
+  { key: 'directorate-of-planning-and-development', icon: 'clipboard', pre: 'Directorate of', one: 'Planning and', two: 'Development', tag: 'University of Swat' },
+  { key: 'directorate-of-research-and-technological-development', icon: 'flask', pre: 'Directorate of Research', one: 'and Technological', two: 'Development', tag: 'University of Swat' },
+  { key: 'registeror-office', icon: 'clipboard', pre: 'Office of the', one: 'Registrar', two: '', tag: 'University of Swat' },
+  { key: 'treasurer-office', icon: 'building', pre: 'Office of the', one: 'Treasurer', two: '', tag: 'University of Swat' },
+  { key: 'provost-office', icon: 'users', pre: 'Office of the', one: 'Provost', two: '', tag: 'Students • Hostels • Discipline' },
+  { key: 'vc-office', icon: 'users', pre: 'Office of the', one: 'Vice', two: 'Chancellor', tag: 'University of Swat' },
+  { key: 'office-of-the-pro-vice-chancellor-pro-vc', icon: 'shield', pre: 'Office of the', one: 'Pro Vice', two: 'Chancellor', tag: 'University of Swat' },
+  { key: 'university-advancement-financial-aid-office', icon: 'heart', pre: 'University Advancement', one: 'and Financial', two: 'Aid Office', tag: 'Scholarships' },
+  { key: 'e-office', icon: 'laptop', pre: 'University of Swat', one: 'E-Office', two: '', tag: 'Digital file management' },
+  { key: 'dean-office-3', icon: 'flask', pre: 'Faculty of', one: 'Chemical Sciences', two: 'Dean’s Office', tag: 'University of Swat' },
+  { key: 'election-administrative-officers-and-faculty-members', icon: 'users', pre: 'University of Swat', one: 'Elections', two: 'to the Authorities', tag: 'Officers and faculty members' },
+  { key: 'press-release', icon: 'globe', pre: 'University of Swat', one: 'Press', two: 'Releases', tag: 'Headlines' },
+  { key: 'developmental-projects', icon: 'building', pre: 'University of Swat', one: 'Developmental', two: 'Projects', tag: 'Campus buildings' },
+  { key: 'research-group', icon: 'flask', pre: 'Research Group', one: 'Ecological Risk', two: 'Assessment', tag: 'and Environmental Management' },
 ]
 
 const circuit = (flip) => {

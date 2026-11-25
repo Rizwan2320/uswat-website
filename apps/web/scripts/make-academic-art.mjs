@@ -221,6 +221,22 @@ const OFFICES = {
   archaeology: 'Archaeology',
   'environmental-sciences': 'Environment',
   'economics-and-development-studies': 'Economics',
+  'directorate-of-admissions': 'Admissions',
+  'directorate-of-administration': 'Admin',
+  'directorate-of-planning-and-development': 'P&D',
+  'directorate-of-research-and-technological-development': 'DRTD',
+  'registeror-office': 'Registrar',
+  'treasurer-office': 'Treasury',
+  'provost-office': 'Provost',
+  'vc-office': 'VC Office',
+  'office-of-the-pro-vice-chancellor-pro-vc': 'Pro VC',
+  'university-advancement-financial-aid-office': 'Aid',
+  'e-office': 'E-Office',
+  'dean-office-3': 'Dean',
+  'election-administrative-officers-and-faculty-members': 'Election',
+  'press-release': 'Press',
+  'developmental-projects': 'Projects',
+  'research-group': 'Ecology',
 }
 for (const [k, label] of Object.entries(OFFICES)) MOTIFS[k] = (p, r) => chip(p, r, label)
 
