@@ -1,26 +1,67 @@
 import type { OfficeArea, OfficeGroup, OfficeProfile } from '../types'
 
+import { administrationDirectorate } from './administration-directorate'
+import { admissions } from './admissions'
 import { alumni } from './alumni'
 import { archaeology } from './archaeology'
 import { calendar } from './calendar'
 import { cmc } from './cmc'
 import { coe } from './coe'
 import { dasr } from './dasr'
+import { deanOfficeChemicalSciences } from './dean-office-chemical-sciences'
 import { deds } from './deds'
 import { defl } from './defl'
+import { developmentalProjects } from './developmental-projects'
 import { dit } from './dit'
+import { eOffice } from './e-office'
+import { election } from './election'
 import { environmentalSciences } from './environmental-sciences'
+import { financialAid } from './financial-aid'
 import { geology } from './geology'
 import { hunerkada } from './hunerkada'
 import { library } from './library'
 import { oric } from './oric'
+import { planning } from './planning'
+import { pressRelease } from './press-release'
 import { proctor } from './proctor'
+import { proVc } from './pro-vc'
+import { provost } from './provost'
 import { qec } from './qec'
+import { registrar } from './registrar'
+import { researchDirectorate } from './research-directorate'
+import { researchGroup } from './research-group'
+import { treasurer } from './treasurer'
+import { vcOffice } from './vc-office'
 import { works } from './works'
 import { ydc } from './ydc'
 
 /* The registry. Order here is the order on the landing pages. Matching is by slug (the route-map slug). */
-export const OFFICE_PROFILES: OfficeProfile[] = [oric, dasr, dit, coe, works, proctor, ydc, alumni, hunerkada]
+export const OFFICE_PROFILES: OfficeProfile[] = [
+  oric,
+  dasr,
+  researchDirectorate,
+  dit,
+  coe,
+  works,
+  admissions,
+  administrationDirectorate,
+  planning,
+  proctor,
+  registrar,
+  treasurer,
+  provost,
+  vcOffice,
+  proVc,
+  financialAid,
+  eOffice,
+  deanOfficeChemicalSciences,
+  election,
+  pressRelease,
+  developmentalProjects,
+  ydc,
+  alumni,
+  hunerkada,
+]
 
 export const profileForOffice = (slug: string): OfficeProfile | undefined => OFFICE_PROFILES.find((p) => p.slug === slug)
 export const officesListedOn = (area: OfficeArea): OfficeProfile[] => OFFICE_PROFILES.filter((p) => p.lists.includes(area))
@@ -33,5 +74,5 @@ export function officesByGroup(area: OfficeArea): { group: OfficeGroup; items: O
 
 /* Pages served at their own static address (not under /administration/{slug}), built with the same template. They are not listed on the
    Research or Administration landings (`lists` is empty) and need no CMS record. */
-export const PAGE_PROFILES: OfficeProfile[] = [cmc, defl, geology, archaeology, environmentalSciences, deds, library, qec, calendar]
+export const PAGE_PROFILES: OfficeProfile[] = [cmc, defl, geology, archaeology, environmentalSciences, deds, library, qec, calendar, researchGroup]
 export const profileForPage = (slug: string): OfficeProfile | undefined => PAGE_PROFILES.find((p) => p.slug === slug)

@@ -9,7 +9,7 @@ const all = Object.entries(rows).flatMap(([c, rs]) => rs.map((r) => ({ c, ...r }
 describe('Sample seed data', () => {
   it('has the planned counts', () => {
     expect(Object.fromEntries(Object.entries(rows).map(([c, r]) => [c, r.length]))).toEqual({
-      faculties: 4, campuses: 3, people: 14, offices: 13, departments: 10, programmes: 20,
+      faculties: 4, campuses: 3, people: 14, offices: 28, departments: 10, programmes: 20,
     })
   })
   it('labels every invented record Sample and gives every record a sample.invalid source', () => {
@@ -17,7 +17,9 @@ describe('Sample seed data', () => {
     // campuses, the Department of Computer and Software Technologies with its programmes, and the nine offices that have a rich page
     // (Research and Administration, 2026-11-22; their facts and sources live in src/site/offices/profiles). Their source is still sample.invalid,
     // the machine marker, because their text is not yet checked.
-    const REAL_OFFICES = ['oric-2', 'advanced-studies-and-research-board', 'directorate-of-it', 'controller-of-examination-office', 'directorate-of-works', 'proctorial-board', 'kamyab-jawan-markaz', 'alumni', 'hunerkada-center-for-excellence']
+    const REAL_OFFICES = ['oric-2', 'advanced-studies-and-research-board', 'directorate-of-it', 'controller-of-examination-office', 'directorate-of-works', 'proctorial-board', 'kamyab-jawan-markaz', 'alumni', 'hunerkada-center-for-excellence',
+      // 2026-11-25: the fifteen offices built from the saved copies in round 2 (src/site/offices/profiles).
+      'directorate-of-research-and-technological-development', 'directorate-of-admissions', 'directorate-of-administration', 'directorate-of-planning-and-development', 'registeror-office', 'treasurer-office', 'provost-office', 'vc-office', 'office-of-the-pro-vice-chancellor-pro-vc', 'university-advancement-financial-aid-office', 'e-office', 'dean-office-3', 'election-administrative-officers-and-faculty-members', 'press-release', 'developmental-projects']
     // 2026-11-22: the Faculty of Allied Health Sciences, its two centres and four programmes (src/site/academics/profiles/allied; sources and dates are there).
     const REAL_ALLIED = ['faculty-of-allied-health-sciences', 'centre-for-medical-technologies', 'centre-for-pharmaceutical-and-rehabilitation-sciences', 'bs-medical-laboratory-technology', 'bs-dental-technology', 'doctor-of-physical-therapy', 'bs-radiography-and-imaging-technology']
     const real = (r: { c: string; slug: string }) =>

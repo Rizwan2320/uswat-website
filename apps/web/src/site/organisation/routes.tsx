@@ -82,17 +82,21 @@ export async function programmeMetadata({ params }: { params: SlugParams }): Pro
 }
 
 export async function OfficeRoute({ params }: { params: SlugParams }) {
-  const doc = await getOffice(decode((await params).slug ?? ''), await preview())
+  const slug = decode((await params).slug ?? '')
+  const doc = await getOffice(slug, await preview())
+  const profile = profileForOffice(str(doc?.slug) ?? slug)
+  // An office with a profile shows even when the CMS has no record for it yet (the profile carries the facts and their sources).
+  if (!doc && profile) return <RichOfficePage doc={{ id: profile.slug, slug: profile.slug, name: profile.name }} profile={profile} feed={await departmentFeed(profile.slug)} />
   if (!doc) notFound()
-  const profile = profileForOffice(str(doc.slug) ?? '')
   if (profile) return <RichOfficePage doc={doc} profile={profile} feed={await departmentFeed(profile.slug)} />
   return <OfficePage doc={doc} />
 }
 export async function officeMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
   const slug = decode((await params).slug ?? '')
   const doc = await getOffice(slug, await preview())
-  return doc
-    ? { title: str(doc.name) ?? 'Office', description: profileForOffice(slug)?.lead, alternates: { canonical: `${OFFICES_PATH}/${encodeURIComponent(slug)}` } }
+  const profile = profileForOffice(slug)
+  return doc || profile
+    ? { title: str(doc?.name) ?? profile?.name ?? 'Office', description: profile?.lead, alternates: { canonical: `${OFFICES_PATH}/${encodeURIComponent(slug)}` } }
     : { title: 'Office' }
 }
 

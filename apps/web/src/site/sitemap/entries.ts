@@ -18,7 +18,7 @@ export const CONTENT_SOURCES: Source[] = [
 ]
 
 /** The list pages themselves (News is `/news`). */
-export const LIST_PAGES = ['/news', '/notices', '/events', '/jobs', '/tenders', '/academics/departments', '/academics/programmes', '/contact/directory', '/research', '/administration', '/about', '/about/vice-chancellors-message', '/faculties/allied-health-sciences', '/academics/departments/management-commerce', '/academics/departments/english-and-foreign-languages', '/academics/departments/geology', '/academics/departments/archaeology', '/academics/departments/environmental-sciences', '/academics/departments/economics-and-development-studies', '/academic-calendar', '/administration/central-library-office', '/administration/quality-enhancement-cell', ...ALUMNI_WORKS.map((w) => alumniHref(w.slug))]
+export const LIST_PAGES = ['/news', '/notices', '/events', '/jobs', '/tenders', '/academics/departments', '/academics/programmes', '/contact/directory', '/research', '/administration', '/about', '/about/vice-chancellors-message', '/faculties/allied-health-sciences', '/academics/departments/management-commerce', '/academics/departments/english-and-foreign-languages', '/academics/departments/geology', '/academics/departments/archaeology', '/academics/departments/environmental-sciences', '/academics/departments/economics-and-development-studies', '/academic-calendar', '/administration/central-library-office', '/administration/quality-enhancement-cell', '/research-group', ...ALUMNI_WORKS.map((w) => alumniHref(w.slug))]
 
 export const SITEMAP_REVALIDATE_SECONDS = 300
 

@@ -5,14 +5,16 @@ import { officeHref } from '../organisation/shape'
 
 import { Milestones, Sources } from './blocks'
 import { ADMINISTRATION_PATH, RESEARCH } from './landings'
-import { officesListedOn, profileForOffice } from './profiles'
+import { officesListedOn, profileForOffice, profileForPage } from './profiles'
 
 /* T2 section landing for /research. */
 export default function RichResearchPage() {
   const offices = officesListedOn('research')
   const oric = profileForOffice('oric-2')
+  const group = profileForPage('research-group')
   const nav = [
     { id: 'offices', label: 'Research offices' },
+    ...(group ? [{ id: 'groups', label: 'Research group' }] : []),
     { id: 'resources', label: 'Journal and library' },
     ...(oric?.milestones?.length ? [{ id: 'conferences', label: 'Conferences' }] : []),
     { id: 'sources', label: 'Sources' },
@@ -36,7 +38,7 @@ export default function RichResearchPage() {
       <Stats items={RESEARCH.stats} />
       <SectionNav items={nav} />
 
-      <Band id="offices" kicker="Offices" title="Research offices" lede="The two offices that look after research at the university.">
+      <Band id="offices" kicker="Offices" title="Research offices" lede="The offices that look after research at the university.">
         <ul className={styles.pics}>
           {offices.map((o) => (
             <PictureCard
@@ -53,7 +55,23 @@ export default function RichResearchPage() {
         </ul>
       </Band>
 
-      <Band id="resources" tint kicker="Publishing and reading" title="Journal and library">
+      {group ? (
+        <Band id="groups" tint kicker="Groups" title="Research group" lede="A research group with its own page on the university’s site.">
+          <ul className={styles.pics}>
+            <PictureCard
+              art={group.hero}
+              title={group.name}
+              href={group.path!}
+              tag={group.shortName}
+              meta={`${group.people.length} people listed`}
+              text={group.lead}
+              more="Open the group"
+            />
+          </ul>
+        </Band>
+      ) : null}
+
+      <Band id="resources" tint={!group} kicker="Publishing and reading" title="Journal and library">
         <ul className={styles.cards} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
           {RESEARCH.resources.map((r) => (
             <li key={r.title} className={styles.card}>
@@ -71,12 +89,12 @@ export default function RichResearchPage() {
       </Band>
 
       {oric?.milestones?.length ? (
-        <Band id="conferences" kicker="Events" title={oric.milestonesTitle ?? 'Conferences'}>
+        <Band id="conferences" tint={Boolean(group)} kicker="Events" title={oric.milestonesTitle ?? 'Conferences'}>
           <Milestones items={oric.milestones} />
         </Band>
       ) : null}
 
-      <Band id="sources" tint kicker="Where this comes from" title="Sources">
+      <Band id="sources" tint={!group || !oric?.milestones?.length} kicker="Where this comes from" title="Sources">
         <Sources sources={RESEARCH.sources} verifiedAt={RESEARCH.verifiedAt} />
       </Band>
 
