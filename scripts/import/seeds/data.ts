@@ -109,6 +109,9 @@ const realOffices: OfficeSeed[] = [
   { slug: 'election-administrative-officers-and-faculty-members', name: 'Election (Administrative Officers and Faculty Members)', group: 'Offices and boards' },
   { slug: 'press-release', name: 'Press Releases', group: 'Offices and boards' },
   { slug: 'developmental-projects', name: 'Developmental Projects', group: 'Offices and boards' },
+  { slug: 'directorate-of-sports', name: 'Directorate of Sports', group: 'Directorates' },
+  { slug: 'office-365', name: 'Office 365', group: 'Offices and boards' },
+  { slug: 'office-of-the-deans', name: 'Office of the Deans', group: 'Offices and boards' },
 ]
 offices.push(...realOffices)
 

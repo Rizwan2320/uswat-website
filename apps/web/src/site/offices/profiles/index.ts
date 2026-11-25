@@ -9,6 +9,7 @@ import { cmc } from './cmc'
 import { coe } from './coe'
 import { dasr } from './dasr'
 import { deanOfficeChemicalSciences } from './dean-office-chemical-sciences'
+import { deans } from './deans'
 import { deds } from './deds'
 import { defl } from './defl'
 import { developmentalProjects } from './developmental-projects'
@@ -20,6 +21,7 @@ import { financialAid } from './financial-aid'
 import { geology } from './geology'
 import { hunerkada } from './hunerkada'
 import { library } from './library'
+import { office365 } from './office-365'
 import { oric } from './oric'
 import { planning } from './planning'
 import { pressRelease } from './press-release'
@@ -30,6 +32,7 @@ import { qec } from './qec'
 import { registrar } from './registrar'
 import { researchDirectorate } from './research-directorate'
 import { researchGroup } from './research-group'
+import { sports } from './sports'
 import { treasurer } from './treasurer'
 import { vcOffice } from './vc-office'
 import { works } from './works'
@@ -46,6 +49,7 @@ export const OFFICE_PROFILES: OfficeProfile[] = [
   admissions,
   administrationDirectorate,
   planning,
+  sports,
   proctor,
   registrar,
   treasurer,
@@ -54,6 +58,8 @@ export const OFFICE_PROFILES: OfficeProfile[] = [
   proVc,
   financialAid,
   eOffice,
+  office365,
+  deans,
   deanOfficeChemicalSciences,
   election,
   pressRelease,
