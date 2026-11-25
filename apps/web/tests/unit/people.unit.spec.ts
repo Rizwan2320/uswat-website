@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { SAMPLE_HOST } from '../../../../scripts/import/seeds/data'
-import { filterPeople, initialsOf, parseFilters, personHref, photoOf, toPersonCard, toPersonProfile, toneOf, type PersonCard } from '../../src/site/people/shape'
+import { filterAreas, filterPeople, parseArea, peopleInArea, initialsOf, parseFilters, personHref, photoOf, toPersonCard, toPersonProfile, toneOf, type Area, type PersonCard } from '../../src/site/people/shape'
 
 const dept = { id: 7, name: 'Department of Computer Science', slug: 'computer-science' }
 const base = { id: 1, name: 'Dr. Hina Farooq', slug: 'hina-farooq', designation: 'Assistant Professor', department: dept, facultyStatus: 'current' }
@@ -90,6 +90,46 @@ describe('filters', () => {
   it('lists everyone when nothing is typed', () => {
     expect(filterPeople(people, { q: '' })).toHaveLength(3)
     expect(filterPeople(people, { q: '   ' })).toHaveLength(3)
+  })
+})
+
+describe('department and programme way in', () => {
+  const areas: Area[] = [
+    { id: 'd:cs', kind: 'department', label: 'Department of Computer Science', departmentSlug: 'cs', departmentName: 'Department of Computer Science' },
+    { id: 'p:bs-cs', kind: 'programme', label: 'BS Computer Science', departmentSlug: 'cs', departmentName: 'Department of Computer Science' },
+    { id: 'p:orphan', kind: 'programme', label: 'BS Orphan', departmentSlug: null, departmentName: null },
+  ]
+  const person = (slug: string, dep: string | null): PersonCard => ({ id: slug, slug, name: slug, designation: null, departmentSlug: dep, departmentName: dep, photo: null, sample: false })
+  it('reads only a well-formed id from the address', () => {
+    expect(parseArea({ area: 'd:cs' })).toBe('d:cs')
+    expect(parseArea({ area: 'p:bs-cs' })).toBe('p:bs-cs')
+    for (const bad of ['', 'x:cs', 'd:', 'd:CS', 'd:a b', "d:'; drop", 'd:' + 'a'.repeat(200)]) expect(parseArea({ area: bad })).toBe('')
+    expect(parseArea({})).toBe('')
+  })
+  it('matches every word of the name, lists departments before programmes', () => {
+    expect(filterAreas(areas, 'computer').map((a) => a.id)).toEqual(['d:cs', 'p:bs-cs'])
+    expect(filterAreas(areas, 'bs computer').map((a) => a.id)).toEqual(['p:bs-cs'])
+    expect(filterAreas(areas, '').map((a) => a.id)).toEqual(['d:cs', 'p:bs-cs', 'p:orphan'])
+    expect(filterAreas(areas, 'zzz')).toEqual([])
+  })
+  it('gives a programme the faculty of its department, and nobody when it has none', () => {
+    const all = [person('a', 'cs'), person('b', 'phy'), person('c', 'cs')]
+    expect(peopleInArea(all, areas[0]!).map((p) => p.slug)).toEqual(['a', 'c'])
+    expect(peopleInArea(all, areas[1]!).map((p) => p.slug)).toEqual(['a', 'c'])
+    expect(peopleInArea(all, areas[2]!)).toEqual([])
+  })
+})
+
+describe('stand-in portraits', () => {
+  const base = { id: 1, name: 'Dr. Farhan Yousafzai', facultyStatus: 'current' }
+  it('a Sample person with no CMS photo gets the stand-in, a real person never does', () => {
+    const sample = toPersonCard({ ...base, slug: 'sample-person-03', governance: { source: `https://${SAMPLE_HOST}/x` } } as never)
+    expect(sample?.photo?.src).toBe('/images/people/sample-person-03.webp')
+    expect(sample?.photo?.alt).toContain('Sample')
+    expect(toPersonCard({ ...base, slug: 'sample-person-03' } as never)?.photo).toBeNull()
+  })
+  it('a Sample person without a mapped picture keeps the initials', () => {
+    expect(toPersonCard({ ...base, slug: 'sample-person-02', governance: { source: `https://${SAMPLE_HOST}/x` } } as never)?.photo).toBeNull()
   })
 })
 

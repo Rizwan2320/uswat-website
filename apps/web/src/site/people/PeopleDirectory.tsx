@@ -4,6 +4,7 @@ import { T } from '../components/I18n'
 
 import styles from './People.module.css'
 import PeopleBrowser from './PeopleBrowser'
+import type { Area } from './browse'
 import type { PersonCard } from './shape'
 
 /* The Faculty Portal link on the public site opens this page (owner, 2026-11-24): everyone's public profile, with the
@@ -15,7 +16,7 @@ export const UserIcon = () => (
   </svg>
 )
 
-export default function PeopleDirectory({ people, initialQuery }: { people: PersonCard[]; initialQuery: string }) {
+export default function PeopleDirectory({ people, areas, initialQuery, initialArea }: { people: PersonCard[]; areas: Area[]; initialQuery: string; initialArea: string }) {
   return (
     <>
       <PageHeader
@@ -31,7 +32,7 @@ export default function PeopleDirectory({ people, initialQuery }: { people: Pers
           <p className={styles.signinNote}><T k="For faculty and staff: update your page, publications and courses." /></p>
         </div>
       </PageHeader>
-      <PeopleBrowser people={people} initialQuery={initialQuery} />
+      <PeopleBrowser people={people} areas={areas} initialQuery={initialQuery} initialArea={initialArea} />
       <div className="container">
         <aside className={styles.strip} aria-label="Sign in">
           <p><T k="Is your profile missing or out of date? Sign in to the faculty portal to update it." /></p>

@@ -10,6 +10,11 @@ export const personHref = (slug: string) => `${PEOPLE_PATH}/${encodeURIComponent
 export const MAX_QUERY_LENGTH = 60
 export type Filters = { q: string }
 
+/* ---- the second way in: a department or a programme. A programme has no people of its own; its faculty are its department's ---- */
+
+export type Area = { id: string; kind: 'department' | 'programme'; label: string; departmentSlug: string | null; departmentName: string | null }
+const AREA_ID = /^[dp]:[a-z0-9][a-z0-9-]{0,118}$/
+
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)
 
 /** `?q=`: a name, spaces collapsed, at most 60 characters. Nothing else is read from the address. */
@@ -53,3 +58,20 @@ export const initialsOf = (name: string) =>
     .slice(0, 2)
     .map((w) => Array.from(w)[0]?.toUpperCase() ?? '')
     .join('')
+
+/** `?area=d:<slug>` or `?area=p:<slug>`: only an id of the right shape is read; the page then checks it against the real list. */
+export function parseArea(search: Record<string, string | string[] | undefined>): string {
+  const v = one(search.area) ?? ''
+  return AREA_ID.test(v) ? v : ''
+}
+
+/** Departments and programmes whose name contains every word typed. Nothing typed lists them all, departments first. */
+export function filterAreas(all: Area[], q: string): Area[] {
+  const words = fold(q).split(' ').filter(Boolean)
+  const hit = words.length ? all.filter((a) => words.every((w) => fold(a.label).includes(w))) : all
+  return [...hit].sort((a, b) => (a.kind === b.kind ? a.label.localeCompare(b.label) : a.kind === 'department' ? -1 : 1))
+}
+
+export function peopleInArea(all: PersonCard[], area: Area): PersonCard[] {
+  return area.departmentSlug ? all.filter((p) => p.departmentSlug === area.departmentSlug) : []
+}
