@@ -17,6 +17,8 @@ How does a drafter know which page they write for, and how does an account know 
 3. **The head's role bar names the department** ("You are the head of Sample Department of Computing"), looked up from the office, falling back to the office word.
 4. **A "You are editing" line above the status box on every governed edit screen:** the page, and why you may change it (platform admin; coordinator of this programme; head of this department; head of a programme of your department; your office's page; creating a new one). Out of scope: no extra line, the existing "look but not change" banner stays. English and Urdu (drafts).
 
+5. **Narrowed lists (found in the browser):** a head's Department choice on a programme and Programmes choice on a coordinator's account list only their own office's. Payload checks a filtered choice by reading it back as the person saving, which a coordinator cannot do for a draft department, so those two fields skip that read-back (`validate`); the scope rule and the team hook still refuse anything outside the office on save.
+
 ## Three-in, two-out
 In: the picker, the line, the default hook. Out: the retyping of an office on every new department; the need for the admin to know the hidden "IT Directorate" default. No new dependency.
 

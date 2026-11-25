@@ -38,6 +38,12 @@ A coloured line at the top of every item says in plain words where it stands and
 
 On every screen, under the coloured bar at the top, there is a **Back** button and **Sign out** at the right. Back goes one step back, or up to the list when you opened the screen directly. They are always visible, also on a phone, where the side menu is folded away. Back is not shown on the dashboard or the sign-in screens.
 
+## Which page is mine?
+
+Above the coloured status box on every page there is one line saying what you are editing and why you may change it, for example "This is your department page: Department of Physics" or "You are editing a programme you coordinate: BS Physics". If the page is not yours, the box says you can look but not change it, and there is no such line.
+
+Your bar at the very top names you: a head of department sees "You are the head of Department of Physics", a coordinator sees the programmes they look after.
+
 ## Your dashboard
 
 After you sign in, the first page shows what needs you. Click any title to open it.
@@ -97,6 +103,7 @@ Editors and contributors do not see **Publish changes**; only roles that may pub
 As an approver you can add and manage the **Editors and Contributors of your own office**, under **Users** in the menu. You see only your own team there, not the whole staff list.
 
 - **Add a person:** Users, Create New. Give a name, an email and a first password, and tell the person the password yourself (there is no email invitation yet); they can change it from their own account. Leave the role as Contributor or pick Editor. If you hold one office, it is filled in for you; if you hold more than one, choose which.
+- **Make a head of department (platform admin):** first create the department (Departments, Create New: its name becomes its office, nothing to type) and **publish it** (a head cannot open a draft the admin has not sent on; publishing needs the source link). Then Users, Create New, role Approver, and under **Offices** choose the department from "Add a department". The list says "not published yet" beside a department that is still a draft, and flags an office word that matches no department ("check the spelling").
 - **Add a programme (head of a department):** Programmes, Create New, choose your department. It starts as a draft in your office; you publish it yourself. You cannot put it under another office's department.
 - **Make a programme coordinator (head of a department):** create the person as an Editor with the department's office, then choose their **Programmes**. You can choose only programmes of your own department. They then see and edit only those programmes. The platform admin can choose any programme.
 - **Change a role:** open the person and switch between Editor and Contributor.
