@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import RichDepartmentPage from '../academics/RichDepartmentPage'
 import RichDisciplinePage from '../academics/RichDisciplinePage'
 import { departmentFeed } from '../academics/feed'
+import type { DepartmentProfile } from '../academics/types'
 import { departmentPath, disciplinesOf, profileForDepartment, profileForDiscipline } from '../academics/profiles'
 import RichAboutPage from '../about/RichAboutPage'
 import RichMessagePage from '../about/RichMessagePage'
@@ -44,8 +45,27 @@ export async function ProgrammesListRoute() {
 }
 export const programmesListMetadata: Metadata = { title: 'Programmes', alternates: { canonical: PROGRAMMES_PATH } }
 
+/** Programme cards built from the programme profiles of a department, for a page that has no CMS record. */
+const profileProgrammeCards = (profile: DepartmentProfile): ProgrammeCard[] =>
+  disciplinesOf(profile.slug).map((d) => ({
+    id: d.slug,
+    name: d.name ?? `BS ${d.shortName}`,
+    slug: d.slug,
+    level: d.level ?? 'BS',
+    duration: d.duration ?? '4 years',
+    campus: null,
+    departmentId: profile.slug,
+    departmentName: profile.shortName,
+    sample: false,
+  }))
+
 export async function DepartmentRoute({ params }: { params: SlugParams }) {
-  const doc = await getDepartment(decode((await params).slug ?? ''), await preview())
+  const slug = decode((await params).slug ?? '')
+  const doc = await getDepartment(slug, await preview())
+  // A department with a profile shows even when the CMS has no record for it yet (the profile carries the facts and their sources).
+  const own = profileForDepartment(slug)
+  if (!doc && own)
+    return <RichDepartmentPage doc={{ id: own.slug, slug: own.slug, name: own.fullName ?? own.shortName }} profile={own} programmes={profileProgrammeCards(own)} feed={await departmentFeed(own.slug)} />
   if (!doc) notFound()
   const profile = profileForDepartment(str(doc.slug) ?? '')
   if (profile) {
@@ -58,13 +78,18 @@ export async function DepartmentRoute({ params }: { params: SlugParams }) {
 export async function departmentMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
   const slug = decode((await params).slug ?? '')
   const doc = await getDepartment(slug, await preview())
+  const own = profileForDepartment(slug)
+  if (!doc && own) return { title: own.fullName ?? own.shortName, description: own.intro, alternates: { canonical: `${DEPARTMENTS_PATH}/${encodeURIComponent(slug)}` } }
   return doc
     ? { title: str(doc.name) ?? 'Department', description: str(doc.summary)?.slice(0, 160) ?? undefined, alternates: { canonical: `${DEPARTMENTS_PATH}/${encodeURIComponent(slug)}` } }
     : { title: 'Department' }
 }
 
 export async function ProgrammeRoute({ params }: { params: SlugParams }) {
-  const doc = await getProgramme(decode((await params).slug ?? ''), await preview())
+  const slug = decode((await params).slug ?? '')
+  const doc = await getProgramme(slug, await preview())
+  const own = profileForDiscipline(slug)
+  if (!doc && own) return <RichDisciplinePage doc={{ id: own.slug, slug: own.slug, name: own.name ?? `BS ${own.shortName}` }} profile={own} feed={await departmentFeed(own.department)} />
   if (!doc) notFound()
   const profile = profileForDiscipline(str(doc.slug) ?? '')
   if (profile) {
@@ -76,6 +101,8 @@ export async function ProgrammeRoute({ params }: { params: SlugParams }) {
 export async function programmeMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
   const slug = decode((await params).slug ?? '')
   const doc = await getProgramme(slug, await preview())
+  const own = profileForDiscipline(slug)
+  if (!doc && own) return { title: own.name ?? `BS ${own.shortName}`, description: own.summary, alternates: { canonical: `${PROGRAMMES_PATH}/${encodeURIComponent(slug)}` } }
   return doc
     ? { title: str(doc.name) ?? 'Programme', description: str(doc.eligibility)?.slice(0, 160) ?? undefined, alternates: { canonical: `${PROGRAMMES_PATH}/${encodeURIComponent(slug)}` } }
     : { title: 'Programme' }
@@ -171,17 +198,7 @@ export async function FacultyRoute({ slug }: { slug: string }) {
   const profile = profileForDepartment(slug)
   if (!profile?.path) notFound()
   // No CMS record is needed: the programme cards are built from the programme profiles of the faculty.
-  const programmes: ProgrammeCard[] = disciplinesOf(profile.slug).map((d) => ({
-    id: d.slug,
-    name: d.name ?? `BS ${d.shortName}`,
-    slug: d.slug,
-    level: d.level ?? 'BS',
-    duration: d.duration ?? '4 years',
-    campus: null,
-    departmentId: profile.slug,
-    departmentName: profile.shortName,
-    sample: false,
-  }))
+  const programmes = profileProgrammeCards(profile)
   return <RichDepartmentPage doc={{ id: profile.slug }} profile={profile} programmes={programmes} feed={await departmentFeed(profile.slug)} />
 }
 export function facultyMetadata(slug: string): Metadata {

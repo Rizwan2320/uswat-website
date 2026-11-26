@@ -63,7 +63,7 @@ export default function RichDisciplinePage({
   const name = str(doc.name) ?? profile.shortName
   const dept = rel(doc.department)
   const campus = rel(doc.campus)
-  const eligibility = str(doc.eligibility)
+  const eligibility = str(doc.eligibility) ?? profile.eligibility ?? null
   const courseCount = profile.years.reduce(
     (n, y) => n + y.semesters.reduce((m, s) => m + s.courses.length, 0),
     0,
