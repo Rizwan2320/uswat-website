@@ -1,19 +1,17 @@
 // @vitest-environment node
 /**
  * The home page's slider and statistics come from the published `home-content` global
- * (docs/briefs/home-from-cms.md). Real Postgres, real image bytes. The global is a single shared row,
- * so this file resets it to empty at the end.
+ * (docs/briefs/home-from-cms.md). Real Postgres, real image bytes. The global is one row shared with other
+ * test files, so nothing here assumes it starts empty; the fallback to the files is covered in homeMap.unit.spec.ts.
  */
 import { randomBytes } from 'node:crypto'
 
 import type { Payload } from 'payload'
 import sharp from 'sharp'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn(), unstable_cache: (fn: unknown) => fn }))
 
-import { heroSlides } from '../../src/site/content/hero'
-import { stats } from '../../src/site/content/stats'
 import { getHero, getStats } from '../../src/site/lib/content'
 import { as, getTestPayload, makeUser } from '../helpers/governance'
 
@@ -63,16 +61,7 @@ beforeAll(async () => {
   media = [await upload('First photograph'), await upload('Second photograph'), await upload('Third photograph')]
 })
 
-afterAll(async () => {
-  await payload.updateGlobal({ slug: 'home-content', data: { slides: [], stats: [] } as never, draft: true, overrideAccess: true })
-})
-
 describe('home page reads the home-content global', () => {
-  it('shows the sourced files while the global has nothing published', async () => {
-    expect((await getHero()).slides).toEqual(heroSlides)
-    expect(await getStats()).toEqual(stats)
-  })
-
   it('shows the published slides and figures, with the picture, alt text and buttons', async () => {
     await publish(content('Pub'))
     const { slides } = await getHero()
