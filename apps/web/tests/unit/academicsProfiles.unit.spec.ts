@@ -74,7 +74,8 @@ describe('department and discipline profiles', () => {
 
   it('shares one first year across a department', () => {
     const first = (slug: string) => JSON.stringify(profileForDiscipline(slug)!.years[0])
-    for (const p of departmentProfiles.filter((d) => !d.path)) {
+    // A page that names real staff and its own study plans (`reference`) writes its own curriculum line, so the rule is for the template departments.
+    for (const p of departmentProfiles.filter((d) => !d.path && !d.reference)) {
       for (const s of p.disciplines) expect(first(s), s).toBe(first(p.disciplines[0]))
     }
   })
@@ -116,7 +117,7 @@ describe('department and discipline profiles', () => {
       expect(p.team.filter((m) => m.role === 'head'), p.slug).toHaveLength(1)
       expect(p.team[0]?.role, 'the head comes first').toBe('head')
       expect(new Set(p.team.map((m) => m.id)).size).toBe(p.team.length)
-      if (p.path) continue // a faculty page names staff, not programme coordinators
+      if (p.path || p.reference) continue // a faculty page, or a department whose staff come from the university's page, which names no programme coordinators
       for (const slug of p.disciplines) {
         const who = coordinatorOf(p.slug, slug)
         expect(who, `${slug} has a coordinator`).not.toBeNull()

@@ -91,6 +91,13 @@ const BANNERS = [
   { key: 'admissions', icon: 'cap', pre: 'University of Swat', one: 'Admissions', two: '', tag: 'Apply, notices and merit lists' },
   { key: 'merit-list', icon: 'clipboard', pre: 'University of Swat', one: 'Merit Lists', two: '', tag: 'Admissions' },
   { key: 'downloads', icon: 'book', pre: 'University of Swat', one: 'Forms, Rules', two: 'and Policies', tag: 'Downloads' },
+  { key: 'physics', icon: 'rocket', pre: 'University of Swat', one: 'Department of', two: 'Physics', tag: 'BS Physics' },
+  { key: 'chemistry', icon: 'flask', pre: 'University of Swat', one: 'Department of', two: 'Chemistry', tag: 'BS Chemistry' },
+  { key: 'mathematics-and-statistics', icon: 'cap', pre: 'University of Swat', one: 'Mathematics', two: 'and Statistics', tag: 'Numbers, proof and data' },
+  { key: 'bs-physics-2', icon: 'rocket', pre: 'Department of Physics', one: 'BS', two: 'Physics', tag: 'University of Swat' },
+  { key: 'bs-chemistry-2', icon: 'flask', pre: 'Department of Chemistry', one: 'BS', two: 'Chemistry', tag: 'University of Swat' },
+  { key: 'bs-mathematics-2', icon: 'cap', pre: 'Mathematics and Statistics', one: 'BS', two: 'Mathematics', tag: 'University of Swat' },
+  { key: 'bs-statistics', icon: 'clipboard', pre: 'Mathematics and Statistics', one: 'BS', two: 'Statistics', tag: 'University of Swat' },
 ]
 
 const circuit = (flip) => {

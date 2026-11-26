@@ -22,8 +22,10 @@ describe('Sample seed data', () => {
       'directorate-of-research-and-technological-development', 'directorate-of-admissions', 'directorate-of-administration', 'directorate-of-planning-and-development', 'registeror-office', 'treasurer-office', 'provost-office', 'vc-office', 'office-of-the-pro-vice-chancellor-pro-vc', 'university-advancement-financial-aid-office', 'e-office', 'dean-office-3', 'election-administrative-officers-and-faculty-members', 'press-release', 'developmental-projects', 'directorate-of-sports', 'office-365', 'office-of-the-deans']
     // 2026-11-22: the Faculty of Allied Health Sciences, its two centres and four programmes (src/site/academics/profiles/allied; sources and dates are there).
     const REAL_ALLIED = ['faculty-of-allied-health-sciences', 'centre-for-medical-technologies', 'centre-for-pharmaceutical-and-rehabilitation-sciences', 'bs-medical-laboratory-technology', 'bs-dental-technology', 'doctor-of-physical-therapy', 'bs-radiography-and-imaging-technology']
+    // 2026-11-26: the Physics, Chemistry, and Mathematics and Statistics departments and their programmes (src/site/academics/profiles/sciences).
+    const REAL_SCIENCES = ['physics', 'chemistry', 'mathematics-and-statistics', 'bs-physics-2', 'bs-chemistry-2', 'bs-mathematics-2', 'bs-statistics']
     const real = (r: { c: string; slug: string }) =>
-      REAL_ALLIED.includes(r.slug) || r.c === 'campuses' || (r.c === 'offices' && REAL_OFFICES.includes(r.slug)) || (r.c === 'departments' && r.slug === 'dcst') || (r.c === 'programmes' && programmes.find((p) => p.slug === r.slug)?.department === 'dcst')
+      REAL_ALLIED.includes(r.slug) || REAL_SCIENCES.includes(r.slug) || r.c === 'campuses' || (r.c === 'offices' && REAL_OFFICES.includes(r.slug)) || (r.c === 'departments' && r.slug === 'dcst') || (r.c === 'programmes' && programmes.find((p) => p.slug === r.slug)?.department === 'dcst')
     for (const r of all) {
       if (!real(r)) {
         expect(r.name.startsWith('Sample'), r.name).toBe(true)

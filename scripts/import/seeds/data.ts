@@ -124,8 +124,29 @@ const dept = (slug: string, subject: string, facultyGroup: string, head: string)
 })
 
 export const departments: DepartmentSeed[] = [
-  dept('physics', 'Physics', 'sample-faculty-of-sciences', 'sample-person-01'),
-  dept('chemistry', 'Chemistry', 'sample-faculty-of-sciences', 'sample-person-02'),
+  // The three science departments below carry the university's own names and text (their pages, read 2026-11-06). Which faculty each belongs to is
+  // not on those pages, so they sit in the same placeholder faculty group as DCST until the owner says.
+  {
+    slug: 'physics',
+    name: 'Department of Physics',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary:
+      'The Department of Physics provides education in the subject so that students can use physics in practical life. It offers the BS in Physics and lists the MS/MPhil as intended.',
+  },
+  {
+    slug: 'chemistry',
+    name: 'Department of Chemistry',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary:
+      'The Department of Chemistry (also called the Institute of Chemical Sciences, established November 2013) offers the BS in Chemistry and the Master of Philosophy in Chemistry.',
+  },
+  {
+    slug: 'mathematics-and-statistics',
+    name: 'Department of Mathematics and Statistics',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary:
+      'The Department of Mathematics and Statistics lists BS Mathematics, BS Statistics, MPhil Mathematics and PhD Mathematics. The statistics department started working in 2010.',
+  },
   {
     slug: 'dcst',
     name: 'Department of Computer and Software Technologies',
@@ -147,7 +168,6 @@ export const departments: DepartmentSeed[] = [
     facultyGroup: 'faculty-of-allied-health-sciences',
     summary: 'A centre of the Faculty of Allied Health Sciences. The university’s Quality Enhancement Cell lists the Doctor of Physical Therapy (DPT) under it.',
   },
-  dept('mathematics', 'Mathematics', 'sample-faculty-of-sciences', 'sample-person-04'),
   dept('english', 'English', 'sample-faculty-of-arts-and-humanities', 'sample-person-05'),
   dept('history', 'History', 'sample-faculty-of-arts-and-humanities', 'sample-person-06'),
   dept('economics', 'Economics', 'sample-faculty-of-social-and-management-sciences', 'sample-person-07'),
@@ -183,13 +203,19 @@ const alliedProgrammes: ProgrammeSeed[] = [
   { slug: 'bs-radiography-and-imaging-technology', name: 'BS Radiography & Imaging Technology', eligibility: null },
 ]
 
+/** The programmes of the Physics, Chemistry and Mathematics and Statistics departments, as their pages list them (read 2026-11-06). The two eligibilities
+    are the ones those pages state; the others are not published, so they stay empty. BS Statistics has no page of its own on the old site. */
+const scienceProgrammes: ProgrammeSeed[] = [
+  { slug: 'bs-physics-2', name: 'BS Physics', department: 'physics', level: 'BS', eligibility: 'F.Sc. or equivalent with at least 45% in the subject of Physics.' },
+  { slug: 'bs-chemistry-2', name: 'BS Chemistry', department: 'chemistry', level: 'BS', eligibility: 'HSSC or equivalent with Chemistry, with at least 45% overall marks and at least 45% in the subject of Chemistry.' },
+  { slug: 'bs-mathematics-2', name: 'BS Mathematics', department: 'mathematics-and-statistics', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-statistics', name: 'BS Statistics', department: 'mathematics-and-statistics', level: 'BS', duration: '4 years', eligibility: null },
+]
+
 export const programmes: ProgrammeSeed[] = [
   ...alliedProgrammes,
   ...['Computer Science', 'Software Engineering', 'Information Technology', 'Data Science', 'Artificial Intelligence'].map(dcstProg),
-  prog('BS', 'Physics', 'physics', 4),
-  prog('MS', 'Physics', 'physics', 2),
-  prog('BS', 'Chemistry', 'chemistry', 4),
-  prog('BS', 'Mathematics', 'mathematics', 4),
+  ...scienceProgrammes,
   prog('BS', 'English', 'english', 4),
   prog('MA', 'English', 'english', 2),
   prog('BS', 'History', 'history', 4, 'sangota'),

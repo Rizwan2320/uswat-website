@@ -368,6 +368,153 @@ export const ALUMNI_WORKS: AlumniWork[] = [
       'The thesis builds a practice phantom from gelatin and household materials with hidden shapes to find. Students scanned it and rated how realistic and useful it was for learning probe control.',
     tags: ['Ultrasound', 'Training', 'Simulation'],
   },
+  /* Physics */
+  {
+    slug: 'thin-film-conductivity-measurement',
+    name: 'Adnan Shah',
+    classOf: 2025,
+    photo: SAMPLE_PORTRAITS[0],
+    programme: 'bs-physics-2',
+    kind: 'Final-year project',
+    headline: 'Measuring how the conductivity of a thin metal film changes with its thickness',
+    summary:
+      'The project deposits films of increasing thickness on glass slides and measures their resistance with a four-point probe. It shows where the film stops behaving like the bulk metal and explains the trend with a simple model.',
+    tags: ['Thin films', 'Conductivity', 'Materials'],
+  },
+  {
+    slug: 'low-cost-solar-radiation-logger',
+    name: 'Zubair Khan',
+    classOf: 2024,
+    photo: SAMPLE_PORTRAITS[1],
+    programme: 'bs-physics-2',
+    kind: 'Thesis',
+    headline: 'A low-cost logger that records sunlight through the day for a village solar plan',
+    summary:
+      'The thesis builds a small data logger from a light sensor and a microcontroller and compares its readings with a reference meter over a month. It reports the error of the cheap sensor and how it can be corrected.',
+    tags: ['Solar energy', 'Electronics', 'Instrumentation'],
+  },
+  {
+    slug: 'pendulum-motion-simulation',
+    name: 'Hamid Ali',
+    classOf: 2023,
+    photo: SAMPLE_PORTRAITS[2],
+    programme: 'bs-physics-2',
+    kind: 'Research paper',
+    headline: 'Simulating a damped pendulum to show when small-angle formulas fail',
+    summary:
+      'The paper solves the pendulum equation numerically with and without damping and compares it to the textbook small-angle result. It gives students a worked example of how large the error becomes as the angle grows.',
+    tags: ['Simulation', 'Mechanics', 'Numerical methods'],
+  },
+  /* Chemistry */
+  {
+    slug: 'water-hardness-survey-swat-springs',
+    name: 'Nadir Gul',
+    classOf: 2025,
+    photo: SAMPLE_PORTRAITS[0],
+    programme: 'bs-chemistry-2',
+    kind: 'Final-year project',
+    headline: 'Testing the hardness of water from springs used for drinking in a valley',
+    summary:
+      'The project collects samples from springs and wells over two seasons and measures hardness and pH by titration. It lists which sources are within the guideline range and which need treatment.',
+    tags: ['Water quality', 'Titration', 'Environment'],
+  },
+  {
+    slug: 'green-synthesis-silver-nanoparticles',
+    name: 'Habib Ullah',
+    classOf: 2024,
+    photo: SAMPLE_PORTRAITS[1],
+    programme: 'bs-chemistry-2',
+    kind: 'Thesis',
+    headline: 'Making silver nanoparticles with a local plant extract instead of harsh chemicals',
+    summary:
+      'The thesis uses a leaf extract to reduce a silver salt to nanoparticles and checks the result with a spectrophotometer. It compares the particles made at three temperatures and reports which gave the most stable colour.',
+    tags: ['Nanoparticles', 'Green chemistry', 'Spectroscopy'],
+  },
+  {
+    slug: 'vitamin-c-content-local-fruits',
+    name: 'Bilal Ahmad',
+    classOf: 2023,
+    photo: SAMPLE_PORTRAITS[2],
+    programme: 'bs-chemistry-2',
+    kind: 'Research paper',
+    headline: 'Comparing the vitamin C content of fruits grown in the district',
+    summary:
+      'The paper measures vitamin C in ripe and unripe fruit by titration and shows how the content falls with storage. It ends with simple storage advice for sellers.',
+    tags: ['Analytical chemistry', 'Food', 'Titration'],
+  },
+  /* Mathematics and Statistics */
+  {
+    slug: 'numerical-solution-of-heat-flow',
+    name: 'Waqas Ahmad',
+    classOf: 2025,
+    photo: SAMPLE_PORTRAITS[0],
+    programme: 'bs-mathematics-2',
+    kind: 'Final-year project',
+    headline: 'Solving heat flow along a metal rod with a finite-difference method',
+    summary:
+      'The project writes the heat equation as a grid of simple updates and solves it in Python for different rods and ends. It compares the answer with the exact solution and shows when the method becomes unstable.',
+    tags: ['Differential equations', 'Numerical methods', 'Python'],
+  },
+  {
+    slug: 'household-income-survey-swat',
+    name: 'Ikram Ullah',
+    classOf: 2024,
+    photo: SAMPLE_PORTRAITS[1],
+    programme: 'bs-statistics',
+    kind: 'Thesis',
+    headline: 'Estimating average household spending from a small survey in one union council',
+    summary:
+      'The thesis designs a stratified sample, collects answers from households and compares three estimators of the average. It reports the margin of error and how the sample would change for a larger area.',
+    tags: ['Sampling', 'Survey', 'Estimation'],
+  },
+  {
+    slug: 'rainfall-trend-analysis-swat',
+    name: 'Fawad Khan',
+    classOf: 2023,
+    photo: SAMPLE_PORTRAITS[2],
+    programme: 'bs-statistics',
+    kind: 'Research paper',
+    headline: 'Finding a trend in monthly rainfall records for the district',
+    summary:
+      'The paper applies a simple trend test and a moving average to rainfall records and shows which months have changed. It explains why a trend in noisy data needs a test before it is called a trend.',
+    tags: ['Time series', 'Climate', 'Trend analysis'],
+  },
+  {
+    slug: 'matrix-methods-for-network-flow',
+    name: 'Sajid Ali',
+    classOf: 2024,
+    photo: SAMPLE_PORTRAITS[1],
+    programme: 'bs-mathematics-2',
+    kind: 'Thesis',
+    headline: 'Using matrices to find the busiest road in a small town network',
+    summary:
+      'The thesis writes a town’s road network as a matrix and uses linear algebra to rank junctions by how much traffic passes through. It compares the ranking with a manual count at five junctions.',
+    tags: ['Linear algebra', 'Networks', 'Modelling'],
+  },
+  {
+    slug: 'fixed-point-methods-for-nonlinear-equations',
+    name: 'Naeem Khan',
+    classOf: 2023,
+    photo: SAMPLE_PORTRAITS[2],
+    programme: 'bs-mathematics-2',
+    kind: 'Research paper',
+    headline: 'Comparing three fixed-point methods for solving nonlinear equations',
+    summary:
+      'The paper tests three iteration schemes on the same set of equations and counts the steps each needs to reach a given accuracy. It gives a table showing which method is safest to try first.',
+    tags: ['Numerical analysis', 'Iteration', 'Convergence'],
+  },
+  {
+    slug: 'student-marks-regression-analysis',
+    name: 'Tariq Aziz',
+    classOf: 2025,
+    photo: SAMPLE_PORTRAITS[0],
+    programme: 'bs-statistics',
+    kind: 'Final-year project',
+    headline: 'Which study habits predict marks? A regression on a survey of university students',
+    summary:
+      'The project surveys students on hours of study, sleep and attendance and fits a regression to their marks. It reports which factors matter most and how well the model predicts a new student.',
+    tags: ['Regression', 'Survey', 'Education'],
+  },
 ]
 
 export const alumniWork = (slug: string) => ALUMNI_WORKS.find((w) => w.slug === slug) ?? null

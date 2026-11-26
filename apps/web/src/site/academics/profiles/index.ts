@@ -11,10 +11,13 @@ import { dcst } from './dcst'
 import { ds } from './ds'
 import { it } from './it'
 import { se } from './se'
+import { chemistry, bsChemistry } from './sciences/chemistry'
+import { mathematics, bsMathematics, bsStatistics } from './sciences/mathematics'
+import { physics, bsPhysics } from './sciences/physics'
 
 /* Register a profile here and its department or programme page switches to the rich layout. */
-export const departmentProfiles: DepartmentProfile[] = [dcst, alliedHealth]
-export const disciplineProfiles: DisciplineProfile[] = [cs, se, it, ds, ai, mlt, dt, dpt, rit]
+export const departmentProfiles: DepartmentProfile[] = [dcst, alliedHealth, physics, chemistry, mathematics]
+export const disciplineProfiles: DisciplineProfile[] = [cs, se, it, ds, ai, mlt, dt, dpt, rit, bsPhysics, bsChemistry, bsMathematics, bsStatistics]
 
 export const profileForDepartment = (slug: string) =>
   departmentProfiles.find((p) => p.slug === slug) ?? null
