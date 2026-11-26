@@ -150,3 +150,17 @@ describe('the CMS drives the rich pages (slice 3ar)', () => {
     }
   })
 })
+
+describe('the seed never overwrites an edit (slice 3ar)', () => {
+  it('fills only the sections the record has not got', async () => {
+    const { missingSections } = await import('../../scripts/seed-page-content')
+    const wanted = { tagline: 'T', labs: [{ title: 'L' }], faq: [{ question: 'q' }], intro: 'I' }
+    expect(missingSections(undefined, wanted)).toEqual(wanted)
+    expect(missingSections({ tagline: 'Mine', labs: [] }, wanted)).toEqual({
+      labs: [{ title: 'L' }],
+      faq: [{ question: 'q' }],
+      intro: 'I',
+    })
+    expect(missingSections({ tagline: 'a', labs: [1], faq: [1], intro: 'b' }, wanted)).toEqual({})
+  })
+})

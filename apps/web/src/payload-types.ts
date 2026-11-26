@@ -657,7 +657,7 @@ export interface Department {
      */
     shortName?: string | null;
     /**
-     * One short line under the name.
+     * One short line under the name. Not shown on the public page yet.
      */
     tagline?: string | null;
     /**
@@ -850,9 +850,12 @@ export interface Department {
         }[]
       | null;
     /**
-     * Where the department is on campus.
+     * Where the department is on campus. Not shown on the public page yet.
      */
     location?: string | null;
+    /**
+     * When the office is open. Not shown on the public page yet.
+     */
     officeHours?: string | null;
   };
   governance?: {
@@ -1062,7 +1065,7 @@ export interface Programme {
      */
     shortName?: string | null;
     /**
-     * One short line under the name.
+     * One short line under the name. Not shown on the public page yet.
      */
     tagline?: string | null;
     /**

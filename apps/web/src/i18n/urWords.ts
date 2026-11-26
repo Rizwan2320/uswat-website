@@ -404,7 +404,8 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   'Office hours': 'دفتری اوقات',
   'One or two sentences at the top. Keep it different from About.':
     'اوپر ایک یا دو جملے۔ اسے "بارے میں" سے مختلف رکھیں۔',
-  'One short line under the name.': 'نام کے نیچے ایک مختصر سطر۔',
+  'One short line under the name. Not shown on the public page yet.':
+    'نام کے نیچے ایک مختصر سطر۔ ابھی عوامی صفحے پر نہیں دکھائی جاتی۔',
   'Page content': 'صفحے کا مواد',
   Paragraph: 'پیراگراف',
   Paragraphs: 'پیراگراف',
@@ -433,7 +434,10 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   Tools: 'ٹولز',
   'Topics the department works on. Up to 6.': 'جن موضوعات پر شعبہ کام کرتا ہے، زیادہ سے زیادہ 6۔',
   'Where graduates work. Up to 8.': 'فارغ التحصیل افراد کہاں کام کرتے ہیں، زیادہ سے زیادہ 8۔',
-  'Where the department is on campus.': 'کیمپس میں شعبہ کہاں ہے۔',
+  'Where the department is on campus. Not shown on the public page yet.':
+    'کیمپس میں شعبہ کہاں ہے۔ ابھی عوامی صفحے پر نہیں دکھایا جاتا۔',
+  'When the office is open. Not shown on the public page yet.':
+    'دفتر کب کھلا ہوتا ہے۔ ابھی عوامی صفحے پر نہیں دکھایا جاتا۔',
   // --- Programme page content (slice 3ae)
   'Programmes are listed on the department page from the lowest number up. Leave empty to list it last.':
     'پروگرام شعبے کے صفحے پر کم سے کم نمبر سے شروع ہو کر دکھائے جاتے ہیں۔ آخر میں دکھانے کے لیے خالی چھوڑ دیں۔',
