@@ -26,11 +26,13 @@ export const nav: NavItem[] = [
     href: 'https://cms1.uswat.edu.pk/admission/program/list',
     external: true,
     children: [
+      { label: 'Admissions Overview', href: '/admissions', icon: 'cap' },
       { label: 'Admission Portal', href: 'https://cms1.uswat.edu.pk/admission/program/list', external: true, icon: 'clipboard' },
       { label: 'Undergraduate Fall 2026 (Phase II)', href: `${U}/2026/10/undergraduate-admissions-fall-2026-phase-ii/`, external: true, icon: 'cap' },
       { label: 'KPEF Scholarship Scheme 2025-26', href: `${U}/2026/11/kpef-merit-cum-inaffordability-scholarship-scheme-2025-26/`, external: true, icon: 'trophy' },
       { label: 'Student Loan Schemes', href: `${U}/2026/10/students-loan-shemes/`, external: true, icon: 'wallet' },
-      { label: 'Downloads', href: `${U}/downloads/`, external: true, icon: 'download' },
+      { label: 'Merit Lists', href: '/admissions/merit-lists', icon: 'trophy' },
+      { label: 'Downloads', href: '/downloads', icon: 'download' },
     ],
   },
   {
@@ -64,6 +66,8 @@ export const nav: NavItem[] = [
     children: [
       { label: 'Main Campus', href: '/campuses/main', icon: 'building' },
       { label: 'Women Campus', href: '/campuses/women', icon: 'people' },
+      { label: 'Sangota Campus', href: '/campuses/sangota', icon: 'building' },
+      { label: 'Open Day', href: '/open-day', icon: 'calendar' },
       { label: 'Hunerkada', href: '/administration/hunerkada-center-for-excellence', icon: 'palette' },
       { label: 'Youth Development Centre', href: '/administration/kamyab-jawan-markaz', icon: 'trending' },
       { label: 'Campus TV', href: 'https://www.youtube.com/@Campus_Tv_UoS', external: true, icon: 'video' },

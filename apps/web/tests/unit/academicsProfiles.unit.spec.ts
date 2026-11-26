@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 
 import { describe, expect, it } from 'vitest'
@@ -20,6 +20,11 @@ const arts = (a: Art[]) => a.map((x) => x.src)
 describe('department and discipline profiles', () => {
   it('match the seeded records by slug, both ways', () => {
     for (const p of departmentProfiles) {
+      if (p.path) {
+        // a faculty page with its own address has no department record: its programmes are seeded by slug
+        for (const s of p.disciplines) expect(programmes.some((q) => q.slug === s), s).toBe(true)
+        continue
+      }
       expect(
         departments.some((d) => d.slug === p.slug),
         p.slug,
@@ -51,17 +56,17 @@ describe('department and discipline profiles', () => {
     expect(dcst.campusPhoto?.alt.length).toBeGreaterThan(10)
   })
 
-  it('has a four-year plan of eight semesters with no repeated course in a year', () => {
+  it('has a plan of two semesters a year (four years, five for the DPT) with no repeated course in a year', () => {
     for (const d of disciplineProfiles) {
       expect(
         d.years.map((y) => y.year),
         d.slug,
-      ).toEqual([1, 2, 3, 4])
+      ).toEqual(d.duration === '5 years' ? [1, 2, 3, 4, 5] : [1, 2, 3, 4])
       for (const y of d.years) {
         const names = y.semesters.flatMap((s) => s.courses)
         expect(y.semesters).toHaveLength(2)
         for (const s of y.semesters)
-          expect(s.courses.length, `${d.slug} ${s.name}`).toBeGreaterThanOrEqual(4)
+          expect(s.courses.length, `${d.slug} ${s.name}`).toBeGreaterThanOrEqual(y.year === 5 ? 3 : 4)
         expect(new Set(names).size, `${d.slug} year ${y.year}`).toBe(names.length)
       }
     }
@@ -69,7 +74,7 @@ describe('department and discipline profiles', () => {
 
   it('shares one first year across a department', () => {
     const first = (slug: string) => JSON.stringify(profileForDiscipline(slug)!.years[0])
-    for (const p of departmentProfiles) {
+    for (const p of departmentProfiles.filter((d) => !d.path)) {
       for (const s of p.disciplines) expect(first(s), s).toBe(first(p.disciplines[0]))
     }
   })
@@ -100,7 +105,10 @@ describe('department and discipline profiles', () => {
         expect(d[k].length, `${d.slug}.${k}`).toBeGreaterThanOrEqual(2)
       expect(disciplinesOf(d.department)).toContain(d)
     }
-    expect(JSON.stringify([departmentProfiles, disciplineProfiles])).not.toMatch(/sample/i)
+    // "Sample" as a label (the lab word "sample handling" is fine)
+    expect(JSON.stringify([departmentProfiles, disciplineProfiles])).not.toMatch(
+      /\bsample (page|content|data|text|entry|department|programme)\b|\(sample\)|\[sample\]/i,
+    )
   })
 
   it('has one head and a coordinator for every programme, with no contact details', () => {
@@ -108,6 +116,7 @@ describe('department and discipline profiles', () => {
       expect(p.team.filter((m) => m.role === 'head'), p.slug).toHaveLength(1)
       expect(p.team[0]?.role, 'the head comes first').toBe('head')
       expect(new Set(p.team.map((m) => m.id)).size).toBe(p.team.length)
+      if (p.path) continue // a faculty page names staff, not programme coordinators
       for (const slug of p.disciplines) {
         const who = coordinatorOf(p.slug, slug)
         expect(who, `${slug} has a coordinator`).not.toBeNull()
@@ -124,6 +133,16 @@ describe('department and discipline profiles', () => {
   it('names a photo file only when it exists', () => {
     for (const p of departmentProfiles)
       for (const m of p.team) if (m.photo) expect(existsSync(pub(m.photo)), m.id).toBe(true)
+  })
+
+  it('has a head of department with a portrait, whom the About band shows in the green card (RichDepartmentPage)', () => {
+    const dcst = departmentProfiles.find((p) => p.slug === 'dcst')!
+    const heads = dcst.team.filter((m) => m.role === 'head')
+    expect(heads).toHaveLength(1)
+    expect(heads[0].photo, 'portrait path').toMatch(/^\/images\/faculty\/.+\.jpg$/)
+    expect(existsSync(pub(heads[0].photo!))).toBe(true)
+    const page = readFileSync(path.join(process.cwd(), 'src/site/academics/RichDepartmentPage.tsx'), 'utf8')
+    expect(page).toContain('<HeadIntroCard')
   })
 
   it('is still a draft until the department approves it', () => {

@@ -214,6 +214,23 @@ export function Photo({
   )
 }
 
+/** The head of department in a green card, in the place the chip picture takes on the other pages: portrait on the left,
+    name and title on the right. The portrait and the words come from the profile's team entry with role `head`. */
+export function HeadIntroCard({ name, title, photo, label = 'Head of the department' }: { name: string; title: string; photo: string; label?: string }) {
+  return (
+    <figure className={styles.aboutHead}>
+      <div className={styles.aboutHeadPhoto}>
+        <SafeImage src={photo} alt={`Portrait of ${name}`} fill sizes="(max-width: 860px) 45vw, 230px" />
+      </div>
+      <figcaption className={styles.aboutHeadText}>
+        <span className={styles.aboutHeadKicker}>{label}</span>
+        <strong className={styles.aboutHeadName}>{name}</strong>
+        <span className={styles.aboutHeadTitle}>{title}</span>
+      </figcaption>
+    </figure>
+  )
+}
+
 /** Four cards sit in one row where there is room; other counts fill rows of three. */
 const cardMin = (n: number) =>
   ({ '--card-min': n === 4 ? '230px' : '300px' }) as React.CSSProperties
@@ -451,7 +468,7 @@ export function HeadCard({ member }: { member: TeamMember }) {
     <article className={styles.headCard}>
       <Portrait member={member} className={styles.headPortrait} sizes="(max-width: 700px) 60vw, 260px" />
       <div className={styles.headBody}>
-        <span className={styles.roleTag}>Head of Department (HoD)</span>
+        <span className={styles.roleTag}>{member.roleLabel ?? 'Head of Department (HoD)'}</span>
         <h3 className={styles.headName}>{member.name}</h3>
         <p className={styles.personTitle}>{member.title}</p>
         {member.qualifications?.length ? (
@@ -471,18 +488,21 @@ export function CoordinatorCards({
   members,
   programmeNames,
   programmeHref,
+  compact,
 }: {
+  /** Narrower cards, for a short list that would otherwise stretch across the page. */
+  compact?: boolean
   members: TeamMember[]
   programmeNames: Map<string, string>
   programmeHref: (slug: string) => string
 }) {
   return (
-    <ul className={styles.coordinators}>
+    <ul className={compact ? `${styles.coordinators} ${styles.coordinatorsCompact}` : styles.coordinators}>
       {members.map((m) => (
         <li key={m.id} className={styles.coordCard}>
           <Portrait member={m} className={styles.coordPortrait} />
           <div className={styles.coordBody}>
-            <span className={styles.roleTag}>Coordinator</span>
+            <span className={styles.roleTag}>{m.roleLabel ?? (m.role === 'member' ? 'Faculty' : 'Coordinator')}</span>
             <h3 className={styles.coordName}>{m.name}</h3>
             <p className={styles.personTitle}>{m.title}</p>
             {m.qualifications?.map((q) => (
@@ -490,13 +510,15 @@ export function CoordinatorCards({
                 {q}
               </p>
             ))}
-            <ul className={styles.coordProgs}>
-              {coordinatesLabel(m, programmeNames).map((c) => (
-                <li key={c.slug}>
-                  <SiteLink href={programmeHref(c.slug)}>{c.name}</SiteLink>
-                </li>
-              ))}
-            </ul>
+            {m.coordinates?.length ? (
+              <ul className={styles.coordProgs}>
+                {coordinatesLabel(m, programmeNames).map((c) => (
+                  <li key={c.slug}>
+                    <SiteLink href={programmeHref(c.slug)}>{c.name}</SiteLink>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         </li>
       ))}

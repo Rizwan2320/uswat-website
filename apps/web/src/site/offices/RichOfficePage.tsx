@@ -1,5 +1,5 @@
 import styles from '../academics/Academics.module.css'
-import { Band, BannerHeader, Cta, DeptFeed, Hero, IconCards, SectionNav, Stats } from '../academics/blocks'
+import { Band, BannerHeader, Cta, DeptFeed, Hero, IconCards, SectionNav, SiteLink, Stats } from '../academics/blocks'
 import type { DepartmentFeed } from '../academics/feed'
 import { str, type Doc } from '../organisation/shape'
 
@@ -25,6 +25,7 @@ export default function RichOfficePage({ doc, profile, feed }: { doc: Doc; profi
   ]
   const nav = [
     ...(hasAbout ? [{ id: 'overview', label: 'About' }] : []),
+    ...(profile.links?.length ? [{ id: 'links', label: 'Where to go' }] : []),
     ...(profile.statements?.length ? [{ id: 'statements', label: profile.statements.map((x) => x.title).join(' and ') }] : []),
     ...(profile.services?.length ? [{ id: 'services', label: profile.servicesTitle ?? 'Services' }] : []),
     ...(profile.itemLists?.length ? [{ id: 'lists', label: profile.itemLists[0].title }] : []),
@@ -60,6 +61,18 @@ export default function RichOfficePage({ doc, profile, feed }: { doc: Doc; profi
               {p}
             </p>
           ))}
+        </Band>
+      ) : null}
+
+      {profile.links?.length ? (
+        <Band id="links" tint={hasAbout} kicker="Go to" title="Where to go">
+          <ul className={styles.plainList}>
+            {profile.links.map((l) => (
+              <li key={l.href}>
+                <SiteLink href={l.href}>{l.label}</SiteLink>
+              </li>
+            ))}
+          </ul>
         </Band>
       ) : null}
 

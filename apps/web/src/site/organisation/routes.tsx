@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import RichDepartmentPage from '../academics/RichDepartmentPage'
 import RichDisciplinePage from '../academics/RichDisciplinePage'
 import { departmentFeed } from '../academics/feed'
-import { disciplinesOf, profileForDepartment, profileForDiscipline } from '../academics/profiles'
+import { departmentPath, disciplinesOf, profileForDepartment, profileForDiscipline } from '../academics/profiles'
 import RichAboutPage from '../about/RichAboutPage'
 import RichMessagePage from '../about/RichMessagePage'
 import { ABOUT_PATH, MESSAGE_PATH } from '../about/data'
@@ -14,9 +14,6 @@ import RichOfficePage from '../offices/RichOfficePage'
 import RichResearchPage from '../offices/RichResearchPage'
 import { ADMINISTRATION_PATH, RESEARCH_PATH } from '../offices/landings'
 import { profileForOffice, profileForPage } from '../offices/profiles'
-import RichFacultyPage from '../faculties/RichFacultyPage'
-import RichFacultyProgrammePage from '../faculties/RichFacultyProgrammePage'
-import { profileForFaculty, profileForFacultyProgramme } from '../faculties'
 
 import { DepartmentsIndex, ProgrammesIndex } from './Lists'
 import { AcademicsPage, CampusPage } from './Landing'
@@ -82,19 +79,17 @@ export async function ProgrammeRoute({ params }: { params: SlugParams }) {
   const doc = await getProgramme(slug, await preview())
   const key = doc ? (str(doc.slug) ?? '') : slug
   const profile = profileForDiscipline(key)
-  const facultyProgramme = profile ? null : profileForFacultyProgramme(key)
-  if (!doc && !profile && !facultyProgramme) notFound()
+  if (!doc && !profile) notFound()
   if (profile) {
     const feed = await departmentFeed(profile.department)
     return <RichDisciplinePage doc={doc ?? stub(profile.slug)} profile={profile} feed={feed} />
   }
-  if (facultyProgramme) return <RichFacultyProgrammePage doc={doc ?? stub(slug)} profile={facultyProgramme} />
   return <ProgrammePage doc={doc!} />
 }
 export async function programmeMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
   const slug = decode((await params).slug ?? '')
   const doc = await getProgramme(slug, await preview())
-  const title = (doc && str(doc.name)) ?? profileForDiscipline(slug)?.shortName ?? profileForFacultyProgramme(slug)?.name
+  const title = (doc && str(doc.name)) ?? profileForDiscipline(slug)?.shortName
   return title
     ? { title, description: (doc && str(doc.eligibility)?.slice(0, 160)) || undefined, alternates: { canonical: `${PROGRAMMES_PATH}/${encodeURIComponent(slug)}` } }
     : { title: 'Programme' }
@@ -103,18 +98,19 @@ export async function programmeMetadata({ params }: { params: SlugParams }): Pro
 export async function OfficeRoute({ params }: { params: SlugParams }) {
   const slug = decode((await params).slug ?? '')
   const doc = await getOffice(slug, await preview())
-  const profile = profileForOffice(doc ? (str(doc.slug) ?? '') : slug)
-  if (!doc && !profile) notFound()
-  if (profile) return <RichOfficePage doc={doc ?? stub(profile.slug)} profile={profile} feed={await departmentFeed(profile.slug)} />
-  return <OfficePage doc={doc!} />
+  const profile = profileForOffice(str(doc?.slug) ?? slug)
+  // An office with a profile shows even when the CMS has no record for it yet (the profile carries the facts and their sources).
+  if (!doc && profile) return <RichOfficePage doc={{ id: profile.slug, slug: profile.slug, name: profile.name }} profile={profile} feed={await departmentFeed(profile.slug)} />
+  if (!doc) notFound()
+  if (profile) return <RichOfficePage doc={doc} profile={profile} feed={await departmentFeed(profile.slug)} />
+  return <OfficePage doc={doc} />
 }
 export async function officeMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
   const slug = decode((await params).slug ?? '')
   const doc = await getOffice(slug, await preview())
   const profile = profileForOffice(slug)
-  const title = (doc && str(doc.name)) ?? profile?.name
-  return title
-    ? { title, description: profile?.lead, alternates: { canonical: `${OFFICES_PATH}/${encodeURIComponent(slug)}` } }
+  return doc || profile
+    ? { title: str(doc?.name) ?? profile?.name ?? 'Office', description: profile?.lead, alternates: { canonical: `${OFFICES_PATH}/${encodeURIComponent(slug)}` } }
     : { title: 'Office' }
 }
 
@@ -184,15 +180,27 @@ export function pageProfileMetadata(slug: string): Metadata {
     : { title: 'Page' }
 }
 
-/* /faculties/{slug}: a faculty landing built from a profile (src/site/faculties). A static route per faculty, so no CMS record is needed. */
-export function FacultyRoute({ slug }: { slug: string }) {
-  const profile = profileForFaculty(slug)
-  if (!profile) notFound()
-  return <RichFacultyPage profile={profile} />
+/* /faculties/{slug}: a faculty landing built from a department profile with a `path` (src/site/academics/profiles/allied). A static route per faculty, so no CMS record is needed. */
+export async function FacultyRoute({ slug }: { slug: string }) {
+  const profile = profileForDepartment(slug)
+  if (!profile?.path) notFound()
+  // No CMS record is needed: the programme cards are built from the programme profiles of the faculty.
+  const programmes: ProgrammeCard[] = disciplinesOf(profile.slug).map((d) => ({
+    id: d.slug,
+    name: d.name ?? `BS ${d.shortName}`,
+    slug: d.slug,
+    level: d.level ?? 'BS',
+    duration: d.duration ?? '4 years',
+    campus: null,
+    departmentId: profile.slug,
+    departmentName: profile.shortName,
+    sample: false,
+  }))
+  return <RichDepartmentPage doc={{ id: profile.slug }} profile={profile} programmes={programmes} feed={await departmentFeed(profile.slug)} />
 }
 export function facultyMetadata(slug: string): Metadata {
-  const profile = profileForFaculty(slug)
-  return profile
-    ? { title: profile.name, description: profile.lead, alternates: { canonical: profile.path } }
+  const profile = profileForDepartment(slug)
+  return profile?.path
+    ? { title: profile.fullName ?? profile.shortName, description: profile.intro, alternates: { canonical: departmentPath(profile) } }
     : { title: 'Faculty' }
 }
