@@ -1,5 +1,4 @@
 import { disciplineProfiles, departmentProfiles } from '../academics/profiles'
-import { facultyProgrammeProfiles } from '../faculties'
 import { PAGE_PROFILES } from '../offices/profiles'
 
 import { departmentHref, programmeHref } from './shape'
@@ -38,12 +37,6 @@ export function codeSearchOptions(): SearchOption[] {
   const programmes: SearchOption[] = [
     ...disciplineProfiles.map((p) => ({
       name: programmeNameFromSlug(p.slug),
-      slug: p.slug,
-      group: 'Programme',
-      href: programmeHref(p.slug),
-    })),
-    ...facultyProgrammeProfiles.map((p) => ({
-      name: p.name,
       slug: p.slug,
       group: 'Programme',
       href: programmeHref(p.slug),
