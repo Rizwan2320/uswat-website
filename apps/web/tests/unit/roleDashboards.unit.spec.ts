@@ -182,7 +182,7 @@ describe('writing desk', () => {
 describe('the parts of a page, on the head and coordinator desks (slice 3ar)', () => {
   const filledDoc = {
     vision: 'A vision.',
-    pageContent: { tagline: 'A line.', labs: [{ title: 'A' }, { title: 'B' }], heroImage: 7 },
+    pageContent: { intro: 'A line.', labs: [{ title: 'A' }, { title: 'B' }], heroImage: 7 },
   }
   const dept = (over: Partial<BoardItem> = {}): BoardItem =>
     prog({
@@ -200,7 +200,7 @@ describe('the parts of a page, on the head and coordinator desks (slice 3ar)', (
     expect(html).toContain('href="/academics/departments/dcst"')
     expect(html).toContain('View the live page')
     expect(html).toContain('(opens in a new tab)')
-    expect(html).toContain('4 of 12 parts filled')
+    expect(html).toContain('4 of 11 parts filled')
     expect(html).toContain('2 rows')
     expect(html).toContain('Empty: the template shows its standard text')
     expect(html).toContain('set by the university template')
@@ -218,7 +218,7 @@ describe('the parts of a page, on the head and coordinator desks (slice 3ar)', (
 
   it('a coordinator sees their programme with the parts open, and only their own', () => {
     const html = render({ queues: [], desk: 'coordinator', board: [prog()] })
-    expect(html).toContain('0 of 11 parts filled')
+    expect(html).toContain('0 of 10 parts filled')
     expect(html).toContain('<details class="rd__parts" open="">')
     expect(html).toContain('Curriculum by semester')
     expect(html).toContain('Learning outcomes')

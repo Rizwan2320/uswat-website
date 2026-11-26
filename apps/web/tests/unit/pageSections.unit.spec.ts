@@ -10,11 +10,11 @@ import { departmentPageContent, programmePageContent } from '../../src/collectio
 import { departmentProfiles, disciplineProfiles } from '../../src/site/academics/profiles'
 
 describe('the parts of a department or programme page (slice 3ar)', () => {
-  it('lists 12 parts for a department and 11 for a programme, all empty on a new record', () => {
-    expect(describeParts('departments', {})).toHaveLength(12)
-    expect(describeParts('programmes', {})).toHaveLength(11)
+  it('lists 11 parts for a department and 10 for a programme, all empty on a new record', () => {
+    expect(describeParts('departments', {})).toHaveLength(11)
+    expect(describeParts('programmes', {})).toHaveLength(10)
     expect(describeParts('departments', null).every((p) => !p.filled)).toBe(true)
-    expect(partsSummary(describeParts('programmes', {}))).toBe('0 of 11 parts filled')
+    expect(partsSummary(describeParts('programmes', {}))).toBe('0 of 10 parts filled')
   })
 
   it('counts text as filled, rows by length, pictures by how many are chosen', () => {
@@ -22,7 +22,7 @@ describe('the parts of a department or programme page (slice 3ar)', () => {
       vision: '  ',
       mission: 'Teach well.',
       pageContent: {
-        tagline: 'A line.',
+        intro: 'A line.',
         labs: [{}, {}, {}],
         faq: [],
         heroImage: 3,
@@ -32,20 +32,23 @@ describe('the parts of a department or programme page (slice 3ar)', () => {
     const by = Object.fromEntries(parts.map((p) => [p.key, p]))
     expect(by.vision!.filled).toBe(false)
     expect(by.mission!.filled).toBe(true)
-    expect(by.tagline!.count).toBe(1)
+    expect(by.intro!.count).toBe(1)
     expect(by.labs!.count).toBe(3)
     expect(by.faq!.filled).toBe(false)
     expect(by.pictures!.count).toBe(1)
     expect(partCountText(by.labs!)).toBe('3 rows')
     expect(partCountText(by.pictures!)).toBe('1 picture')
-    expect(partCountText(by.tagline!)).toBe('Filled')
-    expect(partCountText(by.faq!)).toContain('Empty')
+    expect(partCountText(by.intro!)).toBe('Filled')
+    expect(partCountText(by.faq!)).toContain('standard text')
+    expect(partCountText({ ...by.pictures!, count: 0, filled: false })).toContain('artwork')
   })
 
   it('does not list fields the public page does not show', () => {
     const keys = PAGE_PARTS.departments.map((p) => p.key)
     expect(keys).not.toContain('location')
     expect(keys).not.toContain('officeHours')
+    expect(keys).not.toContain('tagline')
+    expect(PAGE_PARTS.programmes.map((p) => p.key)).not.toContain('tagline')
   })
 
   it('every part is a field of pageContent that the merge reads, so a checklist never promises what the page ignores', () => {

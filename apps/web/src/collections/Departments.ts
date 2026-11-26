@@ -66,7 +66,7 @@ export const Departments = governedCollection({
           maxLength: 40,
           description: 'For example "DCST".',
         }),
-        line('tagline', { label: 'Tagline', description: 'One short line under the name.' }),
+        line('tagline', { label: 'Tagline', description: 'One short line under the name. Not shown on the public page yet.' }),
         paragraph('intro', {
           label: 'Introduction',
           maxLength: 300,
@@ -124,8 +124,12 @@ export const Departments = governedCollection({
           description: 'Societies, events and support for students.',
         }),
         faqField,
-        line('location', { label: 'Location', description: 'Where the department is on campus.' }),
-        line('officeHours', { label: 'Office hours', maxLength: 80 }),
+        line('location', { label: 'Location', description: 'Where the department is on campus. Not shown on the public page yet.' }),
+        line('officeHours', {
+          label: 'Office hours',
+          maxLength: 80,
+          description: 'When the office is open. Not shown on the public page yet.',
+        }),
       ],
     },
   ],

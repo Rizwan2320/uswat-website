@@ -1,7 +1,8 @@
 /**
  * The parts of a department or programme page that its head or coordinator controls, and which of them are
  * filled (slice 3ar). Only parts the public page really shows are listed: `departments.pageContent.location`
- * and `officeHours` are saved but the page does not show them yet, so they are not here. Pure, no CMS access.
+ * and `officeHours`, and `tagline` on both, are saved but the page does not show them yet, so they are not
+ * here (checked against the renderers, 2026-11-27). Pure, no CMS access.
  * The keys are the fields of `pageContent` (src/collections/academics/pageFields.ts), plus `vision` and
  * `mission`, which sit on the department itself.
  */
@@ -20,7 +21,6 @@ export interface PartStatus {
 type Def = { key: string; label: string; kind: PartStatus['kind']; from?: 'doc'; pictures?: string[] }
 
 const DEPARTMENT_PARTS: Def[] = [
-  { key: 'tagline', label: 'Tagline', kind: 'text' },
   { key: 'intro', label: 'Introduction', kind: 'text' },
   { key: 'vision', label: 'Vision', kind: 'text', from: 'doc' },
   { key: 'mission', label: 'Mission', kind: 'text', from: 'doc' },
@@ -35,7 +35,6 @@ const DEPARTMENT_PARTS: Def[] = [
 ]
 
 const PROGRAMME_PARTS: Def[] = [
-  { key: 'tagline', label: 'Tagline', kind: 'text' },
   { key: 'summary', label: 'Summary', kind: 'text' },
   { key: 'about', label: 'About the programme', kind: 'list' },
   { key: 'outcomes', label: 'Learning outcomes', kind: 'list' },
@@ -79,7 +78,10 @@ export const partsSummary = (parts: readonly PartStatus[]): string =>
 
 /** What each kind of count reads like beside a part: "3 rows", "2 pictures", "filled", "empty". */
 export function partCountText(p: PartStatus): string {
-  if (!p.filled) return 'Empty: the template shows its standard text'
+  if (!p.filled)
+    return p.kind === 'pictures'
+      ? "Empty: the template's artwork shows"
+      : 'Empty: the template shows its standard text'
   if (p.kind === 'text') return 'Filled'
   if (p.kind === 'pictures') return p.count === 1 ? '1 picture' : `${p.count} pictures`
   return p.count === 1 ? '1 row' : `${p.count} rows`

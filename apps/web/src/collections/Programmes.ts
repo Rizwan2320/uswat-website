@@ -164,7 +164,7 @@ export const Programmes = governedCollection({
           maxLength: 40,
           description: 'For example "BS CS".',
         }),
-        line('tagline', { label: 'Tagline', description: 'One short line under the name.' }),
+        line('tagline', { label: 'Tagline', description: 'One short line under the name. Not shown on the public page yet.' }),
         paragraph('summary', {
           label: 'Summary',
           maxLength: 240,
