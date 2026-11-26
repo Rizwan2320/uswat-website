@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import RichDepartmentPage from '../academics/RichDepartmentPage'
 import RichDisciplinePage from '../academics/RichDisciplinePage'
 import { departmentFeed } from '../academics/feed'
+import { applyDepartmentContent, applyProgrammeContent } from '../academics/cmsContent'
 import { departmentPath, disciplinesOf, profileForDepartment, profileForDiscipline } from '../academics/profiles'
 import RichAboutPage from '../about/RichAboutPage'
 import RichMessagePage from '../about/RichMessagePage'
@@ -51,7 +52,9 @@ const stub = (slug: string): Doc => ({ id: slug })
 export async function DepartmentRoute({ params }: { params: SlugParams }) {
   const slug = decode((await params).slug ?? '')
   const doc = await getDepartment(slug, await preview())
-  const profile = profileForDepartment(doc ? (str(doc.slug) ?? '') : slug)
+  const base = profileForDepartment(doc ? (str(doc.slug) ?? '') : slug)
+  // Sections the head has filled in the CMS replace the code profile's (slice 3ar).
+  const profile = base && doc ? applyDepartmentContent(base, doc) : base
   if (!doc && !profile) notFound()
   if (profile) {
     const [stored, feed] = await Promise.all([doc ? programmesOfDepartment(doc.id) : Promise.resolve([] as ProgrammeCard[]), departmentFeed(profile.slug)])
@@ -78,7 +81,8 @@ export async function ProgrammeRoute({ params }: { params: SlugParams }) {
   const slug = decode((await params).slug ?? '')
   const doc = await getProgramme(slug, await preview())
   const key = doc ? (str(doc.slug) ?? '') : slug
-  const profile = profileForDiscipline(key)
+  const base = profileForDiscipline(key)
+  const profile = base && doc ? applyProgrammeContent(base, doc) : base
   if (!doc && !profile) notFound()
   if (profile) {
     const feed = await departmentFeed(profile.department)
