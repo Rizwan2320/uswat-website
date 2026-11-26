@@ -43,8 +43,8 @@ export function whoAmI(actor: Actor, programmeNames: string[] = []): WhoAmI {
         kind: 'admin',
         title: w('You are the Platform Admin', 'آپ پلیٹ فارم ایڈمن ہیں'),
         detail: w(
-          'You run the whole site. You write and publish the landing page and the other main pages yourself, and you create the accounts of heads of department. No one reviews you; every step is kept in the audit log.',
-          'آپ پوری سائٹ چلاتے ہیں۔ ہوم پیج اور دوسرے مرکزی صفحات آپ خود لکھتے اور شائع کرتے ہیں، اور شعبوں کے سربراہوں کے اکاؤنٹ بناتے ہیں۔ آپ کو کوئی نہیں جانچتا؛ ہر قدم آڈٹ لاگ میں رہتا ہے۔',
+          'You run the whole site. You write and publish the landing page and the other main pages yourself, you create departments, and you create the accounts of heads of department. No one reviews you; every step is kept in the audit log.',
+          'آپ پوری سائٹ چلاتے ہیں۔ ہوم پیج اور دوسرے مرکزی صفحات آپ خود لکھتے اور شائع کرتے ہیں، شعبے بناتے ہیں، اور شعبوں کے سربراہوں کے اکاؤنٹ بناتے ہیں۔ آپ کو کوئی نہیں جانچتا؛ ہر قدم آڈٹ لاگ میں رہتا ہے۔',
         ),
       }
     case 'siteManager':
@@ -63,8 +63,8 @@ export function whoAmI(actor: Actor, programmeNames: string[] = []): WhoAmI {
           ? w(`You are the head of ${offices}`, `آپ ${offices} کے سربراہ ہیں`)
           : w('You are an Approver', 'آپ منظوری دہندہ ہیں'),
         detail: w(
-          'You review what your coordinators and editors send you, and you publish. For your own department page and its programme pages you publish yourself, with no one else reviewing. You cannot change main pages or other offices.',
-          'آپ اپنے کوآرڈینیٹرز اور ایڈیٹرز کا بھیجا ہوا جانچتے اور شائع کرتے ہیں۔ اپنے شعبے کا صفحہ اور اس کے پروگرام کے صفحات آپ خود شائع کرتے ہیں، کسی اور کی جانچ کے بغیر۔ مرکزی صفحات اور دوسرے دفاتر کو آپ نہیں بدل سکتے۔',
+          'You review what your coordinators and editors send you, and you publish. For your own department page and its programme pages you publish yourself, with no one else reviewing. You add programmes to your department and create accounts for your coordinators and editors. You cannot change main pages or other offices.',
+          'آپ اپنے کوآرڈینیٹرز اور ایڈیٹرز کا بھیجا ہوا جانچتے اور شائع کرتے ہیں۔ اپنے شعبے کا صفحہ اور اس کے پروگرام کے صفحات آپ خود شائع کرتے ہیں، کسی اور کی جانچ کے بغیر۔ اپنے شعبے میں نئے پروگرام اور اپنے کوآرڈینیٹرز اور ایڈیٹرز کے اکاؤنٹ آپ بناتے ہیں۔ مرکزی صفحات اور دوسرے دفاتر کو آپ نہیں بدل سکتے۔',
         ),
       }
     case 'editor': {

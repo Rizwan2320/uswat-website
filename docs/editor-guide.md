@@ -34,6 +34,10 @@ A coloured line at the top of every item says in plain words where it stands and
 
 **Publish changes** only appears for roles that may publish. Editors and contributors never see it. If an item belongs to another office, an editor or approver sees it read only. Nobody sees two people's work at once without warning: if a colleague had the item open a moment ago, Payload asks whether to **Take over**.
 
+## Back and Sign out
+
+On every screen, under the coloured bar at the top, there is a **Back** button and **Sign out** at the right. Back goes one step back, or up to the list when you opened the screen directly. They are always visible, also on a phone, where the side menu is folded away. Back is not shown on the dashboard or the sign-in screens.
+
 ## Your dashboard
 
 After you sign in, the first page shows what needs you. Click any title to open it.
@@ -93,6 +97,7 @@ Editors and contributors do not see **Publish changes**; only roles that may pub
 As an approver you can add and manage the **Editors and Contributors of your own office**, under **Users** in the menu. You see only your own team there, not the whole staff list.
 
 - **Add a person:** Users, Create New. Give a name, an email and a first password, and tell the person the password yourself (there is no email invitation yet); they can change it from their own account. Leave the role as Contributor or pick Editor. If you hold one office, it is filled in for you; if you hold more than one, choose which.
+- **Add a programme (head of a department):** Programmes, Create New, choose your department. It starts as a draft in your office; you publish it yourself. You cannot put it under another office's department.
 - **Make a programme coordinator (head of a department):** create the person as an Editor with the department's office, then choose their **Programmes**. You can choose only programmes of your own department. They then see and edit only those programmes. The platform admin can choose any programme.
 - **Change a role:** open the person and switch between Editor and Contributor.
 - **Take your office off a person:** remove it from their list of offices. A person must keep at least one office; to remove someone completely, delete their account. You can delete an account only if the person works for none but your offices.
@@ -138,6 +143,6 @@ Anything that has been sent for review, approved, published or archived cannot b
 
 Nobody can delete an item that other items still use. For example, a department that people or programmes point to cannot be deleted; the message says how many of what. Remove those links first, or archive the item instead.
 
-Only a platform admin can create a new department or a new programme. If one is missing, ask the platform admin. Once it exists, editors and approvers of its office edit and publish its content as usual.
+Only a platform admin can create a new department; if one is missing, ask the platform admin. A **head of department** can create a new programme (Programmes, then Create New): choose the department, which must be one of your own office, and it starts as a draft you can publish yourself. Everyone else asks the head or the platform admin. Once a department or programme exists, editors and approvers of its office edit and publish its content as usual.
 
 The **Delete** button can appear on items you are not allowed to delete. The system refuses the delete and says why; nothing is removed.

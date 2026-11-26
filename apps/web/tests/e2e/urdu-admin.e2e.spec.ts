@@ -63,7 +63,8 @@ test('Urdu admin (3r): field labels, menu group and collection name are in Urdu,
   ).join(' | ')
   expect(labels).toContain('مختصر خلاصہ') // Short summary
   expect(labels).toContain('بنیادی متن') // Main text
-  const nav = await page.locator('nav, .nav').first().innerText()
+  // Payload's side menu. Not `nav, .nav`: the first <nav> on the page is now the Back / Sign out bar (slice 3ap).
+  const nav = await page.locator('aside.nav').first().innerText()
   expect(nav).toContain('نوٹسز') // Notices
   expect(nav).toContain('اعلانات') // Announcements
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1300)
@@ -75,7 +76,8 @@ test('English admin (3r): the same labels stay English', async ({ page }) => {
   const labels = (await page.locator('label, legend, h3').allInnerTexts()).join(' | ')
   expect(labels).toContain('Short summary')
   expect(labels).toContain('Main text')
-  const nav = await page.locator('nav, .nav').first().innerText()
+  // Payload's side menu. Not `nav, .nav`: the first <nav> on the page is now the Back / Sign out bar (slice 3ap).
+  const nav = await page.locator('aside.nav').first().innerText()
   expect(nav).toContain('Notices')
   expect(nav).not.toMatch(/[؀-ۿ]/)
 })

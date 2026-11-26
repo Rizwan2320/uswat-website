@@ -91,6 +91,19 @@ export const governedCreateAdminOnly: Access = ({ req }) => {
 }
 
 /**
+ * Programmes (slice 3ap, owner decision 2026-11-24, reverses part of 2026-11-21): a platform admin, or a
+ * head of department (an Approver who holds at least one office). The head's limits are held in the hooks:
+ * the new programme must sit in a department of the head's own office (`inheritDepartmentOffice`) and the
+ * create check in policy.ts keeps its owner office inside the head's offices. Departments stay admin-only.
+ */
+export const governedCreateAdminOrHead: Access = ({ req }) => {
+  const actor = actorFromRequest(req)
+  if (actor.kind !== 'user') return false
+  if (actor.role === 'platformAdmin') return true
+  return actor.role === 'approver' && actor.offices.length > 0
+}
+
+/**
  * Update and delete are decided by the policy hooks, not by a database filter: draft saves
  * live in the versions table, so the published row's office, status and risk class can be
  * stale. Access only turns away roles that can never write.
