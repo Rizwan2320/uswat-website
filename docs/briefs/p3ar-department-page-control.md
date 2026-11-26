@@ -40,3 +40,9 @@ Unit: merge rules per section (CMS wins when filled, profile when empty, localiz
 
 ## Gate
 Full integration suite and the CI browser specs pass on the head commit; the DCST page is unchanged for a visitor before any edit; one edit made as a head shows on the public page; the owner confirms the matrix.
+
+## Corrections made while building (2026-11-27)
+- **Tagline is not shown** by either page body, and the department's **location** and **office hours** are not shown either. The matrix above lists them as head-controlled fields; they are saved but change nothing public. They are left out of the dashboard checklist, and their form descriptions say "Not shown on the public page yet." Recommendation for the lead: either render them in the template or remove the fields.
+- **Preview link:** the brief promised a link to preview the draft on the dashboard card. Not done: the page's own edit screen already has the preview, and a second route would need the preview-secret flow. The card links to the live page only.
+- **Seeding is draft first.** Governance requires a change to published content to be saved as a draft and go through review, so the seed saves a draft; `--publish` walks in review, approved and published as the local platform admin and is only for a pilot database.
+- **Section replace, not row merge.** Documented in the editor guide: filling a section replaces the profile's whole section.

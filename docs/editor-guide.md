@@ -44,6 +44,19 @@ Above the coloured status box on every page there is one line saying what you ar
 
 Your bar at the very top names you: a head of department sees "You are the head of Department of Physics", a coordinator sees the programmes they look after.
 
+## What you control on your department or programme page
+
+Each page you look after shows, on your dashboard, a link to the live page (once it is live) and a list of its **parts**, each marked filled or empty with how many rows it has. An empty part is not an error: the page then shows the standard text the university template provides for it. Fill a part and your text replaces the standard text for that part only, so one edit never changes anything else on the page.
+
+- **Head of department:** the introduction, about, vision, mission, highlights, labs, research areas, careers, student life, questions and the two pictures of your department page; and, for each programme, the same programme parts as a coordinator. You also add programmes and create coordinator accounts.
+- **Coordinator:** the summary, about, learning outcomes, why study it, tracks, skills, curriculum by semester, careers, questions and pictures of your own programme only.
+- **Nobody edits in the CMS:** the layout, the order and headings of the sections, the colours, the banner artwork and the Urdu interface words. They are the same on every department so the university looks like one place.
+- **Worked out for you:** programme cards, counts, the people list and news. Change the source record (a programme, a person, a news item), not the page.
+- **Facts need a source:** level, duration, eligibility and similar facts must carry a source link and are checked before they go live.
+- **Not shown yet:** the tagline (both pages) and the department's location and office hours can be typed in but the public page does not show them yet. The form says so.
+
+When you fill a section the whole section is yours: if you add one lab, the page shows your one lab, not the old five plus yours. To start from what is live, ask for the page to be filled first (the lead runs the seed). Emptying a section brings the standard text back.
+
 ## Your dashboard
 
 After you sign in, the first page shows what needs you. Click any title to open it.
