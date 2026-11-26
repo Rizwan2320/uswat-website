@@ -12,6 +12,7 @@ vi.mock('next/cache', () => ({
 }))
 
 import { loadDashboard } from '../../src/governance/dashboardData'
+import { runLifecycleSweep } from '../../src/governance/sweep'
 import type { User } from '../../src/payload-types'
 import { as, getTestPayload, makeUser, system, uniq } from '../helpers/governance'
 
@@ -148,17 +149,39 @@ describe('editor dashboard', () => {
     expect(titles(await get(editor, 'expiring'))).toContain(soon)
   })
 
-  it('"needs a fresh check" lists live items past their review date', async () => {
-    const t = uniq('stale')
-    const n = await toApproved(t, { reviewDueAt: '2026-12-01T00:00:00.000Z' })
+  // Why the dates are in mid-2027: other specs in this suite run a global lifecycle sweep over every notice at a
+  // future "now" (revalidate: today + 10 days, seo.search: 2027-01-01, governance.media: 2027-03-01), and the
+  // files share one database and run in parallel. A sweep marks every live notice whose review date has passed
+  // as "stale", so an item due on 2026-12-01 could flip to stale while this test was between its two checks
+  // (seen once in CI, never the same code twice). An item due after every date those specs use cannot be touched.
+  const STALE_DUE = '2027-06-01T00:00:00.000Z'
+  const publishedDue = async (t: string) => {
+    const n = await toApproved(t, { reviewDueAt: STALE_DUE })
     await payload.update({
       collection: 'notices',
       id: n.id,
       data: { _status: 'published', governance: {} } as never,
       ...as(approver),
     })
-    expect(titles(await get(approver, 'stale', new Date('2026-11-20T00:00:00Z')))).not.toContain(t)
-    expect(titles(await get(approver, 'stale', new Date('2027-01-01T00:00:00Z')))).toContain(t)
+  }
+
+  it('"needs a fresh check" lists live items past their review date', async () => {
+    const t = uniq('stale')
+    await publishedDue(t)
+    expect(titles(await get(approver, 'stale', new Date('2027-05-01T00:00:00Z')))).not.toContain(t)
+    expect(titles(await get(approver, 'stale', new Date('2027-07-01T00:00:00Z')))).toContain(t)
+  })
+
+  it('a global sweep run by another spec at its latest date does not change that list', async () => {
+    const t = uniq('stale')
+    await publishedDue(t)
+    await runLifecycleSweep(payload, {
+      now: new Date('2027-03-01T10:00:00.000Z'),
+      collections: ['notices'],
+      context: system.context,
+    })
+    expect(titles(await get(approver, 'stale', new Date('2027-05-01T00:00:00Z')))).not.toContain(t)
+    expect(titles(await get(approver, 'stale', new Date('2027-07-01T00:00:00Z')))).toContain(t)
   })
 
   it('images without alt text are listed for reviewers only', async () => {
