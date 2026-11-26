@@ -82,6 +82,15 @@ const BANNERS = [
   { key: 'directorate-of-sports', icon: 'users', pre: 'Directorate of', one: 'Sports', two: '', tag: 'University of Swat' },
   { key: 'office-365', icon: 'laptop', pre: 'University of Swat', one: 'Office 365', two: '', tag: 'University of Swat' },
   { key: 'office-of-the-deans', icon: 'cap', pre: 'Office of the', one: 'Deans', two: '', tag: 'University of Swat' },
+  { key: 'maincampus', icon: 'building', pre: 'University of Swat', one: 'Main Campus', two: '', tag: 'Charbagh' },
+  { key: 'women-campus', icon: 'heart', pre: 'University of Swat', one: 'Women Campus', two: '', tag: 'College of Home Sciences' },
+  { key: 'sangota-campus', icon: 'building', pre: 'University of Swat', one: 'Sangota Campus', two: '', tag: 'University of Swat' },
+  { key: 'red-crescent-building', icon: 'building', pre: 'University of Swat', one: 'Red Crescent', two: 'Building', tag: 'University of Swat' },
+  { key: 'convocation-2022', icon: 'cap', pre: 'University of Swat', one: '2nd Convocation', two: '', tag: 'University of Swat' },
+  { key: 'open-day', icon: 'users', pre: 'University of Swat', one: 'Open Day', two: 'for Admissions', tag: 'University of Swat' },
+  { key: 'admissions', icon: 'cap', pre: 'University of Swat', one: 'Admissions', two: '', tag: 'Apply, notices and merit lists' },
+  { key: 'merit-list', icon: 'clipboard', pre: 'University of Swat', one: 'Merit Lists', two: '', tag: 'Admissions' },
+  { key: 'downloads', icon: 'book', pre: 'University of Swat', one: 'Forms, Rules', two: 'and Policies', tag: 'Downloads' },
 ]
 
 const circuit = (flip) => {
