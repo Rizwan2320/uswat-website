@@ -28,6 +28,7 @@
     "seed:sample": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed-sample.ts",
     "seed:placeholders": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/make-placeholders.ts",
     "seed:accounts": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed-accounts.ts",
+    "seed:page-content": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed-page-content.ts",
     "seed:preview": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed-preview.ts",
     "dictionary:build": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/data-dictionary.ts",
     "test:unit": "vitest run --config ./vitest.config.mts tests/unit",
