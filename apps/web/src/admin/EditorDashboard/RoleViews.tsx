@@ -8,6 +8,11 @@
 import React from 'react'
 
 import type { QueueResult } from '../../governance/dashboardData'
+import {
+  TEMPLATE_FIXED,
+  partCountText,
+  partsSummary,
+} from '../../governance/pageSections'
 import type { BoardItem, BoardStage } from '../../governance/roleBoards'
 
 const day = (iso: string | null): string => {
@@ -93,6 +98,37 @@ export function ControlRoom({
   )
 }
 
+/* ------------------------------------------------------------------------------ page parts */
+
+/** The way to the public page, only while it is live. */
+function LiveLink({ b }: { b: BoardItem }): React.ReactElement {
+  return b.liveHref ? (
+    <a className="rd__live" href={b.liveHref} target="_blank" rel="noreferrer">
+      View the live page<span className="rd__sr"> (opens in a new tab)</span>
+    </a>
+  ) : (
+    <span className="rd__meta">Not live yet</span>
+  )
+}
+
+/** The parts of a page this person controls, filled or empty in words, and what the template fixes. */
+function Parts({ b, open }: { b: BoardItem; open?: boolean }): React.ReactElement {
+  return (
+    <details className="rd__parts" open={open}>
+      <summary>{partsSummary(b.parts)}</summary>
+      <ul>
+        {b.parts.map((p) => (
+          <li key={p.key} data-filled={p.filled ? 'yes' : 'no'}>
+            <span>{p.label}</span>
+            <span className="rd__meta">{partCountText(p)}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="rd__meta">{TEMPLATE_FIXED}</p>
+    </details>
+  )
+}
+
 /* ------------------------------------------------------------------------------------- head */
 
 const HEAD_STAGE: Record<BoardStage, string> = {
@@ -152,6 +188,8 @@ export function HeadDesk({
                     <span className="rd__meta">
                       {b.collection === 'departments' ? 'Department page' : 'Programme'}
                     </span>
+                    <LiveLink b={b} />
+                    <Parts b={b} />
                   </th>
                   <td>{b.coordinators.length > 0 ? b.coordinators.join(', ') : '-'}</td>
                   <td>
@@ -283,6 +321,8 @@ export function CoordinatorDesk({ board }: { board: BoardItem[] }): React.ReactE
                 {next.action}
               </a>
             ) : null}
+            <LiveLink b={b} />
+            <Parts b={b} open />
           </section>
         )
       })}

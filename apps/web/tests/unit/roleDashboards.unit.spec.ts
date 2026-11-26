@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import { DashboardView } from '../../src/admin/EditorDashboard/DashboardView'
 import type { QueueResult } from '../../src/governance/dashboardData'
+import { describeParts } from '../../src/governance/pageSections'
 import { deskFor, type BoardItem } from '../../src/governance/roleBoards'
 
 const q = (
@@ -37,6 +38,8 @@ const prog = (over: Partial<BoardItem> = {}): BoardItem => ({
   updatedAt: '2026-11-10T08:00:00.000Z',
   href: '/admin/collections/programmes/5',
   coordinators: [],
+  liveHref: null,
+  parts: describeParts('programmes', {}),
   ...over,
 })
 
@@ -173,5 +176,53 @@ describe('writing desk', () => {
     const c = render({ queues, desk: 'contributor' })
     expect(c).not.toContain('I sent for review')
     expect(c).toContain('Draft one')
+  })
+})
+
+describe('the parts of a page, on the head and coordinator desks (slice 3ar)', () => {
+  const filledDoc = {
+    vision: 'A vision.',
+    pageContent: { tagline: 'A line.', labs: [{ title: 'A' }, { title: 'B' }], heroImage: 7 },
+  }
+  const dept = (over: Partial<BoardItem> = {}): BoardItem =>
+    prog({
+      collection: 'departments',
+      id: 4,
+      name: 'Computer and Software Technologies',
+      stage: 'published',
+      liveHref: '/academics/departments/dcst',
+      parts: describeParts('departments', filledDoc),
+      ...over,
+    })
+
+  it('a head sees a live link, how many parts are filled, and what the template fixes', () => {
+    const html = render({ queues: [], desk: 'head', board: [dept()] })
+    expect(html).toContain('href="/academics/departments/dcst"')
+    expect(html).toContain('View the live page')
+    expect(html).toContain('(opens in a new tab)')
+    expect(html).toContain('4 of 12 parts filled')
+    expect(html).toContain('2 rows')
+    expect(html).toContain('Empty: the template shows its standard text')
+    expect(html).toContain('set by the university template')
+  })
+
+  it('a page that is not live has no link to the public page', () => {
+    const html = render({
+      queues: [],
+      desk: 'head',
+      board: [dept({ stage: 'draft', liveHref: null })],
+    })
+    expect(html).not.toContain('View the live page')
+    expect(html).toContain('Not live yet')
+  })
+
+  it('a coordinator sees their programme with the parts open, and only their own', () => {
+    const html = render({ queues: [], desk: 'coordinator', board: [prog()] })
+    expect(html).toContain('0 of 11 parts filled')
+    expect(html).toContain('<details class="rd__parts" open="">')
+    expect(html).toContain('Curriculum by semester')
+    expect(html).toContain('Learning outcomes')
+    expect(html).not.toContain('Research areas')
+    expect(html).toContain('Not live yet')
   })
 })

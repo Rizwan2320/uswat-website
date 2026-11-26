@@ -7,6 +7,9 @@
 
 import type { Payload, Where } from 'payload'
 
+import { departmentHref, programmeHref } from '../site/organisation/shape'
+
+import { describeParts, type PartStatus } from './pageSections'
 import { actorFromUser } from './roles'
 
 export type BoardStage = 'draft' | 'in_review' | 'approved' | 'published' | 'archived'
@@ -23,6 +26,10 @@ export interface BoardItem {
   href: string
   /** The coordinators of a programme, by name (only filled for a head). */
   coordinators: string[]
+  /** The public address, only while the page is live. */
+  liveHref: string | null
+  /** The parts of the page this person controls, and which are filled. */
+  parts: PartStatus[]
 }
 
 type UserLike = { id: string | number; role?: unknown; collection?: string }
@@ -84,6 +91,13 @@ export async function loadBoard(payload: Payload, user: UserLike): Promise<Board
           updatedAt: text(doc.updatedAt),
           href: `${adminRoute}/collections/${collection}/${doc.id}`,
           coordinators: [],
+          liveHref:
+            stage === 'published' && text(doc.slug)
+              ? collection === 'departments'
+                ? departmentHref(text(doc.slug)!)
+                : programmeHref(text(doc.slug)!)
+              : null,
+          parts: describeParts(collection, doc),
         }
       })
     } catch (e) {
