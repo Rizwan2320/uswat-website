@@ -17,6 +17,11 @@ function setup(opts: { account?: { id: string; email: string } | null; orcid?: s
     claim: vi.fn(async () => true),
     reject: vi.fn(async () => true),
     markDuplicate: vi.fn(async () => true),
+    addClaimed: vi.fn(async () => ({ ok: true as const, id: ID })),
+    updateDetails: vi.fn(async () => true),
+    setFeatured: vi.fn(async () => true),
+    setPublic: vi.fn(async () => true),
+    remove: vi.fn(async () => true),
     ...opts.store,
   }
   const profiles = { load: vi.fn(async () => ({ profile: { ...EMPTY_EDIT, orcid: opts.orcid ?? '0000-0002-1825-0097' }, status: 'draft', updatedAt: 1 })) } as unknown as ProfileStore
