@@ -4735,7 +4735,7 @@ export interface Footer {
 export interface HomeContent {
   id: number;
   /**
-   * The photographs at the top of the home page, in this order. Each photograph shows with its two buttons. 3 to 8 slides.
+   * The photographs at the top of the home page, in this order. Each photograph shows with its two buttons. 3 to 8 slides, or none to keep the standard photographs.
    */
   slides?:
     | {

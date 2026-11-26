@@ -28,3 +28,8 @@ Typecheck, lint, unit, integration, build, visual home baseline unchanged (the f
 
 ## Next steps on the landing page (need the CMS agent: schema and migration)
 Leadership message, admissions banner, quick portals strip, alumni showcase, site settings and footer, navigation, emergency banner.
+
+## Addendum 2026-11-27: slides may be left empty (branch `feat/home-slides-optional`)
+- **Finding:** publishing the global needed at least 3 slides with photographs, but production has no media and no Blob store (ADR-0014), so nobody could publish an edited statistics bar.
+- **Change (CMS lane, small, no migration; the CMS agent is told):** the slides field drops `minRows` for `slidesCountValidate` (`governance/homeContent.ts`): none is allowed (the site then keeps its standard photographs); if any, 3 to 8 as before. Description and its Urdu line updated. Statistics rules unchanged (3 to 6, source and date unless Sample).
+- **Tests:** 'two slides' and 'nine slides' still refused; new case: no slides publishes.

@@ -1124,3 +1124,8 @@ P3 agent (slice 3a), own entry:
 - Owner asked to start the CMS pairing from the landing page. Finding: the admin's "Home page content" global (slider photographs and statistics bar, #117) was editable but unread: `getHero` and `getStats` returned the files in `site/content`. Now they read the published global (new `site/home/homeContent.ts`, tag `global_home-content`, pure mapping in `site/home/homeMap.ts`) and fall back to the files when the global has fewer than 3 usable slides or figures. No schema or migration. Brief `docs/briefs/home-from-cms.md`, prediction `HOME-CMS-a`.
 - Still fixed in code on the landing page (next steps, need the CMS agent for schema and migrations): leadership message, admissions banner, quick portals strip, alumni showcase, site settings and footer, navigation, emergency banner. The headline stays fixed (owner decision 2026-11-07).
 - Not run: hosted preview; uploading a new photograph on Vercel (needs the Blob store).
+
+## Home page content: slides optional, statistics filled (2026-11-27, branch `feat/home-slides-optional`, main agent)
+- Owner asked for the statistics bar to be editable in the admin instead of in code. Blocker: publishing needed 3 photographs and production has no media (no Blob store). Slides may now be left empty (site keeps the standard photographs); with any, still 3 to 8. A small edit in the CMS lane, no migration, agreed in the pairing. Prediction `HOME-CMS-b`.
+- Production `home-content` is then filled with today's four figures (source: the owner, 2026-11-08, no document seen) by SQL, so they appear in the admin to edit.
+

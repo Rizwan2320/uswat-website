@@ -8,6 +8,7 @@ import {
   HOME_SLIDES,
   HOME_STATS,
   homeHrefValidate,
+  slidesCountValidate,
   SLIDE_ICONS,
   STAT_ICONS,
   sourceUnlessSample,
@@ -79,11 +80,11 @@ export const HomeContent: GlobalConfig = {
       label: 'Slides',
       type: 'array',
       labels: { singular: 'Slide', plural: 'Slides' },
-      minRows: HOME_SLIDES.min,
       maxRows: HOME_SLIDES.max,
+      validate: slidesCountValidate,
       admin: {
         initCollapsed: true,
-        description: `The photographs at the top of the home page, in this order. Each photograph shows with its two buttons. ${HOME_SLIDES.min} to ${HOME_SLIDES.max} slides.`,
+        description: `The photographs at the top of the home page, in this order. Each photograph shows with its two buttons. ${HOME_SLIDES.min} to ${HOME_SLIDES.max} slides, or none to keep the standard photographs.`,
       },
       fields: [
         {

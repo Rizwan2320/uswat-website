@@ -173,6 +173,12 @@ describe('what must be true to publish', () => {
     },
   )
 
+  it('no slides at all publishes: the site then keeps its standard photographs', async () => {
+    const out = (await publish(approver, { ...complete(), slides: [] })) as Home
+    expect(out._status).toBe('published')
+    expect(out.slides ?? []).toHaveLength(0)
+  })
+
   it('a sample statistic needs no source or date', async () => {
     const out = (await publish(approver, {
       ...complete(),
