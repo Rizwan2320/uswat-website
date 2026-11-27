@@ -1153,4 +1153,5 @@ Branch `fp/publications-intake` (from `main`), portal lane only. Brief `docs/bri
 ## Landing page from the CMS, step 2: admissions bar and portal cards (2026-11-27, branch `feat/home-admissions-portals`)
 - Admin, Globals, Home page content now also holds the Admissions banner and the Portal cards. Empty keeps the standard values. Migration `20261127_065030_home_admissions_portals` (CMS lane, additive). Brief `docs/briefs/home-admissions-portals.md`, prediction `HOME-ADM-PORT-a`.
 - After deploy, production is filled with today's values by SQL (as for the statistics) so the owner can edit them. Next: Vice Chancellor's message, then hero text, footer and top bar, navigation.
+- **Done 2026-11-27:** step 2 merged and deployed (#179); production filled with the admissions bar and the five portal cards by SQL (no audit-log rows; English only). The owner edits them in Admin, Globals, Home page content, then Publish. The owner has been publishing colour versions already (15 versions so far).
 
