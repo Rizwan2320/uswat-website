@@ -110,6 +110,13 @@ const BANNERS = [
   { key: 'bs-microbiology-3', icon: 'flask', pre: 'Biotechnology and Microbiology', one: 'BS', two: 'Microbiology', tag: 'University of Swat' },
   { key: 'bs-psychology-2', icon: 'users', pre: 'Psychological Studies', one: 'BS', two: 'Psychology', tag: 'University of Swat' },
   { key: 'bs-forestry', icon: 'globe', pre: 'Agricultural Sciences and Forestry', one: 'BS', two: 'Forestry', tag: 'University of Swat' },
+  { key: 'bs-geology-2', icon: 'globe', pre: 'Department of Geology', one: 'BS', two: 'Geology', tag: 'University of Swat' },
+  { key: 'bs-archaeology', icon: 'book', pre: 'Department of Archaeology', one: 'BS', two: 'Archaeology', tag: 'University of Swat' },
+  { key: 'bs-environmental-sciences', icon: 'globe', pre: 'Environmental Sciences', one: 'BS', two: 'Environmental Sciences', tag: 'University of Swat' },
+  { key: 'bs-economics-2', icon: 'clipboard', pre: 'Economics and Development Studies', one: 'BS', two: 'Economics', tag: 'University of Swat' },
+  { key: 'bs-development-studies-2', icon: 'users', pre: 'Economics and Development Studies', one: 'BS', two: 'Development Studies', tag: 'University of Swat' },
+  { key: 'bs-english-2', icon: 'book', pre: 'English and Foreign Languages', one: 'BS', two: 'English', tag: 'University of Swat' },
+  { key: 'bba-hons-2', icon: 'building', pre: 'Management and Commerce', one: 'BBA', two: '(Hons)', tag: 'University of Swat' },
 ]
 
 const circuit = (flip) => {

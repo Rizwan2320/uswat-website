@@ -188,7 +188,7 @@ export default function RichDisciplinePage({
 
       <AlumniShowcase
         items={alumni}
-        lede={`Theses, projects and papers by graduates of BS ${profile.shortName}. Select a card to read about the work.`}
+        lede={`Theses, projects and papers by graduates of ${profile.badge ?? `BS ${profile.shortName}`}. Select a card to read about the work.`}
       />
 
       <Band id="admission" tint kicker="Admission" title="Eligibility and how to apply">

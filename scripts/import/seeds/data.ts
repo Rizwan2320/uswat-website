@@ -147,6 +147,43 @@ export const departments: DepartmentSeed[] = [
     summary:
       'The Department of Mathematics and Statistics lists BS Mathematics, BS Statistics, MPhil Mathematics and PhD Mathematics. The statistics department started working in 2010.',
   },
+  // The six departments below were office-style pages (2026-11-25) and are now in the blueprint layout (2026-11-27); their pages were read 2026-11-06.
+  {
+    slug: 'geology',
+    name: 'Department of Geology',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The Department of Geology became functional in 2014 and offers the four-year BS Geology, with fieldwork at geologically important sites.',
+  },
+  {
+    slug: 'archaeology',
+    name: 'Department of Archaeology',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The Department of Archaeology began academic activities in the fall of 2025 and offers the BS Archaeology, with a university museum of archaeology and ethnology.',
+  },
+  {
+    slug: 'environmental-sciences',
+    name: 'Department of Environmental Sciences',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The Department of Environmental Sciences, established in 2012, lists BS, MS/MPhil and PhD programmes and a one-year postgraduate diploma in Geomatics.',
+  },
+  {
+    slug: 'economics-and-development-studies',
+    name: 'Department of Economics and Development Studies',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department offers BS Economics and BS Development Studies, with MPhil and PhD programmes in preparation.',
+  },
+  {
+    slug: 'english-and-foreign-languages',
+    name: 'Department of English and Foreign Languages',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department teaches English literature and linguistics and lists the BS English and an MPhil in Linguistics.',
+  },
+  {
+    slug: 'management-commerce',
+    name: 'Department of Management and Commerce',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department lists eleven degrees, from BBA (Hons) and four BS programmes to MBA, EMBA, MS and PhD in Management Sciences.',
+  },
   // The five life-science departments below carry the university's own names and text (their pages, read 2026-11-06); faculty not on the pages, as above.
   {
     slug: 'botany',
@@ -253,6 +290,13 @@ const scienceProgrammes: ProgrammeSeed[] = [
   { slug: 'bs-microbiology-3', name: 'BS Microbiology', department: 'biotechnology-genetics-forensic-and-microbiology', level: 'BS', duration: '4 years', eligibility: null },
   { slug: 'bs-psychology-2', name: 'BS Psychology', department: 'psychological-studies', level: 'BS', duration: '4 years', eligibility: null },
   { slug: 'bs-forestry', name: 'BS Forestry', department: 'agricultural-sciences-and-forestry', level: 'BS', duration: '4 years', eligibility: 'Open merit: HSSC with at least 45% marks (Pre-Medical or Pre-Engineering).' },
+  { slug: 'bs-geology-2', name: 'BS Geology', department: 'geology', level: 'BS', duration: '4 years', eligibility: 'Intermediate (F.Sc.) or equivalent with at least 45% marks: the science group, another group in which Chemistry, Physics and Mathematics were studied, or a three-year Diploma in Associate Engineering (DAE).' },
+  { slug: 'bs-archaeology', name: 'BS Archaeology', department: 'archaeology', level: 'BS', duration: '4 years', eligibility: 'Intermediate or an equivalent qualification with at least 45% marks.' },
+  { slug: 'bs-environmental-sciences', name: 'BS Environmental Sciences', department: 'environmental-sciences', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-economics-2', name: 'BS Economics', department: 'economics-and-development-studies', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-development-studies-2', name: 'BS Development Studies', department: 'economics-and-development-studies', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-english-2', name: 'BS English', department: 'english-and-foreign-languages', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bba-hons-2', name: 'Bachelor of Business Administration (Hons)', department: 'management-commerce', level: 'BBA', duration: '4 years', eligibility: null },
 ]
 
 export const programmes: ProgrammeSeed[] = [

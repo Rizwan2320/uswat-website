@@ -8,6 +8,12 @@ import { mlt } from './allied/mlt'
 import { rit } from './allied/rit'
 import { cs } from './cs'
 import { dcst } from './dcst'
+import { archaeology, bsArchaeology } from './departments/archaeology'
+import { economics, bsEconomics, bsDevelopmentStudies } from './departments/economics'
+import { english, bsEnglish } from './departments/english'
+import { environmentalSciences, bsEnvironmentalSciences } from './departments/environmental-sciences'
+import { geology, bsGeology } from './departments/geology'
+import { management, bbaHons } from './departments/management'
 import { ds } from './ds'
 import { it } from './it'
 import { se } from './se'
@@ -21,9 +27,11 @@ import { psychology, bsPsychology } from './sciences/psychology'
 import { zoology, bsZoology } from './sciences/zoology'
 
 /* Register a profile here and its department or programme page switches to the rich layout. */
-export const departmentProfiles: DepartmentProfile[] = [dcst, alliedHealth, physics, chemistry, mathematics, botany, zoology, biotechnology, psychology, forestry]
+export const departmentProfiles: DepartmentProfile[] = [dcst, alliedHealth, physics, chemistry, mathematics, botany, zoology, biotechnology, psychology, forestry,
+  geology, archaeology, environmentalSciences, economics, english, management]
 export const disciplineProfiles: DisciplineProfile[] = [cs, se, it, ds, ai, mlt, dt, dpt, rit, bsPhysics, bsChemistry, bsMathematics, bsStatistics,
-  bsBotany, bsZoology, bsBiotechnology, bsGenetics, bsMicrobiology, bsPsychology, bsForestry]
+  bsBotany, bsZoology, bsBiotechnology, bsGenetics, bsMicrobiology, bsPsychology, bsForestry,
+  bsGeology, bsArchaeology, bsEnvironmentalSciences, bsEconomics, bsDevelopmentStudies, bsEnglish, bbaHons]
 
 export const profileForDepartment = (slug: string) =>
   departmentProfiles.find((p) => p.slug === slug) ?? null
