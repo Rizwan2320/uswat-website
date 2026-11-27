@@ -172,7 +172,7 @@ export const HomeContent: GlobalConfig = {
       type: 'group',
       admin: {
         description:
-          'Change the colours of the home page only. Leave a colour empty to keep the standard one. The darker and lighter shades are worked out for you. A choice that makes text hard to read cannot be published.',
+          'Change the colours of the home page only. Leave a colour empty to keep the standard one. The darker and lighter shades are worked out for you.',
       },
       fields: [
         colour(

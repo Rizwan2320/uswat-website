@@ -140,15 +140,6 @@ describe('what must be true to publish', () => {
     ['nine slides', () => ({ ...complete(), slides: slides(9) })],
     ['two statistics', () => ({ ...complete(), stats: stats(2) })],
     ['seven statistics', () => ({ ...complete(), stats: stats(7) })],
-    [
-      'a pale green that makes text unreadable',
-      () => ({ ...complete(), colours: { green: '#9bd1a8' } }),
-    ],
-    [
-      'a dark yellow that makes the button labels unreadable',
-      () => ({ ...complete(), colours: { yellow: '#5a4a00' } }),
-    ],
-    ['a pale maroon', () => ({ ...complete(), colours: { maroon: '#e0a0a8' } })],
     ...[
       'javascript:alert(1)',
       'data:text/html,x',
@@ -190,13 +181,13 @@ describe('what must be true to publish', () => {
     expect(out.slides ?? []).toHaveLength(0)
   })
 
-  it('readable colours publish, and are stored as typed', async () => {
+  it('any colour publishes, however pale or dark: the owner has the final say', async () => {
     const out = (await publish(approver, {
       ...complete(),
-      colours: { green: '#10253f', yellow: '#f2b705', maroon: '#6b1a2b' },
+      colours: { green: '#6b6b6b', yellow: '#b3a26f', maroon: '#e0a0a8' },
     })) as Home & { colours?: Record<string, string> }
     expect(out._status).toBe('published')
-    expect(out.colours).toMatchObject({ green: '#10253f', yellow: '#f2b705', maroon: '#6b1a2b' })
+    expect(out.colours).toMatchObject({ green: '#6b6b6b', yellow: '#b3a26f', maroon: '#e0a0a8' })
   })
 
   it.each(['red', '#fff', '#00;}body{display:none', 'url(x)'])(

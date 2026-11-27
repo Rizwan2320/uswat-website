@@ -1,13 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  cleanHex,
-  paletteCss,
-  paletteMessage,
-  paletteProblems,
-  paletteVars,
-  STANDARD,
-} from '../../src/governance/homePalette'
+import { cleanHex, paletteCss, paletteVars, STANDARD } from '../../src/governance/homePalette'
 
 describe('home page colours: what is accepted', () => {
   it('accepts #rrggbb in either case and trims it', () => {
@@ -60,44 +53,11 @@ describe('home page colours: what is derived', () => {
   })
 })
 
-describe('home page colours: readability', () => {
-  it('the standard colours, chosen explicitly, pass', () => {
-    expect(
-      paletteProblems({ green: STANDARD.green, yellow: STANDARD.yellow, maroon: STANDARD.maroon }),
-    ).toEqual([])
-  })
-  it('nothing chosen is never a problem', () => {
-    expect(paletteProblems({})).toEqual([])
-    expect(paletteMessage({})).toBeNull()
-  })
-  it('a pale green is refused: ivory text on it cannot be read', () => {
-    const bad = paletteProblems({ green: '#9bd1a8' })
-    expect(bad.map((p) => p.label)).toContain('ivory text on the green')
-    expect(paletteMessage({ green: '#9bd1a8' })).toMatch(/hard to read/)
-  })
-  it('a dark yellow is refused: the green label on the buttons cannot be read', () => {
-    expect(paletteProblems({ yellow: '#5a4a00' }).map((p) => p.label)).toContain(
-      'green label on the yellow buttons',
-    )
-  })
-  it('a pale maroon is refused', () => {
-    expect(paletteProblems({ maroon: '#e0a0a8' }).map((p) => p.label)).toContain(
-      'maroon text on the ivory background',
-    )
-  })
-  it('a dark navy chosen for green passes', () => {
-    expect(paletteProblems({ green: '#10253f' })).toEqual([])
-  })
-  it('judges only the pairs that involve a changed family', () => {
-    // Yellow changed: the green pairs (all standard) are not judged, so none of them can appear.
-    for (const p of paletteProblems({ yellow: '#5a4a00' })) expect(p.label).toMatch(/yellow/)
-  })
-
-  it('the message has no semicolons (the admin toast splits at them) and says what to change', () => {
-    const msg = paletteMessage({ green: '#6b6b6b', yellow: '#b3a26f' })!
-    expect(msg).not.toContain(';')
-    expect(msg).toMatch(/make the green darker/)
-    expect(msg).toMatch(/make the yellow lighter/)
-    expect(paletteMessage({ maroon: '#e0a0a8' })).toMatch(/make the maroon darker/)
+describe('home page colours: the editor has the final say', () => {
+  it('any valid colour is used, however pale or dark (owner decision: no readability check)', () => {
+    const css = paletteCss({ green: '#9bd1a8', yellow: '#5a4a00', maroon: '#e0a0a8' })!
+    expect(css).toContain('--forest:#9bd1a8')
+    expect(css).toContain('--gold:#5a4a00')
+    expect(css).toContain('--maroon:#e0a0a8')
   })
 })

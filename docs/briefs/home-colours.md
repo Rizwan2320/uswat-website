@@ -24,3 +24,6 @@ Three pickers in Admin, Globals, Home page content, Colours. A colour left empty
 
 ## Tests and gate
 Unit: `tests/unit/homePalette.unit.spec.ts`. Integration: publish refusals for pale green, dark yellow, pale maroon and bad codes; readable colours publish; the site getter returns published colours and never a draft. Typecheck, lint, unit, integration, build, visual baseline (12) unchanged.
+
+## Decision 2026-11-27 (owner): no readability check
+The owner said the colour choice must always work, with no check. The WCAG AA publish refusal (and the defensive ignore on the home page) is removed in `feat/home-colours-no-check`. What stays: only exact `#rrggbb` is accepted (a safety rule, not a design rule), and the derived shades. **Consequence, recorded on purpose:** with custom colours the landing page is no longer guaranteed to meet WCAG 2.2 AA contrast; the standard colours still do (tokens.contrast test). The owner chose this. The refused-case and defensive-ignore tests were replaced by one test that any colour publishes and is used.

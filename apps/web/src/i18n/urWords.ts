@@ -297,8 +297,8 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   Green: 'سبز',
   Yellow: 'پیلا',
   Maroon: 'عنابی',
-  'Change the colours of the home page only. Leave a colour empty to keep the standard one. The darker and lighter shades are worked out for you. A choice that makes text hard to read cannot be published.':
-    'صرف ہوم پیج کے رنگ بدلیں۔ معیاری رنگ رکھنے کے لیے خانہ خالی چھوڑ دیں۔ گہرے اور ہلکے شیڈ خود بخود بن جاتے ہیں۔ جو انتخاب متن کو پڑھنا مشکل بنائے وہ شائع نہیں ہو سکتا۔',
+  'Change the colours of the home page only. Leave a colour empty to keep the standard one. The darker and lighter shades are worked out for you.':
+    'صرف ہوم پیج کے رنگ بدلیں۔ معیاری رنگ رکھنے کے لیے خانہ خالی چھوڑ دیں۔ گہرے اور ہلکے شیڈ خود بخود بن جاتے ہیں۔',
   'The deep green: headings, the top bar, the footer and the page text.':
     'گہرا سبز: سرخیاں، اوپر کی پٹی، فوٹر اور صفحے کا متن۔',
   'The gold: buttons, highlights and the accent words on green.':
