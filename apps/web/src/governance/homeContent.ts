@@ -13,6 +13,21 @@ import type { Actor } from './roles'
 
 export const HOME_SLIDES = { min: 3, max: 8 } as const
 export const HOME_STATS = { min: 3, max: 6 } as const
+
+/**
+ * The slides may be left empty: the home page then keeps its standard photographs (site/home/homeMap.ts).
+ * This lets the statistics be edited and published before any photograph can be uploaded (the hosted
+ * Blob store is not set up yet, ADR-0014). Once there are slides, the 3 to 8 rule applies as before.
+ * Like `minRows`, it runs on publish only; drafts may be incomplete.
+ */
+export const slidesCountValidate = (value: unknown): true | string => {
+  const n = Array.isArray(value) ? value.length : 0
+  if (n === 0) return true
+  if (n < HOME_SLIDES.min || n > HOME_SLIDES.max) {
+    return `Use ${HOME_SLIDES.min} to ${HOME_SLIDES.max} slides, or remove them all to keep the standard photographs.`
+  }
+  return true
+}
 /** The icon names `site/content/hero.ts` and `types.ts` already use. */
 export const SLIDE_ICONS = ['cap', 'document', 'book', 'calendar', 'people', 'badge'] as const
 export const STAT_ICONS = ['cap', 'people', 'person', 'trophy'] as const
