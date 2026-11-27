@@ -1139,3 +1139,5 @@ Branch `fp/publications-intake` (from `main`), portal lane only. Brief `docs/bri
 - **Done 2026-11-27:** #172 merged and deployed. Production `home-content` filled by SQL (published, no slides, four figures; no audit-log row because SQL bypasses the app; Urdu labels not added). The owner can edit them in Admin, Globals, Home page content, Statistics, then Publish. Cache: up to 300 s on the public page. Prediction `PROD-HOME-STATS`.
 - Merged since the last entry: #163 (via #168), #166, agent 4's real departments (#169), #170 (home reads the global). #94 not merged: its search test expects `/about` for the word Sample and fails on current main; decision pending (agent 4 updates the test, or close).
 
+
+- 2026-11-27 (owner said yes): set `PORTAL_PUBLICATIONS_SOURCE=openalex` (plain, production) on the portal Vercel project and redeployed (dpl_ETD7L354...). To undo: delete that variable and redeploy. First real OpenAlex call is still to be done with the owner's ORCID iD.
