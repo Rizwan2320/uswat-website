@@ -9,15 +9,21 @@ const all = Object.entries(rows).flatMap(([c, rs]) => rs.map((r) => ({ c, ...r }
 describe('Sample seed data', () => {
   it('has the planned counts', () => {
     expect(Object.fromEntries(Object.entries(rows).map(([c, r]) => [c, r.length]))).toEqual({
-      faculties: 3, campuses: 3, people: 14, offices: 4, departments: 8, programmes: 16,
+      faculties: 4, campuses: 3, people: 14, offices: 31, departments: 10, programmes: 20,
     })
   })
   it('labels every invented record Sample and gives every record a sample.invalid source', () => {
     // Owner decision 2026-11-20: records that carry the university's real structure show their real names. These are the
-    // campuses and the Department of Computer and Software Technologies with its programmes. Their source is still sample.invalid,
+    // campuses, the Department of Computer and Software Technologies with its programmes, and the nine offices that have a rich page
+    // (Research and Administration, 2026-11-22; their facts and sources live in src/site/offices/profiles). Their source is still sample.invalid,
     // the machine marker, because their text is not yet checked.
+    const REAL_OFFICES = ['oric-2', 'advanced-studies-and-research-board', 'directorate-of-it', 'controller-of-examination-office', 'directorate-of-works', 'proctorial-board', 'kamyab-jawan-markaz', 'alumni', 'hunerkada-center-for-excellence',
+      // 2026-11-25: the eighteen offices built from the saved copies in round 2 (src/site/offices/profiles).
+      'directorate-of-research-and-technological-development', 'directorate-of-admissions', 'directorate-of-administration', 'directorate-of-planning-and-development', 'registeror-office', 'treasurer-office', 'provost-office', 'vc-office', 'office-of-the-pro-vice-chancellor-pro-vc', 'university-advancement-financial-aid-office', 'e-office', 'dean-office-3', 'election-administrative-officers-and-faculty-members', 'press-release', 'developmental-projects', 'directorate-of-sports', 'office-365', 'office-of-the-deans']
+    // 2026-11-22: the Faculty of Allied Health Sciences, its two centres and four programmes (src/site/academics/profiles/allied; sources and dates are there).
+    const REAL_ALLIED = ['faculty-of-allied-health-sciences', 'centre-for-medical-technologies', 'centre-for-pharmaceutical-and-rehabilitation-sciences', 'bs-medical-laboratory-technology', 'bs-dental-technology', 'doctor-of-physical-therapy', 'bs-radiography-and-imaging-technology']
     const real = (r: { c: string; slug: string }) =>
-      r.c === 'campuses' || (r.c === 'departments' && r.slug === 'dcst') || (r.c === 'programmes' && programmes.find((p) => p.slug === r.slug)?.department === 'dcst')
+      REAL_ALLIED.includes(r.slug) || r.c === 'campuses' || (r.c === 'offices' && REAL_OFFICES.includes(r.slug)) || (r.c === 'departments' && r.slug === 'dcst') || (r.c === 'programmes' && programmes.find((p) => p.slug === r.slug)?.department === 'dcst')
     for (const r of all) {
       if (!real(r)) {
         expect(r.name.startsWith('Sample'), r.name).toBe(true)
@@ -37,12 +43,12 @@ describe('Sample seed data', () => {
     const has = (c: keyof typeof rows, slug: string) => rows[c].some((r) => r.slug === slug)
     for (const d of departments) {
       expect(has('faculties', d.facultyGroup), d.slug).toBe(true)
-      expect(has('people', d.head), d.slug).toBe(true)
+      if (d.head) expect(has('people', d.head), d.slug).toBe(true)
     }
-    for (const o of offices) expect(has('people', o.head), o.slug).toBe(true)
+    for (const o of offices) if (o.head) expect(has('people', o.head), o.slug).toBe(true)
     for (const p of programmes) {
-      expect(has('departments', p.department), p.slug).toBe(true)
-      expect(has('campuses', p.campus), p.slug).toBe(true)
+      if (p.department) expect(has('departments', p.department), p.slug).toBe(true)
+      if (p.campus) expect(has('campuses', p.campus), p.slug).toBe(true)
     }
   })
   it('every department has a programme and every faculty group a department', () => {

@@ -1,0 +1,10 @@
+set local search_path to identity;
+alter table if exists "publication_candidate" drop constraint if exists "publication_candidate_url_check";
+alter table if exists "publication_candidate" drop constraint if exists "publication_candidate_featured_check";
+alter table if exists "publication_candidate" drop constraint if exists "publication_candidate_origin_check";
+alter table if exists "publication_candidate" drop constraint if exists "publication_candidate_type_check";
+alter table if exists "publication_candidate" drop column if exists "isPublic";
+alter table if exists "publication_candidate" drop column if exists "featured";
+alter table if exists "publication_candidate" drop column if exists "url";
+alter table if exists "publication_candidate" drop column if exists "origin";
+alter table if exists "publication_candidate" drop column if exists "workType";

@@ -1,0 +1,32 @@
+/* Same ivory band as the portal cards, so the section sits in the page's rhythm. Cards are white with a soft bottom shadow
+   at rest; the shared .pop hover/focus glow is left as it is. */
+.section {
+  /* Pull the band up into the News section's bottom padding, so the heading sits close under "View All News & Events". */
+  margin-top: calc(var(--section-y) * -0.75);
+  padding-block: 8px 24px;
+  background: linear-gradient(to bottom, var(--ivory) 0, var(--ivory-deep) 24%, var(--ivory-deep) 80%, var(--ivory) 100%);
+}
+.lede { margin: -6px auto 6px; max-width: 640px; text-align: center; color: var(--text); font-size: 1rem; line-height: 1.5; }
+.note { margin: 0 auto 4px; text-align: center; font-size: 0.85rem; color: var(--text); }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); max-width: 1120px; margin-inline: auto; }
+.cell { display: flex; }
+.card { display: flex; flex-direction: column; width: 100%; background: #fff; border-color: color-mix(in srgb, var(--forest) 7%, transparent); }
+.card:not(:hover):not(:has(:focus-visible)) {
+  box-shadow: 0 12px 16px -10px color-mix(in srgb, var(--forest-deep) 34%, transparent), 0 3px 6px color-mix(in srgb, var(--forest-deep) 7%, transparent);
+}
+/* A portrait crop: the face stays in frame because the picture is anchored near the top. */
+.photo { position: relative; aspect-ratio: 3 / 2; border-radius: var(--radius) var(--radius) 0 0; background: var(--ivory-deep); }
+.img { object-fit: cover; object-position: 50% 6%; }
+.body { display: flex; flex-direction: column; gap: 4px; padding: 12px 18px 14px; flex: 1 1 auto; }
+.who { margin: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.name { font-weight: 700; font-size: 0.9rem; color: var(--maroon); letter-spacing: 0.01em; }
+.title { margin: 0; font-family: var(--stack-serif); font-weight: 600; font-size: 1.12rem; line-height: 1.3; color: var(--forest); }
+.title a { text-decoration: none; color: inherit; }
+.meta { margin: 0; font-size: 0.8rem; color: var(--text); opacity: 0.8; }
+.summary { margin: 0; font-size: 0.92rem; line-height: 1.45; color: var(--text); flex: 1 1 auto; }
+.more { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font-weight: 700; font-size: 0.9rem; color: var(--forest); }
+.all { margin: 4px 0 0; text-align: center; }
+.all a { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--forest); text-decoration: none; border-bottom: 2px solid var(--maroon); padding-bottom: 2px; }
+.all a:hover, .all a:focus-visible { color: var(--maroon); }
+@media (max-width: 899px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 599px) { .grid { grid-template-columns: 1fr; max-width: 440px; } }

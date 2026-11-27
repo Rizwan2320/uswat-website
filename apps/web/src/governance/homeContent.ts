@@ -13,6 +13,31 @@ import type { Actor } from './roles'
 
 export const HOME_SLIDES = { min: 3, max: 8 } as const
 export const HOME_STATS = { min: 3, max: 6 } as const
+export const HOME_PORTALS = { min: 3, max: 8 } as const
+export const PORTAL_ICONS = ['book', 'badge', 'document', 'calendar', 'gear'] as const
+
+/**
+ * The slides may be left empty: the home page then keeps its standard photographs (site/home/homeMap.ts).
+ * This lets the statistics be edited and published before any photograph can be uploaded (the hosted
+ * Blob store is not set up yet, ADR-0014). Once there are slides, the 3 to 8 rule applies as before.
+ * Like `minRows`, it runs on publish only; drafts may be incomplete.
+ */
+export const slidesCountValidate = (value: unknown): true | string => {
+  const n = Array.isArray(value) ? value.length : 0
+  if (n === 0) return true
+  if (n < HOME_SLIDES.min || n > HOME_SLIDES.max) {
+    return `Use ${HOME_SLIDES.min} to ${HOME_SLIDES.max} slides, or remove them all to keep the standard photographs.`
+  }
+  return true
+}
+/** Portal cards may be left empty (the standard cards stay); otherwise 3 to 8. Publish only, like the slides. */
+export const portalsCountValidate = (value: unknown): true | string => {
+  const n = Array.isArray(value) ? value.length : 0
+  if (n === 0) return true
+  return n < HOME_PORTALS.min || n > HOME_PORTALS.max
+    ? `Use ${HOME_PORTALS.min} to ${HOME_PORTALS.max} cards, or remove them all to keep the standard cards.`
+    : true
+}
 /** The icon names `site/content/hero.ts` and `types.ts` already use. */
 export const SLIDE_ICONS = ['cap', 'document', 'book', 'calendar', 'people', 'badge'] as const
 export const STAT_ICONS = ['cap', 'people', 'person', 'trophy'] as const
@@ -27,6 +52,7 @@ export const ICON_LABELS: Record<string, string> = {
   person: 'Person',
   badge: 'Badge',
   trophy: 'Trophy',
+  gear: 'Gear',
 }
 
 /** Only these may publish; an editor saves drafts (same as Pages). The system (seeds) may too. */
@@ -62,6 +88,22 @@ export const homeHrefValidate: TextFieldSingleValidation = (value, options) => {
   const base = text(value, options)
   if (base !== true) return base
   if (value == null || value === '') return true
+  return isHomeHref(value)
+    ? true
+    : 'Use a page on this site, starting with / (for example /academics), or a full address starting with https://'
+}
+
+/**
+ * A portal card link. Same as the other home links, but `http://` is allowed too: the university's own
+ * examination system is served on http://exam.uswat.edu.pk/ (crawled 2026-11-06), and a stricter rule would
+ * stop the whole card list from being saved.
+ */
+export const portalHrefValidate: TextFieldSingleValidation = (value, options) => {
+  const base = text(value, options)
+  if (base !== true) return base
+  if (value == null || value === '') return true
+  if (typeof value === 'string' && /^http:\/\/[^\s/]+/.test(value.trim()) && isSafeHref(value))
+    return true
   return isHomeHref(value)
     ? true
     : 'Use a page on this site, starting with / (for example /academics), or a full address starting with https://'
@@ -134,4 +176,12 @@ export function slideMediaProblems(
     })
   })
   return out
+}
+
+/** A colour is empty (the standard one) or exactly #rrggbb. Runs for drafts too, so a typo is caught early. */
+export const colourValidate = (value: unknown): true | string => {
+  if (value == null || value === '') return true
+  return typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value)
+    ? true
+    : 'Use a colour code like #003b17: a # and six digits or letters a to f.'
 }

@@ -18,6 +18,7 @@ import {
   DraftNote,
   FaqList,
   HeadCard,
+  HeadIntroCard,
   Hero,
   IconCards,
   IconRows,
@@ -28,6 +29,10 @@ import {
   Stats,
   TitledCards,
 } from './blocks'
+import { ContactList, Sources } from '../offices/blocks'
+
+import AlumniShowcase from './Alumni'
+import { alumniBySlugs } from './alumni'
 import { art } from './profiles/art'
 import { disciplinesOf } from './profiles'
 import type { DepartmentFeed } from './feed'
@@ -47,6 +52,7 @@ export default function RichDepartmentPage({
 }) {
   const head = profile.team.find((m) => m.role === 'head')
   const coordinators = profile.team.filter((m) => m.role === 'coordinator')
+  const members = profile.team.filter((m) => m.role === 'member')
   const programmeNames = new Map(programmes.map((p) => [p.slug, p.name]))
   const vision = str(doc.vision) ?? profile.vision
   const mission = str(doc.mission) ?? profile.mission
@@ -64,9 +70,12 @@ export default function RichDepartmentPage({
     return { p, d }
   })
 
+  const alumni = alumniBySlugs(profile.alumni ?? [])
+  const ref = profile.reference
+
   const stats = [
     { value: programmes.length, label: 'degree programmes' },
-    { value: '4 years', label: 'eight semesters each' },
+    { value: profile.durationText ?? '4 years', label: profile.durationNote ?? 'eight semesters each' },
     { value: profile.labs.length, label: 'laboratories' },
     { value: profile.research.length, label: 'research areas' },
   ]
@@ -78,8 +87,10 @@ export default function RichDepartmentPage({
     { id: 'careers', label: 'Careers' },
     { id: 'student-life', label: 'Student life' },
     { id: 'people', label: 'Faculty' },
+    ...(alumni.length ? [{ id: 'alumni', label: 'Alumni' }] : []),
     { id: 'news', label: 'News and notices' },
     { id: 'faq', label: 'Questions' },
+    ...(ref ? [{ id: 'contact', label: 'Contact' }, { id: 'sources', label: 'Sources' }] : []),
   ]
   return (
     <div className={styles.root}>
@@ -91,15 +102,18 @@ export default function RichDepartmentPage({
           { label: 'Departments', href: DEPARTMENTS_PATH },
           { label: profile.shortName },
         ]}
+        hideCrumbs
+        photos={profile.heroPhotos}
       />
       <Hero
         art={profile.hero}
+        photo={profile.campusPhoto}
         badge={profile.shortName}
         lead={profile.intro}
         facts={[
           ['Programmes', String(programmes.length)],
-          ['Level', 'BS'],
-          ['Duration', '4 years'],
+          ['Level', profile.levelText ?? 'BS'],
+          ['Duration', profile.durationText ?? '4 years'],
         ]}
         actions={[
           { label: 'Explore programmes', href: '#programmes' },
@@ -112,9 +126,16 @@ export default function RichDepartmentPage({
       <Band id="overview" kicker="About" title={`About ${profile.shortName}`}>
         <div className={styles.split}>
           <Prose paragraphs={profile.about} />
-          <Photo
-            art={art('dcst', 'tile', 'Illustration of a computer chip with the letters DCST')}
-          />
+          {head?.photo ? (
+            <HeadIntroCard
+              name={head.name}
+              title={head.title}
+              photo={head.photo}
+              label={head.roleLabel}
+            />
+          ) : (
+            <Photo art={profile.tile ?? art('dcst', 'tile', 'Illustration of a computer chip with the letters DCST')} />
+          )}
         </div>
         <div className={styles.vm}>
           <div className={styles.vmCard}>
@@ -140,18 +161,24 @@ export default function RichDepartmentPage({
         id="programmes"
         kicker="Degrees"
         title="Programmes"
-        lede="Five four-year BS programmes share one first year. Choose the one that matches how you like to work."
+        lede={
+          profile.programmesLede ??
+          'Five four-year BS programmes share one first year. Choose the one that matches how you like to work.'
+        }
       >
         {programmeCards.length ? (
-          <ul className={styles.pics}>
+          <ul
+            className={styles.pics}
+            style={programmeCards.length === 4 ? ({ '--pic-min': '420px' } as React.CSSProperties) : undefined}
+          >
             {programmeCards.map(({ p, d }) => (
               <PictureCard
                 key={p.id}
-                art={d?.tile ?? art('dcst', 'tile')}
+                art={d?.tile ?? profile.tile ?? art('dcst', 'tile')}
                 title={p.name}
                 href={programmeHref(p.slug)}
                 tag={d?.shortName}
-                meta={[p.level, p.duration].filter(Boolean).join(' · ')}
+                meta={[p.level, p.duration, d?.centre].filter(Boolean).join(' · ')}
                 text={d?.summary ?? ''}
                 more="Explore programme"
               />
@@ -204,8 +231,8 @@ export default function RichDepartmentPage({
         id="people"
         tint
         kicker="Faculty"
-        title="Leadership and coordinators"
-        lede="Each programme has a coordinator who guides students through the study plan."
+        title={profile.peopleTitle ?? 'Leadership and coordinators'}
+        lede={profile.peopleLede ?? 'Each programme has a coordinator who guides students through the study plan.'}
       >
         {head ? <HeadCard member={head} /> : null}
         {coordinators.length ? (
@@ -218,10 +245,27 @@ export default function RichDepartmentPage({
             />
           </>
         ) : null}
+        {members.length ? (
+          <>
+            <h3 className={styles.subhead}>Faculty members</h3>
+            <CoordinatorCards
+              compact
+              members={members}
+              programmeNames={programmeNames}
+              programmeHref={programmeHref}
+            />
+          </>
+        ) : null}
       </Band>
+
+      <AlumniShowcase
+        items={alumni}
+        lede="Theses, projects and papers by graduates of the department's programmes. Select a card to read about the work."
+      />
 
       <Band
         id="news"
+        tint
         kicker="Latest"
         title="News, events and notices"
         lede={`Announcements from ${profile.shortName}. Items tagged "${profile.shortName}" in the CMS appear here.`}
@@ -232,6 +276,23 @@ export default function RichDepartmentPage({
       <Band id="faq" kicker="Good to know" title="Questions">
         <FaqList items={profile.faq} />
       </Band>
+
+      {ref ? (
+        <>
+          <Band id="contact" tint kicker="Contact" title={`Contact ${profile.shortName}`}>
+            <ContactList phones={ref.phones} emails={ref.emails} />
+          </Band>
+          <Band id="sources" kicker="Where this comes from" title="Sources">
+            {profile.status === 'draft' ? (
+              <p className={styles.note}>
+                Only the facts listed below come from the university’s own pages. The rest of this page, including the laboratories,
+                research areas, careers and study plans, is illustrative text that the faculty has not yet reviewed.
+              </p>
+            ) : null}
+            <Sources sources={ref.sources} verifiedAt={ref.verifiedAt} openPoints={ref.openPoints} />
+          </Band>
+        </>
+      ) : null}
 
       <div className="container">
         <Cta

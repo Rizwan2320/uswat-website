@@ -11,7 +11,7 @@ export const sampleSource = (collection: string, slug: string) =>
 
 export type FacultyGroupSeed = { slug: string; name: string }
 export type CampusSeed = { slug: string; name: string }
-export type OfficeSeed = { slug: string; name: string; group: string; hours: string; email?: string; head: string }
+export type OfficeSeed = { slug: string; name: string; group: string; hours?: string; email?: string; head?: string }
 export type PersonSeed = {
   slug: string
   name: string
@@ -23,21 +23,25 @@ export type PersonSeed = {
   /** Department slug; only set for people shown on a department page. */
   department?: string
 }
-export type DepartmentSeed = { slug: string; name: string; facultyGroup: string; head: string; summary: string; vision?: string; mission?: string; emails?: string[] }
+export type DepartmentSeed = { slug: string; name: string; facultyGroup: string; head?: string; summary: string; vision?: string; mission?: string; emails?: string[] }
 export type ProgrammeSeed = {
   slug: string
   name: string
-  department: string
-  campus: string
-  level: string
-  duration: string
-  eligibility?: string
+  /** A programme the university's pages list without a department or centre has none. */
+  department?: string
+  campus?: string
+  level?: string
+  duration?: string
+  /** `null` leaves the field empty (a real programme whose eligibility is not published); `undefined` gets the Sample text. */
+  eligibility?: string | null
 }
 
 export const facultyGroups: FacultyGroupSeed[] = [
   { slug: 'sample-faculty-of-sciences', name: 'Sample Faculty of Sciences' },
   { slug: 'sample-faculty-of-arts-and-humanities', name: 'Sample Faculty of Arts and Humanities' },
   { slug: 'sample-faculty-of-social-and-management-sciences', name: 'Sample Faculty of Social and Management Sciences' },
+  // The university's own faculty (its page https://uswat.edu.pk/faculty/, read 2026-11-06). The page content lives in src/site/faculties.
+  { slug: 'faculty-of-allied-health-sciences', name: 'Faculty of Allied Health Sciences' },
 ]
 
 export const campuses: CampusSeed[] = [
@@ -77,6 +81,40 @@ export const offices: OfficeSeed[] = [
   { slug: 'sample-library', name: 'Sample Library', group: 'Services', hours: 'Sample hours, Monday to Saturday', head: 'sample-person-10' },
 ]
 
+/** The offices that have a rich page (apps/web/src/site/offices/profiles). Names, groups, hours, phones and e-mails are the university's own,
+    read on 2026-11-05 (docs/plan/official-data-raw-2026-11-05.md). Seeds carry no real phone numbers or e-mails (a test enforces it); the page's contact
+    details come from the profile, with their sources. The record is still seeded under the sample source and has no head person. */
+const realOffices: OfficeSeed[] = [
+  { slug: 'oric-2', name: 'Office of Research, Innovation and Commercialization (ORIC)', group: 'Offices and boards' },
+  { slug: 'advanced-studies-and-research-board', name: 'Directorate of Advanced Studies and Research (DASR)', group: 'Directorates' },
+  { slug: 'directorate-of-it', name: 'Directorate of IT', group: 'Directorates' },
+  { slug: 'controller-of-examination-office', name: 'Office of the Controller of Examinations', group: 'Offices and boards' },
+  { slug: 'directorate-of-works', name: 'Directorate of Works', group: 'Directorates' },
+  { slug: 'proctorial-board', name: 'Proctorial Board', group: 'Offices and boards' },
+  { slug: 'kamyab-jawan-markaz', name: 'Youth Development Centre (YDC)', group: 'Centres and associations' },
+  { slug: 'alumni', name: 'Alumni Association', group: 'Centres and associations' },
+  { slug: 'hunerkada-center-for-excellence', name: 'Hunerkada Center of Excellence', group: 'Centres and associations' },
+  { slug: 'directorate-of-research-and-technological-development', name: 'Directorate of Research and Technological Development', group: 'Directorates' },
+  { slug: 'directorate-of-admissions', name: 'Directorate of Admissions', group: 'Directorates' },
+  { slug: 'directorate-of-administration', name: 'Directorate of Administration', group: 'Directorates' },
+  { slug: 'directorate-of-planning-and-development', name: 'Directorate of Planning and Development', group: 'Directorates' },
+  { slug: 'registeror-office', name: 'Office of the Registrar', group: 'Offices and boards' },
+  { slug: 'treasurer-office', name: 'Office of the Treasurer', group: 'Offices and boards' },
+  { slug: 'provost-office', name: 'Office of the Provost', group: 'Offices and boards' },
+  { slug: 'vc-office', name: 'Office of the Vice Chancellor', group: 'Offices and boards' },
+  { slug: 'office-of-the-pro-vice-chancellor-pro-vc', name: 'Office of the Pro Vice Chancellor', group: 'Offices and boards' },
+  { slug: 'university-advancement-financial-aid-office', name: 'University Advancement and Financial Aid Office', group: 'Offices and boards' },
+  { slug: 'e-office', name: 'E-Office', group: 'Offices and boards' },
+  { slug: 'dean-office-3', name: 'Dean’s Office, Faculty of Chemical Sciences', group: 'Offices and boards' },
+  { slug: 'election-administrative-officers-and-faculty-members', name: 'Election (Administrative Officers and Faculty Members)', group: 'Offices and boards' },
+  { slug: 'press-release', name: 'Press Releases', group: 'Offices and boards' },
+  { slug: 'developmental-projects', name: 'Developmental Projects', group: 'Offices and boards' },
+  { slug: 'directorate-of-sports', name: 'Directorate of Sports', group: 'Directorates' },
+  { slug: 'office-365', name: 'Office 365', group: 'Offices and boards' },
+  { slug: 'office-of-the-deans', name: 'Office of the Deans', group: 'Offices and boards' },
+]
+offices.push(...realOffices)
+
 const dept = (slug: string, subject: string, facultyGroup: string, head: string): DepartmentSeed => ({
   slug: `sample-department-of-${slug}`,
   name: `Sample Department of ${subject}`,
@@ -96,6 +134,18 @@ export const departments: DepartmentSeed[] = [
     summary:
       'The Department of Computer and Software Technologies (DCST) teaches computer science, software engineering, information technology, data science and artificial intelligence.',
     emails: [`dcst@${SAMPLE_HOST}`],
+  },
+  {
+    slug: 'centre-for-medical-technologies',
+    name: 'Centre for Medical Technologies',
+    facultyGroup: 'faculty-of-allied-health-sciences',
+    summary: 'A centre of the Faculty of Allied Health Sciences. The university’s Quality Enhancement Cell lists BS Medical Laboratory Technology and BS Dental Technology under it.',
+  },
+  {
+    slug: 'centre-for-pharmaceutical-and-rehabilitation-sciences',
+    name: 'Centre for Pharmaceutical and Rehabilitation Sciences',
+    facultyGroup: 'faculty-of-allied-health-sciences',
+    summary: 'A centre of the Faculty of Allied Health Sciences. The university’s Quality Enhancement Cell lists the Doctor of Physical Therapy (DPT) under it.',
   },
   dept('mathematics', 'Mathematics', 'sample-faculty-of-sciences', 'sample-person-04'),
   dept('english', 'English', 'sample-faculty-of-arts-and-humanities', 'sample-person-05'),
@@ -124,7 +174,17 @@ const dcstProg = (subject: string): ProgrammeSeed => ({
     'Intermediate (HSSC) with Mathematics, or an equivalent qualification. The merit criteria are announced with each intake.',
 })
 
+/** The four programmes of the Faculty of Allied Health Sciences, as the faculty page lists them (read 2026-11-06). Level, duration and eligibility are
+    not published, so they stay empty (a person fills them in the CMS). Radiography & Imaging has no centre on any page, so it has no department. */
+const alliedProgrammes: ProgrammeSeed[] = [
+  { slug: 'bs-medical-laboratory-technology', name: 'BS Medical Laboratory Technology (MLT)', department: 'centre-for-medical-technologies', eligibility: null },
+  { slug: 'bs-dental-technology', name: 'BS Dental Technology', department: 'centre-for-medical-technologies', eligibility: null },
+  { slug: 'doctor-of-physical-therapy', name: 'Doctor of Physical Therapy (DPT)', department: 'centre-for-pharmaceutical-and-rehabilitation-sciences', eligibility: null },
+  { slug: 'bs-radiography-and-imaging-technology', name: 'BS Radiography & Imaging Technology', eligibility: null },
+]
+
 export const programmes: ProgrammeSeed[] = [
+  ...alliedProgrammes,
   ...['Computer Science', 'Software Engineering', 'Information Technology', 'Data Science', 'Artificial Intelligence'].map(dcstProg),
   prog('BS', 'Physics', 'physics', 4),
   prog('MS', 'Physics', 'physics', 2),

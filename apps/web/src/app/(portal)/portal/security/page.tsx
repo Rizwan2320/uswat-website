@@ -18,7 +18,7 @@ export default async function SecurityPage() {
       ? await createPgEventStore(getIdentityPool(config.databaseUrl)).recent(userId).catch(() => [])
       : []
   return (
-    <Shell email={email}>
+    <Shell email={email} wide>
       <h1>{COPY.security.title}</h1>
       <p>{COPY.security.intro}</p>
       <SecurityPanel hasPasskey={(factors?.passkeys ?? 0) > 0} fresh={fresh} totpVerified={factors?.totpVerified ?? false} recoveryCodesRemaining={factors?.recoveryCodesRemaining ?? 0} events={events.map((e) => ({ id: e.id, type: e.type, outcome: e.outcome, ipPrefix: e.ipPrefix, at: e.at.toISOString() }))} />

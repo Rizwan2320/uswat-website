@@ -43,7 +43,7 @@ section.section { position: relative; isolation: isolate; overflow: hidden; back
 /* Ribbon: wider than the portrait so its wings hide the cut at the bottom of the photo. */
 .ribbon {
   position: relative; z-index: 1; width: 100%; margin-top: -46px; padding: 17px 54px 15px; text-align: center; color: #fff;
-  display: grid; gap: 1px; filter: drop-shadow(0 8px 14px rgb(0 42 16 / 0.28));
+  display: grid; gap: 1px; filter: drop-shadow(0 8px 14px color-mix(in srgb, var(--forest-deep) 28%, transparent));
 }
 .ribbonBg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
 .name { display: block; font-family: var(--stack-serif); font-weight: 700; font-size: 1.15rem; line-height: 1.25; }

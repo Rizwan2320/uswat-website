@@ -7,8 +7,8 @@ For staff who write and publish content in the University of Swat CMS. Plain wor
 | Role | What you can do |
 | --- | --- |
 | Contributor | Start a draft. You can see and change only your own drafts. |
-| Editor | Write and edit content for your office, and send it for review. You cannot publish. |
-| Approver | Review content for your office, approve it, mark it as verified, and publish it. Also the only role (with site manager and platform admin) who can change an image after it is uploaded and record its rights. As head of an office you also manage your own team (see below). |
+| Editor | Write and edit content for your office, and send it for review. You cannot publish, except as a coordinator (below). A **programme coordinator** is an Editor with programmes assigned: they edit only those programmes (not the department page, not other programmes) and send them to the head of the department. When the head has approved and verified the programme, the coordinator presses **Publish** on it themselves; that is the only thing a coordinator can publish. A coordinator also takes their own live programme page offline (a question asks first); the head of the department does not take a programme page offline, only the department page. The platform admin and site manager still can. |
+| Approver | Review content for your office, approve it, mark it as verified, and publish it. Also the only role (with site manager and platform admin) who can change an image after it is uploaded and record its rights. As head of an office you also manage your own team (see below). A **head of department** (an Approver whose office is the department) reviews the department page and all its programmes, and publishes the department's pages themselves, without sending them to anyone. |
 | Site manager | Everything an approver does for all offices, plus menus, redirects and forms. |
 | Platform admin | Everything, plus user accounts. |
 | Auditor | Read content and the audit log. Cannot change anything. |
@@ -28,11 +28,21 @@ A coloured line at the top of every item says in plain words where it stands and
 
 **Send back** asks the approver to type what the editor must fix; it cannot be empty. The editor sees it on the item ("Sent back: ...") and under **Sent back to me**, and it clears when the editor sends the item for review again. The note is a convenience on screen, not a rule: the system does not refuse a send-back without one if it is done by another route.
 
-**Nobody approves their own work (since phase 3).** If you created an item you cannot approve it, even as platform admin; send it for review and another approver does it. The server refuses it too. Items brought in by the importer have no author, so an approver may approve those.
+**Nobody approves their own work (since phase 3), except a platform admin.** If you created an item you cannot approve it; send it for review and another approver does it. The server refuses it too. A platform admin looks after the main pages alone, so an admin approves and publishes their own items (Mark verified, Approve, Publish); every step is in the audit log. Items brought in by the importer have no author, so an approver may approve those.
 
 **Publish changes** now sits inside the coloured status box, next to the other steps, and only appears for roles that may publish and only once the item is Approved (or already live). There is no Publish button at the top of the screen.
 
 **Publish changes** only appears for roles that may publish. Editors and contributors never see it. If an item belongs to another office, an editor or approver sees it read only. Nobody sees two people's work at once without warning: if a colleague had the item open a moment ago, Payload asks whether to **Take over**.
+
+## Back and Sign out
+
+On every screen, under the coloured bar at the top, there is a **Back** button and **Sign out** at the right. Back goes one step back, or up to the list when you opened the screen directly. They are always visible, also on a phone, where the side menu is folded away. Back is not shown on the dashboard or the sign-in screens.
+
+## Which page is mine?
+
+Above the coloured status box on every page there is one line saying what you are editing and why you may change it, for example "This is your department page: Department of Physics" or "You are editing a programme you coordinate: BS Physics". If the page is not yours, the box says you can look but not change it, and there is no such line.
+
+Your bar at the very top names you: a head of department sees "You are the head of Department of Physics", a coordinator sees the programmes they look after.
 
 ## Your dashboard
 
@@ -93,10 +103,23 @@ Editors and contributors do not see **Publish changes**; only roles that may pub
 As an approver you can add and manage the **Editors and Contributors of your own office**, under **Users** in the menu. You see only your own team there, not the whole staff list.
 
 - **Add a person:** Users, Create New. Give a name, an email and a first password, and tell the person the password yourself (there is no email invitation yet); they can change it from their own account. Leave the role as Contributor or pick Editor. If you hold one office, it is filled in for you; if you hold more than one, choose which.
+- **Make a head of department (platform admin):** first create the department (Departments, Create New: its name becomes its office, nothing to type) and **publish it** (a head cannot open a draft the admin has not sent on; publishing needs the source link). Then Users, Create New, role Approver, and under **Offices** choose the department from "Add a department". The list says "not published yet" beside a department that is still a draft, and flags an office word that matches no department ("check the spelling").
+- **Add a programme (head of a department):** Programmes, Create New, choose your department. It starts as a draft in your office; you publish it yourself. You cannot put it under another office's department.
+- **Make a programme coordinator (head of a department):** create the person as an Editor with the department's office, then choose their **Programmes**. You can choose only programmes of your own department. They then see and edit only those programmes. The platform admin can choose any programme.
 - **Change a role:** open the person and switch between Editor and Contributor.
 - **Take your office off a person:** remove it from their list of offices. A person must keep at least one office; to remove someone completely, delete their account. You can delete an account only if the person works for none but your offices.
 - **What you cannot do:** make anyone an Approver, Site Manager or Admin; give or take an office that is not yours; touch anyone outside your office; change anyone's name, email or password (ask the IT Directorate); change your own role or offices.
 - Every one of these actions is recorded with your name.
+
+## Who makes which account
+
+| Account | Made by |
+| --- | --- |
+| Platform admin | The first account ever created; after that, another platform admin. |
+| Site manager, Approver (including a head of department), Auditor | The platform admin (IT Directorate), who sets the offices. A head of department gets the department's office, as shown on the department record. |
+| Editor, Contributor, programme coordinator | The head of the department or office, for their own team (see above), or the platform admin. |
+
+Nobody can register themselves. Whoever creates an account sets the first password and tells the person; there is no invitation email yet.
 
 ## What is recorded
 
@@ -110,14 +133,23 @@ On a page or post, two buttons sit beside **Publish changes**: the **eye** (Live
 
 Opening **Create New** saves an empty draft straight away. If you start something and leave without a title, it shows on your dashboard as **Untitled (started ...)**. Open it to finish it, or delete it: open the draft, use the **...** menu beside the title, and choose **Delete**.
 
+## Archive and Restore
+
+On a **live** page the status box has **Take offline** and **Archive**. They differ:
+
+- **Take offline** puts the page back to a draft. It needs approval again before it returns. A programme's coordinator does this for their own programme.
+- **Archive** takes the page off the website and keeps it on record, as it was. It is for a head of department (not on a programme page), a site manager (not on High impact items) and a platform admin. A coordinator does not see Archive.
+
+An archived page shows **Restore** to the head of the office that owns it and to the platform admin only. Restore puts the page back on the website exactly as it was archived; the usual checks run again (verified, source, owner office, and a review date for High impact items), and if one fails the message says which. Both buttons ask "are you sure" first; press Escape or Cancel to leave without changing anything.
+
 ## Deleting
 
 You can delete a **draft that was never published**, if it belongs to your office (a contributor can delete only drafts they started). Nothing public is lost, because the public never saw it.
 
-Anything that has been sent for review, approved, published or archived cannot be deleted by editors, approvers or contributors. To remove something that was published, ask an approver to archive it (it then leaves the public pages and search), or ask a platform administrator to delete it. Site managers can delete these too, except High impact items.
+Anything that has been sent for review, approved, published or archived cannot be deleted by editors, approvers or contributors. To remove something that was published, a head of department, site manager or platform admin presses **Archive** in the status box (see "Archive and Restore" below); an editor asks them to. (it then leaves the public pages and search), or ask a platform administrator to delete it. Site managers can delete these too, except High impact items.
 
 Nobody can delete an item that other items still use. For example, a department that people or programmes point to cannot be deleted; the message says how many of what. Remove those links first, or archive the item instead.
 
-Only a platform admin can create a new department or a new programme. If one is missing, ask the platform admin. Once it exists, editors and approvers of its office edit and publish its content as usual.
+Only a platform admin can create a new department; if one is missing, ask the platform admin. A **head of department** can create a new programme (Programmes, then Create New): choose the department, which must be one of your own office, and it starts as a draft you can publish yourself. Everyone else asks the head or the platform admin. Once a department or programme exists, editors and approvers of its office edit and publish its content as usual.
 
 The **Delete** button can appear on items you are not allowed to delete. The system refuses the delete and says why; nothing is removed.

@@ -452,15 +452,14 @@ describe('four eyes (slice 3aa): nobody approves what they created', () => {
       context: { sampleLoader: true },
     })
     // An item an ordinary request created is still refused (checked on a new one, same person).
-    const own = await create(admin, { ownerOffice: 'Registrar' })
-    expect(await refusal(() => move(admin, own.id, { status: 'approved' }))).toBe('SELF_APPROVAL')
+    const own = await create(manager, { ownerOffice: 'Registrar' })
+    expect(await refusal(() => move(manager, own.id, { status: 'approved' }))).toBe('SELF_APPROVAL')
   })
 
-  it('refuses approving your own item with SELF_APPROVAL, whatever the role, and allows a second person', async () => {
+  it('refuses approving your own item with SELF_APPROVAL, for every role but platform admin, and allows a second person', async () => {
     for (const [who, label] of [
       [approver, 'approver'],
       [manager, 'site manager'],
-      [admin, 'platform admin'],
     ] as const) {
       const own = await create(who, { ownerOffice: 'Registrar' })
       expect(
@@ -481,10 +480,27 @@ describe('four eyes (slice 3aa): nobody approves what they created', () => {
         `${label}: approve and publish in one save`,
       ).toBe('SELF_APPROVAL')
       // A different reviewer can approve it, and then the author may publish it.
-      const other = who === admin ? manager : admin
+      const other = admin
       await move(other, own.id, { status: 'approved', verificationStatus: 'verified' })
       expect((await publish(who, own.id)).governance?.status).toBe('published')
     }
+  })
+
+  it('a platform admin approves and publishes their own item, step by step and in one save (slice 3ag)', async () => {
+    const stepwise = await create(admin, { ownerOffice: 'Registrar' })
+    await move(admin, stepwise.id, { status: 'approved', verificationStatus: 'verified' })
+    expect((await publish(admin, stepwise.id)).governance?.status).toBe('published')
+
+    const inReview = await create(admin, { ownerOffice: 'Registrar' })
+    await move(admin, inReview.id, { status: 'in_review' })
+    await move(admin, inReview.id, { status: 'approved', verificationStatus: 'verified' })
+    expect((await publish(admin, inReview.id)).governance?.status).toBe('published')
+
+    const oneSave = await create(admin, { ownerOffice: 'Registrar' })
+    expect(
+      (await publish(admin, oneSave.id, { status: 'approved', verificationStatus: 'verified' }))
+        .governance?.status,
+    ).toBe('published')
   })
 
   it('does not tell a role that may not approve anything about self approval: the role message comes first', async () => {

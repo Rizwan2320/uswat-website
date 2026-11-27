@@ -1,5 +1,6 @@
 import { plainSlugField } from '@/fields/plainSlug'
 
+import { departmentOwnsItself } from './academics/departmentOwner'
 import {
   faqField,
   iconTitledList,
@@ -24,6 +25,7 @@ export const Departments = governedCollection({
   plural: 'Departments',
   useAsTitle: 'name',
   createAdminOnly: true,
+  hooks: { beforeValidate: [departmentOwnsItself] },
   group: 'Organisation',
   defaultColumns: ['name', 'facultyGroup', 'updatedAt'],
   fields: [

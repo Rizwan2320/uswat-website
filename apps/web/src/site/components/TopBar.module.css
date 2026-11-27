@@ -21,3 +21,13 @@
   .left { display: none; }
   .inner { justify-content: flex-end; }
 }
+/* The Departments button looks exactly like the portal links next to it: plain text, underline on hover. */
+.linkBtn {
+  padding: 8px 4px; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer;
+}
+.linkBtn:hover { text-decoration: underline; text-underline-offset: 4px; }
+@media (max-width: 767px) {
+  .inner { padding-block: 4px; }
+  .right { flex: 0 1 auto; min-width: 0; flex-wrap: wrap; justify-content: flex-end; gap: 2px 8px; }
+  .sep { display: none; }
+}

@@ -60,7 +60,10 @@ export interface SweepSummary {
   last: SweepRun | null
   lastGood: SweepRun | null
   /** Runs finished in the last 24 hours, with the totals of what they did. */
-  last24h: { runs: number; failures: number } & Pick<SweepCounts, 'published' | 'archived' | 'markedStale' | 'skipped'>
+  last24h: { runs: number; failures: number } & Pick<
+    SweepCounts,
+    'published' | 'archived' | 'markedStale' | 'skipped'
+  >
   /** The schedule, so the panel can say how often it expects a run. */
   cron: string
 }
@@ -90,14 +93,17 @@ export function readReport(report: unknown): SweepCounts | null {
       for (const s of c.skipped) {
         if (!isObj(s)) continue
         out.skipped += 1
-        out.skippedReasons.push(`${slug} #${String(s.id)}: ${String(s.reason ?? 'no reason given')}`)
+        out.skippedReasons.push(
+          `${slug} #${String(s.id)}: ${String(s.reason ?? 'no reason given')}`,
+        )
       }
     }
   }
   return out
 }
 
-const finishedAt = (j: JobRow): string | null => j.completedAt ?? (j.hasError ? (j.createdAt ?? null) : null)
+const finishedAt = (j: JobRow): string | null =>
+  j.completedAt ?? (j.hasError ? (j.createdAt ?? null) : null)
 
 function toRun(job: JobRow): SweepRun | null {
   const at = finishedAt(job)
@@ -109,7 +115,14 @@ function toRun(job: JobRow): SweepRun | null {
     at,
     failed,
     reportReadable: counts !== null,
-    ...(counts ?? { published: 0, archived: 0, markedStale: 0, skipped: 0, skippedReasons: [], truncated: false }),
+    ...(counts ?? {
+      published: 0,
+      archived: 0,
+      markedStale: 0,
+      skipped: 0,
+      skippedReasons: [],
+      truncated: false,
+    }),
   }
 }
 
@@ -122,7 +135,11 @@ const ago = (fromIso: string, now: Date): string => {
 }
 
 /** Pure: what the recent sweep rows say about whether the upkeep is working. */
-export function summarizeSweeps(jobs: JobRow[], now: Date, lateAfterHours = SWEEP_LATE_AFTER_HOURS): SweepSummary {
+export function summarizeSweeps(
+  jobs: JobRow[],
+  now: Date,
+  lateAfterHours = SWEEP_LATE_AFTER_HOURS,
+): SweepSummary {
   // A run that claims to have finished in the future (more than ten minutes ahead, to allow for
   // clock differences) cannot be trusted to say anything about now, so it is left out.
   const latest = now.getTime() + 10 * 60_000
@@ -157,7 +174,9 @@ export function summarizeSweeps(jobs: JobRow[], now: Date, lateAfterHours = SWEE
       ...base,
       state: 'failed',
       message: `The last automatic upkeep run, ${ago(last.at, now)}, failed.${
-        lastGood ? ` The last good run was ${ago(lastGood.at, now)}.` : ' There has been no good run on record.'
+        lastGood
+          ? ` The last good run was ${ago(lastGood.at, now)}.`
+          : ' There has been no good run on record.'
       }`,
     }
   }
@@ -291,13 +310,18 @@ export async function loadOperations(
         overrideAccess: true,
       })
       if (res.totalDocs > OFFICE_RECORD_CAP) officesPartial = true
-      for (const d of res.docs as unknown as Array<{ governance?: OfficeRecord & Record<string, unknown> }>) {
+      for (const d of res.docs as unknown as Array<{
+        governance?: OfficeRecord & Record<string, unknown>
+      }>) {
         const g = d.governance
         if (g) records.push(g)
       }
     } catch (error) {
       officesPartial = true
-      payload.logger.error({ err: error, collection: c.slug }, 'operations: could not read a collection')
+      payload.logger.error(
+        { err: error, collection: c.slug },
+        'operations: could not read a collection',
+      )
     }
   }
 
@@ -306,7 +330,11 @@ export async function loadOperations(
   if (alt && payload.config.collections.some((c) => c.slug === 'media')) {
     try {
       imagesWithoutAlt = (
-        await payload.count({ collection: 'media', where: alt.where({ userId: user.id, now }), overrideAccess: true })
+        await payload.count({
+          collection: 'media',
+          where: alt.where({ userId: user.id, now }),
+          overrideAccess: true,
+        })
       ).totalDocs
     } catch (error) {
       payload.logger.error({ err: error }, 'operations: could not count images without alt text')

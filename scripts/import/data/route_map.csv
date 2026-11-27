@@ -1249,7 +1249,7 @@ https://uswat.edu.pk/about-university/,about-university,769,Pages,T2/T8 Page,/ab
 https://uswat.edu.pk/academic-calendar/,academic-calendar,27,Pages,T2/T8 Page,/academic-calendar/,migrate,
 https://uswat.edu.pk/accommodation-for-conference/,accommodation-for-conference,9,(none),-,/,redirect to nearest parent; 301,was hold as draft (near-empty)
 https://uswat.edu.pk/activities/,activities,12,(none),-,/,redirect to nearest parent; 301,was hold as draft (near-empty)
-https://uswat.edu.pk/administration/,administration,84,Offices,T7/T2 Office,/administration/administration/,migrate,
+https://uswat.edu.pk/administration/,administration,84,Offices,T7/T2 Office,/administration/,migrate,section landing: the new /administration page so no redirect
 https://uswat.edu.pk/admission-rules/,admission-rules,12,(none),-,/,redirect to nearest parent; 301,was hold as draft (near-empty)
 https://uswat.edu.pk/advanced-studies-and-research-board/,advanced-studies-and-research-board,272,Offices,T7/T2 Office,/administration/advanced-studies-and-research-board/,migrate,
 https://uswat.edu.pk/affiliation-rules/,affiliation-rules,46,Pages,T2/T8 Page,/affiliation-rules/,migrate,
@@ -1490,7 +1490,7 @@ https://uswat.edu.pk/department-of-zoology/,department-of-zoology,449,Department
 https://uswat.edu.pk/department-of-zoology-2/,department-of-zoology-2,52,Departments (+People),T3 Department,/academics/departments/zoology-2/,migrate,
 https://uswat.edu.pk/developmental-projects/,developmental-projects,13,Offices,T7/T2 Office,/administration/developmental-projects/,migrate (short),
 https://uswat.edu.pk/digital-learning-skills-enrichment-initiative/,digital-learning-skills-enrichment-initiative,197,Pages,T2/T8 Page,/digital-learning-skills-enrichment-initiative/,migrate,
-https://uswat.edu.pk/digital-library/,digital-library,12,Offices,T7/T2 Office,/administration/digital-library/,migrate (short),
+https://uswat.edu.pk/digital-library/,digital-library,12,Offices,T7/T2 Office,/administration/central-library-office/,migrate (short),
 https://uswat.edu.pk/directorate-of-administration/,directorate-of-administration,39,Offices,T7/T2 Office,/administration/directorate-of-administration/,migrate (short),
 https://uswat.edu.pk/directorate-of-admissions/,directorate-of-admissions,124,Offices,T7/T2 Office,/administration/directorate-of-admissions/,migrate,
 https://uswat.edu.pk/directorate-of-advance-studies-and-research/,directorate-of-advance-studies-and-research,12,Offices,T7/T2 Office,/administration/directorate-of-advance-studies-and-research/,migrate (short),
@@ -1509,7 +1509,7 @@ https://uswat.edu.pk/election-administrative-officers-and-faculty-members/,elect
 https://uswat.edu.pk/etea-test/,etea-test,7,(none),-,/,redirect to nearest parent; 301,was hold as draft (near-empty)
 https://uswat.edu.pk/examination/,examination,12,(none),-,/,redirect to nearest parent; 301,was hold as draft (near-empty)
 https://uswat.edu.pk/facilities/,facilities,12,(none),-,/,redirect to nearest parent; 301,was hold as draft (near-empty)
-https://uswat.edu.pk/faculty/,faculty,250,Pages,T2/T8 Page,/faculty/,migrate,
+https://uswat.edu.pk/faculty/,faculty,250,Offices,T3 Faculty,/faculties/allied-health-sciences/,migrate,the old /faculty/ page is the Faculty of Allied Health Sciences; the new faculty page is served at the new address and the old one redirects
 https://uswat.edu.pk/faculty-of-life-sciences/,faculty-of-life-sciences,492,Departments (+People),T3 Department,/academics/departments/life-sciences/,migrate,
 https://uswat.edu.pk/fee-structure/,fee-structure,12,(none),-,/,redirect to nearest parent; 301,was hold as draft (near-empty)
 https://uswat.edu.pk/gallery/,gallery,17,(none),-,/,redirect to nearest parent; 301,was hold as draft (near-empty)
@@ -1575,7 +1575,7 @@ https://uswat.edu.pk/provisional-merit-list-of-zoology-for-the-session-2019-23/,
 https://uswat.edu.pk/provisional-merit-list-shangla/,provisional-merit-list-shangla,85,MeritLists (AdmissionsCycles),T6 Listing,/admissions/merit-lists/,merge: one filterable list; 301,
 https://uswat.edu.pk/provost-office/,provost-office,268,Offices,T7/T2 Office,/administration/provost-office/,migrate,
 https://uswat.edu.pk/public-sector-affiliated-colleges/,public-sector-affiliated-colleges,11,AffiliatedColleges,T6 Listing,/academics/affiliated-colleges/,merge into one listing; 301,
-https://uswat.edu.pk/qec/,qec,12,Offices,T7/T2 Office,/administration/qec/,migrate (short),
+https://uswat.edu.pk/qec/,qec,12,Offices,T7/T2 Office,/administration/quality-enhancement-cell/,migrate (short),
 https://uswat.edu.pk/quality-enhancement-cell/,quality-enhancement-cell,2092,Offices,T7/T2 Office,/administration/quality-enhancement-cell/,migrate,
 https://uswat.edu.pk/red-crescent-building/,red-crescent-building,22,Pages,T2/T8 Page,/red-crescent-building/,migrate,
 https://uswat.edu.pk/registeror-office/,registeror-office,311,Offices,T7/T2 Office,/administration/registeror-office/,migrate,

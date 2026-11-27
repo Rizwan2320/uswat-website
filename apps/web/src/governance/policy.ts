@@ -34,6 +34,7 @@ export type PolicyCode =
   | 'TRANSITION_FORBIDDEN'
   | 'NEEDS_PUBLISH_ACTION'
   | 'EDIT_LIVE_NEEDS_REVIEWER'
+  | 'PUBLISH_CHANGED_CONTENT'
   | 'VERIFY_FORBIDDEN'
   | 'RISK_LOWER_FORBIDDEN'
   | 'PIN_FORBIDDEN'
@@ -67,9 +68,60 @@ export interface RecordState {
   pinned: boolean
   /** Who created the record (contributors may only edit their own drafts). */
   createdBy: string | number | null
+  /** Which record this is (collection and id), for the rules that depend on it (slice 3ah). Absent in pure rule tests. */
+  target?: Target
 }
 
-type Scope = Pick<RecordState, 'ownerOffice' | 'risk'>
+/** The record being judged. `id` is null while it is being created. */
+export interface Target {
+  collection: string
+  id: string | number | null
+}
+
+/**
+ * Who may approve and publish what they created themselves (the four-eyes exception).
+ * - A platform admin: the main pages have no one above them (slice 3ag).
+ * - A head of department on department and programme pages (slice 3ah, owner, 2026-11-22): a head
+ *   writes only their own department's pages, so a second person would never exist. Scope is still
+ *   judged separately; this only lifts the "not your own work" rule.
+ * Heads of other offices (Registrar and the like) and site managers stay bound by it.
+ */
+export function mayApproveOwn(actor: Actor, target?: Target): boolean {
+  if (!isUser(actor)) return false
+  if (actor.role === 'platformAdmin') return true
+  return actor.role === 'approver' && target !== undefined && COORDINATED.has(target.collection)
+}
+
+/** An Editor with programmes assigned is a programme coordinator. */
+const isCoordinator = (actor: Extract<Actor, { kind: 'user' }>): boolean =>
+  actor.role === 'editor' && (actor.programmes?.length ?? 0) > 0
+
+/**
+ * Publishing what the head has already approved (slice 3aj, owner, 2026-11-22): a programme
+ * coordinator presses Publish on their own programme once their head of department approved and
+ * verified it. Only that one step: they never approve, verify, archive or take anything offline.
+ */
+export function mayPublishApproved(actor: Actor, target?: Target): boolean {
+  if (!isUser(actor) || !isCoordinator(actor) || !target) return false
+  return target.collection === 'programmes' && inScope(actor, null, target)
+}
+
+/**
+ * Taking a page offline (slice 3al, owner, 2026-11-22): a programme page is taken offline by its
+ * own coordinator, not by the head; the head takes offline only their own department page. So on a
+ * programme a head of department cannot, and the coordinator of that programme can. Everywhere else
+ * the reviewer keeps the power (admin, site manager, an approver of an ordinary office).
+ * Taking a page down is never a way round review: it removes content, and putting it back goes
+ * through review and approval again (a restore is for approvers and platform admins).
+ */
+export function mayTakeOffline(actor: Actor, rec: Scope): boolean {
+  if (!isUser(actor)) return false
+  if (mayPublishApproved(actor, rec.target)) return true
+  if (!isReviewerFor(actor, rec)) return false
+  return !(actor.role === 'approver' && rec.target?.collection === 'programmes')
+}
+
+type Scope = Pick<RecordState, 'ownerOffice' | 'risk' | 'target'>
 
 const deny = (code: PolicyCode, message: string, httpStatus: 400 | 403 = 403): Denial => ({
   ok: false,
@@ -80,15 +132,33 @@ const deny = (code: PolicyCode, message: string, httpStatus: 400 | 403 = 403): D
 
 const isUser = (a: Actor): a is Extract<Actor, { kind: 'user' }> => a.kind === 'user'
 
-/** Is the record's owner office one of the actor's offices? Global roles are always in scope. */
-export function inScope(actor: Actor, ownerOffice: string | null | undefined): boolean {
+/**
+ * Is this record in the actor's scope? Global roles always. Approvers and editors by owner office,
+ * with one exception (slice 3ah): a programme coordinator (an Editor with programmes assigned) has
+ * only those programmes, by id, and no department.
+ */
+export function inScope(
+  actor: Actor,
+  ownerOffice: string | null | undefined,
+  target?: Target,
+): boolean {
   if (!isUser(actor)) return false
   if (actor.role === 'platformAdmin' || actor.role === 'siteManager') return true
   if (actor.role === 'approver' || actor.role === 'editor') {
+    if (target && isCoordinator(actor) && COORDINATED.has(target.collection)) {
+      return (
+        target.collection === 'programmes' &&
+        target.id !== null &&
+        (actor.programmes ?? []).includes(String(target.id))
+      )
+    }
     return Boolean(ownerOffice) && actor.offices.includes(ownerOffice as string)
   }
   return false
 }
+
+/** Collections where a coordinator is limited to their own programmes. */
+const COORDINATED: ReadonlySet<string> = new Set(['programmes', 'departments'])
 
 /** May this actor approve, publish, archive and verify this record? */
 export function isReviewerFor(actor: Actor, rec: Scope): boolean {
@@ -97,7 +167,7 @@ export function isReviewerFor(actor: Actor, rec: Scope): boolean {
     case 'platformAdmin':
       return true
     case 'approver':
-      return inScope(actor, rec.ownerOffice)
+      return inScope(actor, rec.ownerOffice, rec.target)
     case 'siteManager':
       return rec.risk !== 'high_impact'
     default:
@@ -109,7 +179,8 @@ export function isReviewerFor(actor: Actor, rec: Scope): boolean {
 export function canSubmitFor(actor: Actor, rec: Scope): boolean {
   if (!isUser(actor)) return false
   if (actor.role === 'platformAdmin' || actor.role === 'siteManager') return true
-  if (actor.role === 'approver' || actor.role === 'editor') return inScope(actor, rec.ownerOffice)
+  if (actor.role === 'approver' || actor.role === 'editor')
+    return inScope(actor, rec.ownerOffice, rec.target)
   return false
 }
 
@@ -117,7 +188,7 @@ export function canSubmitFor(actor: Actor, rec: Scope): boolean {
 export function canRestore(actor: Actor, rec: Scope): boolean {
   if (!isUser(actor)) return false
   if (actor.role === 'platformAdmin') return true
-  return actor.role === 'approver' && inScope(actor, rec.ownerOffice)
+  return actor.role === 'approver' && inScope(actor, rec.ownerOffice, rec.target)
 }
 
 const stage = (s: WorkflowStatus): string => WORKFLOW_LABELS[s] ?? s
@@ -166,8 +237,13 @@ export function checkTransition(
             'a reviewer: an approver of the owning office, a platform admin, or a site manager for items that are not High impact',
           )
     case 'approved>published':
+      return reviewer || system || mayPublishApproved(actor, rec.target)
+        ? null
+        : forbidden(
+            'a reviewer: an approver of the owning office, a platform admin, or a site manager for items that are not High impact',
+          )
     case 'published>archived':
-      return reviewer || system
+      return mayTakeOffline(actor, rec) || system
         ? null
         : forbidden(
             'a reviewer: an approver of the owning office, a platform admin, or a site manager for items that are not High impact',
@@ -269,7 +345,7 @@ function evaluateCreate(input: SaveInput): SaveOutcome {
   if (
     isUser(actor) &&
     (actor.role === 'approver' || actor.role === 'editor') &&
-    !inScope(actor, next.ownerOffice)
+    !inScope(actor, next.ownerOffice, next.target)
   ) {
     return deny('OWNER_OUT_OF_SCOPE', 'You can only create items for an office you belong to.')
   }
@@ -301,6 +377,9 @@ function evaluateCreate(input: SaveInput): SaveOutcome {
 /**
  * Four eyes (owner decision, 2026-11-21): nobody approves an item they created themselves, whatever
  * their role. A person with no author (an import) and the system are not affected.
+ * Exception (owner decision, 2026-11-22, slice 3ag): a platform admin publishes their own work. The
+ * main pages have no one above the admin, so a second person would never exist; every step is in the
+ * audit log. Heads of department, approvers and site managers are still bound by the rule.
  */
 const SELF_APPROVAL = deny(
   'SELF_APPROVAL',
@@ -311,14 +390,17 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
   const { actor, publishing, prev, next, contentChanged, now } = input
   const notes: string[] = []
   const wroteIt =
-    isUser(actor) && prev.createdBy != null && String(prev.createdBy) === String(actor.id)
+    isUser(actor) &&
+    !mayApproveOwn(actor, prev.target ?? next.target) &&
+    prev.createdBy != null &&
+    String(prev.createdBy) === String(actor.id)
 
   // Scope is judged on the latest saved state of the record (`prev`), not on the published
   // row: draft saves never touch the published row, so database-level filters see stale data.
   if (isUser(actor)) {
     if (
       (actor.role === 'approver' || actor.role === 'editor') &&
-      !inScope(actor, prev.ownerOffice)
+      !inScope(actor, prev.ownerOffice, prev.target)
     ) {
       return deny('OWNER_OUT_OF_SCOPE', 'This item belongs to another office.')
     }
@@ -335,16 +417,24 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
     }
   }
 
-  const scope: Scope = { ownerOffice: prev.ownerOffice, risk: higherRisk(prev.risk, next.risk) }
+  const scope: Scope = {
+    ownerOffice: prev.ownerOffice,
+    risk: higherRisk(prev.risk, next.risk),
+    target: prev.target ?? next.target,
+  }
   const reviewer = isReviewerFor(actor, scope)
-  const reviewerOnPrev = isReviewerFor(actor, { ownerOffice: prev.ownerOffice, risk: prev.risk })
+  const reviewerOnPrev = isReviewerFor(actor, {
+    ownerOffice: prev.ownerOffice,
+    risk: prev.risk,
+    target: prev.target ?? next.target,
+  })
 
   // Handing a record to an office the actor is not in.
   if (
     isUser(actor) &&
     (actor.role === 'approver' || actor.role === 'editor') &&
     next.ownerOffice !== prev.ownerOffice &&
-    !inScope(actor, next.ownerOffice)
+    !inScope(actor, next.ownerOffice, next.target)
   ) {
     return deny('OWNER_OUT_OF_SCOPE', 'You cannot move an item to an office you do not belong to.')
   }
@@ -400,6 +490,21 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
     } else {
       const move = checkTransition(actor, scope, prev.status, target)
       if (move) return move
+      // A coordinator publishes exactly what the head approved: edits in the same save would go
+      // live unreviewed, so they are refused (they save as a draft and go back for approval).
+      if (
+        target === 'published' &&
+        contentChanged &&
+        !reviewer &&
+        actor.kind !== 'system' &&
+        mayPublishApproved(actor, scope.target)
+      ) {
+        return deny(
+          'PUBLISH_CHANGED_CONTENT',
+          'You changed this page after it was approved. Save it as a draft and send it to your head of department again.',
+          400,
+        )
+      }
     }
     status = target
 
@@ -436,10 +541,21 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
       }
     }
   } else {
-    if (input.unpublishing && !reviewerOnPrev && actor.kind !== 'system') {
+    if (
+      input.unpublishing &&
+      actor.kind !== 'system' &&
+      !mayTakeOffline(actor, {
+        ownerOffice: prev.ownerOffice,
+        risk: prev.risk,
+        target: prev.target ?? next.target,
+      })
+    ) {
+      const onProgramme = (prev.target ?? next.target)?.collection === 'programmes'
       return deny(
         'UNPUBLISH_FORBIDDEN',
-        'Taking published content offline needs a reviewer: an approver of the owning office, a platform admin, or a site manager for items that are not High impact.',
+        onProgramme
+          ? 'A programme page is taken offline by its own coordinator or the platform admin. The head of the department takes offline only the department page.'
+          : 'Taking published content offline needs a reviewer: an approver of the owning office, a platform admin, or a site manager for items that are not High impact.',
       )
     }
     let requested = next.status
@@ -449,7 +565,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
       } else {
         return deny(
           'NEEDS_PUBLISH_ACTION',
-          'Publishing and archiving take effect immediately. Use the Publish changes button for this.',
+          'Publishing and archiving take effect immediately. Use the Publish button for this.',
           400,
         )
       }
@@ -502,7 +618,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
  */
 export function checkDelete(
   actor: Actor,
-  rec: Pick<RecordState, 'risk' | 'status' | 'ownerOffice' | 'createdBy'>,
+  rec: Pick<RecordState, 'risk' | 'status' | 'ownerOffice' | 'createdBy' | 'target'>,
   everPublished = false,
 ): Denial | null {
   if (actor.kind === 'system') return null
@@ -511,7 +627,7 @@ export function checkDelete(
   if (rec.status === 'draft' && !everPublished) {
     if (actor.role === 'siteManager') return null
     if (actor.role === 'editor' || actor.role === 'approver') {
-      return inScope(actor, rec.ownerOffice)
+      return inScope(actor, rec.ownerOffice, rec.target)
         ? null
         : deny('OWNER_OUT_OF_SCOPE', 'This draft belongs to another office.')
     }

@@ -54,7 +54,7 @@ test('editor: sees Send for review, no Approve, no Publish', async ({ page }) =>
   await expect(btn(page, 'Send for review')).toBeVisible()
   await expect(btn(page, 'Approve')).toHaveCount(0)
   await expect(btn(page, 'Send back')).toHaveCount(0)
-  await expect(btn(page, 'Publish changes')).toHaveCount(0)
+  await expect(btn(page, 'Publish')).toHaveCount(0)
   await expect(btn(page, 'Publish')).toHaveCount(0)
   await shot(page, 'editor-draft')
 })
@@ -64,7 +64,7 @@ test('contributor: own draft has no step buttons and no Publish', async ({ page 
   await open(page, fx.ownNotice.id)
   await expect(bar(page)).toContainText('ask an editor')
   await expect(bar(page).getByRole('button')).toHaveCount(0)
-  await expect(btn(page, 'Publish changes')).toHaveCount(0)
+  await expect(btn(page, 'Publish')).toHaveCount(0)
   await shot(page, 'contributor-draft')
 })
 
@@ -73,7 +73,7 @@ test('auditor: read only banner and no buttons', async ({ page }) => {
   await open(page, fx.flowNotice.id)
   await expect(bar(page)).toContainText('Read only')
   await expect(bar(page).getByRole('button')).toHaveCount(0)
-  await expect(btn(page, 'Publish changes')).toHaveCount(0)
+  await expect(btn(page, 'Publish')).toHaveCount(0)
   await shot(page, 'auditor-read-only')
 })
 
@@ -96,6 +96,8 @@ test('approver: another person’s unsent draft has nothing to approve; their ow
 test('whole path: editor sends, approver sends back with a note, editor fixes and sends again, approver publishes', async ({
   browser,
 }) => {
+  // Six sign-ins and two archive steps after the old ending: more than the default 30 seconds.
+  test.setTimeout(120_000)
   const ed = await browser.newPage()
   await signIn(ed, fx.editor)
   await open(ed, fx.flowNotice.id)
@@ -111,7 +113,7 @@ test('whole path: editor sends, approver sends back with a note, editor fixes an
   await expect(bar(ap)).toContainText('Waiting for your review')
   await expect(btn(ap, 'Approve')).toBeVisible()
   await expect(btn(ap, 'Send back')).toBeVisible()
-  await expect(btn(ap, 'Publish changes')).toHaveCount(0)
+  await expect(btn(ap, 'Publish')).toHaveCount(0)
   await shot(ap, 'approver-in-review')
 
   // Send back needs a reason: the confirm button stays off until one is typed.
@@ -150,13 +152,33 @@ test('whole path: editor sends, approver sends back with a note, editor fixes an
   await press(ap2, 'Mark verified', 'Marked as verified')
   await press(ap2, 'Approve', /Approved\. (Before|An approver|Press)/)
   // Publish sits in the status box, next to the other steps; the top of the screen has none.
-  await expect(bar(ap2).getByRole('button', { name: 'Publish changes' })).toBeVisible()
-  await expect(btn(ap2, 'Publish changes')).toHaveCount(1)
+  await expect(bar(ap2).getByRole('button', { name: 'Publish', exact: true })).toBeVisible()
+  await expect(btn(ap2, 'Publish')).toHaveCount(1)
   await shot(ap2, 'approver-approved')
-  await bar(ap2).getByRole('button', { name: 'Publish changes' }).click()
+  await bar(ap2).getByRole('button', { name: 'Publish', exact: true }).click()
   await expect(ap2.getByText(/Published|updated successfully/i).first()).toBeVisible({
     timeout: 30_000,
   })
+
+  // The box itself must say so (the toast alone passed while the box still said Approved).
+  await expect(bar(ap2)).toContainText('Published', { timeout: 30_000 })
+
+  // Slice 3ao: archive straight after publishing (inside the five seconds that once undid it), then
+  // restore. Each asks "are you sure" first, and the result is still there after a reload.
+  await press(ap2, 'Archive', 'Archive it?')
+  await btn(ap2, 'Yes, archive it').click()
+  await expect(bar(ap2)).toContainText('Archived.', { timeout: 30_000 })
+  await expect(btn(ap2, 'Restore')).toBeVisible()
+  await expect(btn(ap2, 'Archive')).toHaveCount(0)
+  await ap2.reload()
+  await expect(bar(ap2)).toContainText('Archived', { timeout: 60_000 })
+  await takeOverIfLocked(ap2)
+  await press(ap2, 'Restore', 'Restore it?')
+  await btn(ap2, 'Yes, restore it').click()
+  await expect(bar(ap2)).toContainText('Restored.', { timeout: 30_000 })
+  await ap2.reload()
+  await expect(bar(ap2)).toContainText('Published', { timeout: 60_000 })
+  await expect(btn(ap2, 'Archive')).toBeVisible()
   await ap2.close()
 })
 

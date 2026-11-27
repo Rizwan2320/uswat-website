@@ -6,7 +6,16 @@
  * only authority: pressing a button just sets the Stage and saves, and every hook still runs.
  */
 
-import { canSubmitFor, inScope, isReviewerFor } from '../../governance/policy'
+import {
+  canRestore,
+  canSubmitFor,
+  inScope,
+  isReviewerFor,
+  mayApproveOwn,
+  mayPublishApproved,
+  mayTakeOffline,
+  type Target,
+} from '../../governance/policy'
 import {
   normalizeOffice,
   WORKFLOW_LABELS,
@@ -16,7 +25,15 @@ import {
   type WorkflowStatus,
 } from '../../governance/roles'
 
-export type StepAction = 'sendForReview' | 'approve' | 'sendBack' | 'markVerified'
+export type StepAction =
+  | 'sendForReview'
+  | 'approve'
+  | 'approveAndPublish'
+  | 'sendBack'
+  | 'markVerified'
+  | 'takeOffline'
+  | 'archive'
+  | 'restore'
 export type Words = { en: string; ur: string }
 
 /** Who wrote the item, as far as the signed-in person is concerned. */
@@ -32,6 +49,8 @@ export interface WorkflowInput {
   saved: boolean
   /** Created by the signed-in person, by someone else, or brought in by the importer (no author). */
   author: Author
+  /** Which record this is; the scope rules for pages and programme coordinators need it (slice 3ah). */
+  target?: Target
 }
 
 export type Tone = 'info' | 'waiting' | 'ready' | 'readonly'
@@ -59,11 +78,12 @@ const readOnly = (banner: Words): WorkflowView => ({
 
 /**
  * Two rules the owner asked for (2026-11-21): a draft belongs to its author until it is sent for
- * review, and nobody approves what they wrote themselves. Both are shown here; the second is also
- * enforced on the server (policy.ts, SELF_APPROVAL).
+ * review, and nobody approves what they wrote themselves, except that a platform admin publishes
+ * their own work (2026-11-22). Both are shown here; the second is also enforced on the server
+ * (policy.ts, SELF_APPROVAL).
  */
 export function workflowView(input: WorkflowInput): WorkflowView {
-  const { actor, stage, verification, risk, ownerOffice, saved, author } = input
+  const { actor, stage, verification, risk, ownerOffice, saved, author, target } = input
 
   if (actor.kind !== 'user' || actor.role === 'auditor') {
     return readOnly(
@@ -74,13 +94,27 @@ export function workflowView(input: WorkflowInput): WorkflowView {
     )
   }
 
-  const scope = { ownerOffice: normalizeOffice(ownerOffice) || null, risk }
+  const scope = { ownerOffice: normalizeOffice(ownerOffice) || null, risk, target }
   const reviewer = isReviewerFor(actor, scope)
   const submitter = canSubmitFor(actor, scope)
   const role = actor.role
   const mine = author === 'me'
+  // A platform admin publishes their own work (slice 3ag); everyone else needs a second person.
+  const needsAnother = mine && !mayApproveOwn(actor, target)
 
-  if ((role === 'editor' || role === 'approver') && saved && !inScope(actor, scope.ownerOffice)) {
+  if (
+    (role === 'editor' || role === 'approver') &&
+    saved &&
+    !inScope(actor, scope.ownerOffice, target)
+  ) {
+    if (role === 'editor' && ((actor as { programmes?: string[] }).programmes?.length ?? 0) > 0) {
+      return readOnly(
+        w(
+          'You look after your own programme pages only. You can look at this one but not change it.',
+          'آپ صرف اپنے پروگرام کے صفحات سنبھالتے ہیں۔ آپ اسے دیکھ سکتے ہیں، بدل نہیں سکتے۔',
+        ),
+      )
+    }
     return readOnly(
       w(
         `This item belongs to ${office(ownerOffice)}, not to your office. You can look but not change it.`,
@@ -127,6 +161,33 @@ export function workflowView(input: WorkflowInput): WorkflowView {
   // Editors, approvers, site managers and platform admins from here on.
   switch (stage) {
     case 'draft':
+      // A head of department publishes their own department's pages whoever started the draft (the
+      // admin creates departments and programmes); an admin publishes what they started.
+      if (
+        reviewer &&
+        mayApproveOwn(actor, target) &&
+        author !== 'import' &&
+        (mine || role === 'approver')
+      ) {
+        return {
+          tone: 'info',
+          banner: w(
+            role === 'approver'
+              ? 'Your draft. It saves by itself. As head of the department you publish it yourself: fill in the source of the facts, then press Approve and publish. It marks the facts verified, approves and publishes in one step. No one else needs to review it.'
+              : 'Your draft. It saves by itself. You publish it yourself: fill in the source of the facts, then press Approve and publish. It marks the facts verified, approves and publishes in one step. No second person is needed for a platform admin.',
+            role === 'approver'
+              ? 'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ شعبے کے سربراہ کے طور پر آپ اسے خود شائع کرتے ہیں: حقائق کا ماخذ بھریں، پھر منظور کریں اور شائع کریں دبائیں۔ یہ ایک ہی قدم میں تصدیق، منظوری اور اشاعت کرتا ہے۔ کسی اور کو جانچنے کی ضرورت نہیں۔'
+              : 'آپ کا مسودہ۔ یہ خود بخود محفوظ ہوتا ہے۔ آپ اسے خود شائع کرتے ہیں: حقائق کا ماخذ بھریں، پھر منظور کریں اور شائع کریں دبائیں۔ یہ ایک ہی قدم میں تصدیق، منظوری اور اشاعت کرتا ہے۔ پلیٹ فارم ایڈمن کے لیے کسی دوسرے شخص کی ضرورت نہیں۔',
+          ),
+          // One press for the owner of the page (slice 3ak): mark verified, approve and publish. A head
+          // looking at a draft a coordinator has not sent yet keeps the separate steps.
+          actions:
+            mine || target?.collection === 'departments'
+              ? ['approveAndPublish']
+              : ['approve', ...verify],
+          showPublish: false,
+        }
+      }
       if (reviewer && !mine) {
         if (author === 'import') {
           return {
@@ -164,7 +225,7 @@ export function workflowView(input: WorkflowInput): WorkflowView {
         showPublish: false,
       }
     case 'in_review':
-      if (reviewer && mine) {
+      if (reviewer && needsAnother) {
         return {
           tone: 'waiting',
           banner: w(
@@ -212,6 +273,28 @@ export function workflowView(input: WorkflowInput): WorkflowView {
           showPublish: true,
         }
       }
+      // A programme coordinator publishes what their head approved (slice 3aj), once it is verified.
+      if (mayPublishApproved(actor, target)) {
+        return unverified
+          ? {
+              tone: 'waiting',
+              banner: w(
+                'Approved by your head of department. Waiting for them to mark it verified; then you can publish it. If you change this page it goes back to Draft.',
+                'شعبے کے سربراہ نے منظور کر لیا۔ ان کے تصدیق شدہ کرنے کا انتظار ہے؛ پھر آپ اسے شائع کر سکیں گے۔ صفحہ بدلا تو یہ مسودے میں واپس چلا جائے گا۔',
+              ),
+              actions: [],
+              showPublish: false,
+            }
+          : {
+              tone: 'ready',
+              banner: w(
+                'Approved and verified by your head of department. Press Publish to put it on the website. If you change anything first, it goes back to Draft.',
+                'شعبے کے سربراہ نے منظور اور تصدیق کر دی۔ ویب سائٹ پر لانے کے لیے شائع کریں دبائیں۔ پہلے کچھ بدلا تو یہ مسودے میں واپس چلا جائے گا۔',
+              ),
+              actions: [],
+              showPublish: true,
+            }
+      }
       return {
         tone: 'waiting',
         banner: w(
@@ -221,15 +304,25 @@ export function workflowView(input: WorkflowInput): WorkflowView {
         actions: [],
         showPublish: false,
       }
-    case 'published':
+    case 'published': {
+      const offline: StepAction[] = mayTakeOffline(actor, scope) ? ['takeOffline'] : []
+      // Archive (off the website, kept on record) is a reviewer step; a coordinator takes their own
+      // programme offline instead, because only a head or the admin can undo an archive (slice 3ao).
+      const archive: StepAction[] = reviewer && mayTakeOffline(actor, scope) ? ['archive'] : []
       if (reviewer) {
         return {
           tone: 'ready',
-          banner: w(
-            'Live on the website. Changes save as a new draft first; Publish puts them live.',
-            'ویب سائٹ پر شائع ہے۔ تبدیلیاں پہلے نئے مسودے کے طور پر محفوظ ہوتی ہیں؛ شائع کریں دبانے پر لائیو ہوتی ہیں۔',
-          ),
-          actions: verify,
+          banner:
+            target?.collection === 'programmes' && role === 'approver'
+              ? w(
+                  'Live on the website. Changes save as a new draft first; Publish puts them live. A programme page is taken offline by its coordinator, not by the head.',
+                  'ویب سائٹ پر شائع ہے۔ تبدیلیاں پہلے نئے مسودے کے طور پر محفوظ ہوتی ہیں؛ شائع کریں دبانے پر لائیو ہوتی ہیں۔ پروگرام کا صفحہ اس کا کوآرڈینیٹر آف لائن کرتا ہے، سربراہ نہیں۔',
+                )
+              : w(
+                  'Live on the website. Changes save as a new draft first; Publish puts them live.',
+                  'ویب سائٹ پر شائع ہے۔ تبدیلیاں پہلے نئے مسودے کے طور پر محفوظ ہوتی ہیں؛ شائع کریں دبانے پر لائیو ہوتی ہیں۔',
+                ),
+          actions: [...verify, ...offline, ...archive],
           showPublish: true,
         }
       }
@@ -239,11 +332,23 @@ export function workflowView(input: WorkflowInput): WorkflowView {
           'Live on the website. Your changes are saved as a draft and must be approved before they go live.',
           'ویب سائٹ پر شائع ہے۔ آپ کی تبدیلیاں مسودے کے طور پر محفوظ ہوں گی اور لائیو ہونے سے پہلے منظور ہونی چاہئیں۔',
         ),
-        actions: [],
+        actions: offline,
         showPublish: false,
       }
+    }
     case 'archived':
     default:
+      if (canRestore(actor, scope)) {
+        return {
+          tone: 'info',
+          banner: w(
+            'Archived. It is not shown on the website, and it is kept on record. Press Restore to put it back on the website as it was.',
+            'آرکائیو شدہ۔ یہ ویب سائٹ پر نہیں دکھتا، مگر ریکارڈ میں محفوظ ہے۔ جیسا تھا ویسا ہی ویب سائٹ پر واپس لانے کے لیے بحال کریں دبائیں۔',
+          ),
+          actions: ['restore'],
+          showPublish: false,
+        }
+      }
       return readOnly(
         w(
           'Archived. It is no longer shown on the website. Only an approver or a platform admin can restore it.',
@@ -254,7 +359,10 @@ export function workflowView(input: WorkflowInput): WorkflowView {
 }
 
 /** The Stage each step button asks for. The policy decides whether the save is allowed. */
-export const STEP_TARGET: Record<Exclude<StepAction, 'markVerified'>, WorkflowStatus> = {
+export const STEP_TARGET: Record<
+  Exclude<StepAction, 'markVerified' | 'approveAndPublish' | 'takeOffline' | 'archive' | 'restore'>,
+  WorkflowStatus
+> = {
   sendForReview: 'in_review',
   approve: 'approved',
   sendBack: 'draft',
@@ -263,8 +371,12 @@ export const STEP_TARGET: Record<Exclude<StepAction, 'markVerified'>, WorkflowSt
 export const STEP_LABEL: Record<StepAction, Words> = {
   sendForReview: w('Send for review', 'جائزے کے لیے بھیجیں'),
   approve: w('Approve', 'منظور کریں'),
+  approveAndPublish: w('Approve and publish', 'منظور کریں اور شائع کریں'),
   sendBack: w('Send back', 'واپس بھیجیں'),
   markVerified: w('Mark verified', 'تصدیق شدہ کریں'),
+  takeOffline: w('Take offline', 'آف لائن کریں'),
+  archive: w('Archive', 'آرکائیو کریں'),
+  restore: w('Restore', 'بحال کریں'),
 }
 
 /** What the banner says right after a step succeeded. */
@@ -277,9 +389,25 @@ export const STEP_DONE: Record<StepAction, Words> = {
     'Approved. An approver can now publish it.',
     'منظور ہو گیا۔ اب منظوری دہندہ اسے شائع کر سکتا ہے۔',
   ),
+  approveAndPublish: w(
+    'Approved, verified and published. It is live on the website.',
+    'منظور، تصدیق شدہ اور شائع ہو گیا۔ یہ ویب سائٹ پر لائیو ہے۔',
+  ),
   sendBack: w(
     'Sent back to Draft. The editor can change it and send it again.',
     'مسودے میں واپس بھیج دیا گیا۔',
   ),
   markVerified: w('Marked as verified.', 'تصدیق شدہ نشان زد ہو گیا۔'),
+  takeOffline: w(
+    'Taken offline. It is a draft again and no longer on the website. To bring it back, send it for approval again.',
+    'آف لائن کر دیا گیا۔ یہ دوبارہ مسودہ ہے اور ویب سائٹ پر نہیں۔ واپس لانے کے لیے دوبارہ منظوری کے لیے بھیجیں۔',
+  ),
+  archive: w(
+    'Archived. It is off the website and kept on record. A head of department or a platform admin can restore it.',
+    'آرکائیو ہو گیا۔ یہ ویب سائٹ سے ہٹ گیا اور ریکارڈ میں محفوظ ہے۔ شعبے کا سربراہ یا پلیٹ فارم ایڈمن اسے بحال کر سکتا ہے۔',
+  ),
+  restore: w(
+    'Restored. It is live on the website again.',
+    'بحال ہو گیا۔ یہ دوبارہ ویب سائٹ پر لائیو ہے۔',
+  ),
 }

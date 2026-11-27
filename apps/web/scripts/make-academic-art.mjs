@@ -158,7 +158,7 @@ function neural(p) {
   return out.join('')
 }
 
-function chip(p, r) {
+function chip(p, r, label = 'DCST') {
   const out = []
   const x0 = 330
   const y0 = 170
@@ -183,11 +183,74 @@ function chip(p, r) {
   }
   out.push(rect(x0, y0, w, h, p.bg[1], 24, `stroke="${p.ink}" stroke-opacity="0.7" stroke-width="4"`))
   out.push(rect(x0 + 18, y0 + 18, w - 36, h - 36, 'none', 14, `stroke="${p.accent}" stroke-width="2" stroke-dasharray="3 8"`))
-  out.push(`<text x="${x0 + w / 2}" y="${y0 + h / 2 + 30}" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="92" font-weight="700" fill="${p.accent}">DCST</text>`)
+  // the label was 92 / 66 units; reduced by a third so it reads as a mark on the chip, not as a headline
+  const size = label.length > 4 ? 44 : 60
+  out.push(`<text x="${x0 + w / 2}" y="${y0 + h / 2 + Math.round(size * 0.33)}" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="${size}" font-weight="700" fill="${p.accent}">${label}</text>`)
   return out.join('')
 }
 
 const MOTIFS = { cs: treeAndCode, se: layersAndBranches, it: network, ds: charts, ai: neural, dcst: chip }
+
+/* Hero pictures for the Research and Administration pages (src/site/offices): the same chip with the office's short name.
+   Keys are the office slugs; they are written to public/images/offices/<slug>-hero.svg. */
+const OFFICES = {
+  research: 'Research',
+  administration: 'Admin',
+  'oric-2': 'ORIC',
+  'advanced-studies-and-research-board': 'DASR',
+  'directorate-of-it': 'IT',
+  'controller-of-examination-office': 'CoE',
+  'directorate-of-works': 'Works',
+  'proctorial-board': 'Proctor',
+  'kamyab-jawan-markaz': 'YDC',
+  alumni: 'Alumni',
+  'hunerkada-center-for-excellence': 'Hunerkada',
+  about: 'About',
+  'vice-chancellors-message': 'VC',
+  'allied-health-sciences': 'FAHS',
+  'bs-medical-laboratory-technology': 'MLT',
+  'bs-dental-technology': 'Dental',
+  'doctor-of-physical-therapy': 'DPT',
+  'bs-radiography-and-imaging-technology': 'Imaging',
+  'management-and-commerce': 'Commerce',
+  'english-and-foreign-languages': 'English',
+  'central-library-office': 'Library',
+  'quality-enhancement-cell': 'QEC',
+  'academic-calendar': 'Calendar',
+  geology: 'Geology',
+  archaeology: 'Archaeology',
+  'environmental-sciences': 'Environment',
+  'economics-and-development-studies': 'Economics',
+  'directorate-of-admissions': 'Admissions',
+  'directorate-of-administration': 'Admin',
+  'directorate-of-planning-and-development': 'P&D',
+  'directorate-of-research-and-technological-development': 'DRTD',
+  'registeror-office': 'Registrar',
+  'treasurer-office': 'Treasury',
+  'provost-office': 'Provost',
+  'vc-office': 'VC Office',
+  'office-of-the-pro-vice-chancellor-pro-vc': 'Pro VC',
+  'university-advancement-financial-aid-office': 'Aid',
+  'e-office': 'E-Office',
+  'dean-office-3': 'Dean',
+  'election-administrative-officers-and-faculty-members': 'Election',
+  'press-release': 'Press',
+  'developmental-projects': 'Projects',
+  'research-group': 'Ecology',
+  'directorate-of-sports': 'Sports',
+  'office-365': 'O365',
+  'office-of-the-deans': 'Deans',
+  maincampus: 'Main',
+  'women-campus': 'Women',
+  'sangota-campus': 'Sangota',
+  'red-crescent-building': 'Red Crescent',
+  'convocation-2022': 'Convocation',
+  'open-day': 'Open Day',
+  admissions: 'Admissions',
+  'merit-list': 'Merit',
+  downloads: 'Downloads',
+}
+for (const [k, label] of Object.entries(OFFICES)) MOTIFS[k] = (p, r) => chip(p, r, label)
 
 /* ---- canvas ---- */
 function canvas(W, H, p, motifKey, seed, uid) {
@@ -221,4 +284,9 @@ keys.forEach((k, i) => {
   FILES.push([`${k}-lab.svg`, canvas(900, 600, LIGHT, k, 300 + i, `l${i}`)])
 })
 for (const [name, svg] of FILES) writeFileSync(path.join(OUT, name), svg)
+const OFFICE_OUT = path.resolve(process.cwd(), 'public/images/offices')
+mkdirSync(OFFICE_OUT, { recursive: true })
+Object.keys(OFFICES).forEach((k, i) => {
+  writeFileSync(path.join(OFFICE_OUT, `${k}-hero.svg`), canvas(1600, 640, DARK, k, 400 + i, `o${i}`))
+})
 console.log(`wrote ${FILES.length} files to ${OUT}`)

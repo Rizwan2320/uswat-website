@@ -43,7 +43,7 @@ export const urTranslations = {
     language: 'زبان',
   },
   version: {
-    publishChanges: 'تبدیلیاں شائع کریں',
+    publishChanges: 'شائع کریں',
     versions: 'ورژن',
   },
   authentication: {

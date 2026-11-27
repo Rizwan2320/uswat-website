@@ -1,6 +1,6 @@
 import type { DepartmentProfile } from '../types'
 
-import { art, banner } from './art'
+import { art, banner, photo } from './art'
 
 /* Department of Computer and Software Technologies (DCST). The department name and its five disciplines come from the
    owner (2026-11-20). Everything else here is illustrative text for the template and has not been checked by the
@@ -13,6 +13,14 @@ export const dcst: DepartmentProfile = {
   intro:
     'Five four-year BS programmes in computing, one shared first year, and laboratory work in every semester.',
   hero: art('dcst', 'hero'),
+  heroPhotos: [
+    photo('dcst-hero-1', 547, 365),
+    photo('dcst-hero-2', 678, 452),
+    photo('dcst-hero-3', 565, 353),
+    photo('dcst-hero-4', 678, 452),
+    photo('dcst-hero-5', 638, 480),
+  ],
+  campusPhoto: photo('dcst-campus', 900, 1125, 'The University of Swat campus at sunset'),
   banner: banner('dcst', 'Department of Computer and Software Technologies (DCST). Learn, Develop, Innovate.'),
   about: [
     'The Department of Computer and Software Technologies teaches the foundations of computing and the practice of building software. Students learn to design programs, structure data, build and secure networks, and apply machine learning to real problems.',
@@ -54,6 +62,7 @@ export const dcst: DepartmentProfile = {
       text: 'The curriculum prepares graduates for MS and PhD study in computing at home or abroad.',
     },
   ],
+  alumni: ['pashto-spelling-checker', 'clinic-queue-and-records-app', 'crop-disease-detection-from-photos'],
   disciplines: [
     'bs-computer-science',
     'bs-software-engineering',

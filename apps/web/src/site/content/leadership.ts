@@ -25,7 +25,7 @@ export const leadership = {
   ],
   fullMessageComplete: true,
   closing: 'With best regards,',
-  readMoreHref: 'https://uswat.edu.pk/vice-chancellors-message-2/',
+  readMoreHref: '/about/vice-chancellors-message',
   source: 'https://uswat.edu.pk/vice-chancellors-message-2/',
   verifiedAt: '2026-11-08',
 }

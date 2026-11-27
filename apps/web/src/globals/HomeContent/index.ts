@@ -5,13 +5,20 @@ import {
   dateUnlessSample,
   HOME_READ_ROLES,
   ICON_LABELS,
+  HOME_PORTALS,
   HOME_SLIDES,
   HOME_STATS,
+  colourValidate,
+  portalsCountValidate,
   homeHrefValidate,
+  portalHrefValidate,
+  slidesCountValidate,
   SLIDE_ICONS,
+  PORTAL_ICONS,
   STAT_ICONS,
   sourceUnlessSample,
 } from '../../governance/homeContent'
+import { STANDARD } from '../../governance/homePalette'
 import { actorFromRequest } from '../../governance/roles'
 import { homeAfterChange, homeBeforeChange, homeBeforeOperation } from './hooks'
 
@@ -57,6 +64,24 @@ const button = (name: 'primary' | 'secondary', label: string): GlobalConfig['fie
   ],
 })
 
+const colour = (
+  name: 'green' | 'yellow' | 'maroon',
+  label: string,
+  standard: string,
+  description: string,
+): GlobalConfig['fields'][number] => ({
+  name,
+  label,
+  type: 'text',
+  validate: colourValidate,
+  admin: {
+    description,
+    components: {
+      Field: { path: '@/admin/ColourPicker', clientProps: { standard, label, description } },
+    },
+  },
+})
+
 /**
  * The home page's photograph slider and statistics bar, editable in the CMS (slice 3z). The headline
  * and the sentence under it stay fixed (owner decision 2026-11-07). Drafts may be incomplete; the
@@ -69,7 +94,7 @@ export const HomeContent: GlobalConfig = {
     group: 'Content',
     hidden: hiddenFromContributors,
     description:
-      'The photographs and the statistics at the top of the home page. The headline and the sentence under it do not change here.',
+      'The home page: photographs, statistics, admissions bar, portal cards and colours. The headline and the sentence under it do not change here.',
   },
   access: { read: readHome },
   versions: { max: 25, drafts: true },
@@ -79,11 +104,11 @@ export const HomeContent: GlobalConfig = {
       label: 'Slides',
       type: 'array',
       labels: { singular: 'Slide', plural: 'Slides' },
-      minRows: HOME_SLIDES.min,
       maxRows: HOME_SLIDES.max,
+      validate: slidesCountValidate,
       admin: {
         initCollapsed: true,
-        description: `The photographs at the top of the home page, in this order. Each photograph shows with its two buttons. ${HOME_SLIDES.min} to ${HOME_SLIDES.max} slides.`,
+        description: `The photographs at the top of the home page, in this order. Each photograph shows with its two buttons. ${HOME_SLIDES.min} to ${HOME_SLIDES.max} slides, or none to keep the standard photographs.`,
       },
       fields: [
         {
@@ -143,6 +168,132 @@ export const HomeContent: GlobalConfig = {
           validate: dateUnlessSample,
           admin: { date: { pickerAppearance: 'dayOnly' } },
         },
+      ],
+    },
+    {
+      name: 'admissions',
+      label: 'Admissions banner',
+      type: 'group',
+      admin: {
+        description:
+          'The green bar under the statistics. It shows "Admissions Open" until the last date has passed, then "Closed" with the message below. Leave a field empty to keep the standard text.',
+      },
+      fields: [
+        {
+          name: 'session',
+          label: 'Intake',
+          type: 'text',
+          maxLength: 40,
+          admin: { description: 'For example: Fall 2026.' },
+        },
+        {
+          name: 'deadline',
+          label: 'Last day to apply',
+          type: 'date',
+          admin: {
+            date: { pickerAppearance: 'dayOnly' },
+            description:
+              'The bar says Open until the end of this day (Pakistan time) and Closed after it. Empty means Closed.',
+          },
+        },
+        {
+          name: 'applyUrl',
+          label: 'Apply Online link',
+          type: 'text',
+          validate: homeHrefValidate,
+          admin: { description: 'Where the button goes while admissions are open.' },
+        },
+        {
+          name: 'closedUrl',
+          label: 'Link while closed',
+          type: 'text',
+          validate: homeHrefValidate,
+          admin: {
+            description: 'Where the "View Admissions" button goes while admissions are closed.',
+          },
+        },
+        {
+          name: 'closedDetail',
+          label: 'Message while closed',
+          type: 'text',
+          localized: true,
+          maxLength: 160,
+        },
+        {
+          name: 'servicesHeading',
+          label: 'Middle heading',
+          type: 'text',
+          localized: true,
+          maxLength: 60,
+          admin: { description: 'Shown above Undergraduate · Graduate · Postgraduate.' },
+        },
+      ],
+    },
+    {
+      name: 'portals',
+      label: 'Portal cards',
+      type: 'array',
+      maxRows: HOME_PORTALS.max,
+      validate: portalsCountValidate,
+      admin: {
+        initCollapsed: true,
+        description: `The cards under "University Portals and Services", in this order. ${HOME_PORTALS.min} to ${HOME_PORTALS.max} cards, or none to keep the standard cards.`,
+      },
+      labels: { singular: 'Card', plural: 'Cards' },
+      fields: [
+        {
+          name: 'title',
+          label: 'Title',
+          type: 'text',
+          required: true,
+          localized: true,
+          maxLength: 60,
+        },
+        {
+          name: 'description',
+          label: 'One line under the title',
+          type: 'text',
+          required: true,
+          localized: true,
+          maxLength: 120,
+        },
+        { name: 'href', label: 'Link', type: 'text', required: true, validate: portalHrefValidate },
+        {
+          name: 'icon',
+          label: 'Icon',
+          type: 'select',
+          required: true,
+          options: iconOptions(PORTAL_ICONS),
+        },
+      ],
+    },
+    {
+      name: 'colours',
+      label: 'Colours',
+      type: 'group',
+      admin: {
+        description:
+          'Change the colours of the home page only. Leave a colour empty to keep the standard one. The darker and lighter shades are worked out for you.',
+      },
+      fields: [
+        colour(
+          'green',
+          'Green',
+          STANDARD.green,
+          'The deep green: headings, the top bar, the footer and the page text.',
+        ),
+        colour(
+          'yellow',
+          'Yellow',
+          STANDARD.yellow,
+          'The gold: buttons, highlights and the accent words on green.',
+        ),
+        colour(
+          'maroon',
+          'Maroon',
+          STANDARD.maroon,
+          'The crest maroon: the Apply button, dates and small accents. Use a dark colour.',
+        ),
       ],
     },
   ],

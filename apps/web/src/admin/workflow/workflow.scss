@@ -74,6 +74,11 @@
     display: inline-flex;
   }
 
+  &__who {
+    margin: 0 0 calc(var(--base) / 2);
+    font-weight: 600;
+  }
+
   &__note {
     background: var(--theme-elevation-0);
     border: 1px solid var(--theme-elevation-200);

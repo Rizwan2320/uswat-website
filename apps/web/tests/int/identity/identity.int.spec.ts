@@ -38,6 +38,8 @@ import { createPgCourseStore } from '@/modules/portal/courses/pgStore'
 import { LIMITS as COURSE_LIMITS } from '@/modules/portal/courses/rules'
 import type { CourseInput } from '@/modules/portal/courses/types'
 import { createPgReviewStore } from '@/modules/portal/review/pgStore'
+import { createPgRegistrarStore } from '@/modules/portal/registrar/pgStore'
+import { createRegistrarService, type VerifierSession } from '@/modules/portal/registrar/service'
 import { createPgActivationStore } from '@/modules/portal/activation/pgStore'
 import { createClaimService } from '@/modules/identity/claimService'
 import { createPgInvitationStore, hashToken, INVITATION_TTL_MS, type InvitationStore } from '@/modules/identity/invitations'
@@ -85,7 +87,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue', '0012_claim_activation', '0013_delegation', '0014_notifications'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue', '0012_claim_activation', '0013_delegation', '0014_notifications', '0015_profile_fixed', '0016_verifier', '0017_publication_intake'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -1066,6 +1068,22 @@ describe.skipIf(!DB)('faculty profile draft store (FP-11), sample adapter on rea
     expect(l.profile.visibility).toEqual({ email: 'hidden', photo: 'hidden' })
   })
 
+  it('set-by-the-university fields come from account_fixed when a row exists, and the picture must be one of the app’s own files', async () => {
+    const a = await account('fixed')
+    expect((await store().load(a)).profile.designation.en).toBe('Lecturer (sample)')
+    expect((await store().load(a)).profile.photo).toBeNull()
+    await pool().query(`insert into "account_fixed" ("userId","nameUr","designationEn","designationUr","photo") values ($1,'نام','Software Engineer','انجینئر','/portal-avatars/rizwan.svg')`, [a.id])
+    const p = (await store().load(a)).profile
+    expect(p.designation).toEqual({ en: 'Software Engineer', ur: 'انجینئر' })
+    expect(p.name.ur).toBe('نام')
+    expect(p.photo).toBe('/portal-avatars/rizwan.svg')
+    // control: an address elsewhere, a path outside the folder, or another file type is refused by the table itself
+    const b = await account('fixed-bad')
+    for (const bad of ['https://example.org/x.svg', '/portal-avatars/../x.svg', '/portal-avatars/x.png', '//example.org/portal-avatars/x.svg']) {
+      await expect(pool().query(`insert into "account_fixed" ("userId","designationEn","photo") values ($1,'x',$2)`, [b.id, bad])).rejects.toThrow()
+    }
+  })
+
   it('save then load round-trips every editable field, Urdu included', async () => {
     const a = await account('round')
     const e = edit({ orcid: '0000-0002-1825-0097', officeHours: 'Mon 10-12', visibility: { email: 'public', photo: 'internal' } })
@@ -1265,6 +1283,162 @@ describe.skipIf(!DB)('publication candidates (FP-12, FPR-05), PostgreSQL store',
     await expect(pool().query(`update "publication_candidate" set "status" = 'published' where "userId" = $1`, [a])).rejects.toThrow()
     await pool().query(`delete from "user" where "id" = $1`, [a])
     expect((await pool().query(`select count(*)::int as n from "publication_candidate" where "userId" = $1`, [a])).rows[0].n).toBe(0)
+  })
+})
+
+describe.skipIf(!DB)('publication intake (FP-19), PostgreSQL store', () => {
+  const pool = () => getIdentityPool(DB!)
+  const store = () => createPgPublicationStore(pool())
+  const work = (over: Partial<Candidate> = {}): Candidate => ({ title: 'Intake paper one', year: 2024, venue: 'Journal', doi: '', authors: ['A. Sample'], ...over })
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  async function account(tag: string): Promise<string> {
+    const id = `int-${tag}-${Math.random().toString(36).slice(2, 8)}`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Sample ${tag}`, `${id}@example.invalid`])
+    return id
+  }
+  const claimedIds = async (a: string) => (await store().list(a)).claimed.map((w) => w.id)
+
+  it('a harvest row gets the defaults: article, harvest, public, not featured, no link', async () => {
+    const a = await account('defaults')
+    await store().addCandidates(a, [work({ doi: '10.5555/d1' })], true)
+    expect((await store().list(a)).pending[0]).toMatchObject({ workType: 'article', origin: 'harvest', url: '', featured: false, isPublic: true, sample: true })
+  })
+
+  it('a typed-in work is claimed at once, keeps its type, link and origin, and is not a sample', async () => {
+    const a = await account('typed')
+    const r = await store().addClaimed(a, work({ workType: 'book', url: 'https://example.invalid/book' }), 'manual')
+    expect(r.ok).toBe(true)
+    const l = await store().list(a)
+    expect(l.pending).toHaveLength(0)
+    expect(l.claimed[0]).toMatchObject({ workType: 'book', origin: 'manual', url: 'https://example.invalid/book', sample: false, status: 'claimed' })
+  })
+
+  it('a typed-in copy of a work the account already has, in any status, is refused', async () => {
+    const a = await account('exists')
+    await store().addCandidates(a, [work({ doi: '10.5555/e1' })], true)
+    expect(await store().addClaimed(a, work({ title: 'Another title', doi: 'https://doi.org/10.5555/E1' }), 'doi')).toEqual({ ok: false, reason: 'exists' })
+    expect(await store().addClaimed(a, work({ title: 'INTAKE paper — one!' }), 'manual')).toEqual({ ok: false, reason: 'exists' })
+    expect((await store().list(a)).pending).toHaveLength(1)
+  })
+
+  it('a file import lands in To review with origin file and sends no works-found notice', async () => {
+    const a = await account('file')
+    const before = (await pool().query(`select count(*)::int as n from identity."notification" where "userId" = $1`, [a]).catch(() => ({ rows: [{ n: 0 }] }))).rows[0].n
+    await store().addCandidates(a, [work({ doi: '10.5555/f1', workType: 'conference', url: 'https://example.invalid/f1' })], false, 'file')
+    const w = (await store().list(a)).pending[0]
+    expect(w).toMatchObject({ origin: 'file', workType: 'conference', sample: false })
+    const after = (await pool().query(`select count(*)::int as n from identity."notification" where "userId" = $1`, [a]).catch(() => ({ rows: [{ n: 0 }] }))).rows[0].n
+    expect(after).toBe(before)
+  })
+
+  it('only the owner can change details, featured, public and delete; only claimed works can be changed', async () => {
+    const a = await account('own-a')
+    const b = await account('own-b')
+    const id = (await store().addClaimed(a, work(), 'manual')) as { ok: true; id: string }
+    expect(await store().updateWork(b, id.id, work({ workType: 'report' }))).toBe('nothing')
+    expect(await store().setFeatured(b, id.id, true)).toBe(false)
+    expect(await store().setPublic(b, id.id, false)).toBe(false)
+    expect(await store().remove(b, id.id)).toBe(false)
+    expect(await store().updateWork(a, id.id, work({ title: 'Corrected title', year: 2023, doi: '10.5555/corr', workType: 'report', url: 'https://example.invalid/r' }))).toBe('ok')
+    expect((await store().list(a)).claimed[0]).toMatchObject({ title: 'Corrected title', year: 2023, workType: 'report', url: 'https://example.invalid/r', origin: 'manual', status: 'claimed' })
+    await store().addCandidates(a, [work({ title: 'Pending one', doi: '10.5555/p1' })], true)
+    const pending = (await store().list(a)).pending[0]
+    expect(await store().setFeatured(a, pending.id, true)).toBe(false)
+    expect(await store().setPublic(a, pending.id, false)).toBe(false)
+    expect(await store().updateWork(a, pending.id, work({ title: 'Edited pending' }))).toBe('nothing')
+  })
+
+  it('an edit that would repeat another work of the account is refused and leaves the work unchanged; a work may be saved as itself', async () => {
+    const a = await account('edit-dup')
+    const one = ((await store().addClaimed(a, work({ title: 'First work', year: 2020, doi: '10.5555/e1x' }), 'manual')) as { ok: true; id: string }).id
+    const two = ((await store().addClaimed(a, work({ title: 'Second work', year: 2021 }), 'manual')) as { ok: true; id: string }).id
+    expect(await store().updateWork(a, two, work({ title: 'FIRST work!', year: 2020 }))).toBe('exists')
+    expect(await store().updateWork(a, two, work({ title: 'Second work', year: 2021, doi: 'https://doi.org/10.5555/E1X' }))).toBe('exists')
+    expect((await store().list(a)).claimed.find((w) => w.id === two)).toMatchObject({ title: 'Second work', year: 2021, doi: '' })
+    expect(await store().updateWork(a, one, work({ title: 'First work', year: 2020, doi: '10.5555/e1x', venue: 'New venue' }))).toBe('ok')
+    expect(await store().updateWork(a, one, work({ title: 'First work', year: 2020, doi: '', venue: 'New venue' }))).toBe('ok')
+  })
+
+  it('a harvested work can be corrected too, and keeps its origin and Sample label', async () => {
+    const a = await account('edit-harvest')
+    await store().addCandidates(a, [work({ title: 'Harvested typo', doi: '10.5555/ht' })], true)
+    const id = (await store().list(a)).pending[0].id
+    await store().claim(a, id)
+    expect(await store().updateWork(a, id, work({ title: 'Harvested corrected', doi: '10.5555/ht' }))).toBe('ok')
+    expect((await store().list(a)).claimed[0]).toMatchObject({ title: 'Harvested corrected', origin: 'harvest', sample: true })
+  })
+
+  it('at most five works can be featured; unfeaturing makes room; featured works list first', async () => {
+    const a = await account('five')
+    const ids: string[] = []
+    for (let i = 0; i < 7; i++) ids.push(((await store().addClaimed(a, work({ title: `Cap paper ${i}`, year: 2000 + i }), 'manual')) as { ok: true; id: string }).id)
+    for (let i = 0; i < 5; i++) expect(await store().setFeatured(a, ids[i], true)).toBe(true)
+    expect(await store().setFeatured(a, ids[5], true)).toBe(false)
+    expect(await store().setFeatured(a, ids[0], true)).toBe(true) // already featured: pressing again is harmless and keeps the count at five
+    expect(await store().setFeatured(a, ids[0], false)).toBe(true)
+    expect(await store().setFeatured(a, ids[5], true)).toBe(true)
+    const l = (await store().list(a)).claimed
+    expect(l.slice(0, 5).every((w) => w.featured)).toBe(true)
+    expect(l.slice(5).every((w) => !w.featured)).toBe(true)
+  })
+
+  it('eight presses at once on eight works leave exactly five featured', async () => {
+    const a = await account('race')
+    const ids: string[] = []
+    for (let i = 0; i < 8; i++) ids.push(((await store().addClaimed(a, work({ title: `Race paper ${i}`, year: 2010 + i }), 'manual')) as { ok: true; id: string }).id)
+    const results = await Promise.all(ids.map((id) => store().setFeatured(a, id, true)))
+    expect(results.filter(Boolean)).toHaveLength(5)
+    expect((await store().list(a)).claimed.filter((w) => w.featured)).toHaveLength(5)
+  })
+
+  it('the cap is per account', async () => {
+    const a = await account('cap-a')
+    const b = await account('cap-b')
+    for (let i = 0; i < 5; i++) await store().setFeatured(a, ((await store().addClaimed(a, work({ title: `A ${i}`, year: 2001 + i }), 'manual')) as { ok: true; id: string }).id, true)
+    const bid = ((await store().addClaimed(b, work({ title: 'B 0' }), 'manual')) as { ok: true; id: string }).id
+    expect(await store().setFeatured(b, bid, true)).toBe(true)
+  })
+
+  it('public and only-mine can be switched back and forth', async () => {
+    const a = await account('vis')
+    const id = ((await store().addClaimed(a, work(), 'manual')) as { ok: true; id: string }).id
+    expect(await store().setPublic(a, id, false)).toBe(true)
+    expect((await store().list(a)).claimed[0].isPublic).toBe(false)
+    expect(await store().setPublic(a, id, true)).toBe(true)
+    expect((await store().list(a)).claimed[0].isPublic).toBe(true)
+  })
+
+  it('typed, looked-up and imported works can be deleted and typed again; harvested works cannot be deleted', async () => {
+    const a = await account('del')
+    const typed = ((await store().addClaimed(a, work(), 'manual')) as { ok: true; id: string }).id
+    expect(await store().remove(a, typed)).toBe(true)
+    expect((await store().addClaimed(a, work(), 'manual')).ok).toBe(true)
+    await store().addCandidates(a, [work({ title: 'From file', doi: '10.5555/df' })], false, 'file')
+    const f = (await store().list(a)).pending[0]
+    expect(await store().remove(a, f.id)).toBe(true)
+    await store().addCandidates(a, [work({ title: 'From harvest', doi: '10.5555/dh' })], true)
+    const h = (await store().list(a)).pending.find((w) => w.title === 'From harvest')!
+    expect(await store().remove(a, h.id)).toBe(false)
+    expect(await store().reject(a, h.id)).toBe(true)
+    expect((await store().list(a)).rejected).toHaveLength(1)
+  })
+
+  it('the table refuses an unknown type or origin, a featured work that is not claimed, and a link over 500 characters', async () => {
+    const a = await account('checks')
+    await store().addCandidates(a, [work({ doi: '10.5555/c1' })], true)
+    await expect(pool().query(`update "publication_candidate" set "workType" = 'poster' where "userId" = $1`, [a])).rejects.toThrow()
+    await expect(pool().query(`update "publication_candidate" set "origin" = 'scraped' where "userId" = $1`, [a])).rejects.toThrow()
+    await expect(pool().query(`update "publication_candidate" set "featured" = true where "userId" = $1`, [a])).rejects.toThrow()
+    await expect(pool().query(`update "publication_candidate" set "url" = $2 where "userId" = $1`, [a, 'https://example.invalid/' + 'x'.repeat(500)])).rejects.toThrow()
+    expect(await claimedIds(a)).toHaveLength(0)
   })
 })
 
@@ -2166,7 +2340,7 @@ describe.skipIf(!DB)('department reviewer queue (FP-16, FPR-04, PJ4), PostgreSQL
       expect(await roles().grantReviewer(a.email)).toBe('ok')
       expect(await roles().grantReviewer(a.email)).toBe('ok')
       const row = (await roles().list()).find((r) => r.email === a.email)
-      expect(row).toEqual({ email: a.email, department: 'Computer Science', reviewer: true, head: false })
+      expect(row).toEqual({ email: a.email, department: 'Computer Science', reviewer: true, head: false, verifier: false })
       expect(await roles().revokeReviewer(a.email)).toBe('ok')
       expect(await roles().revokeReviewer(a.email)).toBe('not-reviewer')
     })
@@ -3142,6 +3316,296 @@ describe.skipIf(!DB)('notification digest and notice log (FP-43, ABU-03), Postgr
         client.release()
       }
       expect(await waitingCount(a.id)).toBe(0)
+    })
+  })
+})
+
+describe.skipIf(!DB)('own page of a head or the Registrar: publish without a reviewer (FP-SP), PostgreSQL', () => {
+  const pool = () => getIdentityPool(DB!)
+  const profiles = () => createSampleProfileStore(pool())
+  const roles = () => createPgRoleStore(pool())
+  const edit = (over: Partial<ProfileEdit> = {}): ProfileEdit => ({ ...EMPTY_EDIT, bio: { en: 'Hello', ur: '' }, ...over })
+  const NOW = Date.UTC(2026, 10, 23, 12)
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  async function account(tag: string, opts: { head?: boolean; verifier?: boolean; reviewer?: boolean; dept?: string } = {}): Promise<{ id: string; email: string }> {
+    const id = `sp-${tag}-${Math.random().toString(36).slice(2, 8)}`
+    const email = `${id}@example.invalid`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Person ${tag}`, email])
+    if (opts.dept) await roles().setDepartment(email, opts.dept)
+    if (opts.reviewer || opts.head) expect(await roles().grantReviewer(email)).toBe('ok')
+    if (opts.head) expect(await roles().grantHead(email)).toBe('ok')
+    if (opts.verifier) expect(await roles().grantVerifier(email)).toBe('ok')
+    return { id, email }
+  }
+  const dept = () => `Dept ${Math.random().toString(36).slice(2, 8)}`
+  const rows = async (id: string) => (await pool().query(`select "reviewerId","decision","note","before","after" from "profile_review" where "userId" = $1 order by "at"`, [id])).rows
+
+  it('a head publishes at once: the page is published, the draft is plain again, and the log names the owner', async () => {
+    const h = await account('h', { head: true, dept: dept() })
+    expect((await profiles().load(h)).selfPublishing).toBe(true)
+    expect(await profiles().saveDraft(h.id, edit({ bio: { en: 'First', ur: '' } }))).toBe(true)
+    expect(await profiles().publishOwn(h.id, NOW)).toBe('ok')
+    const l = await profiles().load(h)
+    expect(l.published!.bio.en).toBe('First')
+    expect(l.publishedAt).toBe(NOW)
+    expect(l.status).toBe('draft')
+    expect(l.draftIsPublished).toBe(true)
+    const log = await rows(h.id)
+    expect(log).toHaveLength(1)
+    expect(log[0]).toMatchObject({ reviewerId: h.id, decision: 'approved', note: null, before: null })
+    // A second publish records the earlier published version as "before".
+    expect(await profiles().saveDraft(h.id, edit({ bio: { en: 'Second', ur: '' } }))).toBe(true)
+    expect((await profiles().load(h)).draftIsPublished).toBe(false)
+    expect(await profiles().publishOwn(h.id, NOW + 1000)).toBe('ok')
+    const log2 = await rows(h.id)
+    expect(log2).toHaveLength(2)
+    expect(log2[1]!.before.bio.en).toBe('First')
+    expect(log2[1]!.after.bio.en).toBe('Second')
+  })
+
+  it('the Registrar publishes the same way', async () => {
+    const v = await account('v', { verifier: true, dept: 'Registrar’s Office' })
+    expect((await profiles().load(v)).selfPublishing).toBe(true)
+    await profiles().saveDraft(v.id, edit())
+    expect(await profiles().publishOwn(v.id, NOW)).toBe('ok')
+    expect((await profiles().load(v)).published!.bio.en).toBe('Hello')
+  })
+
+  it('refuses everyone else, and leaves nothing behind: plain faculty, a reviewer who is not head, a person with no account', async () => {
+    const d = dept()
+    const f = await account('f', { dept: d })
+    const r = await account('r', { reviewer: true, dept: d })
+    for (const who of [f, r]) {
+      expect((await profiles().load(who)).selfPublishing).toBe(false)
+      await profiles().saveDraft(who.id, edit())
+      expect(await profiles().publishOwn(who.id, NOW)).toBe('not-allowed')
+      expect((await profiles().load(who)).published).toBeNull()
+      expect(await rows(who.id)).toHaveLength(0)
+    }
+    expect(await profiles().publishOwn('no-such-person', NOW)).toBe('not-allowed')
+  })
+
+  it('says nothing to publish when there is no saved draft', async () => {
+    const h = await account('h', { head: true, dept: dept() })
+    expect(await profiles().publishOwn(h.id, NOW)).toBe('nothing')
+    expect(await rows(h.id)).toHaveLength(0)
+  })
+
+  it('sending for review is refused for a head and the Registrar, so nobody is ever left locked with no reviewer', async () => {
+    const d = dept()
+    const h = await account('h', { head: true, dept: d })
+    const v = await account('v', { verifier: true, dept: 'Registrar’s Office' })
+    const peer = await account('peer', { reviewer: true, dept: d })
+    for (const who of [h, v]) {
+      await profiles().saveDraft(who.id, edit())
+      expect(await profiles().submit(who.id)).toBe(false)
+      expect((await profiles().load(who)).status).toBe('draft')
+    }
+    // Nothing reached the peer reviewer's queue either.
+    expect((await pool().query(`select count(*)::int as n from "notification" where "userId" = $1 and "kind" = 'review-waiting'`, [peer.id])).rows[0].n).toBe(0)
+  })
+
+  it('a head whose role is revoked can no longer publish, and goes back to sending for review', async () => {
+    const d = dept()
+    const h = await account('h', { head: true, dept: d })
+    await profiles().saveDraft(h.id, edit())
+    await roles().revokeHead(h.email)
+    expect(await profiles().publishOwn(h.id, NOW)).toBe('not-allowed')
+    expect(await profiles().submit(h.id)).toBe(true)
+  })
+
+  it('a head who had a submission waiting is released by publishing', async () => {
+    const h = await account('h', { head: true, dept: dept() })
+    await profiles().saveDraft(h.id, edit())
+    // A legacy submission made before the rule: set the state directly, as an older build would have left it.
+    await pool().query(`update "profile_draft" set "status" = 'submitted' where "userId" = $1`, [h.id])
+    expect(await profiles().publishOwn(h.id, NOW)).toBe('ok')
+    expect((await profiles().load(h)).status).toBe('draft')
+  })
+})
+
+describe.skipIf(!DB)('Registrar’s office, the Verifier role (FP-V, AUTH-07), PostgreSQL', () => {
+  const pool = () => getIdentityPool(DB!)
+  const roles = () => createPgRoleStore(pool())
+  const store = () => createPgRegistrarStore(pool())
+  let tick = Date.UTC(2026, 10, 22, 12)
+  const NOW = tick
+  const values = (over: Record<string, unknown> = {}) => ({ designationEn: 'Assistant Professor', designationUr: 'اسسٹنٹ پروفیسر', nameUr: 'نام', department: 'Dept R', source: 'Notification 12 of 2026', ...over })
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  async function account(tag: string, opts: { verifier?: boolean; dept?: string } = {}): Promise<{ id: string; email: string }> {
+    const id = `vf-${tag}-${Math.random().toString(36).slice(2, 8)}`
+    const email = `${id}@example.invalid`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Person ${tag}`, email])
+    if (opts.dept) await roles().setDepartment(email, opts.dept)
+    if (opts.verifier) expect(await roles().grantVerifier(email)).toBe('ok')
+    return { id, email }
+  }
+  /** A service for `me`, as the session would present them. */
+  const service = (me: { id: string } | null, over: Partial<VerifierSession> = {}) =>
+    createRegistrarService({ store: store(), getVerifier: async () => (me ? { id: me.id, fresh: true, hasPasskey: true, ...over } : null), now: () => (tick += 1000) })
+  const logRows = async (id: string) => (await pool().query(`select "verifierId","source","before","after" from "fixed_change" where "subjectId" = $1 order by "at"`, [id])).rows
+
+  describe('who may use it', () => {
+    it('refuses a person without the role, and a Verifier with no passkey, and no session, all without a trace', async () => {
+      const v = await account('v', { verifier: true })
+      const plain = await account('plain')
+      const p = await account('p')
+      expect(await service(plain).save({ subjectId: p.id, ...values() })).toEqual({ ok: false, error: 'unavailable' })
+      expect(await service(v, { hasPasskey: false }).save({ subjectId: p.id, ...values() })).toEqual({ ok: false, error: 'unavailable' })
+      expect(await service(null).save({ subjectId: p.id, ...values() })).toEqual({ ok: false, error: 'session' })
+      expect(await service(plain).search('Person')).toEqual({ ok: false, error: 'unavailable' })
+      expect(await service(v, { hasPasskey: false }).open(p.id)).toEqual({ ok: false, error: 'unavailable' })
+      expect(await logRows(p.id)).toEqual([])
+    })
+    it('a delegate, reviewer or head role does not give access to the Registrar screen', async () => {
+      const r = await account('rev', { dept: 'Dept R' })
+      expect(await roles().grantReviewer(r.email)).toBe('ok')
+      expect(await roles().grantHead(r.email)).toBe('ok')
+      expect(await service(r).search('Person')).toEqual({ ok: false, error: 'unavailable' })
+    })
+    it('cannot change their own record, and an unknown person looks the same', async () => {
+      const v = await account('v', { verifier: true, dept: 'Dept R' })
+      expect(await service(v).save({ subjectId: v.id, ...values() })).toEqual({ ok: false, error: 'unavailable' })
+      expect(await service(v).open(v.id)).toEqual({ ok: false, error: 'unavailable' })
+      expect(await service(v).save({ subjectId: 'nobody-here-123', ...values() })).toEqual({ ok: false, error: 'unavailable' })
+      expect((await service(v).search(v.email.slice(0, 12))) as { people: unknown[] }).toMatchObject({ ok: true })
+      const found = await service(v).search(v.email)
+      expect(found).toEqual({ ok: true, people: [] })
+      expect(await logRows(v.id)).toEqual([])
+    })
+    it('needs a recent second factor to save, but not to look', async () => {
+      const v = await account('v', { verifier: true })
+      const p = await account('p')
+      expect(await service(v, { fresh: false }).save({ subjectId: p.id, ...values() })).toEqual({ ok: false, error: 'fresh' })
+      expect(await service(v, { fresh: false }).open(p.id)).toMatchObject({ ok: true })
+      expect(await logRows(p.id)).toEqual([])
+    })
+  })
+
+  describe('saving', () => {
+    it('writes the fields, the department and one log row together, with the before and the source', async () => {
+      const v = await account('v', { verifier: true })
+      const p = await account('p')
+      expect(await service(v).save({ subjectId: p.id, ...values({ department: '  Dept   R ' }) })).toEqual({ ok: true })
+      const fx = (await pool().query(`select * from "account_fixed" where "userId" = $1`, [p.id])).rows[0]
+      expect(fx).toMatchObject({ designationEn: 'Assistant Professor', designationUr: 'اسسٹنٹ پروفیسر', nameUr: 'نام' })
+      expect((await pool().query(`select "department" from "account_department" where "userId" = $1`, [p.id])).rows[0].department).toBe('Dept R')
+      const log = await logRows(p.id)
+      expect(log).toHaveLength(1)
+      expect(log[0]).toMatchObject({ verifierId: v.id, source: 'Notification 12 of 2026', before: null })
+      // The person's own page reads the new values.
+      const loaded = await createSampleProfileStore(pool()).load({ id: p.id, email: p.email })
+      expect(loaded.profile.designation).toEqual({ en: 'Assistant Professor', ur: 'اسسٹنٹ پروفیسر' })
+      expect(loaded.profile.department).toBe('Dept R')
+      // A second change records the first as before.
+      expect(await service(v).save({ subjectId: p.id, ...values({ designationEn: 'Associate Professor', source: 'Notification 40 of 2026' }) })).toEqual({ ok: true })
+      const two = await logRows(p.id)
+      expect(two).toHaveLength(2)
+      expect(two[1].before).toMatchObject({ designationEn: 'Assistant Professor' })
+      expect(two[1].after).toMatchObject({ designationEn: 'Associate Professor' })
+      const detail = await service(v).open(p.id)
+      expect(detail).toMatchObject({ ok: true })
+      if (detail.ok) {
+        expect(detail.detail.history.map((h) => h.fields)).toEqual([['designationEn'], ['designationEn', 'designationUr', 'nameUr', 'department']])
+      }
+    })
+    it('a department that differs only in letter case is not a change', async () => {
+      const v = await account('v', { verifier: true })
+      const p = await account('p', { dept: 'Dept R' })
+      expect(await service(v).save({ subjectId: p.id, ...values({ department: 'DEPT r' }) })).toEqual({ ok: true })
+      expect((await pool().query(`select "department" from "account_department" where "userId" = $1`, [p.id])).rows[0].department).toBe('Dept R')
+    })
+    it('refuses bad input and a short source note, naming the field, and writes nothing', async () => {
+      const v = await account('v', { verifier: true })
+      const p = await account('p')
+      const bad = await service(v).save({ subjectId: p.id, ...values({ designationEn: '', department: '', source: 'no' }) })
+      expect(bad).toEqual({ ok: false, error: 'invalid', errors: { designationEn: 'required', department: 'required', source: 'tooShort' } })
+      expect(await service(v).save({ subjectId: p.id, ...values({ designationEn: 'x'.repeat(121) }) })).toMatchObject({ ok: false, error: 'invalid', errors: { designationEn: 'tooLong' } })
+      expect(await service(v).save({ subjectId: p.id, ...values({ nameUr: 'a\u202Eb' }) })).toMatchObject({ ok: false, error: 'invalid', errors: { nameUr: 'invalid' } })
+      expect(await service(v).save({ subjectId: p.id, ...values({ designationEn: 42 }) })).toMatchObject({ ok: false, error: 'invalid' })
+      expect(await service(v).save({ subjectId: '../x', ...values() })).toMatchObject({ ok: false, error: 'invalid', errors: { subject: 'invalid' } })
+      expect(await logRows(p.id)).toEqual([])
+      expect((await pool().query(`select 1 from "account_fixed" where "userId" = $1`, [p.id])).rowCount).toBe(0)
+    })
+    it('will not move a reviewer or a head to another department, but may change their designation', async () => {
+      const v = await account('v', { verifier: true })
+      const h = await account('h', { dept: 'Dept R' })
+      expect(await roles().grantHead(h.email)).toBe('ok')
+      expect(await service(v).save({ subjectId: h.id, ...values({ department: 'Elsewhere' }) })).toEqual({ ok: false, error: 'has-role' })
+      expect((await pool().query(`select "department" from "account_department" where "userId" = $1`, [h.id])).rows[0].department).toBe('Dept R')
+      expect(await logRows(h.id)).toEqual([])
+      expect(await service(v).save({ subjectId: h.id, ...values({ department: 'Dept R' }) })).toEqual({ ok: true })
+    })
+    it('a failure part-way leaves nothing behind', async () => {
+      const v = await account('v', { verifier: true })
+      const p = await account('p')
+      // A designation the table refuses (over 120 characters) reaches the database only if the service is bypassed.
+      await expect(store().save(v.id, { subjectId: p.id, values: { designationEn: 'x'.repeat(121), designationUr: null, nameUr: null, department: 'D' }, source: 'Notification 1' }, NOW)).rejects.toThrow()
+      expect(await logRows(p.id)).toEqual([])
+      expect((await pool().query(`select 1 from "account_department" where "userId" = $1`, [p.id])).rowCount).toBe(0)
+    })
+  })
+
+  describe('search', () => {
+    it('finds by name or email, never the Verifier, treats % and _ as plain text, and needs two letters', async () => {
+      const v = await account('v', { verifier: true })
+      const tag = Math.random().toString(36).slice(2, 8)
+      const id = `vs-${tag}-aaaa`
+      await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Zed ${tag} Khan`, `${id}@example.invalid`])
+      const r = await service(v).search(`ZED ${tag}`)
+      expect(r).toMatchObject({ ok: true })
+      if (r.ok) expect(r.people.map((p) => p.subjectId)).toEqual([id])
+      expect(await service(v).search('z')).toEqual({ ok: true, people: [] })
+      expect(await service(v).search('%%')).toEqual({ ok: true, people: [] })
+      expect(await service(v).search(`${v.email}`)).toEqual({ ok: true, people: [] })
+    })
+  })
+
+  describe('the log and the role', () => {
+    it('the change log refuses an update and a delete', async () => {
+      const v = await account('v', { verifier: true })
+      const p = await account('p')
+      await service(v).save({ subjectId: p.id, ...values() })
+      await expect(pool().query(`update "fixed_change" set "source" = 'tampered here' where "subjectId" = $1`, [p.id])).rejects.toThrow(/append-only/)
+      await expect(pool().query(`delete from "fixed_change" where "subjectId" = $1`, [p.id])).rejects.toThrow(/append-only/)
+      expect(await logRows(p.id)).toHaveLength(1)
+    })
+    it('the database refuses a source note shorter than 5 characters', async () => {
+      const p = await account('p')
+      await expect(pool().query(`insert into "fixed_change" ("subjectId","verifierId","after","source") values ($1,'x','{}','abcd')`, [p.id])).rejects.toThrow()
+    })
+    it('grant and revoke by the operator command, and the listing shows it', async () => {
+      const a = await account('a')
+      expect(await roles().revokeVerifier(a.email)).toBe('not-reviewer')
+      expect(await roles().grantVerifier(a.email)).toBe('ok')
+      expect(await roles().grantVerifier(a.email.toUpperCase())).toBe('ok')
+      expect((await roles().list()).find((r) => r.email === a.email)).toMatchObject({ verifier: true, reviewer: false, head: false })
+      expect(await roles().revokeVerifier(a.email)).toBe('ok')
+      expect(await roles().grantVerifier('nobody@example.invalid')).toBe('no-account')
+      expect(await service(a).search('Person')).toEqual({ ok: false, error: 'unavailable' })
+    })
+    it('a revoked Verifier loses access at once', async () => {
+      const v = await account('v', { verifier: true })
+      const p = await account('p')
+      expect(await service(v).open(p.id)).toMatchObject({ ok: true })
+      await roles().revokeVerifier(v.email)
+      expect(await service(v).save({ subjectId: p.id, ...values() })).toEqual({ ok: false, error: 'unavailable' })
     })
   })
 })

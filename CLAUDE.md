@@ -10,7 +10,7 @@ Read `docs/plan/IMPLEMENTATION_PLAN_v2.md` (sections 0 to 9, then the current ph
 5. Never touch the live university site, the Odoo system, DNS, or real applicant or student data. Stop and report [BLOCKED] instead of guessing.
 6. Never commit secrets, personal data or private payloads.
 7. Small commits, Conventional Commits, one concern each, explaining why.
-8. Only the lead merges; schema, tokens and routes are never edited by two agents at once.
+8. Only the lead merges; schema, tokens and routes are never edited by two agents at once. Exception (ADR-0027): the FP agent may merge its own pull requests that touch only the portal lane, after CI passes, fast-forward only.
 9. Three-in, two-out: before adding a dependency or feature, name two things it lets you remove, or justify it in an ADR.
 10. Do not claim a result that was not run. Write "not run" and why.
 

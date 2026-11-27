@@ -6,6 +6,7 @@ import { authClient, go, setSharedComputer } from './client'
 import { COPY } from './copy'
 import { mapAuthError } from './errors'
 import Field, { CheckField } from './Field'
+import Icon from './icons'
 
 type Step = 'start' | 'totp'
 
@@ -63,9 +64,11 @@ export default function SignInForm() {
       {step === 'start' ? (
         <>
           <CheckField id="shared" label={COPY.signIn.sharedLabel} hint={COPY.signIn.sharedHint} checked={shared} onChange={setShared} />
-          <button type="button" className="portal-btn" onClick={onPasskey} disabled={busy}>
+          <button type="button" className="portal-btn portal-btn-lg" onClick={onPasskey} disabled={busy} aria-describedby="passkey-hint">
+            <Icon name="key" />
             {busy ? COPY.signIn.working : COPY.signIn.passkeyButton}
           </button>
+          <p id="passkey-hint" className="portal-passkey-hint">{COPY.auth.passkeyHint}</p>
           <p className="portal-divider">{COPY.signIn.orDivider}</p>
           <form onSubmit={onPassword} noValidate={false}>
             <Field id="email" label={COPY.signIn.emailLabel} type="email" autoComplete="username webauthn" required />

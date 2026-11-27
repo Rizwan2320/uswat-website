@@ -200,6 +200,7 @@ export type Preview = {
   cvLink: string
   email: string | null
   showPhoto: boolean
+  photo: string | null
   sample: boolean
 }
 
@@ -217,6 +218,7 @@ export function buildPreview(p: Profile): Preview {
     cvLink: p.cvLink,
     email: p.visibility.email === 'public' ? p.email : null,
     showPhoto: p.visibility.photo === 'public',
+    photo: p.photo ?? null,
     sample: p.sample,
   }
 }

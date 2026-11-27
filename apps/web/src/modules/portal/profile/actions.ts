@@ -26,6 +26,10 @@ export async function saveProfile(input: unknown, forId?: unknown): Promise<Acti
 export async function submitProfile(): Promise<ActionResult> {
   return service().submit()
 }
+/** For a head of department or the Registrar only (the store refuses anyone else): saves nothing itself, publishes the saved draft. */
+export async function publishProfile(): Promise<ActionResult> {
+  return service().publish()
+}
 export async function withdrawProfile(): Promise<ActionResult> {
   return service().withdraw()
 }
