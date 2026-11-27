@@ -35,7 +35,7 @@ describe('alumni work (sample data)', () => {
     }
   })
 
-  it('gives each of the thirteen programmes exactly three entries', () => {
+  it('gives each of the twenty programmes exactly three entries', () => {
     expect(disciplineProfiles.map((p) => p.slug).sort()).toEqual(
       [
         'bs-artificial-intelligence',
@@ -52,10 +52,18 @@ describe('alumni work (sample data)', () => {
         'bs-chemistry-2',
         'bs-mathematics-2',
         'bs-statistics',
+        // 2026-11-27: the life sciences.
+        'bs-botany-2',
+        'bs-zoology-2',
+        'bs-biotechnology-3',
+        'bs-genetics-3',
+        'bs-microbiology-3',
+        'bs-psychology-2',
+        'bs-forestry',
       ].sort(),
     )
     for (const p of disciplineProfiles) expect(alumniForProgramme(p.slug)).toHaveLength(3)
-    expect(ALUMNI_WORKS).toHaveLength(39)
+    expect(ALUMNI_WORKS).toHaveLength(60)
   })
 
   it('features three different works on the department page', () => {

@@ -98,6 +98,18 @@ const BANNERS = [
   { key: 'bs-chemistry-2', icon: 'flask', pre: 'Department of Chemistry', one: 'BS', two: 'Chemistry', tag: 'University of Swat' },
   { key: 'bs-mathematics-2', icon: 'cap', pre: 'Mathematics and Statistics', one: 'BS', two: 'Mathematics', tag: 'University of Swat' },
   { key: 'bs-statistics', icon: 'clipboard', pre: 'Mathematics and Statistics', one: 'BS', two: 'Statistics', tag: 'University of Swat' },
+  { key: 'botany', icon: 'globe', pre: 'University of Swat', one: 'Department of', two: 'Botany', tag: 'BS Botany' },
+  { key: 'zoology', icon: 'heart', pre: 'University of Swat', one: 'Department of', two: 'Zoology', tag: 'BS Zoology' },
+  { key: 'biotechnology-genetics-forensic-and-microbiology', icon: 'flask', pre: 'University of Swat', one: 'Biotechnology, Genetics,', two: 'Forensic and Microbiology', tag: 'BS Biotechnology, Genetics, Microbiology' },
+  { key: 'psychological-studies', icon: 'users', pre: 'University of Swat', one: 'Psychological', two: 'Studies', tag: 'BS Psychology' },
+  { key: 'agricultural-sciences-and-forestry', icon: 'globe', pre: 'University of Swat', one: 'Agricultural Sciences', two: 'and Forestry', tag: 'BS Forestry' },
+  { key: 'bs-botany-2', icon: 'globe', pre: 'Department of Botany', one: 'BS', two: 'Botany', tag: 'University of Swat' },
+  { key: 'bs-zoology-2', icon: 'heart', pre: 'Department of Zoology', one: 'BS', two: 'Zoology', tag: 'University of Swat' },
+  { key: 'bs-biotechnology-3', icon: 'flask', pre: 'Biotechnology and Microbiology', one: 'BS', two: 'Biotechnology', tag: 'University of Swat' },
+  { key: 'bs-genetics-3', icon: 'flask', pre: 'Biotechnology and Microbiology', one: 'BS', two: 'Genetics', tag: 'University of Swat' },
+  { key: 'bs-microbiology-3', icon: 'flask', pre: 'Biotechnology and Microbiology', one: 'BS', two: 'Microbiology', tag: 'University of Swat' },
+  { key: 'bs-psychology-2', icon: 'users', pre: 'Psychological Studies', one: 'BS', two: 'Psychology', tag: 'University of Swat' },
+  { key: 'bs-forestry', icon: 'globe', pre: 'Agricultural Sciences and Forestry', one: 'BS', two: 'Forestry', tag: 'University of Swat' },
 ]
 
 const circuit = (flip) => {

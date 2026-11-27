@@ -9,7 +9,7 @@ const all = Object.entries(rows).flatMap(([c, rs]) => rs.map((r) => ({ c, ...r }
 describe('Sample seed data', () => {
   it('has the planned counts', () => {
     expect(Object.fromEntries(Object.entries(rows).map(([c, r]) => [c, r.length]))).toEqual({
-      faculties: 4, campuses: 3, people: 14, offices: 31, departments: 10, programmes: 20,
+      faculties: 4, campuses: 3, people: 14, offices: 31, departments: 15, programmes: 27,
     })
   })
   it('labels every invented record Sample and gives every record a sample.invalid source', () => {
@@ -23,7 +23,10 @@ describe('Sample seed data', () => {
     // 2026-11-22: the Faculty of Allied Health Sciences, its two centres and four programmes (src/site/academics/profiles/allied; sources and dates are there).
     const REAL_ALLIED = ['faculty-of-allied-health-sciences', 'centre-for-medical-technologies', 'centre-for-pharmaceutical-and-rehabilitation-sciences', 'bs-medical-laboratory-technology', 'bs-dental-technology', 'doctor-of-physical-therapy', 'bs-radiography-and-imaging-technology']
     // 2026-11-26: the Physics, Chemistry, and Mathematics and Statistics departments and their programmes (src/site/academics/profiles/sciences).
-    const REAL_SCIENCES = ['physics', 'chemistry', 'mathematics-and-statistics', 'bs-physics-2', 'bs-chemistry-2', 'bs-mathematics-2', 'bs-statistics']
+    const REAL_SCIENCES = ['physics', 'chemistry', 'mathematics-and-statistics', 'bs-physics-2', 'bs-chemistry-2', 'bs-mathematics-2', 'bs-statistics',
+      // 2026-11-27: the life-science departments and their programmes (src/site/academics/profiles/sciences).
+      'botany', 'zoology', 'biotechnology-genetics-forensic-and-microbiology', 'psychological-studies', 'agricultural-sciences-and-forestry',
+      'bs-botany-2', 'bs-zoology-2', 'bs-biotechnology-3', 'bs-genetics-3', 'bs-microbiology-3', 'bs-psychology-2', 'bs-forestry']
     const real = (r: { c: string; slug: string }) =>
       REAL_ALLIED.includes(r.slug) || REAL_SCIENCES.includes(r.slug) || r.c === 'campuses' || (r.c === 'offices' && REAL_OFFICES.includes(r.slug)) || (r.c === 'departments' && r.slug === 'dcst') || (r.c === 'programmes' && programmes.find((p) => p.slug === r.slug)?.department === 'dcst')
     for (const r of all) {

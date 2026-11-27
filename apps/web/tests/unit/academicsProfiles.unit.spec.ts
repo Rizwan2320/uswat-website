@@ -114,8 +114,13 @@ describe('department and discipline profiles', () => {
 
   it('has one head and a coordinator for every programme, with no contact details', () => {
     for (const p of departmentProfiles) {
-      expect(p.team.filter((m) => m.role === 'head'), p.slug).toHaveLength(1)
-      expect(p.team[0]?.role, 'the head comes first').toBe('head')
+      // A department whose staff come from the university's page (`reference`) may have no head when the page names none (Agricultural Sciences and Forestry).
+      const heads = p.team.filter((m) => m.role === 'head')
+      if (p.reference && heads.length === 0) expect(p.team.length, p.slug).toBeGreaterThan(0)
+      else {
+        expect(heads, p.slug).toHaveLength(1)
+        expect(p.team[0]?.role, 'the head comes first').toBe('head')
+      }
       expect(new Set(p.team.map((m) => m.id)).size).toBe(p.team.length)
       if (p.path || p.reference) continue // a faculty page, or a department whose staff come from the university's page, which names no programme coordinators
       for (const slug of p.disciplines) {
