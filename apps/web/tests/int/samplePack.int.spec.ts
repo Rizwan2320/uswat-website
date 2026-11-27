@@ -22,7 +22,11 @@ import { getTestPayload, makeUser } from '../helpers/governance'
 
 const FEEDS = ['news', 'notices', 'events', 'jobs', 'tenders'] as const
 const seeds = articleSeeds()
-const isPack = (slug: string) => slug.startsWith('sample-')
+const packSlugs = new Set(seeds.map((s) => s.slug))
+const packTagSlugs = new Set(seeds.flatMap((s) => s.tags))
+// Exactly this pack's rows. Other test files also create `sample-...` rows (without a Sample source) in the same database.
+const isPack = (slug: string, collection: string) =>
+  collection === 'article-tags' ? packTagSlugs.has(slug) : packSlugs.has(slug)
 let payload: Payload
 
 type Row = { id: number; slug?: string; governance?: { source?: string; status?: string } }
@@ -43,6 +47,11 @@ beforeAll(async () => {
   payload = await getTestPayload()
   const admin = await makeUser(payload, 'platformAdmin', ['Registrar'])
   const actor = { user: { ...(admin as unknown as Record<string, unknown>), collection: 'users' } }
+  // Start from a clean pack: other test files in the same database archive or edit the pack's rows (found
+  // 2026-11-27: sample-notice-current archived by an earlier file), so remove exactly this pack's articles and seed again.
+  for (const c of ARTICLE_COLLECTIONS) {
+    await payload.delete({ collection: c as never, where: { slug: { in: [...packSlugs] } }, overrideAccess: true })
+  }
   await applyAllSeeds(payload as unknown as Cms, actor, renderPng)
 }, 120_000)
 
@@ -54,7 +63,7 @@ describe('Sample pack integrity', () => {
     const pages = await payload.find({ collection: 'pages', draft: true, overrideAccess: true, depth: 0, limit: 100, pagination: false, where: { 'governance.source': { like: 'https://sample.invalid/seed/' } } })
     expect(pages.totalDocs).toBe(4)
     for (const c of [...ARTICLE_COLLECTIONS, 'article-tags']) {
-      const rows = (await all(c, true, false)).filter((r) => r.slug && isPack(r.slug))
+      const rows = (await all(c, true, false)).filter((r) => r.slug && isPack(r.slug, c))
       expect(rows.length, c).toBeGreaterThan(0)
       for (const r of rows) expect(new URL(r.governance?.source ?? 'x:').host, `${c} ${r.slug}`).toBe('sample.invalid')
     }
