@@ -55,7 +55,7 @@ Each page you look after shows, on your dashboard, a link to the live page (once
 - **Facts need a source:** level, duration, eligibility and similar facts must carry a source link and are checked before they go live.
 - **Not shown yet:** the tagline (both pages) and the department's location and office hours can be typed in but the public page does not show them yet. The form says so.
 
-When you fill a section the whole section is yours: if you add one lab, the page shows your one lab, not the old five plus yours. To start from what is live, ask for the page to be filled first (the lead runs the seed). Emptying a section brings the standard text back.
+When you fill a section the whole section is yours: if you add one lab, the page shows your one lab, not the old five plus yours. On the preview site the parts already hold the text the page shows, so you start from what is live. For the real site the lead decides when to fill them. Emptying a section brings the standard text back.
 
 ## Your dashboard
 

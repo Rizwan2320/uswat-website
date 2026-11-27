@@ -1,5 +1,6 @@
 /**
- * One command for the preview build (ADR-0026): the test accounts, then every Sample seed, as the owner account.
+ * One command for the preview build (ADR-0026): the test accounts, then every Sample seed, then the page content of
+ * the departments and programmes (slice 3ar), as the owner account.
  *   pnpm seed:preview
  * Allowed on this machine, or on a hosted database only behind the three locks in `assertSeedTarget`. On Vercel a
  * refusal or a failure prints one clear line and exits 0 so Sample data never fails a build (and a production build only
@@ -10,6 +11,7 @@ import { runFromEnv } from '../../../scripts/import/seeds/pool'
 import { assertSeedTarget, type Cms } from '../../../scripts/import/writer'
 
 import { ACCOUNTS, ensureAccounts } from './seed-accounts'
+import { applyPageContent } from './seed-page-content'
 import { renderPng } from './renderPng'
 
 async function main(): Promise<void> {
@@ -26,7 +28,10 @@ async function main(): Promise<void> {
       return
     }
     const seeds = await applyAllSeeds(payload as unknown as Cms, { user: { ...user, collection: 'users' } }, renderPng, Date.now(), runFromEnv(process.env))
-    console.log(JSON.stringify({ seeded: true, route, accounts, seeds }))
+    // Slice 3ar: the department and programme pages start from what they already show, so a head can edit it.
+    // Idempotent; a section someone has edited is never overwritten.
+    const pageContent = await applyPageContent(payload, { publishAs: user })
+    console.log(JSON.stringify({ seeded: true, route, accounts, seeds, pageContent }))
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e)
     if (route === 'preview') {

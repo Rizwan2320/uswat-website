@@ -8,6 +8,8 @@
  * overwrites someone's edit. Acts as the system, so the governance hooks run, and the change is saved as a draft
  * (governance requires that for published records); no secret is read or printed.
  */
+import type { Payload } from 'payload'
+
 import { assertLocalDatabase } from '../../../scripts/import/writer'
 
 import { departmentPageContent, programmePageContent } from '../src/collections/academics/profileToCms'
@@ -26,26 +28,22 @@ export function missingSections(current: Row | null | undefined, wanted: Row): R
   return out
 }
 
-async function main(): Promise<void> {
-  assertLocalDatabase(process.env.DATABASE_URL)
-  const args = process.argv.slice(2)
-  const publish = args.includes('--publish')
-  const only = args.find((a) => !a.startsWith('--'))
-  const { getPayload } = await import('payload')
-  const payload = await getPayload({ config: await (await import('../src/payload.config')).default })
+export type PageContentOptions = {
+  /** One department slug (and its programmes), or all profiles. */
+  only?: string
+  /** Walk each change through review, approved and published as this user; otherwise leave drafts. */
+  publishAs?: Row
+}
+
+/**
+ * Fills the page content of every department and programme that has a code profile and a record.
+ * The caller decides whether the target is allowed (the CLI below and `seed:preview` both check it first).
+ */
+export async function applyPageContent(
+  payload: Payload,
+  { only, publishAs }: PageContentOptions = {},
+): Promise<Record<string, string>> {
   const report: Record<string, string> = {}
-  const admin = publish
-    ? ((
-        await payload.find({
-          collection: 'users',
-          where: { role: { equals: 'platformAdmin' } },
-          limit: 1,
-          depth: 0,
-          overrideAccess: true,
-        })
-      ).docs[0] as unknown as Row | undefined)
-    : undefined
-  if (publish && !admin) throw new Error('--publish needs a platformAdmin user in this database')
 
   const apply = async (collection: 'departments' | 'programmes', slug: string, wanted: Row) => {
     const found = await payload.find({
@@ -77,7 +75,7 @@ async function main(): Promise<void> {
       context: CONTEXT,
       overrideAccess: true,
     })
-    if (admin) {
+    if (publishAs) {
       // The workflow has no shortcut: in review, approved, then published.
       for (const governance of [{ status: 'in_review' }, { status: 'approved', verificationStatus: 'verified' }, {}]) {
         await payload.update({
@@ -87,19 +85,41 @@ async function main(): Promise<void> {
           data: (Object.keys(governance).length ? { governance } : { _status: 'published', governance: {} }) as never,
           locale: 'en',
           context: CONTEXT,
-          user: { ...admin, collection: 'users' } as never,
+          user: { ...publishAs, collection: 'users' } as never,
           overrideAccess: false,
         })
       }
     }
-    report[`${collection}/${slug}`] = `${admin ? 'published' : 'draft'}: filled ${keys.join(', ')}`
+    report[`${collection}/${slug}`] = `${publishAs ? 'published' : 'draft'}: filled ${keys.join(', ')}`
   }
 
   for (const p of departmentProfiles.filter((d) => !only || d.slug === only))
     await apply('departments', p.slug, departmentPageContent(p))
   for (const p of disciplineProfiles.filter((d) => !only || d.department === only))
     await apply('programmes', p.slug, programmePageContent(p))
-  console.log(JSON.stringify(report, null, 1))
+  return report
+}
+
+async function main(): Promise<void> {
+  assertLocalDatabase(process.env.DATABASE_URL)
+  const args = process.argv.slice(2)
+  const publish = args.includes('--publish')
+  const only = args.find((a) => !a.startsWith('--'))
+  const { getPayload } = await import('payload')
+  const payload = await getPayload({ config: await (await import('../src/payload.config')).default })
+  const admin = publish
+    ? ((
+        await payload.find({
+          collection: 'users',
+          where: { role: { equals: 'platformAdmin' } },
+          limit: 1,
+          depth: 0,
+          overrideAccess: true,
+        })
+      ).docs[0] as unknown as Row | undefined)
+    : undefined
+  if (publish && !admin) throw new Error('--publish needs a platformAdmin user in this database')
+  console.log(JSON.stringify(await applyPageContent(payload, { only, publishAs: admin }), null, 1))
 }
 
 if (process.argv[1]?.endsWith('seed-page-content.ts')) {
