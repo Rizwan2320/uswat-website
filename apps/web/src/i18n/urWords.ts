@@ -291,8 +291,8 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   Statistics: 'اعداد و شمار',
   'The figures in the statistics bar. 3 to 6. Every figure needs a source and the date it was checked, or must be ticked as a sample.':
     'اعداد و شمار کی پٹی میں دکھائے جانے والے اعداد۔ 3 سے 6۔ ہر عدد کا ماخذ اور تصدیق کی تاریخ درج ہونی چاہیے، یا اسے نمونہ کے طور پر نشان زد کیا جائے۔',
-  'The photographs at the top of the home page, in this order. Each photograph shows with its two buttons. 3 to 8 slides.':
-    'ہوم پیج کے اوپر دکھائی جانے والی تصاویر، اسی ترتیب سے۔ ہر تصویر کے ساتھ اس کے دو بٹن نظر آتے ہیں۔ 3 سے 8 سلائیڈز۔',
+  'The photographs at the top of the home page, in this order. Each photograph shows with its two buttons. 3 to 8 slides, or none to keep the standard photographs.':
+    'ہوم پیج کے اوپر دکھائی جانے والی تصاویر، اسی ترتیب سے۔ ہر تصویر کے ساتھ اس کے دو بٹن نظر آتے ہیں۔ 3 سے 8 سلائیڈز، یا کوئی نہیں تاکہ معیاری تصاویر برقرار رہیں۔',
   'This is a sample figure': 'یہ ایک نمونہ عدد ہے',
   Trophy: 'ٹرافی',
   'Where the figure comes from': 'عدد کہاں سے لیا گیا',
