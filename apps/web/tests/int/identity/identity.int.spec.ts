@@ -87,7 +87,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue', '0012_claim_activation', '0013_delegation', '0014_notifications', '0015_profile_fixed', '0016_verifier'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue', '0012_claim_activation', '0013_delegation', '0014_notifications', '0015_profile_fixed', '0016_verifier', '0017_publication_intake'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -1283,6 +1283,142 @@ describe.skipIf(!DB)('publication candidates (FP-12, FPR-05), PostgreSQL store',
     await expect(pool().query(`update "publication_candidate" set "status" = 'published' where "userId" = $1`, [a])).rejects.toThrow()
     await pool().query(`delete from "user" where "id" = $1`, [a])
     expect((await pool().query(`select count(*)::int as n from "publication_candidate" where "userId" = $1`, [a])).rows[0].n).toBe(0)
+  })
+})
+
+describe.skipIf(!DB)('publication intake (FP-19), PostgreSQL store', () => {
+  const pool = () => getIdentityPool(DB!)
+  const store = () => createPgPublicationStore(pool())
+  const work = (over: Partial<Candidate> = {}): Candidate => ({ title: 'Intake paper one', year: 2024, venue: 'Journal', doi: '', authors: ['A. Sample'], ...over })
+
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+
+  async function account(tag: string): Promise<string> {
+    const id = `int-${tag}-${Math.random().toString(36).slice(2, 8)}`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Sample ${tag}`, `${id}@example.invalid`])
+    return id
+  }
+  const claimedIds = async (a: string) => (await store().list(a)).claimed.map((w) => w.id)
+
+  it('a harvest row gets the defaults: article, harvest, public, not featured, no link', async () => {
+    const a = await account('defaults')
+    await store().addCandidates(a, [work({ doi: '10.5555/d1' })], true)
+    expect((await store().list(a)).pending[0]).toMatchObject({ workType: 'article', origin: 'harvest', url: '', featured: false, isPublic: true, sample: true })
+  })
+
+  it('a typed-in work is claimed at once, keeps its type, link and origin, and is not a sample', async () => {
+    const a = await account('typed')
+    const r = await store().addClaimed(a, work({ workType: 'book', url: 'https://example.invalid/book' }), 'manual')
+    expect(r.ok).toBe(true)
+    const l = await store().list(a)
+    expect(l.pending).toHaveLength(0)
+    expect(l.claimed[0]).toMatchObject({ workType: 'book', origin: 'manual', url: 'https://example.invalid/book', sample: false, status: 'claimed' })
+  })
+
+  it('a typed-in copy of a work the account already has, in any status, is refused', async () => {
+    const a = await account('exists')
+    await store().addCandidates(a, [work({ doi: '10.5555/e1' })], true)
+    expect(await store().addClaimed(a, work({ title: 'Another title', doi: 'https://doi.org/10.5555/E1' }), 'doi')).toEqual({ ok: false, reason: 'exists' })
+    expect(await store().addClaimed(a, work({ title: 'INTAKE paper — one!' }), 'manual')).toEqual({ ok: false, reason: 'exists' })
+    expect((await store().list(a)).pending).toHaveLength(1)
+  })
+
+  it('a file import lands in To review with origin file and sends no works-found notice', async () => {
+    const a = await account('file')
+    const before = (await pool().query(`select count(*)::int as n from identity."notification" where "userId" = $1`, [a]).catch(() => ({ rows: [{ n: 0 }] }))).rows[0].n
+    await store().addCandidates(a, [work({ doi: '10.5555/f1', workType: 'conference', url: 'https://example.invalid/f1' })], false, 'file')
+    const w = (await store().list(a)).pending[0]
+    expect(w).toMatchObject({ origin: 'file', workType: 'conference', sample: false })
+    const after = (await pool().query(`select count(*)::int as n from identity."notification" where "userId" = $1`, [a]).catch(() => ({ rows: [{ n: 0 }] }))).rows[0].n
+    expect(after).toBe(before)
+  })
+
+  it('only the owner can change details, featured, public and delete; only claimed works can be changed', async () => {
+    const a = await account('own-a')
+    const b = await account('own-b')
+    const id = (await store().addClaimed(a, work(), 'manual')) as { ok: true; id: string }
+    expect(await store().updateDetails(b, id.id, { workType: 'report', url: '' })).toBe(false)
+    expect(await store().setFeatured(b, id.id, true)).toBe(false)
+    expect(await store().setPublic(b, id.id, false)).toBe(false)
+    expect(await store().remove(b, id.id)).toBe(false)
+    expect(await store().updateDetails(a, id.id, { workType: 'report', url: 'https://example.invalid/r' })).toBe(true)
+    expect((await store().list(a)).claimed[0]).toMatchObject({ workType: 'report', url: 'https://example.invalid/r' })
+    await store().addCandidates(a, [work({ title: 'Pending one', doi: '10.5555/p1' })], true)
+    const pending = (await store().list(a)).pending[0]
+    expect(await store().setFeatured(a, pending.id, true)).toBe(false)
+    expect(await store().setPublic(a, pending.id, false)).toBe(false)
+    expect(await store().updateDetails(a, pending.id, { workType: 'book', url: '' })).toBe(false)
+  })
+
+  it('at most five works can be featured; unfeaturing makes room; featured works list first', async () => {
+    const a = await account('five')
+    const ids: string[] = []
+    for (let i = 0; i < 7; i++) ids.push(((await store().addClaimed(a, work({ title: `Cap paper ${i}`, year: 2000 + i }), 'manual')) as { ok: true; id: string }).id)
+    for (let i = 0; i < 5; i++) expect(await store().setFeatured(a, ids[i], true)).toBe(true)
+    expect(await store().setFeatured(a, ids[5], true)).toBe(false)
+    expect(await store().setFeatured(a, ids[0], true)).toBe(true) // already featured: pressing again is harmless and keeps the count at five
+    expect(await store().setFeatured(a, ids[0], false)).toBe(true)
+    expect(await store().setFeatured(a, ids[5], true)).toBe(true)
+    const l = (await store().list(a)).claimed
+    expect(l.slice(0, 5).every((w) => w.featured)).toBe(true)
+    expect(l.slice(5).every((w) => !w.featured)).toBe(true)
+  })
+
+  it('eight presses at once on eight works leave exactly five featured', async () => {
+    const a = await account('race')
+    const ids: string[] = []
+    for (let i = 0; i < 8; i++) ids.push(((await store().addClaimed(a, work({ title: `Race paper ${i}`, year: 2010 + i }), 'manual')) as { ok: true; id: string }).id)
+    const results = await Promise.all(ids.map((id) => store().setFeatured(a, id, true)))
+    expect(results.filter(Boolean)).toHaveLength(5)
+    expect((await store().list(a)).claimed.filter((w) => w.featured)).toHaveLength(5)
+  })
+
+  it('the cap is per account', async () => {
+    const a = await account('cap-a')
+    const b = await account('cap-b')
+    for (let i = 0; i < 5; i++) await store().setFeatured(a, ((await store().addClaimed(a, work({ title: `A ${i}`, year: 2001 + i }), 'manual')) as { ok: true; id: string }).id, true)
+    const bid = ((await store().addClaimed(b, work({ title: 'B 0' }), 'manual')) as { ok: true; id: string }).id
+    expect(await store().setFeatured(b, bid, true)).toBe(true)
+  })
+
+  it('public and only-mine can be switched back and forth', async () => {
+    const a = await account('vis')
+    const id = ((await store().addClaimed(a, work(), 'manual')) as { ok: true; id: string }).id
+    expect(await store().setPublic(a, id, false)).toBe(true)
+    expect((await store().list(a)).claimed[0].isPublic).toBe(false)
+    expect(await store().setPublic(a, id, true)).toBe(true)
+    expect((await store().list(a)).claimed[0].isPublic).toBe(true)
+  })
+
+  it('typed, looked-up and imported works can be deleted and typed again; harvested works cannot be deleted', async () => {
+    const a = await account('del')
+    const typed = ((await store().addClaimed(a, work(), 'manual')) as { ok: true; id: string }).id
+    expect(await store().remove(a, typed)).toBe(true)
+    expect((await store().addClaimed(a, work(), 'manual')).ok).toBe(true)
+    await store().addCandidates(a, [work({ title: 'From file', doi: '10.5555/df' })], false, 'file')
+    const f = (await store().list(a)).pending[0]
+    expect(await store().remove(a, f.id)).toBe(true)
+    await store().addCandidates(a, [work({ title: 'From harvest', doi: '10.5555/dh' })], true)
+    const h = (await store().list(a)).pending.find((w) => w.title === 'From harvest')!
+    expect(await store().remove(a, h.id)).toBe(false)
+    expect(await store().reject(a, h.id)).toBe(true)
+    expect((await store().list(a)).rejected).toHaveLength(1)
+  })
+
+  it('the table refuses an unknown type or origin, a featured work that is not claimed, and a link over 500 characters', async () => {
+    const a = await account('checks')
+    await store().addCandidates(a, [work({ doi: '10.5555/c1' })], true)
+    await expect(pool().query(`update "publication_candidate" set "workType" = 'poster' where "userId" = $1`, [a])).rejects.toThrow()
+    await expect(pool().query(`update "publication_candidate" set "origin" = 'scraped' where "userId" = $1`, [a])).rejects.toThrow()
+    await expect(pool().query(`update "publication_candidate" set "featured" = true where "userId" = $1`, [a])).rejects.toThrow()
+    await expect(pool().query(`update "publication_candidate" set "url" = $2 where "userId" = $1`, [a, 'https://example.invalid/' + 'x'.repeat(500)])).rejects.toThrow()
+    expect(await claimedIds(a)).toHaveLength(0)
   })
 })
 
