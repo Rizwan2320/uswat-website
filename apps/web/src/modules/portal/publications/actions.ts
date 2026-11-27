@@ -7,6 +7,7 @@
 import { readPortalConfig } from '../../identity/config'
 import { getIdentityPool } from '../../identity/db'
 import { createSampleProfileStore } from '../profile/sampleStore'
+import { sendPublicPage } from '../bridge/wiring'
 import { accountFor } from '../delegation/wiring'
 import { createPgPublicationStore } from './pgStore'
 import { resolveLookup, resolveSource } from './sources'
@@ -56,4 +57,14 @@ export async function removeWork(workId: unknown, forId?: unknown): Promise<PubR
 }
 export async function exportWorks(format: unknown, forId?: unknown): Promise<ExportResult> {
   return service('exportWorks', forId).exportWorks(format)
+}
+
+export type UpdatePublicPageResult = { ok: true; status: 'sent' | 'unchanged' } | { ok: false; error: 'session' | 'off' | 'not-linked' | 'failed' }
+/** The "Update my public page" button: sends the approved profile and the Public works to the university website (ADR-0029). */
+export async function updatePublicPage(forId?: unknown): Promise<UpdatePublicPageResult> {
+  const account = await accountFor(PATH, 'publications', 'updatePublicPage', forId)
+  if (!account) return { ok: false, error: 'session' }
+  const r = await sendPublicPage(account.id, true)
+  if (r.status === 'sent' || r.status === 'unchanged') return { ok: true, status: r.status }
+  return { ok: false, error: r.status === 'failed' ? 'failed' : r.status }
 }

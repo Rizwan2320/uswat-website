@@ -282,6 +282,11 @@ export interface SaveInput {
    * leaves Draft: a draft may be saved without one, submitting or publishing may not.
    */
   expiryRequired?: boolean
+  /**
+   * True only for a system write that the owner of the content already approved elsewhere (the faculty portal, ADR-0029).
+   * It lets the system change content on a live record and keeps Fact-check. Ignored for every actor but the system.
+   */
+  approvedElsewhere?: boolean
   /** ISO time, injected so tests are deterministic. */
   now: string
 }
@@ -388,6 +393,7 @@ const SELF_APPROVAL = deny(
 
 function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
   const { actor, publishing, prev, next, contentChanged, now } = input
+  const bridged = input.approvedElsewhere === true && actor.kind === 'system'
   const notes: string[] = []
   const wroteIt =
     isUser(actor) &&
@@ -470,7 +476,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
     const target: WorkflowStatus = next.status === 'archived' ? 'archived' : 'published'
 
     if (prev.status === target) {
-      if (target === 'published' && contentChanged && !reviewer) {
+      if (target === 'published' && contentChanged && !reviewer && !bridged) {
         return deny(
           'EDIT_LIVE_NEEDS_REVIEWER',
           'Changes to published content are saved as a draft first, then go through review, approval and publishing.',
@@ -590,6 +596,7 @@ function evaluateUpdate(input: SaveInput & { prev: RecordState }): SaveOutcome {
 
   if (
     !reviewer &&
+    !bridged &&
     contentChanged &&
     prev.verification === 'verified' &&
     verification === 'verified'

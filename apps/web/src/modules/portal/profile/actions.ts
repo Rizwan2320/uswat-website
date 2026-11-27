@@ -6,6 +6,7 @@
  */
 import { getIdentityPool } from '../../identity/db'
 import { readPortalConfig } from '../../identity/config'
+import { sendAfterApproval } from '../bridge/wiring'
 import { accountFor } from '../delegation/wiring'
 import { strongAccount } from '../server'
 import { createProfileService, type ActionResult } from './service'
@@ -28,7 +29,12 @@ export async function submitProfile(): Promise<ActionResult> {
 }
 /** For a head of department or the Registrar only (the store refuses anyone else): saves nothing itself, publishes the saved draft. */
 export async function publishProfile(): Promise<ActionResult> {
-  return service().publish()
+  const result = await service().publish()
+  if (result.ok) {
+    const me = await strongAccount(PATH)
+    if (me) await sendAfterApproval(me.id)
+  }
+  return result
 }
 export async function withdrawProfile(): Promise<ActionResult> {
   return service().withdraw()
