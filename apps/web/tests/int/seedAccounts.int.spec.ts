@@ -56,7 +56,7 @@ describe('seed accounts', () => {
   it('resetPasswords sets the password of existing accounts from their variables, skips empty or short ones, and returns no password', async () => {
     const fresh = {
       SEED_PASSWORD_OWNER: 'Owner-brand-new-pw-2!',
-      SEED_PASSWORD_APPROVER: 'short-1!',
+      SEED_PASSWORD_APPROVER: 'abc123',
       SEED_PASSWORD_EDITOR: '',
     }
     const result = await resetPasswords(payload, fresh)

@@ -42,8 +42,8 @@ export async function ensureAccounts(payload: Payload, env: Record<string, strin
 }
 
 export type ResetResult = { reset: string[]; skipped: { email: string; reason: string }[] }
-/** Shortest password the reset accepts; a shorter or empty variable is skipped, never applied. */
-export const MIN_RESET_PASSWORD_LENGTH = 12
+/** Shortest password the reset accepts (a guard against an empty or accidental value, not a strength rule); a shorter variable is skipped, never applied. */
+export const MIN_RESET_PASSWORD_LENGTH = 8
 
 /**
  * Sets the password of an EXISTING test account from its `SEED_PASSWORD_*` variable. Used only when the seed is started
