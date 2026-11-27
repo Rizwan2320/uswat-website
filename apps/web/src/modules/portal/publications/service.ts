@@ -6,7 +6,7 @@ import type { ProfileStore } from '../profile/types'
 import type { DoiLookup } from './crossref'
 import { exportWorks, EXPORT_FORMATS, type ExportFile } from './exporters'
 import { parseImport } from './importers'
-import { isWorkId, isWorkType, normaliseDoi, normaliseUrl, validateCandidate, validateWorkInput, type WorkField } from './rules'
+import { isWorkId, normaliseDoi, validateCandidate, validateWorkInput, type WorkField } from './rules'
 import { MAX_FEATURED, type Candidate, type CandidateSource, type HarvestCounts, type PublicationStore } from './types'
 
 export type Account = { id: string; email: string }
@@ -97,16 +97,15 @@ export function createPublicationService(deps: {
       const { added, alreadyKnown } = await deps.store.addCandidates(account.id, valid, false, 'file')
       return { ok: true, counts: { added, alreadyKnown, invalid: parsed.records.length - valid.length }, ...(parsed.truncated ? { truncated: true } : {}) }
     },
-    async updateDetails(workId: unknown, details: unknown): Promise<PubResult> {
+    /** Changes a claimed work. The same checks as adding, so a correction cannot break what a new entry could not. */
+    async editWork(workId: unknown, input: unknown): Promise<PubResult> {
       const account = await deps.getAccount()
       if (!account) return { ok: false, error: 'session' }
-      if (!isWorkId(workId) || typeof details !== 'object' || details === null) return { ok: false, error: 'invalid' }
-      const d = details as Record<string, unknown>
-      if (!isWorkType(d.workType)) return { ok: false, error: 'invalid', field: 'type' }
-      const urlText = typeof d.url === 'string' ? d.url : ''
-      const url = urlText.trim() === '' ? '' : normaliseUrl(urlText)
-      if (url === null) return { ok: false, error: 'invalid', field: 'url' }
-      return (await deps.store.updateDetails(account.id, workId, { workType: d.workType, url })) ? { ok: true } : { ok: false, error: 'nothing' }
+      if (!isWorkId(workId)) return { ok: false, error: 'invalid' }
+      const v = validateWorkInput(input, now())
+      if (!v.ok) return { ok: false, error: 'invalid', field: v.field, fields: v.fields }
+      const r = await deps.store.updateWork(account.id, workId, v.work)
+      return r === 'ok' ? { ok: true } : { ok: false, error: r }
     },
     async setFeatured(workId: unknown, featured: unknown): Promise<PubResult> {
       const account = await deps.getAccount()

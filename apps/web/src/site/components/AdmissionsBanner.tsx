@@ -1,12 +1,13 @@
-import { admissions } from '../content/admissions'
+import { getAdmissions } from '../lib/content'
 import { getAdmissionsState } from '../lib/admissions'
 import { ArrowRightIcon, GroupIcon, MegaphoneIcon } from './icons'
 import styles from './AdmissionsBanner.module.css'
 
-/* Three-zone forest bar. Open/closed is decided on the server from the deadline in content/admissions.ts;
-   the page revalidates hourly, so the state flips within an hour of the deadline. */
-export default function AdmissionsBanner() {
-  const state = getAdmissionsState()
+/* Three-zone forest bar. Open/closed is decided on the server from the deadline (Home page content, or content/admissions.ts when empty);
+   the page revalidates every five minutes, so the state flips soon after the deadline. */
+export default async function AdmissionsBanner() {
+  const admissions = await getAdmissions()
+  const state = getAdmissionsState(admissions)
   return (
     <section className={styles.wrap} aria-labelledby="admissions-title">
       <div className="container">

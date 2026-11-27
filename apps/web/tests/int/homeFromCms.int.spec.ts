@@ -16,7 +16,13 @@ vi.mock('next/cache', () => ({
   unstable_cache: (fn: unknown) => fn,
 }))
 
-import { getHero, getHomeColours, getStats } from '../../src/site/lib/content'
+import {
+  getAdmissions,
+  getHero,
+  getHomeColours,
+  getPortals,
+  getStats,
+} from '../../src/site/lib/content'
 import { as, getTestPayload, makeUser } from '../helpers/governance'
 
 let payload: Payload
@@ -143,5 +149,41 @@ describe('home page reads the home-content global', () => {
     expect((await getHomeColours())?.green).toBe('#10253f')
     await publish({ ...content('Col'), colours: { green: null, yellow: null, maroon: null } })
     expect((await getHomeColours())?.green ?? null).toBeNull()
+  })
+
+  it('hands the home page the published admissions bar and portal cards, never the draft', async () => {
+    const adm = {
+      session: 'Spring 2099',
+      deadline: '2099-02-01',
+      applyUrl: '/apply',
+      closedUrl: '/closed',
+      closedDetail: 'Closed for now',
+      servicesHeading: 'Explore',
+    }
+    const card = (t: string) => ({
+      title: t,
+      description: `${t} line`,
+      href: `/${t}`,
+      icon: 'book',
+    })
+    await publish({
+      ...content('Adm'),
+      admissions: adm,
+      portals: [card('one'), card('two'), card('three')],
+    })
+    const a = await getAdmissions()
+    expect(a).toMatchObject({
+      session: 'Spring 2099',
+      applyUrl: '/apply',
+      closedDetail: 'Closed for now',
+    })
+    expect(a.deadlineISO).toBe('2099-02-01T23:59:59+05:00')
+    expect((await getPortals()).map((p) => p.title)).toEqual(['one', 'two', 'three'])
+    await saveDraft({
+      admissions: { session: 'Draft only' },
+      portals: [card('x'), card('y'), card('z')],
+    })
+    expect((await getAdmissions()).session).toBe('Spring 2099')
+    expect((await getPortals()).map((p) => p.title)).toEqual(['one', 'two', 'three'])
   })
 })
