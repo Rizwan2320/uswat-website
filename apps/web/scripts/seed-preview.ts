@@ -2,6 +2,7 @@
  * One command for the preview build (ADR-0026): the test accounts, then every Sample seed, then the page content of
  * the departments and programmes (slice 3ar), as the owner account.
  *   pnpm seed:preview
+ * With SEED_PAGE_CONTENT_ONLY=true only the page content step runs (seconds, not the full Sample seed).
  * Allowed on this machine, or on a hosted database only behind the three locks in `assertSeedTarget`. On Vercel a
  * refusal or a failure prints one clear line and exits 0 so Sample data never fails a build (and a production build only
  * ever prints the refusal); on this machine it exits 1. Nothing here prints a password.
@@ -27,7 +28,12 @@ async function main(): Promise<void> {
       console.log(JSON.stringify({ seeded: false, reason: `${owner} does not exist (set SEED_PASSWORD_OWNER)`, accounts }))
       return
     }
-    const seeds = await applyAllSeeds(payload as unknown as Cms, { user: { ...user, collection: 'users' } }, renderPng, Date.now(), runFromEnv(process.env))
+    // SEED_PAGE_CONTENT_ONLY=true skips the Sample seeds (the slow part, ADR-0026) and fills only the page content.
+    // It loosens no lock: assertSeedTarget above has already passed.
+    const pageContentOnly = process.env.SEED_PAGE_CONTENT_ONLY === 'true'
+    const seeds = pageContentOnly
+      ? 'skipped (SEED_PAGE_CONTENT_ONLY)'
+      : await applyAllSeeds(payload as unknown as Cms, { user: { ...user, collection: 'users' } }, renderPng, Date.now(), runFromEnv(process.env))
     // Slice 3ar: the department and programme pages start from what they already show, so a head can edit it.
     // Idempotent; a section someone has edited is never overwritten.
     const pageContent = await applyPageContent(payload, { publishAs: user })
