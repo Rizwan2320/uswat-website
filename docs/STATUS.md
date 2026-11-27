@@ -1128,4 +1128,6 @@ P3 agent (slice 3a), own entry:
 ## Home page content: slides optional, statistics filled (2026-11-27, branch `feat/home-slides-optional`, main agent)
 - Owner asked for the statistics bar to be editable in the admin instead of in code. Blocker: publishing needed 3 photographs and production has no media (no Blob store). Slides may now be left empty (site keeps the standard photographs); with any, still 3 to 8. A small edit in the CMS lane, no migration, agreed in the pairing. Prediction `HOME-CMS-b`.
 - Production `home-content` is then filled with today's four figures (source: the owner, 2026-11-08, no document seen) by SQL, so they appear in the admin to edit.
+- **Done 2026-11-27:** #172 merged and deployed. Production `home-content` filled by SQL (published, no slides, four figures; no audit-log row because SQL bypasses the app; Urdu labels not added). The owner can edit them in Admin, Globals, Home page content, Statistics, then Publish. Cache: up to 300 s on the public page. Prediction `PROD-HOME-STATS`.
+- Merged since the last entry: #163 (via #168), #166, agent 4's real departments (#169), #170 (home reads the global). #94 not merged: its search test expects `/about` for the word Sample and fails on current main; decision pending (agent 4 updates the test, or close).
 
