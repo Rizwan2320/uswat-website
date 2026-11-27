@@ -1148,3 +1148,7 @@ Branch `fp/publications-intake` (from `main`), portal lane only. Brief `docs/bri
 - Colour picker follow-up (2026-11-27): the owner tried a grey green and a tan yellow on production. The readability check refused them correctly (migration `20261127_021657_home_colours` confirmed applied on production), but the admin toast splits a message at ";" and cut the list in half. The message now has no semicolons and says what to change ("make the green darker", "make the yellow lighter"). Message only, no schema change.
 - **Owner decision 2026-11-27: no readability check on the landing-page colours.** Any colour publishes and shows. Removed the publish refusal and the site-side ignore (branch `feat/home-colours-no-check`). Accessibility cost, stated plainly: with custom colours the landing page may fail WCAG 2.2 AA contrast; the standard colours still pass. Only valid `#rrggbb` is accepted. Supersedes the "refused at publish" lines above and in `HOME-COLOURS-a`.
 
+## Landing page from the CMS, step 2: admissions bar and portal cards (2026-11-27, branch `feat/home-admissions-portals`)
+- Admin, Globals, Home page content now also holds the Admissions banner and the Portal cards. Empty keeps the standard values. Migration `20261127_065030_home_admissions_portals` (CMS lane, additive). Brief `docs/briefs/home-admissions-portals.md`, prediction `HOME-ADM-PORT-a`.
+- After deploy, production is filled with today's values by SQL (as for the statistics) so the owner can edit them. Next: Vice Chancellor's message, then hero text, footer and top bar, navigation.
+
