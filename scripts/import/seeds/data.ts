@@ -184,6 +184,67 @@ export const departments: DepartmentSeed[] = [
     facultyGroup: 'sample-faculty-of-sciences',
     summary: 'The department lists eleven degrees, from BBA (Hons) and four BS programmes to MBA, EMBA, MS and PhD in Management Sciences.',
   },
+  // The ten departments below (batch 4) carry the university's own names and text (their pages, read 2026-11-06); faculty not on the pages, as above.
+  {
+    slug: 'education-and-staff-training',
+    name: 'Department of Education and Staff Training',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department has trained teachers since 2010 and lists the B.Ed (Hons), the Associate Degree in Education, the MPhil and a planned PhD.',
+  },
+  {
+    slug: 'home-economics',
+    name: 'Department of Home Economics',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'A constituent department of the Women Campus. It offers the BS in Home Economics with five fields of specialisation.',
+  },
+  {
+    slug: 'islamic-and-arabic-studies',
+    name: 'Department of Islamic and Arabic Studies',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'Launched in late 2017, the department offers the BS in Islamic Studies and lists MPhil and PhD degrees.',
+  },
+  {
+    slug: 'law-sharia',
+    name: 'Department of Law and Shari’a',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department offers the five-year BA LL.B in Law and Shari’a, which joins common law and Islamic law.',
+  },
+  {
+    slug: 'media-and-communication-studies',
+    name: 'Department of Media and Communication Studies',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department lists a four-year BS and an MS in Media and Communication Studies.',
+  },
+  {
+    slug: 'pakistan-studies',
+    name: 'Department of Pakistan Studies',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'A multi-disciplinary department that offers the BS in Pakistan Studies and a Master’s in the same field.',
+  },
+  {
+    slug: 'pashto',
+    name: 'Department of Pashto',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department teaches Pashto language, literature and culture and offers the BS in Pashto.',
+  },
+  {
+    slug: 'social-and-gender-studies',
+    name: 'Department of Social and Gender Studies',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department lists BS Sociology, BS Criminology, the MPhil in Sociology and the PhD in Sociology.',
+  },
+  {
+    slug: 'tourism-and-hospitality',
+    name: 'Department of Tourism and Hospitality',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department offers BS Tourism and Hospitality and BS Culinary Arts and runs a Food and Beverages Laboratory.',
+  },
+  {
+    slug: 'urdu',
+    name: 'Department of Urdu',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department teaches Urdu language, literature and culture and offers the BS in Urdu.',
+  },
   // The five life-science departments below carry the university's own names and text (their pages, read 2026-11-06); faculty not on the pages, as above.
   {
     slug: 'botany',
@@ -297,6 +358,18 @@ const scienceProgrammes: ProgrammeSeed[] = [
   { slug: 'bs-development-studies-2', name: 'BS Development Studies', department: 'economics-and-development-studies', level: 'BS', duration: '4 years', eligibility: null },
   { slug: 'bs-english-2', name: 'BS English', department: 'english-and-foreign-languages', level: 'BS', duration: '4 years', eligibility: null },
   { slug: 'bba-hons-2', name: 'Bachelor of Business Administration (Hons)', department: 'management-commerce', level: 'BBA', duration: '4 years', eligibility: null },
+  { slug: 'b-ed-hons', name: 'B.Ed (Hons)', department: 'education-and-staff-training', level: 'B.Ed', duration: '4 years', eligibility: 'FA, F.Sc or A level (or equivalent) with a minimum of second division, and at least 45% marks in school subjects with A level.' },
+  { slug: 'bs-home-economics', name: 'BS Home Economics', department: 'home-economics', level: 'BS', duration: '4 years', eligibility: 'FA, F.Sc or an equivalent qualification with at least second division.' },
+  { slug: 'bs-islamic-studies-2', name: 'BS Islamic Studies', department: 'islamic-and-arabic-studies', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'ba-llb-law-and-shariah', name: 'BA LL.B (Law and Shari’a)', department: 'law-sharia', level: 'BA LL.B', duration: '5 years', eligibility: null },
+  { slug: 'bs-journalism-and-mass-communication-2', name: 'BS Media and Communication Studies', department: 'media-and-communication-studies', level: 'BS', duration: '4 years', eligibility: 'HSSC or equivalent with at least 45% marks.' },
+  { slug: 'bs-pakistan-studies-2', name: 'BS Pakistan Studies', department: 'pakistan-studies', level: 'BS', duration: '4 years', eligibility: 'FA, F.Sc or an equivalent qualification with at least 45% marks.' },
+  { slug: 'bs-pashto', name: 'BS Pashto', department: 'pashto', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-urdu', name: 'BS Urdu', department: 'urdu', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-sociology', name: 'BS Sociology', department: 'social-and-gender-studies', level: 'BS', duration: '4 years', eligibility: 'As set by the HEC Undergraduate Education Policy 2023, from Fall 2024.' },
+  { slug: 'bs-criminology', name: 'BS Criminology', department: 'social-and-gender-studies', level: 'BS', duration: '4 years', eligibility: 'As set by the HEC Undergraduate Education Policy 2023, from Fall 2024.' },
+  { slug: 'bs-tourism-and-hospitality-2', name: 'BS Tourism and Hospitality', department: 'tourism-and-hospitality', level: 'BS', duration: '4 years', eligibility: 'FA, F.Sc or an equivalent qualification with at least 45% marks.' },
+  { slug: 'bs-culinary-arts', name: 'BS Culinary Arts', department: 'tourism-and-hospitality', level: 'BS', duration: '4 years', eligibility: 'FA, F.Sc or an equivalent qualification with at least 45% marks.' },
 ]
 
 export const programmes: ProgrammeSeed[] = [
