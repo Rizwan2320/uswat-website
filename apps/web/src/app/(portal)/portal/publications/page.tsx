@@ -8,7 +8,7 @@ import { getIdentityPool } from '@/modules/identity/db'
 import { createSampleProfileStore } from '@/modules/portal/profile/sampleStore'
 import { createPgPublicationStore } from '@/modules/portal/publications/pgStore'
 import PublicationsView from '@/modules/portal/publications/PublicationsView'
-import { sampleSource } from '@/modules/portal/publications/sampleSource'
+import { resolveSource } from '@/modules/portal/publications/sources'
 import { requirePortalPage } from '@/modules/portal/server'
 import Shell from '@/modules/portal/Shell'
 
@@ -25,7 +25,7 @@ export default async function PublicationsPage({ searchParams }: { searchParams:
   const subject = delegated ? { id: delegated.subject.id, email: delegated.subject.email } : { id: userId, email }
   const pool = getIdentityPool(config.databaseUrl)
   const [lists, loaded] = await Promise.all([createPgPublicationStore(pool).list(subject.id), createSampleProfileStore(pool).load(subject)])
-  const sampleMode = sampleSource.sample || Object.values(lists).some((l) => l.some((w) => w.sample))
+  const sampleMode = resolveSource(process.env).sample || Object.values(lists).some((l) => l.some((w) => w.sample))
   return (
     <Shell email={email} wide>
       {delegated ? <DelegationBanner name={delegated.subject.name} expiresAt={delegated.expiresAt} backHref="/portal/delegation" /> : null}

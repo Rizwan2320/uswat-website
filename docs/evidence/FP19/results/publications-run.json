@@ -1,0 +1,122 @@
+[
+  {
+    "id": "P1 four ways to add are offered; the page starts with an empty list and the Sample notice",
+    "ok": true,
+    "note": "four buttons, notice, empty state"
+  },
+  {
+    "id": "P2 a malformed DOI is refused on the DOI box with a plain message",
+    "ok": true,
+    "note": "This does not look like a DOI. It starts with 10. and has a slash, for example 10.1234/abcd.5678."
+  },
+  {
+    "id": "P3 a DOI that cannot be looked up here shows a clear message and the screen stays usable",
+    "ok": true,
+    "note": "The service could not be reached. Try again later, or type the work in."
+  },
+  {
+    "id": "P4 a typed work lands straight in Your publications with its kind, link and origin",
+    "ok": true,
+    "note": "claimed card shows kind, Full text link, Typed in"
+  },
+  {
+    "id": "P5 typing the same work again is refused as already in the list",
+    "ok": true,
+    "note": "This work is already in your list (it may be under “To review”, “Duplicates” or “Not mine”)."
+  },
+  {
+    "id": "P6 a bad form names each wrong box and keeps what was typed",
+    "ok": true,
+    "note": "2 field errors"
+  },
+  {
+    "id": "P7 Urdu title and author are accepted and shown",
+    "ok": true,
+    "note": "shown in the claimed list"
+  },
+  {
+    "id": "P8 seven works are in the list",
+    "ok": true,
+    "note": "7 cards"
+  },
+  {
+    "id": "P9 five works can be featured and the count reads 5 of 5",
+    "ok": true,
+    "note": "5 of 5 featured. Featured works are shown first on your list and in your exports."
+  },
+  {
+    "id": "P10 the sixth feature is refused with a plain message; the database holds five",
+    "ok": true,
+    "note": "db featured = 5"
+  },
+  {
+    "id": "P11 featured works are listed first",
+    "ok": true,
+    "note": "first card featured"
+  },
+  {
+    "id": "P12 a work can be set to Only me and the choice is stored",
+    "ok": true,
+    "note": "Cap test paper 3"
+  },
+  {
+    "id": "P13 kind and link can be edited on a claimed work",
+    "ok": true,
+    "note": "db shows report + url"
+  },
+  {
+    "id": "P14 a javascript: link is refused and never stored",
+    "ok": true,
+    "note": "no javascript url in db: That request was not valid."
+  },
+  {
+    "id": "P15 a BibTeX file with 3 records imports 2 to review and skips the broken one, saying so",
+    "ok": true,
+    "note": "Imported 2 works to review. 0 already known, 1 skipped because the record was incomplete."
+  },
+  {
+    "id": "P16 no file and an unreadable file each give a plain message",
+    "ok": true,
+    "note": "both shown"
+  },
+  {
+    "id": "P17 a reviewed work can be claimed and keeps origin file",
+    "ok": true,
+    "note": "claimed from file"
+  },
+  {
+    "id": "P18 the ORCID tab still finds the Sample works and puts them in review",
+    "ok": true,
+    "note": "Found 5 new works. 2 already known, 2 skipped because the record was incomplete."
+  },
+  {
+    "id": "P19 all four exports download with the right file names",
+    "ok": true,
+    "note": "publications.bib, publications.ris, publications.csv, publications.txt"
+  },
+  {
+    "id": "P20 exports contain claimed works (including Only me and Urdu) and no pending ones",
+    "ok": true,
+    "note": "bib 1099 chars, csv 819 chars"
+  },
+  {
+    "id": "P21 a typed work can be deleted after confirming",
+    "ok": true,
+    "note": "8 -> 7"
+  },
+  {
+    "id": "P22 harvested works offer no Delete",
+    "ok": true,
+    "note": "none (or none claimed)"
+  },
+  {
+    "id": "P23 no horizontal scroll at 390 px (list and form)",
+    "ok": true,
+    "note": "scrollWidth 390 and 390"
+  },
+  {
+    "id": "P24 touch targets are at least 40 px tall at 390 px",
+    "ok": true,
+    "note": "all tall enough"
+  }
+]
