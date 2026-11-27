@@ -92,4 +92,12 @@ describe('home page colours: readability', () => {
     // Yellow changed: the green pairs (all standard) are not judged, so none of them can appear.
     for (const p of paletteProblems({ yellow: '#5a4a00' })) expect(p.label).toMatch(/yellow/)
   })
+
+  it('the message has no semicolons (the admin toast splits at them) and says what to change', () => {
+    const msg = paletteMessage({ green: '#6b6b6b', yellow: '#b3a26f' })!
+    expect(msg).not.toContain(';')
+    expect(msg).toMatch(/make the green darker/)
+    expect(msg).toMatch(/make the yellow lighter/)
+    expect(paletteMessage({ maroon: '#e0a0a8' })).toMatch(/make the maroon darker/)
+  })
 })

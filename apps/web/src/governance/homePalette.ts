@@ -161,12 +161,22 @@ export function paletteProblems(colours: HomeColours | null | undefined): Palett
     .filter((p) => p.ratio < p.min)
 }
 
-/** A plain sentence for the editor, or null when the colours are fine. */
+/**
+ * A plain sentence for the editor, or null when the colours are fine. It avoids semicolons on purpose: the
+ * admin's error toast splits a message at ";" into bullet points, which cut the old list in half.
+ */
 export function paletteMessage(colours: HomeColours | null | undefined): string | null {
   const bad = paletteProblems(colours)
   if (bad.length === 0) return null
-  const list = bad.map((p) => `${p.label} (${p.ratio.toFixed(1)}:1, needs ${p.min}:1)`).join('; ')
-  return `These colours would be hard to read: ${list}. Choose a darker green or maroon, or a lighter yellow.`
+  const what = bad.map((p) => `${p.label} is ${p.ratio.toFixed(1)} to 1`).join(', ')
+  const advice: string[] = []
+  const has = (re: RegExp) => bad.some((p) => re.test(p.label))
+  if (has(/ivory text on the (deep |hover )?green|green (hover )?text/))
+    advice.push('make the green darker')
+  if (has(/yellow/)) advice.push('make the yellow lighter')
+  if (has(/maroon/)) advice.push('make the maroon darker')
+  const fix = advice.length ? ` To fix it, ${advice.join(' and ')}.` : ''
+  return `These colours would be hard to read (each pair needs at least 4.5 to 1): ${what}.${fix}`
 }
 
 /** The colours that will actually show: only complete, valid values. Used by the home page. */
