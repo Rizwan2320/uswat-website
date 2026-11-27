@@ -291,8 +291,44 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   Statistics: 'اعداد و شمار',
   'The figures in the statistics bar. 3 to 6. Every figure needs a source and the date it was checked, or must be ticked as a sample.':
     'اعداد و شمار کی پٹی میں دکھائے جانے والے اعداد۔ 3 سے 6۔ ہر عدد کا ماخذ اور تصدیق کی تاریخ درج ہونی چاہیے، یا اسے نمونہ کے طور پر نشان زد کیا جائے۔',
-  'The photographs at the top of the home page, in this order. Each photograph shows with its two buttons. 3 to 8 slides.':
-    'ہوم پیج کے اوپر دکھائی جانے والی تصاویر، اسی ترتیب سے۔ ہر تصویر کے ساتھ اس کے دو بٹن نظر آتے ہیں۔ 3 سے 8 سلائیڈز۔',
+  'The photographs at the top of the home page, in this order. Each photograph shows with its two buttons. 3 to 8 slides, or none to keep the standard photographs.':
+    'ہوم پیج کے اوپر دکھائی جانے والی تصاویر، اسی ترتیب سے۔ ہر تصویر کے ساتھ اس کے دو بٹن نظر آتے ہیں۔ 3 سے 8 سلائیڈز، یا کوئی نہیں تاکہ معیاری تصاویر برقرار رہیں۔',
+  'Admissions banner': 'داخلہ بینر',
+  'The green bar under the statistics. It shows "Admissions Open" until the last date has passed, then "Closed" with the message below. Leave a field empty to keep the standard text.':
+    'اعداد و شمار کے نیچے سبز پٹی۔ آخری تاریخ گزرنے تک "داخلے جاری ہیں" دکھاتی ہے، پھر نیچے دیے گئے پیغام کے ساتھ "بند"۔ معیاری متن رکھنے کے لیے خانہ خالی چھوڑ دیں۔',
+  Intake: 'داخلہ سیشن',
+  'For example: Fall 2026.': 'مثال کے طور پر: فال 2026۔',
+  'Last day to apply': 'درخواست دینے کی آخری تاریخ',
+  'The bar says Open until the end of this day (Pakistan time) and Closed after it. Empty means Closed.':
+    'پٹی اس دن کے اختتام (پاکستانی وقت) تک "جاری" اور اس کے بعد "بند" دکھاتی ہے۔ خالی کا مطلب بند ہے۔',
+  'Apply Online link': 'آن لائن درخواست کا لنک',
+  'Where the button goes while admissions are open.':
+    'داخلے جاری ہونے کے دوران بٹن جہاں لے جاتا ہے۔',
+  'Link while closed': 'بند ہونے کی صورت میں لنک',
+  'Where the "View Admissions" button goes while admissions are closed.':
+    'داخلے بند ہونے کے دوران "داخلے دیکھیں" بٹن جہاں لے جاتا ہے۔',
+  'Message while closed': 'بند ہونے کی صورت میں پیغام',
+  'Middle heading': 'درمیانی عنوان',
+  'Shown above Undergraduate · Graduate · Postgraduate.':
+    'انڈرگریجویٹ · گریجویٹ · پوسٹ گریجویٹ کے اوپر دکھایا جاتا ہے۔',
+  'Portal cards': 'پورٹل کارڈز',
+  'The cards under "University Portals and Services", in this order. 3 to 8 cards, or none to keep the standard cards.':
+    '"یونیورسٹی پورٹلز اور خدمات" کے نیچے کارڈز، اسی ترتیب سے۔ 3 سے 8 کارڈز، یا کوئی نہیں تاکہ معیاری کارڈز برقرار رہیں۔',
+  Card: 'کارڈ',
+  Cards: 'کارڈز',
+  'One line under the title': 'عنوان کے نیچے ایک سطر',
+  Colours: 'رنگ',
+  Green: 'سبز',
+  Yellow: 'پیلا',
+  Maroon: 'عنابی',
+  'Change the colours of the home page only. Leave a colour empty to keep the standard one. The darker and lighter shades are worked out for you.':
+    'صرف ہوم پیج کے رنگ بدلیں۔ معیاری رنگ رکھنے کے لیے خانہ خالی چھوڑ دیں۔ گہرے اور ہلکے شیڈ خود بخود بن جاتے ہیں۔',
+  'The deep green: headings, the top bar, the footer and the page text.':
+    'گہرا سبز: سرخیاں، اوپر کی پٹی، فوٹر اور صفحے کا متن۔',
+  'The gold: buttons, highlights and the accent words on green.':
+    'سنہری پیلا: بٹن، نمایاں حصے اور سبز پر نمایاں الفاظ۔',
+  'The crest maroon: the Apply button, dates and small accents. Use a dark colour.':
+    'نشان کا عنابی رنگ: درخواست کا بٹن، تاریخیں اور چھوٹے نمایاں حصے۔ گہرا رنگ استعمال کریں۔',
   'This is a sample figure': 'یہ ایک نمونہ عدد ہے',
   Trophy: 'ٹرافی',
   'Where the figure comes from': 'عدد کہاں سے لیا گیا',
@@ -404,7 +440,8 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   'Office hours': 'دفتری اوقات',
   'One or two sentences at the top. Keep it different from About.':
     'اوپر ایک یا دو جملے۔ اسے "بارے میں" سے مختلف رکھیں۔',
-  'One short line under the name.': 'نام کے نیچے ایک مختصر سطر۔',
+  'One short line under the name. Not shown on the public page yet.':
+    'نام کے نیچے ایک مختصر سطر۔ ابھی عوامی صفحے پر نہیں دکھائی جاتی۔',
   'Page content': 'صفحے کا مواد',
   Paragraph: 'پیراگراف',
   Paragraphs: 'پیراگراف',
@@ -433,7 +470,61 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   Tools: 'ٹولز',
   'Topics the department works on. Up to 6.': 'جن موضوعات پر شعبہ کام کرتا ہے، زیادہ سے زیادہ 6۔',
   'Where graduates work. Up to 8.': 'فارغ التحصیل افراد کہاں کام کرتے ہیں، زیادہ سے زیادہ 8۔',
-  'Where the department is on campus.': 'کیمپس میں شعبہ کہاں ہے۔',
+  'Where the department is on campus. Not shown on the public page yet.':
+    'کیمپس میں شعبہ کہاں ہے۔ ابھی عوامی صفحے پر نہیں دکھایا جاتا۔',
+  'When the office is open. Not shown on the public page yet.':
+    'دفتر کب کھلا ہوتا ہے۔ ابھی عوامی صفحے پر نہیں دکھایا جاتا۔',
+  // --- Programme page content (slice 3ae)
+  'Programmes are listed on the department page from the lowest number up. Leave empty to list it last.':
+    'پروگرام شعبے کے صفحے پر کم سے کم نمبر سے شروع ہو کر دکھائے جاتے ہیں۔ آخر میں دکھانے کے لیے خالی چھوڑ دیں۔',
+  'The words and pictures of the programme page. Plain text only: no links, no formatting. Leave a part empty to leave that section out of the page.':
+    'پروگرام کے صفحے کے الفاظ اور تصاویر۔ صرف سادہ متن: نہ روابط، نہ فارمیٹنگ۔ کسی حصے کو صفحے سے نکالنے کے لیے اسے خالی چھوڑ دیں۔',
+  'For example "BS CS".': 'مثال کے طور پر "BS CS"۔',
+  'One or two sentences for the card on the department page.':
+    'شعبے کے صفحے پر کارڈ کے لیے ایک یا دو جملے۔',
+  'Card picture': 'کارڈ کی تصویر',
+  'The small picture on the department page card. It needs alt text.':
+    'شعبے کے صفحے کے کارڈ پر چھوٹی تصویر۔ اس کا متبادل متن ضروری ہے۔',
+  'Overview picture': 'جائزے کی تصویر',
+  'The light picture beside the overview. It needs alt text.':
+    'جائزے کے ساتھ ہلکی تصویر۔ اس کا متبادل متن ضروری ہے۔',
+  'About the programme': 'پروگرام کے بارے میں',
+  'Learning outcomes': 'سیکھنے کے نتائج',
+  'What a graduate can do, one line each, up to 8.':
+    'فارغ التحصیل کیا کر سکتا ہے، ہر ایک ایک سطر میں، زیادہ سے زیادہ 8۔',
+  Outcome: 'نتیجہ',
+  Outcomes: 'نتائج',
+  'Why study this': 'یہ کیوں پڑھیں',
+  'Short reasons to choose the programme. Up to 6.':
+    'پروگرام چننے کی مختصر وجوہات۔ زیادہ سے زیادہ 6۔',
+  Reason: 'وجہ',
+  Tracks: 'ٹریکس',
+  'Areas a student can specialise in. Up to 6.':
+    'وہ شعبے جن میں طالب علم مہارت حاصل کر سکتا ہے۔ زیادہ سے زیادہ 6۔',
+  Track: 'ٹریک',
+  Skills: 'مہارتیں',
+  'Groups of skills students gain, up to 6.':
+    'طلبہ کو حاصل ہونے والی مہارتوں کے گروہ، زیادہ سے زیادہ 6۔',
+  'Skill group': 'مہارتوں کا گروہ',
+  'Skill groups': 'مہارتوں کے گروہ',
+  'Group name': 'گروہ کا نام',
+  'Up to 8.': 'زیادہ سے زیادہ 8۔',
+  'Curriculum by semester': 'سمسٹر وار نصاب',
+  'One row for each semester: its year (1 to 6) and term (1 or 2), then the course names. Up to 12 rows.':
+    'ہر سمسٹر کے لیے ایک قطار: اس کا سال (1 سے 6) اور ٹرم (1 یا 2)، پھر کورسز کے نام۔ زیادہ سے زیادہ 12 قطاریں۔',
+  Semester: 'سمسٹر',
+  Semesters: 'سمسٹرز',
+  Year: 'سال',
+  'Year of study, 1 to 6.': 'تعلیمی سال، 1 سے 6۔',
+  Term: 'ٹرم',
+  'First semester': 'پہلا سمسٹر',
+  'Second semester': 'دوسرا سمسٹر',
+  Courses: 'کورسز',
+  'Course names, up to 8.': 'کورسز کے نام، زیادہ سے زیادہ 8۔',
+  // --- Programme coordinators (slice 3ah)
+  'Programmes they coordinate': 'وہ پروگرام جن کے وہ کوآرڈینیٹر ہیں',
+  'For a programme coordinator: the programmes this person writes drafts for. They can edit only these programmes (not the department page, not other programmes) and send them to the head of the department. A head of department can pick only programmes of their own department. Leave empty for an Editor of a whole office.':
+    'پروگرام کوآرڈینیٹر کے لیے: وہ پروگرام جن کے مسودے یہ شخص لکھتا ہے۔ وہ صرف انہی پروگراموں میں تبدیلی کر سکتے ہیں (شعبے کا صفحہ نہیں، دوسرے پروگرام نہیں) اور انہیں شعبے کے سربراہ کو بھیجتے ہیں۔ شعبے کا سربراہ صرف اپنے شعبے کے پروگرام چن سکتا ہے۔ پورے دفتر کے ایڈیٹر کے لیے خالی چھوڑ دیں۔',
 }
 
 /**

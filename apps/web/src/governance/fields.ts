@@ -40,6 +40,9 @@ const REVIEW_NOTE_ROLES: readonly Role[] = ['platformAdmin', 'siteManager', 'app
  * and then accepts only what `isSafeHref` accepts. The site applies the same function where it
  * renders the value, so the two guards cannot drift (main agent review of PR #5, R1).
  */
+/** The owner office a platform admin's new record starts with when the admin has no office of their own. */
+export const ADMIN_DEFAULT_OFFICE = 'IT Directorate'
+
 export const safeHrefValidate: TextFieldSingleValidation = (value, options) => {
   const base = text(value, options)
   if (base !== true) return base
@@ -96,6 +99,7 @@ export const governanceFields: Field[] = [
     options: options(WORKFLOW_STATUSES, STAGE_LABELS),
     index: true,
     admin: {
+      components: { Field: '@/admin/workflow/StageField' },
       description: bi(
         'Draft, In review, Approved, Published or Archived. What you can move it to depends on your role.',
         'مسودہ، زیرِ جائزہ، منظور شدہ، شائع شدہ یا آرکائیو شدہ۔ آپ اسے کہاں لے جا سکتے ہیں، یہ آپ کے کردار پر منحصر ہے۔',
@@ -135,8 +139,11 @@ export const governanceFields: Field[] = [
     // draft save has no office and an editor is refused before typing anything (found in a real
     // browser; the create page came up blank). A person with several offices can change it.
     defaultValue: ({ user }) => {
-      const offices = (user as { offices?: unknown } | null)?.offices
-      return Array.isArray(offices) && typeof offices[0] === 'string' ? offices[0] : undefined
+      const u = user as { offices?: unknown; role?: unknown } | null
+      if (Array.isArray(u?.offices) && typeof u.offices[0] === 'string') return u.offices[0]
+      // A platform admin has no office of their own; the main pages they publish belong to the
+      // IT Directorate, so the box is not left empty (it blocked publishing on the preview).
+      return u?.role === 'platformAdmin' ? ADMIN_DEFAULT_OFFICE : undefined
     },
     admin: {
       description: bi(
@@ -315,6 +322,9 @@ export function withGovernance<T extends CollectionConfig>(
           ...config.admin?.components?.edit,
           // Publish is drawn only for roles that may publish (3aa).
           PublishButton: '@/admin/workflow/PublishGate',
+          // Payload's own Unpublish is not drawn either: the status box offers Take offline, and only to
+          // roles the server lets take a page down (a head cannot on a programme page) (3an).
+          UnpublishButton: '@/admin/workflow/PublishGate',
         },
       },
     },

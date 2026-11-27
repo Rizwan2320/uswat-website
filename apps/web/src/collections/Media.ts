@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url'
 
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
-import { mediaBeforeChange } from '../governance/mediaGuard'
+import { mediaBeforeChange, mediaBeforeDelete } from '../governance/mediaGuard'
 import { MEDIA_MIME_TYPES, RIGHTS_LABELS, RIGHTS_STATUSES } from '../governance/mediaRules'
 
 const filename = fileURLToPath(import.meta.url)
@@ -25,7 +25,7 @@ export const Media: CollectionConfig = {
     read: anyone,
     update: authenticated,
   },
-  hooks: { beforeChange: [mediaBeforeChange] },
+  hooks: { beforeChange: [mediaBeforeChange], beforeDelete: [mediaBeforeDelete] },
   fields: [
     {
       name: 'alt',

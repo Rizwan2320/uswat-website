@@ -1,8 +1,9 @@
 'use client'
+import { useRouter } from 'next/navigation'
 import { useId, useMemo, useState, useTransition } from 'react'
 
 import { COPY } from '../copy'
-import { saveProfile, submitProfile, withdrawProfile } from './actions'
+import { publishProfile, saveProfile, submitProfile, withdrawProfile } from './actions'
 import PublicPreview from './PublicPreview'
 import { LIMITS, buildPreview, tidyInterests, type FieldErrors } from './rules'
 import type { LoadedProfile, Visibility } from './types'
@@ -54,7 +55,11 @@ function toEdit(f: Form) {
   }
 }
 
-export default function ProfileEditor({ initial }: { initial: LoadedProfile }) {
+/** `forId`: set when a delegate edits the grantor's draft. Only saving is delegated; submitting and withdrawing stay with the owner. */
+export default function ProfileEditor({ initial, forId }: { initial: LoadedProfile; forId?: string }) {
+  const delegated = forId !== undefined
+  const self = initial.selfPublishing
+  const router = useRouter()
   const uid = useId()
   const [form, setForm] = useState<Form>(() => toForm(initial))
   const [status, setStatus] = useState(initial.status)
@@ -62,13 +67,18 @@ export default function ProfileEditor({ initial }: { initial: LoadedProfile }) {
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
   const [pending, start] = useTransition()
   const locked = status === 'submitted'
-  const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v }))
+  const [live, setLive] = useState(initial.draftIsPublished)
+  const set = <K extends keyof Form>(k: K, v: Form[K]) => {
+    setLive(false)
+    setForm((f) => ({ ...f, [k]: v }))
+  }
 
   const preview = useMemo(() => buildPreview({ ...initial.profile, ...toEdit(form) }), [initial.profile, form])
+  const published = useMemo(() => (initial.published ? buildPreview({ ...initial.profile, ...initial.published }) : null), [initial.profile, initial.published])
 
   function fail(kind: string, errs?: FieldErrors) {
     setErrors(errs ?? {})
-    setMessage({ kind: 'error', text: C.actionErrors[kind] ?? C.actionErrors.generic })
+    setMessage({ kind: 'error', text: delegated && kind === 'session' ? COPY.delegation.ended : C.actionErrors[kind] ?? C.actionErrors.generic })
   }
 
   function run(job: () => Promise<void>) {
@@ -84,7 +94,7 @@ export default function ProfileEditor({ initial }: { initial: LoadedProfile }) {
 
   const save = () =>
     run(async () => {
-      const r = await saveProfile(toEdit(form))
+      const r = await saveProfile(toEdit(form), forId)
       if (!r.ok) return fail(r.error, r.errors)
       setErrors({})
       setStatus('draft')
@@ -100,6 +110,19 @@ export default function ProfileEditor({ initial }: { initial: LoadedProfile }) {
       setErrors({})
       setStatus('submitted')
       setMessage({ kind: 'ok', text: C.submitted })
+    })
+
+  const publish = () =>
+    run(async () => {
+      const saved = await saveProfile(toEdit(form))
+      if (!saved.ok) return fail(saved.error, saved.errors)
+      const r = await publishProfile()
+      if (!r.ok) return fail(r.error)
+      setErrors({})
+      setStatus('draft')
+      setLive(true)
+      setMessage({ kind: 'ok', text: C.publishedMsg })
+      router.refresh()
     })
 
   const withdraw = () =>
@@ -150,25 +173,40 @@ export default function ProfileEditor({ initial }: { initial: LoadedProfile }) {
   }
 
   const p = initial.profile
-  const statusText = status === 'submitted' ? C.statusSubmitted : status === 'draft' ? C.statusDraft : C.statusNone
+  const statusText = self
+    ? status === 'none' && !live ? C.statusNone : live ? C.statusSelfLive : C.statusSelfDraft
+    : status === 'submitted' ? C.statusSubmitted : status === 'draft' ? C.statusDraft : C.statusNone
 
   return (
     <div className="portal-profile">
       <div>
-        <p>{C.intro}</p>
-        {p.sample ? <div className="portal-notice" role="note">{C.sampleNote}</div> : null}
+        <p>{self ? C.selfIntro : C.intro}</p>
+        {p.sample ? <div className="portal-notice" role="note">{self ? C.selfNote : C.sampleNote}</div> : null}
         <p data-testid="profile-status"><strong>{statusText}</strong></p>
+        {initial.reviewNote && status === 'draft' ? (
+          <section className="portal-notice" role="note" aria-labelledby={`${uid}-note`} data-testid="review-note">
+            <h2 id={`${uid}-note`} style={{ marginTop: 0, fontSize: '1.05rem' }}>{C.reviewNoteTitle}</h2>
+            <p style={{ whiteSpace: 'pre-wrap', margin: '4px 0' }}>{initial.reviewNote}</p>
+            <p className="hint" style={{ margin: 0 }}>{C.reviewNoteHelp}</p>
+          </section>
+        ) : null}
 
         <section className="portal-card" aria-labelledby={`${uid}-fixed`}>
           <h2 id={`${uid}-fixed`} style={{ marginTop: 0 }}>{C.fixedTitle}</h2>
           <p className="hint">{C.fixedHelp}</p>
-          <dl className="portal-fixed">
-            <dt>{C.nameLabel}</dt><dd>{p.name.en}</dd>
-            <dt>{C.designationLabel}</dt><dd>{p.designation.en}</dd>
-            <dt>{C.departmentLabel}</dt><dd>{p.department}</dd>
-            <dt>{C.statusLabel}</dt><dd>{C.status[p.facultyStatus]}</dd>
-            <dt>{C.emailLabel}</dt><dd>{p.email}</dd>
-          </dl>
+          <div className="portal-fixed-wrap">
+            {p.photo ? (
+              // eslint-disable-next-line @next/next/no-img-element -- a small illustration from the app's own public folder
+              <img className="portal-avatar portal-avatar-lg" src={p.photo} alt="" width={96} height={96} />
+            ) : null}
+            <dl className="portal-fixed">
+              <dt>{C.nameLabel}</dt><dd>{p.name.en}</dd>
+              <dt>{C.designationLabel}</dt><dd>{p.designation.en}</dd>
+              <dt>{C.departmentLabel}</dt><dd>{p.department}</dd>
+              <dt>{C.statusLabel}</dt><dd>{C.status[p.facultyStatus]}</dd>
+              <dt>{C.emailLabel}</dt><dd>{p.email}</dd>
+            </dl>
+          </div>
         </section>
 
         {message ? (
@@ -204,17 +242,26 @@ export default function ProfileEditor({ initial }: { initial: LoadedProfile }) {
           </fieldset>
           <div className="portal-actions">
             {locked ? (
-              <button type="button" className="portal-btn secondary" onClick={withdraw} disabled={pending}>{C.withdraw}</button>
+              delegated ? null : <button type="button" className="portal-btn secondary" onClick={withdraw} disabled={pending}>{C.withdraw}</button>
             ) : (
               <>
                 <button type="submit" className="portal-btn secondary" disabled={pending}>{pending ? C.saving : C.save}</button>
-                <button type="button" className="portal-btn" onClick={submit} disabled={pending}>{C.submit}</button>
+                {delegated ? null : self
+                  ? <button type="button" className="portal-btn" onClick={publish} disabled={pending}>{C.publish}</button>
+                  : <button type="button" className="portal-btn" onClick={submit} disabled={pending}>{C.submit}</button>}
               </>
             )}
           </div>
         </form>
       </div>
-      <PublicPreview preview={preview} />
+      <div className="portal-previews">
+        <PublicPreview preview={preview} />
+        {published ? (
+          <PublicPreview preview={published} heading={C.publishedNowTitle} idSuffix="-published" testId="published-now" help={`${self ? C.publishedNowSelfHelp : C.publishedNowHelp} ${self ? C.publishedBy : C.publishedAt} ${new Date(initial.publishedAt ?? 0).toISOString().slice(0, 10)}.`} />
+        ) : (
+          <p className="hint" data-testid="published-none">{self ? C.publishedNowSelfNone : C.publishedNowNone}</p>
+        )}
+      </div>
     </div>
   )
 }

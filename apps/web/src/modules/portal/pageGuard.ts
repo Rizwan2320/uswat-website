@@ -40,7 +40,7 @@ export async function guardPage(deps: GuardDeps, headers: Headers, pathname: str
 
   const d = decide(
     state.kind === 'active'
-      ? { hasSession: true, sessionStrong: state.sessionStrong, factors: state.factors, pathname }
+      ? { hasSession: true, sessionStrong: state.sessionStrong, factors: state.factors, pathname, accountStatus: state.accountStatus }
       : { hasSession: false, sessionStrong: false, factors: null, pathname },
   )
   if (!d.allow) {
@@ -63,4 +63,16 @@ export async function guardPage(deps: GuardDeps, headers: Headers, pathname: str
 export function accountFrom(result: GuardResult): { id: string; email: string } | null {
   if (result.action !== 'render' || !result.strong || !result.userId || !result.email) return null
   return { id: result.userId, email: result.email }
+}
+
+/** Like `accountFrom`, plus whether the second factor was proved recently (needed to decide on someone else's profile). */
+export function reviewerFrom(result: GuardResult): { id: string; fresh: boolean } | null {
+  if (result.action !== 'render' || !result.strong || !result.userId) return null
+  return { id: result.userId, fresh: result.fresh }
+}
+
+/** For Registrar actions: like `reviewerFrom`, plus whether the account has a passkey. A privileged role needs one (AUTH-07); an authenticator app is not enough. */
+export function verifierFrom(result: GuardResult): { id: string; fresh: boolean; hasPasskey: boolean } | null {
+  if (result.action !== 'render' || !result.strong || !result.userId) return null
+  return { id: result.userId, fresh: result.fresh, hasPasskey: (result.factors?.passkeys ?? 0) > 0 }
 }

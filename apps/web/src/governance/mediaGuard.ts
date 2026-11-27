@@ -15,6 +15,7 @@ import { createHash } from 'node:crypto'
 import {
   APIError,
   type CollectionBeforeChangeHook,
+  type CollectionBeforeDeleteHook,
   type CollectionConfig,
   type Field,
 } from 'payload'
@@ -26,6 +27,7 @@ import {
   type LexicalFindings,
 } from './accessibility'
 import { checkMediaWrite, mediaPublishProblem } from './mediaRules'
+import { describeUse, findReferences } from './references'
 import { actorFromRequest } from './roles'
 
 const sha256 = (data: Buffer | Uint8Array): string =>
@@ -304,4 +306,21 @@ export const publishGuard: CollectionBeforeChangeHook = async ({
     )
   }
   return data
+}
+
+/**
+ * Integrity, not permission (slice 3af): a picture that other records still show is not deleted, for
+ * anyone. The fields that point at media are found from the config (`findReferences`), so a new
+ * picture field is covered without a list to keep in step. Globals (home page content, header, footer) are searched too, in the live version and the newest draft.
+ */
+export const mediaBeforeDelete: CollectionBeforeDeleteHook = async ({ id, req }) => {
+  const used = await findReferences(req.payload, 'media', id, req)
+  if (used.length > 0) {
+    throw new APIError(
+      `This picture cannot be deleted because it is still used by ${describeUse(used)}. Remove it from those first.`,
+      409,
+      { code: 'IN_USE', used },
+      true,
+    )
+  }
 }

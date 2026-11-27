@@ -12,6 +12,7 @@ vi.mock('next/cache', () => ({
 }))
 
 import { loadDashboard } from '../../src/governance/dashboardData'
+import { runLifecycleSweep } from '../../src/governance/sweep'
 import type { User } from '../../src/payload-types'
 import { as, getTestPayload, makeUser, system, uniq } from '../helpers/governance'
 
@@ -148,17 +149,39 @@ describe('editor dashboard', () => {
     expect(titles(await get(editor, 'expiring'))).toContain(soon)
   })
 
-  it('"needs a fresh check" lists live items past their review date', async () => {
-    const t = uniq('stale')
-    const n = await toApproved(t, { reviewDueAt: '2026-12-01T00:00:00.000Z' })
+  // Why the dates are in mid-2027: other specs in this suite run a global lifecycle sweep over every notice at a
+  // future "now" (revalidate: today + 10 days, seo.search: 2027-01-01, governance.media: 2027-03-01), and the
+  // files share one database and run in parallel. A sweep marks every live notice whose review date has passed
+  // as "stale", so an item due on 2026-12-01 could flip to stale while this test was between its two checks
+  // (seen once in CI, never the same code twice). An item due after every date those specs use cannot be touched.
+  const STALE_DUE = '2027-06-01T00:00:00.000Z'
+  const publishedDue = async (t: string) => {
+    const n = await toApproved(t, { reviewDueAt: STALE_DUE })
     await payload.update({
       collection: 'notices',
       id: n.id,
       data: { _status: 'published', governance: {} } as never,
       ...as(approver),
     })
-    expect(titles(await get(approver, 'stale', new Date('2026-11-20T00:00:00Z')))).not.toContain(t)
-    expect(titles(await get(approver, 'stale', new Date('2027-01-01T00:00:00Z')))).toContain(t)
+  }
+
+  it('"needs a fresh check" lists live items past their review date', async () => {
+    const t = uniq('stale')
+    await publishedDue(t)
+    expect(titles(await get(approver, 'stale', new Date('2027-05-01T00:00:00Z')))).not.toContain(t)
+    expect(titles(await get(approver, 'stale', new Date('2027-07-01T00:00:00Z')))).toContain(t)
+  })
+
+  it('a global sweep run by another spec at its latest date does not change that list', async () => {
+    const t = uniq('stale')
+    await publishedDue(t)
+    await runLifecycleSweep(payload, {
+      now: new Date('2027-03-01T10:00:00.000Z'),
+      collections: ['notices'],
+      context: system.context,
+    })
+    expect(titles(await get(approver, 'stale', new Date('2027-05-01T00:00:00Z')))).not.toContain(t)
+    expect(titles(await get(approver, 'stale', new Date('2027-07-01T00:00:00Z')))).toContain(t)
   })
 
   it('images without alt text are listed for reviewers only', async () => {
@@ -186,8 +209,116 @@ describe('editor dashboard', () => {
     const t0 = Date.now()
     const all = await loadDashboard(payload, approver as never)
     const ms = Date.now() - t0
-    expect(all.map((q) => q.key)).toEqual(['review', 'myDrafts', 'stale', 'expiring', 'needsAlt'])
+    expect(all.map((q) => q.key)).toEqual([
+      'review',
+      'toPublish',
+      'myDrafts',
+      'stale',
+      'expiring',
+      'needsAlt',
+    ])
     expect(all.every((q) => !q.partial)).toBe(true)
     console.info(`dashboard load for an approver: ${ms} ms`)
+  })
+})
+
+describe('role dashboards (slice 3ai)', () => {
+  let admin: User, manager: User, hod: User, coord: User, plainEditor: User
+  let prog: { id: number }
+  let office: string
+
+  const progs = (id: number) => ({ collection: 'programmes' as const, id, draft: true })
+  const stepProg = (id: number, user: User, governance: Record<string, unknown>, data = {}) =>
+    payload.update({ ...progs(id), data: { ...data, governance } as never, ...as(user) })
+  const getQ = async (user: User, key: string) =>
+    (await loadDashboard(payload, user as never)).find((q) => q.key === key)
+
+  beforeAll(async () => {
+    payload = await getTestPayload()
+    office = uniq('dcst')
+    ;[admin, manager] = await Promise.all([
+      makeUser(payload, 'platformAdmin'),
+      makeUser(payload, 'siteManager'),
+    ])
+    const dept = (await payload.create({
+      collection: 'departments',
+      draft: true,
+      data: {
+        name: uniq('dept'),
+        governance: { ownerOffice: office, source: 'https://e.test/s' },
+      } as never,
+      ...as(admin),
+    })) as { id: number }
+    prog = (await payload.create({
+      collection: 'programmes',
+      draft: true,
+      data: {
+        name: uniq('prog'),
+        department: dept.id,
+        governance: { source: 'https://e.test/s' },
+      } as never,
+      ...as(admin),
+    })) as { id: number }
+    hod = await makeUser(payload, 'approver', [office])
+    plainEditor = await makeUser(payload, 'editor', [office])
+    const c = await makeUser(payload, 'editor', [])
+    await payload.update({
+      collection: 'users',
+      id: c.id,
+      data: { programmes: [prog.id] } as never,
+      overrideAccess: true,
+    })
+    coord = (await payload.findByID({
+      collection: 'users',
+      id: c.id,
+      depth: 0,
+      overrideAccess: true,
+    })) as User
+  })
+
+  it('a coordinator gets "Ready for you to publish" once the head approved and verified, not before', async () => {
+    await stepProg(prog.id, coord, { status: 'in_review' })
+    expect(await getQ(coord, 'toPublish')).toMatchObject({
+      title: 'Ready for you to publish',
+      total: 0,
+    })
+    await stepProg(prog.id, hod, { status: 'approved' })
+    expect((await getQ(coord, 'toPublish'))?.total).toBe(0) // approved but not verified yet
+    await stepProg(prog.id, hod, { verificationStatus: 'verified' })
+    const q = await getQ(coord, 'toPublish')
+    expect(q?.items.map((i) => i.id)).toContain(prog.id)
+  })
+
+  it('the head sees the same page under "Approved, ready to publish"; an office editor has no such list', async () => {
+    expect((await getQ(hod, 'toPublish'))?.items.map((i) => i.id)).toContain(prog.id)
+    expect(await getQ(plainEditor, 'toPublish')).toBeUndefined()
+  })
+
+  it('the head’s review list has plainer words', async () => {
+    expect((await getQ(hod, 'review'))?.title).toBe('Waiting for your review')
+    expect((await getQ(admin, 'review'))?.title).toBe('Waiting for review')
+  })
+
+  it('a site manager is not asked to review their own item; an admin is (they may approve it)', async () => {
+    const mk = async (user: User, title: string) => {
+      const n = await notice(user, title, { ownerOffice: 'Registrar' })
+      await step(n.id, user, { status: 'in_review' })
+      return title
+    }
+    const mine = await mk(manager, uniq('manager-own'))
+    const adminOwn = await mk(admin, uniq('admin-own'))
+    expect(titles(await getQ(manager, 'review'))).not.toContain(mine)
+    expect(titles(await getQ(admin, 'review'))).toContain(adminOwn)
+    // Someone else's item waits for them as before.
+    expect(titles(await getQ(admin, 'review'))).toContain(mine)
+  })
+
+  it('"Expiring soon" lists only what you look after: another office’s item is not shown to a head or a coordinator', async () => {
+    const t = uniq('registrar-expiring')
+    await toApproved(t, { expireAt: new Date(Date.now() + 3 * DAY).toISOString() })
+    expect(titles(await getQ(approver, 'expiring'))).toContain(t) // the Registrar's own head
+    expect(titles(await getQ(hod, 'expiring'))).not.toContain(t)
+    expect(titles(await getQ(coord, 'expiring'))).not.toContain(t)
+    expect(titles(await getQ(admin, 'expiring'))).toContain(t)
   })
 })

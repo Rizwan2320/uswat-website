@@ -24,9 +24,9 @@
 .card { position: relative; padding: 28px 18px 14px; display: flex; flex-direction: column; }
 .eventsCol { position: relative; display: flex; flex-direction: column; min-width: 0; }
 .eventsCol .events { flex: 1 1 auto; padding-top: 22px; }
-.grid .card { background: #fff; border-color: rgb(0 59 23 / 0.07); }
+.grid .card { background: #fff; border-color: color-mix(in srgb, var(--forest) 7%, transparent); }
 .grid .card:not(:hover):not(:has(:focus-visible)) {
-  box-shadow: 0 12px 16px -10px rgb(0 42 16 / 0.34), 0 3px 6px rgb(0 42 16 / 0.07);
+  box-shadow: 0 12px 16px -10px color-mix(in srgb, var(--forest-deep) 34%, transparent), 0 3px 6px color-mix(in srgb, var(--forest-deep) 7%, transparent);
 }
 /* News cards: no padding. One photo fills the top of the card and fades into the white below it, where the text sits. */
 .grid .newsCard { padding: 0; }
@@ -68,7 +68,7 @@
 /* Second news card: the next two stories as small rows (photo left, text right), sharing the card's height. */
 .stack { display: flex; flex-direction: column; flex: 1 1 auto; }
 .item { position: relative; flex: 1 1 0; display: grid; grid-template-columns: 104px 1fr; gap: 14px; align-items: center; padding: 14px 18px; }
-.item + .item { border-top: 1px solid rgb(0 59 23 / 0.07); }
+.item + .item { border-top: 1px solid color-mix(in srgb, var(--forest) 7%, transparent); }
 .grid .item .thumb { position: relative; width: 104px; height: 80px; overflow: hidden; border-radius: 10px; }
 /* Date and Read More share one line so three stories fit the card height with no gaps. */
 .item .text { margin-top: 0; padding: 0; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 14px; }

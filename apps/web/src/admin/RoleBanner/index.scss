@@ -1,0 +1,36 @@
+.role-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: baseline;
+  padding: 0.5rem var(--gutter-h, 1.5rem);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: #1b3a2a;
+  background: #e8f1ec;
+  border-bottom: 1px solid #b9d3c4;
+
+  &__title {
+    font-weight: 700;
+  }
+
+  &--admin {
+    background: #e7eefb;
+    border-bottom-color: #b6c7ea;
+    color: #1a2f5c;
+  }
+
+  &--coordinator,
+  &--editor,
+  &--contributor {
+    background: #fbf3df;
+    border-bottom-color: #e6d29b;
+    color: #4a3a0b;
+  }
+
+  &--auditor {
+    background: #eeeeee;
+    border-bottom-color: #cccccc;
+    color: #333333;
+  }
+}

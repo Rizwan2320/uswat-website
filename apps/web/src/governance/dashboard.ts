@@ -6,12 +6,15 @@
 
 import type { Where } from 'payload'
 
+import { scopeFilter } from './access'
 import { reviewQueueWhere } from './lifecycle'
-import type { Role } from './roles'
+import { mayApproveOwn } from './policy'
+import { isCoordinatorActor, type Actor, type Role } from './roles'
 
 /** In the order a person should read them: what needs them first. */
 export const QUEUE_KEYS = [
   'review',
+  'toPublish',
   'sentBack',
   'myDrafts',
   'sentByMe',
@@ -32,7 +35,24 @@ const WRITERS: Role[] = [...REVIEWERS, 'editor', 'contributor']
 /** Editors and contributors also get the two lists that follow their own work through review (3aa). */
 const AUTHORS: Role[] = ['editor', 'contributor']
 
-const noNote = (): Where => any({ 'governance.reviewNote': { exists: false } }, { 'governance.reviewNote': { equals: '' } })
+/**
+ * Limits a list of live items to what the person looks after (slice 3ai). Published rows are public,
+ * so the read filter alone would show everyone every office's expiring and stale pages; a head or a
+ * coordinator should see their own. Without an actor (a count for the operations panel) nothing is added.
+ */
+const inMyScope = (
+  base: Where,
+  actor: Actor | undefined,
+  collection: string | undefined,
+): Where => {
+  if (!actor) return base
+  const scope = scopeFilter(actor, '', collection)
+  if (scope === true) return base
+  return all(base, scope === false ? { id: { in: [-1] } } : scope)
+}
+
+const noNote = (): Where =>
+  any({ 'governance.reviewNote': { exists: false } }, { 'governance.reviewNote': { equals: '' } })
 
 export interface QueueSpec {
   key: QueueKey
@@ -45,7 +65,17 @@ export interface QueueSpec {
   target: 'governed' | 'media'
   /** True: read the latest saved draft, not the live row. */
   draft: boolean
-  where: (ctx: { userId: string | number; now: Date }) => Where
+  where: (ctx: {
+    userId: string | number
+    now: Date
+    /** Who is asking and which collection, for the lists that differ by role (optional for counts). */
+    actor?: Actor
+    collection?: string
+  }) => Where
+  /** A narrower test than `roles` (a coordinator is an Editor with programmes). */
+  visible?: (actor: Actor) => boolean
+  /** Plainer words for a role whose job differs from the default (slice 3ai). */
+  words?: (actor: Actor) => { title: string; help: string } | null
 }
 
 export const QUEUES: QueueSpec[] = [
@@ -56,7 +86,44 @@ export const QUEUES: QueueSpec[] = [
     roles: REVIEWERS,
     target: 'governed',
     draft: true,
-    where: () => reviewQueueWhere(),
+    // Someone who cannot approve their own work is not asked to (slice 3ai): their own item waits
+    // for another reviewer and is listed under "I sent for review" instead.
+    where: ({ userId, actor, collection }) =>
+      actor && collection && mayApproveOwn(actor, { collection, id: null })
+        ? reviewQueueWhere()
+        : all(reviewQueueWhere(), { 'governance.createdBy': { not_equals: userId } }),
+    words: (actor) =>
+      actor.kind === 'user' && actor.role === 'approver'
+        ? {
+            title: 'Waiting for your review',
+            help: 'Sent to you by your coordinators and editors. Open one, then approve it or send it back with a reason.',
+          }
+        : null,
+  },
+  {
+    key: 'toPublish',
+    title: 'Approved, ready to publish',
+    help: 'Approved and waiting for the Publish button.',
+    roles: [...REVIEWERS, 'editor'],
+    target: 'governed',
+    draft: true,
+    // A coordinator publishes only what their head approved and verified (slice 3aj).
+    where: ({ actor }) =>
+      actor && isCoordinatorActor(actor)
+        ? all(
+            { 'governance.status': { equals: 'approved' } },
+            { 'governance.verificationStatus': { equals: 'verified' } },
+          )
+        : { 'governance.status': { equals: 'approved' } },
+    visible: (actor) =>
+      actor.kind === 'user' && (actor.role !== 'editor' || isCoordinatorActor(actor)),
+    words: (actor) =>
+      isCoordinatorActor(actor)
+        ? {
+            title: 'Ready for you to publish',
+            help: 'Your head of department approved and verified these. Open one and press Publish.',
+          }
+        : null,
   },
   {
     key: 'sentBack',
@@ -107,13 +174,17 @@ export const QUEUES: QueueSpec[] = [
     roles: REVIEWERS,
     target: 'governed',
     draft: false,
-    where: ({ now }) =>
-      all(
-        { 'governance.status': { equals: 'published' } },
-        any(
-          { 'governance.verificationStatus': { equals: 'stale' } },
-          { 'governance.reviewDueAt': { less_than_equal: now.toISOString() } },
+    where: ({ now, actor, collection }) =>
+      inMyScope(
+        all(
+          { 'governance.status': { equals: 'published' } },
+          any(
+            { 'governance.verificationStatus': { equals: 'stale' } },
+            { 'governance.reviewDueAt': { less_than_equal: now.toISOString() } },
+          ),
         ),
+        actor,
+        collection,
       ),
   },
   {
@@ -123,17 +194,21 @@ export const QUEUES: QueueSpec[] = [
     roles: WRITERS,
     target: 'governed',
     draft: true,
-    where: ({ now }) =>
-      all(
-        { 'governance.status': { in: ['approved', 'published'] } },
-        { 'governance.expireAt': { greater_than: now.toISOString() } },
-        {
-          'governance.expireAt': {
-            less_than_equal: new Date(
-              now.getTime() + EXPIRING_SOON_DAYS * 86_400_000,
-            ).toISOString(),
+    where: ({ now, actor, collection }) =>
+      inMyScope(
+        all(
+          { 'governance.status': { in: ['approved', 'published'] } },
+          { 'governance.expireAt': { greater_than: now.toISOString() } },
+          {
+            'governance.expireAt': {
+              less_than_equal: new Date(
+                now.getTime() + EXPIRING_SOON_DAYS * 86_400_000,
+              ).toISOString(),
+            },
           },
-        },
+        ),
+        actor,
+        collection,
       ),
   },
   {
@@ -148,3 +223,9 @@ export const QUEUES: QueueSpec[] = [
 ]
 
 export const queuesFor = (role: Role): QueueSpec[] => QUEUES.filter((q) => q.roles.includes(role))
+
+/** The queues this person sees (a coordinator, for one, is an Editor with extra lists). */
+export const queuesForActor = (actor: Actor): QueueSpec[] =>
+  actor.kind !== 'user'
+    ? []
+    : QUEUES.filter((q) => q.roles.includes(actor.role) && (q.visible?.(actor) ?? true))

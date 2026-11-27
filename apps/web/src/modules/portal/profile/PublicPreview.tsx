@@ -4,7 +4,7 @@ import type { Preview } from './rules'
 const C = COPY.profile
 
 /** What the public would see (FP-04). Pure rendering of `buildPreview`'s output; it decides nothing about visibility. */
-export default function PublicPreview({ preview }: { preview: Preview }) {
+export default function PublicPreview({ preview, heading, idSuffix = '', help, testId = 'public-preview' }: { preview: Preview; heading?: string; idSuffix?: string; help?: string; testId?: string }) {
   const rows: Array<[string, string]> = []
   if (preview.email) rows.push([C.previewEmail, preview.email])
   if (preview.officeLocation) rows.push([C.previewOffice, preview.officeLocation])
@@ -17,10 +17,15 @@ export default function PublicPreview({ preview }: { preview: Preview }) {
   ].filter(Boolean)
   const empty = !preview.bio.en && !preview.bio.ur && rows.length === 0 && links.length === 0
   return (
-    <section className="portal-preview" aria-labelledby="preview-title" data-testid="public-preview">
-      <h2 id="preview-title">{C.previewTitle}{' '}{preview.sample ? <span className="portal-sample">{C.sampleBadge}</span> : null}</h2>
-      <p className="hint">{C.previewHelp}</p>
-      <div className="photo">{preview.showPhoto ? C.previewPhoto : C.previewNoPhoto}</div>
+    <section className="portal-preview" aria-labelledby={`preview-title${idSuffix}`} data-testid={testId}>
+      <h2 id={`preview-title${idSuffix}`}>{heading ?? C.previewTitle}{' '}{preview.sample ? <span className="portal-sample">{C.sampleBadge}</span> : null}</h2>
+      <p className="hint">{help ?? C.previewHelp}</p>
+      <div className="photo">
+        {preview.showPhoto && preview.photo ? (
+          // eslint-disable-next-line @next/next/no-img-element -- a small illustration from the app's own public folder
+          <img className="portal-avatar" src={preview.photo} alt="" width={96} height={96} />
+        ) : preview.showPhoto ? C.previewPhoto : C.previewNoPhoto}
+      </div>
       <h3>{preview.name.en}</h3>
       <p className="role">{preview.designation.en}, {preview.department}</p>
       {preview.bio.en ? <p lang="en">{preview.bio.en}</p> : null}

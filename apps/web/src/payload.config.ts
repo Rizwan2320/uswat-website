@@ -4,6 +4,7 @@ import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 import { en } from 'payload/i18n/en'
+import { forCoordinators } from './governance/adminMenu'
 import { completeUrdu, urAdminLanguage, urTranslations } from './i18n/ur'
 
 import { AffiliatedColleges } from './collections/AffiliatedColleges'
@@ -51,6 +52,9 @@ const built = buildConfig({
       // The editor dashboard (CMS-09): my drafts, review queue, expiring soon, stale, needs alt.
       // Operations (3v): sweep status and work by office, for admin, site manager and auditor only.
       beforeDashboard: ['@/admin/EditorDashboard', '@/admin/OperationsPanel'],
+      // "You are...": who you are and what that means, on every screen (slice 3ai).
+      // Back and Sign out, always visible (slice 3ap).
+      header: ['@/admin/RoleBanner', '@/admin/TopBar'],
     },
     importMap: {
       baseDir: path.resolve(dirname),
@@ -107,6 +111,11 @@ const built = buildConfig({
     translations: {
       ...({ ur: urTranslations } as object),
       en: {
+        version: {
+          // Payload labels the button "Publish changes" even for a page never published. The status box
+          // says what it does in the sentence above it; the button just says Publish (3an).
+          publishChanges: 'Publish',
+        },
         error: {
           // Payload's own text says "you must be logged in" even to a signed-in auditor who may only read.
           unauthorized:
@@ -123,6 +132,7 @@ const built = buildConfig({
     defaultLocale: 'en',
     fallback: true,
   },
+  // A coordinator sees only their programme pages and media in the menu (slice 3am).
   collections: [
     Pages,
     Posts,
@@ -144,9 +154,9 @@ const built = buildConfig({
     Campuses,
     People,
     AuditLogs,
-  ],
+  ].map(forCoordinators),
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer, HomeContent],
+  globals: [Header, Footer, HomeContent].map(forCoordinators),
   plugins: [...plugins, governancePlugin],
   // Write paths go through REST and the admin only, where draft versus unpublish is visible to
   // the policy hook (docs/adr/0010). Nothing in the site uses GraphQL.

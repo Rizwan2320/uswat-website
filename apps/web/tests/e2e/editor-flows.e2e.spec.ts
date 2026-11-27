@@ -87,7 +87,8 @@ test.describe('editor and approver in the admin', () => {
     await eventually(async () => (await notice(title))?.governance?.status).toBe('draft')
     const saved = await notice(title)
 
-    await choose(page, 'field-governance__status', 'In review')
+    // The Stage box is read-only for everyone but the platform admin (slice 3ak); the status box buttons move the item.
+    await page.getByRole('button', { name: 'Send for review', exact: true }).click()
     await eventually(async () => (await notice(title)).governance.status).toBe('in_review')
 
     // The approver finds it on their dashboard, approves, verifies and publishes.
@@ -96,10 +97,11 @@ test.describe('editor and approver in the admin', () => {
     await expect(ap.locator('.editor-dashboard')).toContainText(title)
     await ap.getByRole('link', { name: title }).first().click()
     await ap.waitForURL(new RegExp(`/admin/collections/notices/${saved.id}`))
-    await choose(ap, 'field-governance__status', 'Approved')
-    await choose(ap, 'field-governance__verificationStatus', 'Verified')
+    await ap.getByRole('button', { name: 'Approve', exact: true }).click()
     await eventually(async () => (await notice(title)).governance.status).toBe('approved')
-    await ap.getByRole('button', { name: 'Publish changes' }).click()
+    await ap.getByRole('button', { name: 'Mark verified', exact: true }).click()
+    await eventually(async () => (await notice(title)).governance.verificationStatus).toBe('verified')
+    await ap.getByRole('button', { name: 'Publish', exact: true }).click()
     await expect
       .poll(async () => (await api(`notices/${saved.id}?depth=0`))._status, { timeout: 20000 })
       .toBe('published')

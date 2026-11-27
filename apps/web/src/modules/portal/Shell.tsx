@@ -1,27 +1,14 @@
-import Link from 'next/link'
 import type { ReactNode } from 'react'
 
-import { COPY } from './copy'
-import SignOutButton from './SignOutButton'
+import { headerRoles } from './headerRoles'
+import PortalHeader from './PortalHeader'
 
 /** Header and main landmark. `email` present means a signed-in page (shows navigation and sign-out). */
-export default function Shell({ email, wide, children }: { email?: string | null; wide?: boolean; children: ReactNode }) {
+export default async function Shell({ email, wide, pending, children }: { email?: string | null; wide?: boolean; pending?: boolean; children: ReactNode }) {
+  const roles = await headerRoles(email && !pending ? email : null)
   return (
     <>
-      <header className="portal-head">
-        <Link className="portal-brand" href={email ? '/portal' : '/portal/sign-in'}>{COPY.siteName}</Link>
-        {email ? (
-          <nav className="portal-nav" aria-label="Portal">
-            <Link href="/portal">{COPY.nav.home}</Link>
-            <Link href="/portal/profile">{COPY.nav.profile}</Link>
-            <Link href="/portal/publications">{COPY.nav.publications}</Link>
-            <Link href="/portal/courses">{COPY.nav.courses}</Link>
-            <Link href="/portal/cv">{COPY.nav.cv}</Link>
-            <Link href="/portal/security">{COPY.nav.security}</Link>
-            <SignOutButton />
-          </nav>
-        ) : null}
-      </header>
+      <PortalHeader email={email ?? null} pending={pending} roles={roles} />
       <main id="main" className={wide ? 'portal-main wide' : 'portal-main'} tabIndex={-1}>{children}</main>
     </>
   )

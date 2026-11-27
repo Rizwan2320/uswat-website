@@ -17,7 +17,7 @@
 .photo[data-active] { opacity: 1; }
 .img { object-fit: cover; object-position: 50% 35%; }
 /* Soft green wash over the photos so the white wave and the stats card sit on a calm base. */
-.shade { position: absolute; z-index: -1; inset: 0; background: linear-gradient(to bottom, rgb(0 42 16 / 0.12), rgb(0 42 16 / 0.35)); pointer-events: none; }
+.shade { position: absolute; z-index: -1; inset: 0; background: linear-gradient(to bottom, color-mix(in srgb, var(--forest-deep) 12%, transparent), color-mix(in srgb, var(--forest-deep) 35%, transparent)); pointer-events: none; }
 
 .grid { display: grid; grid-template-columns: minmax(0, 560px) 1fr; align-items: center; }
 .text { display: grid; align-content: center; }
@@ -42,7 +42,7 @@
   border: 2px solid var(--gold); transition: background-color 0.2s ease, color 0.2s ease;
 }
 .ghost { background: transparent; color: var(--gold); }
-.ghost:hover:not(:disabled) { background: rgb(242 183 5 / 0.18); }
+.ghost:hover:not(:disabled) { background: color-mix(in srgb, var(--gold) 18%, transparent); }
 .solid { background: var(--gold); color: var(--forest); }
 .solid:hover { background: var(--gold-light); }
 .round:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -54,7 +54,7 @@
 @media (max-width: 899px) {
   /* Narrow screens: the photograph sits behind the text under a strong green wash so the words stay readable. */
   .photos { width: 100%; -webkit-mask-image: none; mask-image: none; }
-  .shade { background: rgb(0 42 16 / 0.8); }
+  .shade { background: color-mix(in srgb, var(--forest-deep) 80%, transparent); }
   .grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {

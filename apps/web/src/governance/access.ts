@@ -13,8 +13,15 @@ import { actorFromRequest, type Actor } from './roles'
 
 const prefixed = (prefix: string, path: string) => `${prefix}${path}`
 
-/** Records an actor may see among unpublished ones, as a query filter (or true / false). */
-function scopeFilter(actor: Actor, prefix = ''): boolean | Where {
+const asId = (v: string): string | number => (/^\d+$/.test(v) ? Number(v) : v)
+
+/**
+ * Records an actor may see among unpublished ones, as a query filter (or true / false).
+ * `slug` (slice 3ah) lets the filter know which collection it is for: a programme coordinator sees
+ * their own programmes by id (never by office, and never a department). An id means something different in each collection, so these
+ * filters are built per collection.
+ */
+export function scopeFilter(actor: Actor, prefix = '', slug?: string, versions = false): boolean | Where {
   if (actor.kind !== 'user') return false
   switch (actor.role) {
     case 'platformAdmin':
@@ -23,6 +30,11 @@ function scopeFilter(actor: Actor, prefix = ''): boolean | Where {
       return true
     case 'approver':
     case 'editor':
+      if (slug && actor.role === 'editor' && (actor.programmes?.length ?? 0) > 0) {
+        if (slug === 'programmes')
+          return { [versions ? 'parent' : 'id']: { in: (actor.programmes ?? []).map(asId) } }
+        if (slug === 'departments') return false
+      }
       return actor.offices.length === 0
         ? false
         : { [prefixed(prefix, 'governance.ownerOffice')]: { in: actor.offices } }
@@ -35,20 +47,32 @@ const published = (prefix = ''): Where => ({
   [prefixed(prefix, '_status')]: { equals: 'published' },
 })
 
-function readFor(req: PayloadRequest, prefix = ''): boolean | Where {
+function readFor(req: PayloadRequest, prefix = '', slug?: string): boolean | Where {
   const actor = actorFromRequest(req)
-  const scope = scopeFilter(actor, prefix)
+  const scope = scopeFilter(actor, prefix, slug)
   if (scope === true) return true
   return scope === false ? published(prefix) : { or: [published(prefix), scope] }
 }
 
 export const governedRead: Access = ({ req }) => readFor(req)
+/** The same, for one named collection (main pages, programme coordinators). */
+export const governedReadFor =
+  (slug: string): Access =>
+  ({ req }) =>
+    readFor(req, '', slug)
 /** Versions are filtered on the `version.` prefix. */
 export const governedReadVersions: Access = ({ req }) => {
   const actor = actorFromRequest(req)
   const scope = scopeFilter(actor, 'version.')
   return scope === false ? false : scope
 }
+export const governedReadVersionsFor =
+  (slug: string): Access =>
+  ({ req }) => {
+    const actor = actorFromRequest(req)
+    const scope = scopeFilter(actor, 'version.', slug, true)
+    return scope === false ? false : scope
+  }
 
 export const governedCreate: Access = ({ req }) => {
   const actor = actorFromRequest(req)
@@ -64,6 +88,19 @@ export const governedCreate: Access = ({ req }) => {
 export const governedCreateAdminOnly: Access = ({ req }) => {
   const actor = actorFromRequest(req)
   return actor.kind === 'user' && actor.role === 'platformAdmin'
+}
+
+/**
+ * Programmes (slice 3ap, owner decision 2026-11-24, reverses part of 2026-11-21): a platform admin, or a
+ * head of department (an Approver who holds at least one office). The head's limits are held in the hooks:
+ * the new programme must sit in a department of the head's own office (`inheritDepartmentOffice`) and the
+ * create check in policy.ts keeps its owner office inside the head's offices. Departments stay admin-only.
+ */
+export const governedCreateAdminOrHead: Access = ({ req }) => {
+  const actor = actorFromRequest(req)
+  if (actor.kind !== 'user') return false
+  if (actor.role === 'platformAdmin') return true
+  return actor.role === 'approver' && actor.offices.length > 0
 }
 
 /**

@@ -108,14 +108,19 @@ export const pictureField = (name: string, label: string, description: string): 
   admin: { description },
 })
 
-/** Short words or names, up to six (tools, tags). Not translated. */
-export const shortListField = (name: string, label: string, description: string): Field => ({
+/** Short words or names (tools, tags, course names). Not translated. */
+export const shortListField = (
+  name: string,
+  label: string,
+  description: string,
+  o: { max?: number; maxLength?: number } = {},
+): Field => ({
   name,
   label,
   type: 'text',
   hasMany: true,
-  maxRows: 6,
-  maxLength: 40,
+  maxRows: o.max ?? 6,
+  maxLength: o.maxLength ?? 40,
   validate: plainTextManyValidate,
   admin: { description },
 })

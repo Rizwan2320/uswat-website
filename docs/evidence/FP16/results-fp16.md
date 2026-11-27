@@ -1,0 +1,33 @@
+# FP-16 results: department reviewer queue (FP-03 reviewer half, FPR-04, PJ4)
+
+Date 2026-11-20. Branch `fp/review-queue` (stacked on the security centre, which was merged as #104 before this PR). Brief `docs/briefs/fp16-review-queue.md`; predictions FP16-a and FP16-b. All data is Sample (owner decision 2026-11-20); nothing real, nothing live.
+
+## What was built
+- Migration 0011: a revision number and reviewer note on the draft; `account_department`, `reviewer_role`, `profile_published` (the last approved sample edit), and `profile_review`, an append-only log (a trigger refuses any change except the database clearing the reviewer when their account is deleted; the note is present exactly when changes were requested).
+- Reviewer screens: `/portal/review` (own department, submitted, oldest first, never one's own) and `/portal/review/[id]` (what is published now against what was sent, field by field; Approve, or Ask for changes with a required note up to 500 characters). Anyone who is not allowed to see a profile gets the same 404 as for a page that does not exist.
+- Every decision runs in one transaction: the role row is locked, the draft row is locked, and the draft must still be submitted at the revision the reviewer saw; then the approved edit is published through a `Publisher` seam (a sample table today, People through the content service later), the draft goes back to its owner, the revision goes up and the log row is written. A decision needs a recent second factor; the page says why the buttons are off and links to confirm.
+- Faculty side: save, submit and take-back raise the revision; the owner sees the reviewer's note until they send it again, and a "Published now" preview of the last approved version.
+- Roles and departments are set only by `pnpm identity:roles list | set-department | grant-reviewer | revoke-reviewer` (needs a department first). No screen or request can grant either.
+
+## What was run
+- Unit (17 new): decision validation (unknown keys such as a reviewer id refused, note required or forbidden, control and bidi characters, length 500, ids, revisions), department names, field comparison (first publication, list versus single value, reorder), and the service (session first, reviewer check, validate before the second factor, session reviewer passed to the store, outcomes mapped).
+- Integration (22 new, real PostgreSQL 16): visibility (department with case ignored, oldest first, not own, drafts excluded, role without department, non-reviewer), opening one profile (other department, self, draft, stranger, malformed and injection-shaped ids all null), approve and ask-for-changes end to end, once-only decisions, withdrawn then changed then resubmitted at the old revision, revision bumps, refusals leaving no trace (other department, colleague, no department, self, revoked, moved department), publisher failure rolling back everything, extra keys in a stored edit never published, two reviewers at once, owner withdrawing while a reviewer approves (8 repeats), append-only log, database checks, cascade and set-null, roles command results. 1207 of 1207 across all unit and integration tests.
+- Mutation checks: 15 deliberate breakages, all caught against a passing baseline (self check, revision check, status check, department case in the decision, department case in the list, edit filtering, role check in the list, submit keeping the note, withdraw not bumping, second-factor check, reviewer check, note on approval, unknown keys, list comparison, append-only trigger). One more mutation of mine was a no-op and is not counted. The case-in-decision mutation exposed an untested behaviour; a test was added.
+- Production build: passes (`/portal/review` and `/portal/review/[id]` are dynamic routes).
+- Browser (`scripts/review-run.mjs`, Chromium, production build, virtual authenticator per person; five sample accounts in two departments; roles set with the real command): 32 of 32 in `results/review-run.json`. Covers the command's refusals, the link only for reviewers, 404 for non-reviewers, own department only, oldest first, IDOR by URL (five forms), hostile text shown as text (no script ran, no element made), Urdu marked right to left, first-publication layout, empty note refused beside the field, owner sees the note, resubmit clears it, approve from the keyboard, owner sees "Published now", log order, stale decision refused with a way back and nothing written, second factor expired after load (refused), reloading shows why and links to confirm, confirmed again works, 390 px without sideways scroll, revoked role loses access at once without signing out.
+- Screenshots: `shots/` (queue and detail at desktop and 390 px, stale message, owner's note, owner's published preview).
+
+## Defects found
+- Real: the "Published now" preview on the profile page touched the other preview, and both were sticky so they would have overlapped on scroll. Found by looking at the screenshot. Fixed and re-run.
+- Test gap: the decision's department comparison ignoring case was untested (found by mutation).
+- No product defect from the race tests.
+
+## Not run, and why
+- A forged server-action call from a non-reviewer in the browser: server actions cannot be called by hand without Next's action ids; the same refusal is covered in the integration tests (forbidden) and unit tests.
+- Real People write-back: the `Publisher` seam is in place but writes to a sample table; People belongs to the P3 agent and real data is parked.
+- Email or digest to the owner after a decision (FP-43, next), delegation when the reviewer is away (FP-50), a Verifier role and source documents for high-impact fields, a reviewer in more than one department.
+- Real devices, a screen reader, https, large queues (the list is capped at 200).
+
+## Decisions (owner delegated both to me, 2026-11-21)
+- The review log is deleted with the faculty member's account. Reason: each entry holds a copy of the person's profile text, which is their personal data, so erasing the person should erase it. The cost is that an approval record does not outlive the person. For the demo (Sample data) this is the simpler and safer default. When real data is used, keeping an audit trail without the profile text (who decided what, when) is a data-protection decision for the university; it is parked with the other real-data steps.
+- Reviewers see everything that would change, and only that. The comparison shows exactly the fields the person can edit and would be published, so the reviewer approves what the public will see. They do not see fields the university sets, the person's private settings other than the two visibility choices that are part of the edit, or anything outside their own department.

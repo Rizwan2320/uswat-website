@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import RichDepartmentPage from '../academics/RichDepartmentPage'
 import RichDisciplinePage from '../academics/RichDisciplinePage'
 import { departmentFeed } from '../academics/feed'
-import type { DepartmentProfile } from '../academics/types'
+import { applyDepartmentContent, applyProgrammeContent } from '../academics/cmsContent'
 import { departmentPath, disciplinesOf, profileForDepartment, profileForDiscipline } from '../academics/profiles'
 import RichAboutPage from '../about/RichAboutPage'
 import RichMessagePage from '../about/RichMessagePage'
@@ -21,7 +21,7 @@ import { AcademicsPage, CampusPage } from './Landing'
 import OfficePage from './Office'
 import { DepartmentPage, ProgrammePage } from './Pages'
 import { getCampus, getDepartment, getOffice, getProgramme, listDepartments, listProgrammes, peopleOfDepartment, programmesAtCampus, programmesOfDepartment } from './queries'
-import { ACADEMICS_PATH, CAMPUSES_PATH, DEPARTMENTS_PATH, OFFICES_PATH, PROGRAMMES_PATH, str, type ProgrammeCard } from './shape'
+import { ACADEMICS_PATH, CAMPUSES_PATH, DEPARTMENTS_PATH, OFFICES_PATH, PROGRAMMES_PATH, str, type Doc, type ProgrammeCard } from './shape'
 
 /* The route files under (site)/(cms)/academics/{departments,programmes} are one-liners over these. */
 
@@ -45,66 +45,58 @@ export async function ProgrammesListRoute() {
 }
 export const programmesListMetadata: Metadata = { title: 'Programmes', alternates: { canonical: PROGRAMMES_PATH } }
 
-/** Programme cards built from the programme profiles of a department, for a page that has no CMS record. */
-const profileProgrammeCards = (profile: DepartmentProfile): ProgrammeCard[] =>
-  disciplinesOf(profile.slug).map((d) => ({
-    id: d.slug,
-    name: d.name ?? `BS ${d.shortName}`,
-    slug: d.slug,
-    level: d.level ?? 'BS',
-    duration: d.duration ?? '4 years',
-    campus: null,
-    departmentId: profile.slug,
-    departmentName: profile.shortName,
-    sample: false,
-  }))
+/* A page with a profile in code (src/site/academics, offices, faculties) does not need a CMS record: when the database has none (production
+   holds no content yet), it is drawn from the profile alone, and a record, once added, still overrides the fields it fills. */
+const stub = (slug: string): Doc => ({ id: slug })
 
 export async function DepartmentRoute({ params }: { params: SlugParams }) {
   const slug = decode((await params).slug ?? '')
   const doc = await getDepartment(slug, await preview())
-  // A department with a profile shows even when the CMS has no record for it yet (the profile carries the facts and their sources).
-  const own = profileForDepartment(slug)
-  if (!doc && own)
-    return <RichDepartmentPage doc={{ id: own.slug, slug: own.slug, name: own.fullName ?? own.shortName }} profile={own} programmes={profileProgrammeCards(own)} feed={await departmentFeed(own.slug)} />
-  if (!doc) notFound()
-  const profile = profileForDepartment(str(doc.slug) ?? '')
+  const base = profileForDepartment(doc ? (str(doc.slug) ?? '') : slug)
+  // Sections the head has filled in the CMS replace the code profile's (slice 3ar).
+  const profile = base && doc ? applyDepartmentContent(base, doc) : base
+  if (!doc && !profile) notFound()
   if (profile) {
-    const [programmes, feed] = await Promise.all([programmesOfDepartment(doc.id), departmentFeed(profile.slug)])
-    return <RichDepartmentPage doc={doc} profile={profile} programmes={programmes} feed={feed} />
+    const [stored, feed] = await Promise.all([doc ? programmesOfDepartment(doc.id) : Promise.resolve([] as ProgrammeCard[]), departmentFeed(profile.slug)])
+    const have = new Set(stored.map((p) => p.slug))
+    const fromProfile: ProgrammeCard[] = disciplinesOf(profile.slug)
+      .filter((d) => !have.has(d.slug))
+      .map((d) => ({ id: d.slug, name: d.name ?? `BS ${d.shortName}`, slug: d.slug, level: d.level ?? 'BS', duration: d.duration ?? '4 years', campus: null, departmentId: profile.slug, departmentName: profile.shortName, sample: false }))
+    return <RichDepartmentPage doc={doc ?? stub(profile.slug)} profile={profile} programmes={[...stored, ...fromProfile]} feed={feed} />
   }
-  const [programmes, people] = await Promise.all([programmesOfDepartment(doc.id), peopleOfDepartment(doc.id)])
-  return <DepartmentPage doc={doc} programmes={programmes} people={people} />
+  const [programmes, people] = await Promise.all([programmesOfDepartment(doc!.id), peopleOfDepartment(doc!.id)])
+  return <DepartmentPage doc={doc!} programmes={programmes} people={people} />
 }
 export async function departmentMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
   const slug = decode((await params).slug ?? '')
   const doc = await getDepartment(slug, await preview())
-  const own = profileForDepartment(slug)
-  if (!doc && own) return { title: own.fullName ?? own.shortName, description: own.intro, alternates: { canonical: `${DEPARTMENTS_PATH}/${encodeURIComponent(slug)}` } }
-  return doc
-    ? { title: str(doc.name) ?? 'Department', description: str(doc.summary)?.slice(0, 160) ?? undefined, alternates: { canonical: `${DEPARTMENTS_PATH}/${encodeURIComponent(slug)}` } }
+  const profile = profileForDepartment(slug)
+  const title = (doc && str(doc.name)) ?? profile?.fullName ?? profile?.shortName
+  return title
+    ? { title, description: (doc && str(doc.summary)?.slice(0, 160)) ?? profile?.intro?.slice(0, 160), alternates: { canonical: `${DEPARTMENTS_PATH}/${encodeURIComponent(slug)}` } }
     : { title: 'Department' }
 }
 
 export async function ProgrammeRoute({ params }: { params: SlugParams }) {
   const slug = decode((await params).slug ?? '')
   const doc = await getProgramme(slug, await preview())
-  const own = profileForDiscipline(slug)
-  if (!doc && own) return <RichDisciplinePage doc={{ id: own.slug, slug: own.slug, name: own.name ?? `BS ${own.shortName}` }} profile={own} feed={await departmentFeed(own.department)} />
-  if (!doc) notFound()
-  const profile = profileForDiscipline(str(doc.slug) ?? '')
+  const key = doc ? (str(doc.slug) ?? '') : slug
+  const base = profileForDiscipline(key)
+  const profile = base && doc ? applyProgrammeContent(base, doc) : base
+  if (!doc && !profile) notFound()
   if (profile) {
     const feed = await departmentFeed(profile.department)
-    return <RichDisciplinePage doc={doc} profile={profile} feed={feed} />
+    return <RichDisciplinePage doc={doc ?? stub(profile.slug)} profile={profile} feed={feed} />
   }
-  return <ProgrammePage doc={doc} />
+  return <ProgrammePage doc={doc!} />
 }
 export async function programmeMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
   const slug = decode((await params).slug ?? '')
   const doc = await getProgramme(slug, await preview())
   const own = profileForDiscipline(slug)
-  if (!doc && own) return { title: own.name ?? `BS ${own.shortName}`, description: own.summary, alternates: { canonical: `${PROGRAMMES_PATH}/${encodeURIComponent(slug)}` } }
-  return doc
-    ? { title: str(doc.name) ?? 'Programme', description: str(doc.eligibility)?.slice(0, 160) ?? undefined, alternates: { canonical: `${PROGRAMMES_PATH}/${encodeURIComponent(slug)}` } }
+  const title = (doc && str(doc.name)) ?? own?.name ?? (own ? `BS ${own.shortName}` : undefined)
+  return title
+    ? { title, description: (doc && str(doc.eligibility)?.slice(0, 160)) || own?.summary || undefined, alternates: { canonical: `${PROGRAMMES_PATH}/${encodeURIComponent(slug)}` } }
     : { title: 'Programme' }
 }
 
@@ -198,7 +190,17 @@ export async function FacultyRoute({ slug }: { slug: string }) {
   const profile = profileForDepartment(slug)
   if (!profile?.path) notFound()
   // No CMS record is needed: the programme cards are built from the programme profiles of the faculty.
-  const programmes = profileProgrammeCards(profile)
+  const programmes: ProgrammeCard[] = disciplinesOf(profile.slug).map((d) => ({
+    id: d.slug,
+    name: d.name ?? `BS ${d.shortName}`,
+    slug: d.slug,
+    level: d.level ?? 'BS',
+    duration: d.duration ?? '4 years',
+    campus: null,
+    departmentId: profile.slug,
+    departmentName: profile.shortName,
+    sample: false,
+  }))
   return <RichDepartmentPage doc={{ id: profile.slug }} profile={profile} programmes={programmes} feed={await departmentFeed(profile.slug)} />
 }
 export function facultyMetadata(slug: string): Metadata {

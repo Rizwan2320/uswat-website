@@ -28,6 +28,8 @@ export type ProfileFixed = {
   facultyStatus: 'current' | 'former' | 'emeritus'
   /** The person's own address, shown to them; public only if their visibility says so. */
   email: string | null
+  /** A picture in the app's own public folder, or null. Shown only when the person's photo visibility is public (preview) or to the person themself. */
+  photo?: string | null
 }
 
 export type Profile = ProfileFixed & ProfileEdit & {
@@ -42,6 +44,19 @@ export type LoadedProfile = {
   status: SubmissionStatus
   /** Epoch ms of the last save or submit; null when there is no draft yet. */
   updatedAt: number | null
+  /** What is published for this person now (the last approved edit), or null if nothing has been approved yet. */
+  published: ProfileEdit | null
+  /** Epoch ms of that approval. */
+  publishedAt: number | null
+  /** The reviewer's note when changes were asked for; shown until the person submits again. */
+  reviewNote: string | null
+  /**
+   * True for a head of department or the Registrar: nobody reviews their own page, so they publish it themselves
+   * (only the low-risk fields they can edit; designation and department stay with the Registrar's office).
+   */
+  selfPublishing: boolean
+  /** True when the saved draft is exactly what is published now (so a self-publisher has nothing waiting). */
+  draftIsPublished: boolean
 }
 
 /**
@@ -54,6 +69,11 @@ export interface ProfileStore {
   saveDraft(accountId: string, edit: ProfileEdit): Promise<boolean>
   /** Sends the saved draft for review. Returns false when there is no draft or it was already submitted. */
   submit(accountId: string): Promise<boolean>
+  /**
+   * Publishes the saved draft at once, for an account that holds the head or Registrar role (checked in the same transaction).
+   * 'not-allowed' for anyone else, 'nothing' when there is no draft. Writes the audit row (reviewer = the owner).
+   */
+  publishOwn(accountId: string, now?: number): Promise<'ok' | 'not-allowed' | 'nothing'>
   /** Takes a submitted edit back to draft so it can be changed again. Returns false when nothing was submitted. */
   withdraw(accountId: string): Promise<boolean>
 }

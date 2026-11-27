@@ -43,7 +43,13 @@ export const site = {
   /** Swat valley, used for the map link only. TODO(content): replace with the verified campus pin. */
   mapHref: 'https://www.openstreetmap.org/search?query=University%20of%20Swat',
   portalLinks: {
+    /** Campus Management System (host crawled 2026-11-06, see portals.ts). TODO(content): confirm the landing page the university wants here. */
+    /** This site's own CMS (Payload admin sign-in). The old campus system stays behind the Student Portal link. */
+    cms: '/admin',
     student: 'https://cms1.uswat.edu.pk/web/login',
-    faculty: 'https://cms1.uswat.edu.pk/web/login', // TODO(content): confirm whether faculty use a separate login
+    /** The Faculty Portal link opens the public people directory, which carries the sign-in button (owner, 2026-11-24). */
+    faculty: '/people',
+    /** Sample faculty portal sign-in (own Vercel project, ADR-0020). TODO(content): move to the university's own subdomain once DNS is set. */
+    facultySignIn: 'https://uswat-faculty-portal.vercel.app/portal/sign-in',
   },
 } as const

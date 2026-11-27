@@ -11,6 +11,9 @@
  *  - the audit log, search index, form data and Payload's own system collections: they hold history
  *    or derived copies, not live links;
  *  - breadcrumbs, populated authors and the creator field: derived or historical, not live links.
+ *
+ * Globals (the home page content, the header, the footer) are one record each, so they are read and
+ * their data is searched for the id, in the published version and in the newest draft.
  */
 
 import type { Payload, PayloadRequest, Where } from 'payload'
@@ -129,9 +132,82 @@ export interface InUse {
   label: string
   collection: string
   count: number
+  /** True when `collection` is the slug of a global (one record), and `label` is its own name. */
+  global?: boolean
 }
 
-/** Counts, per collection, the records that still point at `id`. Empty when nothing does. */
+type FieldLike = Loose
+const sameId = (a: unknown, b: unknown): boolean => String(a) === String(b)
+
+/** Does one stored link value point at `id` of `target`? Handles an id, a populated record and `{ relationTo, value }`. */
+function linkPointsAt(value: unknown, target: string, id: string | number): boolean {
+  if (Array.isArray(value)) return value.some((v) => linkPointsAt(v, target, id))
+  if (!isObject(value)) return value !== null && value !== undefined && sameId(value, id)
+  if ('relationTo' in value) {
+    return value.relationTo === target && linkPointsAt(value.value, target, id)
+  }
+  return 'id' in value && sameId(value.id, id)
+}
+
+/**
+ * Does `data` (the stored content of a global) hold a link to `id` of `target`? Walks the field config
+ * alongside the data, through groups, tabs, arrays and blocks. Pure, so it is unit-tested without a database.
+ * A localized field read with `locale: 'all'` is an object keyed by language, so each language is checked.
+ */
+export function dataReferences(
+  fields: unknown,
+  data: unknown,
+  target: string,
+  id: string | number,
+  globalBlocks: readonly FieldLike[] = [],
+): boolean {
+  if (!Array.isArray(fields) || !isObject(data)) return false
+  const again = (f: unknown, d: unknown) => dataReferences(f, d, target, id, globalBlocks)
+  for (const raw of fields as FieldLike[]) {
+    if (!isObject(raw)) continue
+    const name = typeof raw.name === 'string' ? raw.name : undefined
+    if (name && SKIP_FIELD.has(name)) continue
+
+    if (raw.type === 'tabs' && Array.isArray(raw.tabs)) {
+      for (const tab of raw.tabs as Loose[]) {
+        const tabName = typeof tab.name === 'string' ? tab.name : undefined
+        if (again(tab.fields, tabName ? data[tabName] : data)) return true
+      }
+      continue
+    }
+    if (!name) {
+      if (raw.fields !== undefined && again(raw.fields, data)) return true // row, collapsible
+      continue
+    }
+
+    const stored = data[name]
+    const perLanguage =
+      raw.localized === true && isObject(stored) ? Object.values(stored) : [stored]
+    for (const v of perLanguage) {
+      if (v === null || v === undefined) continue
+      if (raw.type === 'relationship' || raw.type === 'upload') {
+        if (targetsOf(raw).includes(target) && linkPointsAt(v, target, id)) return true
+      } else if (Array.isArray(raw.blocks) && Array.isArray(v)) {
+        for (const row of v) {
+          if (!isObject(row)) continue
+          const block = (raw.blocks as unknown[])
+            .map((b) =>
+              typeof b === 'string' ? globalBlocks.find((g) => g.slug === b) : (b as FieldLike),
+            )
+            .find((b) => b?.slug === row.blockType)
+          if (block && again(block.fields, row)) return true
+        }
+      } else if (raw.type === 'array' && Array.isArray(v)) {
+        if (v.some((row) => again(raw.fields, row))) return true
+      } else if (raw.fields !== undefined && isObject(v)) {
+        if (again(raw.fields, v)) return true // group
+      }
+    }
+  }
+  return false
+}
+
+/** Counts, per collection, the records that still point at `id`; globals that hold it are listed too. Empty when nothing does. */
 export async function findReferences(
   payload: Payload,
   target: string,
@@ -161,17 +237,53 @@ export async function findReferences(
       )
     }
   }
-  return [...byCollection].map(([collection, count]) => {
+  const used: InUse[] = [...byCollection].map(([collection, count]) => {
     const config = collections.find((c) => c.slug === collection)
     return { collection, count, label: config ? labelOf(config) : collection }
   })
+
+  if (!SKIP_TARGET.has(target) && !target.startsWith('payload-')) {
+    const globalBlocks = (payload.config.blocks ?? []) as unknown as FieldLike[]
+    for (const g of payload.config.globals ?? []) {
+      if (g.slug.startsWith('payload-')) continue
+      // The live version and the newest draft: a picture in either is still in use.
+      const versions = g.versions && g.versions.drafts ? [false, true] : [false]
+      let found = false
+      for (const draft of versions) {
+        const data = await payload.findGlobal({
+          slug: g.slug as 'header',
+          draft,
+          depth: 0,
+          locale: 'all',
+          overrideAccess: true,
+          req,
+        })
+        if (dataReferences(g.fields, data, target, id, globalBlocks)) {
+          found = true
+          break
+        }
+      }
+      if (found) {
+        const label =
+          typeof g.label === 'string'
+            ? g.label
+            : isObject(g.label) && typeof g.label.en === 'string'
+              ? g.label.en
+              : g.slug
+        used.push({ collection: g.slug, count: 1, label, global: true })
+      }
+    }
+  }
+  return used
 }
 
 /** "12 People and 4 Programmes", biggest first. */
 export function describeUse(used: readonly InUse[]): string {
   const parts = [...used]
-    .sort((a, b) => b.count - a.count)
-    .map((u) => `${u.count} ${u.count === 1 ? singular(u.label) : u.label}`)
+    .sort((a, b) => Number(Boolean(a.global)) - Number(Boolean(b.global)) || b.count - a.count)
+    .map((u) =>
+      u.global ? `the ${u.label}` : `${u.count} ${u.count === 1 ? singular(u.label) : u.label}`,
+    )
   if (parts.length <= 1) return parts[0] ?? ''
   return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
 }

@@ -103,6 +103,12 @@ const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
 
   const payload = await getPayload({ config: configPromise })
 
+  // The request headers are only read when draft mode is on (they carry the login). Reading them for every visitor makes the
+  // route dynamic, and an address that is not a page then ends in a server error instead of the 404 page.
   // Draft mode is only a cookie. Who may see a draft is decided by the login on this request.
-  return findForPreview(payload, 'pages', { slug, draftModeOn: draft, headers: await headers() })
+  return findForPreview(payload, 'pages', {
+    slug,
+    draftModeOn: draft,
+    headers: draft ? await headers() : new Headers(),
+  })
 })

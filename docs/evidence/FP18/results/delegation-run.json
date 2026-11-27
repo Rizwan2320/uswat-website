@@ -1,0 +1,125 @@
+{
+  "at": "2026-11-21T10:57:50.143Z",
+  "results": [
+    {
+      "id": "D1 the delegation page needs a signed-in strong session, shows the Sample badge and the plain explanation",
+      "ok": true,
+      "note": "badge and explanation present"
+    },
+    {
+      "id": "D2 an unknown address and a suspended account get the same sentence, and nothing is created",
+      "ok": true,
+      "note": "Access cannot be given to that address. Check it with your colleague. "
+    },
+    {
+      "id": "D3 giving access to yourself is refused",
+      "ok": true,
+      "note": "refused"
+    },
+    {
+      "id": "D4 91 days and no section are refused with a plain message, and nothing is created",
+      "ok": true,
+      "note": "both refused"
+    },
+    {
+      "id": "D5 granting works: Publications and Courses for 30 days, shown as Active for Bilal",
+      "ok": true,
+      "note": "listed active"
+    },
+    {
+      "id": "D6 the grant ends within 90 days and covers only what was ticked",
+      "ok": true,
+      "note": "30 days"
+    },
+    {
+      "id": "D7 Bilal sees one \"Edit\" link per granted part, none for the profile, and no grant he did not receive",
+      "ok": true,
+      "note": "Edit Dr Ayesha Sample’s publications | Edit Dr Ayesha Sample’s courses"
+    },
+    {
+      "id": "D8 the delegate’s courses page says whose page it is, until when, and offers the way back",
+      "ok": true,
+      "note": "You are editing Dr Ayesha Sample’s page as their delegate until 21 Dec 2026, 10:57 UTC. Ev"
+    },
+    {
+      "id": "D9 a course added by the delegate lands in the grantor’s list and not in the delegate’s",
+      "ok": true,
+      "note": "grantor 1, delegate 0"
+    },
+    {
+      "id": "D10 Bilal’s own courses page is unchanged: no banner, none of Ayesha’s courses",
+      "ok": true,
+      "note": "own page empty"
+    },
+    {
+      "id": "D11 the delegate looks for works with the grantor’s ORCID iD and claims one for her; his own list stays empty",
+      "ok": true,
+      "note": "rows only under the grantor"
+    },
+    {
+      "id": "D12 outside the grant is the same 404 every time: ungranted section, bad ids, himself, a stranger, repeated parameter",
+      "ok": true,
+      "note": "profile (not granted) 404; malformed id 404; an id that does not exist 404; his own id 404; the stranger as a grantor 404; array form 404"
+    },
+    {
+      "id": "D13 Carol, who has no grant, gets 404 on all three parts, and her own delegation page shows nothing received",
+      "ok": true,
+      "note": "404, 404, 404"
+    },
+    {
+      "id": "D14 the security page ignores ?for= entirely: it shows Bilal’s own account and no banner",
+      "ok": true,
+      "note": "own account only"
+    },
+    {
+      "id": "D15 each delegated view and action is in the audit log under Bilal’s name for Ayesha, and Carol’s refused attempts are not",
+      "ok": true,
+      "note": "courses:view,courses:addCourse,courses:view,publications:view,publications:harvestWorks,publications:view,publications:claimWork,publications:view"
+    },
+    {
+      "id": "D16 Ayesha sees what was done on her behalf: who, which part, which action",
+      "ok": true,
+      "note": "activity list shows Bilal’s actions"
+    },
+    {
+      "id": "D17 giving access again replaces the earlier grant: one Active, one Withdrawn, never two active",
+      "ok": true,
+      "note": "Active,Withdrawn"
+    },
+    {
+      "id": "D18 the delegate can save the grantor’s profile draft but has no Submit button; the status stays draft",
+      "ok": true,
+      "note": "no submit; draft changed; status draft"
+    },
+    {
+      "id": "D19 after withdrawal the page Bilal already had open can no longer change anything, and it says so",
+      "ok": true,
+      "note": "Your access to this page has ended, so nothing was saved. Go back to your own pa"
+    },
+    {
+      "id": "D20 the ?for= page is a 404 straight after withdrawal and the received list is empty",
+      "ok": true,
+      "note": "status 404"
+    },
+    {
+      "id": "D21 a grant works until its end time and is a 404 after, with no job running; the grantor sees it as Ended",
+      "ok": true,
+      "note": "before ok, after 404, states Withdrawn,Withdrawn,Ended"
+    },
+    {
+      "id": "D22 at 390 px, with a very long name, the delegation page (both sides) and the banner do not scroll sideways and the buttons stay on screen",
+      "ok": true,
+      "note": "received 390,390, banner page 390,390, given 390,390, button 16..161"
+    },
+    {
+      "id": "D23 the form works with the keyboard alone and every input has a label",
+      "ok": true,
+      "note": "Colleague’s email address | Profile draft | Publications | Courses | Number of days"
+    },
+    {
+      "id": "D24 the delegate’s page holds no secret: no password hash, token or other person’s email in the HTML",
+      "ok": true,
+      "note": "clean"
+    }
+  ]
+}

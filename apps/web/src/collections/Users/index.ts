@@ -48,6 +48,50 @@ async function otherAdmins(req: PayloadRequest, excludeId: string | number): Pro
   return totalDocs
 }
 
+/**
+ * A head of department may give a coordinator only programmes of their own offices (slice 3ah), and
+ * only to an Editor. The platform admin and trusted code are not limited (they never reach this).
+ */
+async function assertProgrammesOwned(
+  req: PayloadRequest,
+  actor: ReturnType<typeof actorFromRequest>,
+  value: unknown,
+  role: string,
+): Promise<void> {
+  if (value === undefined || !Array.isArray(value) || value.length === 0) return
+  if (role !== 'editor') {
+    throw new APIError(
+      'Only an Editor can be given programmes to look after.',
+      403,
+      { code: 'TEAM_PROGRAMME_FORBIDDEN' },
+      true,
+    )
+  }
+  const mine = actor.kind === 'user' ? actor.offices : []
+  for (const ref of value) {
+    const id = typeof ref === 'object' && ref !== null ? (ref as { id?: unknown }).id : ref
+    const programme = (await req.payload
+      .findByID({
+        collection: 'programmes',
+        id: id as number,
+        depth: 0,
+        draft: true,
+        overrideAccess: true,
+        req,
+      })
+      .catch(() => null)) as { governance?: { ownerOffice?: unknown } } | null
+    const office = normalizeOffice(String(programme?.governance?.ownerOffice ?? ''))
+    if (!office || !mine.includes(office)) {
+      throw new APIError(
+        'You can give a coordinator only programmes of your own department.',
+        403,
+        { code: 'TEAM_PROGRAMME_FORBIDDEN' },
+        true,
+      )
+    }
+  }
+}
+
 export const Users: CollectionConfig = {
   slug: 'users',
   access: {
@@ -115,6 +159,8 @@ export const Users: CollectionConfig = {
       hasMany: true,
       access: { update: adminOrHead },
       admin: {
+        // Chosen from the departments, not typed (slice 3aq). The stored value is the same list of words.
+        components: { Field: '@/admin/OfficePicker' },
         description:
           "Offices this person works for (matched against a record's owner office). Stored lower-case. A head of an office can add or take away only their own offices.",
       },
@@ -123,6 +169,33 @@ export const Users: CollectionConfig = {
           ({ value }) =>
             Array.isArray(value) ? [...new Set(value.map(normalizeOffice).filter(Boolean))] : value,
         ],
+      },
+    },
+    {
+      name: 'programmes',
+      label: 'Programmes they coordinate',
+      type: 'relationship',
+      relationTo: 'programmes',
+      hasMany: true,
+      // Only a platform admin decides who coordinates which programme (slice 3ah).
+      // The platform admin, or a head of department for their own team (checked in the hook below:
+      // only programmes of the head's own offices, and only on an Editor).
+      access: { update: adminOrHead },
+      // A head is offered only programmes of their own office (slice 3aq); the hook below still refuses others.
+      filterOptions: ({ user }) => {
+        const u = user as { role?: string; offices?: unknown } | null
+        const offices = Array.isArray(u?.offices) ? (u.offices as string[]) : []
+        if (u?.role !== 'approver' || offices.length === 0) return true
+        return { 'governance.ownerOffice': { in: offices } }
+      },
+      // Payload checks a chosen value against filterOptions by reading it back as the person saving, which a
+      // coordinator cannot do for a department that is still a draft or no longer published (found by the scope
+      // tests). The list only narrows what is offered; the scope rule and the team hook still refuse the rest on save.
+      validate: () => true as const,
+      admin: {
+        condition: (data) => data?.role === 'editor',
+        description:
+          'For a programme coordinator: the programmes this person writes drafts for. They can edit only these programmes (not the department page, not other programmes) and send them to the head of the department. A head of department can pick only programmes of their own department. Leave empty for an Editor of a whole office.',
       },
     },
   ],
@@ -148,6 +221,7 @@ export const Users: CollectionConfig = {
           if (!trusted && managesTeam(actor)) {
             const result = checkTeamCreate(actor, data)
             if (!result.ok) throw teamError(result)
+            await assertProgrammesOwned(req, actor, data.programmes, result.role)
             return { ...data, role: result.role, offices: result.offices }
           }
           return trusted ? data : { ...data, role: 'contributor', offices: [] }
@@ -159,6 +233,7 @@ export const Users: CollectionConfig = {
         if (!trusted && !own && managesTeam(actor)) {
           const result = checkTeamUpdate(actor, originalDoc ?? {}, data)
           if (!result.ok) throw teamError(result)
+          await assertProgrammesOwned(req, actor, data.programmes, result.role)
           return { ...data, role: result.role, offices: result.offices }
         }
         const next = { ...data }
