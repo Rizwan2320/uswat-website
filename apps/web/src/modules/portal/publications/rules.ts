@@ -63,38 +63,32 @@ export function validateCandidate(raw: unknown, now: number): Candidate | null {
 export type WorkField = 'title' | 'authors' | 'year' | 'venue' | 'doi' | 'url' | 'type'
 export type WorkInput = { workType: string; title: string; authors: string; year: string; venue: string; doi: string; url: string }
 
-/** The form's checks, one field at a time so the screen can say which box is wrong. A bad link here is an error (the person typed it). */
-export function validateWorkInput(raw: unknown, now: number): { ok: true; work: Candidate } | { ok: false; field: WorkField } {
-  if (typeof raw !== 'object' || raw === null) return { ok: false, field: 'title' }
+/** The form's checks. Every wrong box is reported (`fields`, in screen order) so the person can fix them in one go; `field` is the first. A bad link here is an error (the person typed it). */
+export function validateWorkInput(raw: unknown, now: number): { ok: true; work: Candidate } | { ok: false; field: WorkField; fields: WorkField[] } {
+  if (typeof raw !== 'object' || raw === null) return { ok: false, field: 'title', fields: ['title'] }
   const r = raw as Record<string, unknown>
   const str = (k: string) => (typeof r[k] === 'string' ? (r[k] as string) : null)
+  const bad: WorkField[] = []
   const type = str('workType')
-  if (type === null || !isWorkType(type)) return { ok: false, field: 'type' }
+  if (type === null || !isWorkType(type)) bad.push('type')
   const title = str('title')
-  if (title === null || clean(title) === '' || [...clean(title)].length > LIMITS.title) return { ok: false, field: 'title' }
+  if (title === null || clean(title) === '' || [...clean(title)].length > LIMITS.title) bad.push('title')
   const authorsText = str('authors')
   const authors = authorsText === null ? [] : splitAuthors(authorsText)
-  if (authors.length === 0 || authors.length > LIMITS.authors || authors.some((a) => [...a].length > LIMITS.author)) return { ok: false, field: 'authors' }
+  if (authors.length === 0 || authors.length > LIMITS.authors || authors.some((a) => [...a].length > LIMITS.author)) bad.push('authors')
   const yearText = str('year')
   const year = yearText !== null && /^\d{4}$/.test(yearText.trim()) ? Number(yearText.trim()) : NaN
-  if (!Number.isInteger(year) || year < LIMITS.minYear || year > new Date(now).getUTCFullYear() + 1) return { ok: false, field: 'year' }
+  if (!Number.isInteger(year) || year < LIMITS.minYear || year > new Date(now).getUTCFullYear() + 1) bad.push('year')
   const venue = clean(str('venue') ?? '')
-  if ([...venue].length > LIMITS.venue) return { ok: false, field: 'venue' }
+  if ([...venue].length > LIMITS.venue) bad.push('venue')
   const doiText = str('doi') ?? ''
-  let doi = ''
-  if (doiText.trim() !== '') {
-    const d = normaliseDoi(doiText)
-    if (d === null) return { ok: false, field: 'doi' }
-    doi = d
-  }
+  const doi = doiText.trim() === '' ? '' : normaliseDoi(doiText)
+  if (doi === null) bad.push('doi')
   const urlText = str('url') ?? ''
-  let url = ''
-  if (urlText.trim() !== '') {
-    const u = normaliseUrl(urlText)
-    if (u === null) return { ok: false, field: 'url' }
-    url = u
-  }
-  return { ok: true, work: { title: clean(title), year, venue, doi, authors, workType: type, url } }
+  const url = urlText.trim() === '' ? '' : normaliseUrl(urlText)
+  if (url === null) bad.push('url')
+  if (bad.length > 0) return { ok: false, field: bad[0], fields: bad }
+  return { ok: true, work: { title: clean(title as string), year, venue, doi: doi as string, authors, workType: type as WorkType, url: url as string } }
 }
 
 export const isWorkType = (v: unknown): v is WorkType => typeof v === 'string' && (WORK_TYPES as readonly string[]).includes(v)

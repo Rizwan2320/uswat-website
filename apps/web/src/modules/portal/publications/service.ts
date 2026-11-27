@@ -11,7 +11,7 @@ import { MAX_FEATURED, type Candidate, type CandidateSource, type HarvestCounts,
 
 export type Account = { id: string; email: string }
 export type PubError = 'session' | 'orcid' | 'source' | 'invalid' | 'nothing' | 'exists' | 'notfound' | 'incomplete' | 'format' | 'size' | 'limit' | 'off'
-export type PubResult = { ok: true; counts?: HarvestCounts; truncated?: boolean } | { ok: false; error: PubError; field?: WorkField }
+export type PubResult = { ok: true; counts?: HarvestCounts; truncated?: boolean } | { ok: false; error: PubError; field?: WorkField; fields?: WorkField[] }
 export type LookupResult = { ok: true; work: Candidate } | { ok: false; error: PubError; field?: WorkField }
 export type ExportResult = ({ ok: true } & ExportFile) | { ok: false; error: PubError }
 
@@ -80,7 +80,7 @@ export function createPublicationService(deps: {
       if (!account) return { ok: false, error: 'session' }
       if (via !== 'manual' && via !== 'doi') return { ok: false, error: 'invalid' }
       const v = validateWorkInput(input, now())
-      if (!v.ok) return { ok: false, error: 'invalid', field: v.field }
+      if (!v.ok) return { ok: false, error: 'invalid', field: v.field, fields: v.fields }
       const r = await deps.store.addClaimed(account.id, v.work, via)
       return r.ok ? { ok: true } : { ok: false, error: 'exists' }
     },

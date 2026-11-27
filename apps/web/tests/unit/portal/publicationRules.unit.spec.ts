@@ -124,6 +124,9 @@ describe('splitAuthors and the add-a-work form', () => {
     expect(f({ doi: 'not a doi' })).toBe('doi')
     expect(f({ url: 'javascript:alert(1)' })).toBe('url')
   })
+  it('reports every wrong box, in screen order, not only the first', () => {
+    expect(validateWorkInput(form({ title: '', authors: '', year: '20', doi: 'x', url: 'ftp://a' }), NOW)).toEqual({ ok: false, field: 'title', fields: ['title', 'authors', 'year', 'doi', 'url'] })
+  })
   it('a missing or odd shape is refused, never thrown', () => {
     for (const bad of [null, undefined, 'x', 3, [], { title: 5 }]) expect(validateWorkInput(bad, NOW).ok).toBe(false)
   })

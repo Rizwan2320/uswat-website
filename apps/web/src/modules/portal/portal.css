@@ -320,3 +320,24 @@ a.portal-btn { display: inline-flex; align-items: center; box-sizing: border-box
 }
 @media (max-width: 520px) { .portal-util-who, .portal-util-sep { display: none; } .portal-brand-sub { display: none; } }
 @media (prefers-reduced-motion: reduce) { .phd-link, .phd-caret, .phd-signout { transition: none; } }
+
+/* Publications intake (FP-19) */
+.pub-ways { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+.pub-way { font: inherit; font-family: var(--stack-nav); font-weight: 600; min-height: 44px; padding: 8px 18px; border-radius: 999px; border: 2px solid var(--forest); background: transparent; color: var(--forest); cursor: pointer; }
+.pub-way[aria-pressed='true'] { background: var(--forest); color: var(--ivory); }
+.pub-two { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 14px; align-items: start; }
+.pub-two .portal-field input { box-sizing: border-box; width: 100%; }
+@media (min-width: 640px) { .pub-two { grid-template-columns: minmax(0, 8rem) minmax(0, 1fr); } }
+.pub-add .portal-field input[type='file'] { padding: 10px 14px; }
+.pub-type { display: inline-block; font-size: 0.85rem; font-weight: 600; color: var(--forest); background: var(--ivory-deep); border-radius: 999px; padding: 0 10px; margin-inline-end: 6px; }
+.pub-origin { color: color-mix(in srgb, var(--forest) 75%, #fff); font-size: 0.88rem; }
+.pub-summary { margin: 0 0 8px; }
+.pub-toggle { font: inherit; font-family: var(--stack-nav); font-weight: 600; min-height: 44px; padding: 8px 16px; border-radius: 999px; border: 2px solid var(--forest); background: transparent; color: var(--forest); cursor: pointer; }
+.pub-toggle[aria-pressed='true'] { background: var(--gold); border-color: var(--forest); color: var(--forest-deep); }
+.pub-toggle[disabled] { opacity: 0.6; cursor: not-allowed; }
+.pub-vis { display: inline-flex; align-items: center; gap: 8px; }
+.pub-vis select { font: inherit; padding: 8px 12px; border: 2px solid var(--forest); border-radius: 10px; background: #fff; color: var(--forest); min-height: 44px; max-width: 100%; }
+.pub-edit { margin-top: 4px; }
+.pub-edit summary { cursor: pointer; font-weight: 600; color: var(--forest); min-height: 44px; display: flex; align-items: center; }
+.pub-export { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 12px; }
+.pub-export .portal-btn { min-height: 44px; padding: 8px 18px; }

@@ -4,30 +4,21 @@ import Link from 'next/link'
 import { useId, useState, useTransition } from 'react'
 
 import { COPY } from '../copy'
-import { claimWork, duplicateWork, harvestWorks, rejectWork } from './actions'
+import AddWorkPanel from './AddWorkPanel'
+import { claimWork, duplicateWork, exportWorks, rejectWork } from './actions'
 import type { PubResult } from './service'
-import type { StoredWork, WorkLists } from './types'
+import { MAX_FEATURED, type StoredWork, type WorkLists } from './types'
+import { ClaimedCard, WorkLine } from './WorkCards'
+import { EXPORT_FORMATS, type ExportFormat } from './exporters'
 
 const C = COPY.publications
-
-function WorkLine({ w }: { w: StoredWork }) {
-  return (
-    <>
-      <strong dir="auto">{w.title}</strong>
-      <span className="pub-meta">
-        {w.year} · {w.venue || '—'} · {w.doi ? `DOI ${w.doi}` : C.noDoi}
-      </span>
-      <span className="pub-meta" dir="auto">{C.byAuthors}: {w.authors.join(', ')}</span>
-    </>
-  )
-}
 
 function Pending({ w, claimed, busy, run, forId }: { forId?: string; w: StoredWork; claimed: StoredWork[]; busy: boolean; run: (job: () => Promise<PubResult>, ok: string) => void }) {
   const id = useId()
   const [target, setTarget] = useState('')
   return (
     <li className="pub-item" data-testid="pub-pending">
-      <WorkLine w={w} />
+      <WorkLine w={w} showOrigin />
       <div className="pub-actions">
         <button type="button" className="portal-btn" disabled={busy} onClick={() => run(() => claimWork(w.id, forId), C.done.claimed)}>{C.claim}</button>
         <button type="button" className="portal-btn secondary" disabled={busy} onClick={() => run(() => rejectWork(w.id, forId), C.done.rejected)}>{C.reject}</button>
@@ -46,6 +37,17 @@ function Pending({ w, claimed, busy, run, forId }: { forId?: string; w: StoredWo
   )
 }
 
+function download(f: { filename: string; mime: string; text: string }) {
+  const url = URL.createObjectURL(new Blob([f.text], { type: `${f.mime};charset=utf-8` }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = f.filename
+  document.body.append(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
 export default function PublicationsView({ lists, hasOrcid, sampleMode, forId }: { lists: WorkLists; hasOrcid: boolean; sampleMode: boolean; forId?: string }) {
   const router = useRouter()
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
@@ -60,7 +62,7 @@ export default function PublicationsView({ lists, hasOrcid, sampleMode, forId }:
           setMessage({ kind: 'error', text: forId && r.error === 'session' ? COPY.delegation.ended : C.errors[r.error] ?? C.errors.generic })
           return
         }
-        setMessage({ kind: 'ok', text: r.counts ? C.harvested(r.counts.added, r.counts.alreadyKnown, r.counts.invalid) : okText })
+        setMessage({ kind: 'ok', text: okText })
         router.refresh()
       } catch {
         setMessage({ kind: 'error', text: C.errors.generic })
@@ -68,14 +70,33 @@ export default function PublicationsView({ lists, hasOrcid, sampleMode, forId }:
     })
   }
 
-  const section = (title: string, empty: string, works: StoredWork[], render: (w: StoredWork) => React.ReactNode, testid: string) => (
+  function exportAs(format: ExportFormat) {
+    setMessage(null)
+    start(async () => {
+      try {
+        const r = await exportWorks(format, forId)
+        if (!r.ok) {
+          setMessage({ kind: 'error', text: forId && r.error === 'session' ? COPY.delegation.ended : C.errors[r.error] ?? C.errors.generic })
+          return
+        }
+        download(r)
+        setMessage({ kind: 'ok', text: C.exported(r.filename) })
+      } catch {
+        setMessage({ kind: 'error', text: C.errors.generic })
+      }
+    })
+  }
+
+  const section = (title: string, empty: string, works: StoredWork[], render: (w: StoredWork) => React.ReactNode, testid: string, extra?: React.ReactNode) => (
     <section aria-labelledby={`${testid}-h`} className="portal-card" data-testid={testid}>
       <h2 id={`${testid}-h`} style={{ marginTop: 0 }}>{title}</h2>
+      {extra}
       {works.length === 0 ? <p>{empty}</p> : <ul className="pub-list">{works.map(render)}</ul>}
     </section>
   )
 
   const byId = new Map([...lists.claimed].map((w) => [w.id, w]))
+  const featured = lists.claimed.filter((w) => w.featured).length
 
   return (
     <>
@@ -86,13 +107,27 @@ export default function PublicationsView({ lists, hasOrcid, sampleMode, forId }:
           {C.needOrcid} <Link className="portal-link" href={forId ? `/portal/profile?for=${forId}` : '/portal/profile'}>{C.profileLink}</Link>
         </div>
       ) : null}
-      <div className="portal-actions">
-        <button type="button" className="portal-btn" disabled={pending || !hasOrcid} onClick={() => run(() => harvestWorks(forId), '')}>{pending ? C.harvesting : C.harvest}</button>
-      </div>
+      <AddWorkPanel hasOrcid={hasOrcid} forId={forId} busy={pending} report={setMessage} onDone={() => router.refresh()} />
       {message ? <div className={message.kind === 'ok' ? 'portal-notice' : 'portal-error'} role={message.kind === 'ok' ? 'status' : 'alert'} data-testid="pub-message">{message.text}</div> : null}
 
       {section(C.pendingTitle(lists.pending.length), C.emptyPending, lists.pending, (w) => <Pending key={w.id} w={w} claimed={lists.claimed} busy={pending} run={run} forId={forId} />, 'pub-section-pending')}
-      {section(C.claimedTitle(lists.claimed.length), C.emptyClaimed, lists.claimed, (w) => <li key={w.id} className="pub-item"><WorkLine w={w} /></li>, 'pub-section-claimed')}
+      {section(
+        C.claimedTitle(lists.claimed.length),
+        C.emptyClaimed,
+        lists.claimed,
+        (w) => <ClaimedCard key={w.id} w={w} busy={pending} run={run} forId={forId} />,
+        'pub-section-claimed',
+        <>
+          <p className="pub-summary" data-testid="pub-featured-count">{C.featuredCount(featured, MAX_FEATURED)}. {C.featureHelp}</p>
+          <p className="pub-summary">{C.publicNote}</p>
+          {lists.claimed.length > 0 ? (
+            <div className="pub-export" role="group" aria-label={C.exportTitle}>
+              <span>{C.exportTitle}:</span>
+              {EXPORT_FORMATS.map((f) => <button key={f} type="button" className="portal-btn secondary" disabled={pending} onClick={() => exportAs(f)} data-testid={`pub-export-${f}`}>{C.exportFormats[f]}</button>)}
+            </div>
+          ) : null}
+        </>,
+      )}
       {section(C.duplicateTitle(lists.duplicate.length), C.emptyDuplicate, lists.duplicate, (w) => (
         <li key={w.id} className="pub-item">
           <WorkLine w={w} />

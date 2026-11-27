@@ -149,7 +149,7 @@ describe('publication service: intake, details, featured, export (FP-19)', () =>
     const t = make()
     expect(await t.service.addWork(form({ doi: '10.5555/X', url: 'https://example.invalid/x' }), 'manual')).toEqual({ ok: true })
     expect(t.store.addClaimed).toHaveBeenCalledWith('u1', { title: 'A title', year: 2021, venue: 'A journal', doi: '10.5555/x', authors: ['A. Person', 'B. Other'], workType: 'article', url: 'https://example.invalid/x' }, 'manual')
-    expect(await t.service.addWork(form({ year: 'x' }), 'doi')).toEqual({ ok: false, error: 'invalid', field: 'year' })
+    expect(await t.service.addWork(form({ year: 'x', authors: ' ' }), 'doi')).toEqual({ ok: false, error: 'invalid', field: 'authors', fields: ['authors', 'year'] })
     expect(await t.service.addWork(form(), 'harvest')).toEqual({ ok: false, error: 'invalid' })
     expect(await t.service.addWork(form(), undefined)).toEqual({ ok: false, error: 'invalid' })
     const dup = make({ store: { addClaimed: vi.fn(async () => ({ ok: false as const, reason: 'exists' as const })) } })
