@@ -18,6 +18,7 @@ import { as, getTestPayload, makeUser, uniq } from '../helpers/governance'
 
 let payload: Payload
 let admin: User, hod: User, coordSe: User, coordAi: User, contributor: User
+let otherHead: User, siteManager: User, auditor: User, plainEditor: User
 let dept: { id: number }, se: { id: number }, ai: { id: number }, otherProg: { id: number }
 const office = uniq('dcst')
 
@@ -37,6 +38,11 @@ beforeAll(async () => {
   admin = await makeUser(payload, 'platformAdmin')
   hod = await makeUser(payload, 'approver', [office])
   contributor = await makeUser(payload, 'contributor', [office])
+  otherHead = await makeUser(payload, 'approver', [uniq('maths')])
+  siteManager = await makeUser(payload, 'siteManager', [office])
+  auditor = await makeUser(payload, 'auditor', [office])
+  // An editor with no programme is a writer, not a coordinator.
+  plainEditor = await makeUser(payload, 'editor', [office])
   const mk = (collection: 'departments' | 'programmes', data: object) =>
     payload.create({ collection, draft: true, data: data as never, ...as(admin) }) as Promise<{
       id: number
@@ -142,6 +148,70 @@ describe('everyone else has no board', () => {
   it('the admin and a contributor get nothing here (their dashboards do not use it)', async () => {
     expect(await board(admin)).toEqual([])
     expect(await board(contributor)).toEqual([])
+  })
+
+  it('nor does a site manager, an auditor, or an editor who coordinates no programme, even in the same office', async () => {
+    for (const u of [siteManager, auditor, plainEditor]) expect(await board(u), u.role ?? '').toEqual([])
+  })
+})
+
+describe('the parts of a page and the live link reach only the head who runs it and the coordinator who runs it (slice 3ar)', () => {
+  const partsOf = (b: Awaited<ReturnType<typeof board>>, collection: string, id: number) =>
+    b.find((x) => x.collection === collection && x.id === id)
+
+  it('the head sees the parts of the department page and of each programme, and no live link while they are drafts', async () => {
+    const b = await board(hod)
+    const d = partsOf(b, 'departments', dept.id)!
+    expect(d.parts).toHaveLength(11)
+    expect(d.parts.every((p) => !p.filled)).toBe(true)
+    expect(d.liveHref).toBeNull()
+    const p = partsOf(b, 'programmes', se.id)!
+    expect(p.parts).toHaveLength(10)
+    expect(p.liveHref).toBeNull()
+  })
+
+  it('a coordinator sees the parts of their own programme only, and what they fill is counted', async () => {
+    await payload.update({
+      collection: 'programmes',
+      id: se.id,
+      draft: true,
+      data: {
+        pageContent: { summary: 'A summary.', outcomes: [{ text: 'One' }, { text: 'Two' }] },
+      } as never,
+      ...as(admin),
+    })
+    const b = await board(coordSe)
+    expect(b.map((x) => `${x.collection}:${x.id}`)).toEqual([`programmes:${se.id}`])
+    const parts = Object.fromEntries(b[0]!.parts.map((x) => [x.key, x]))
+    expect(parts.summary!.filled).toBe(true)
+    expect(parts.outcomes!.count).toBe(2)
+    expect(parts.faq!.filled).toBe(false)
+    expect(await board(coordAi)).not.toContainEqual(expect.objectContaining({ id: se.id }))
+  })
+
+  it('a live page gets its public address on the board of its own head and coordinator, and nobody else gets the page at all', async () => {
+    await step(se.id, admin, { status: 'approved', verificationStatus: 'verified' })
+    await payload.update({
+      collection: 'programmes',
+      id: se.id,
+      data: { _status: 'published', governance: {} } as never,
+      ...as(admin),
+    })
+    const slug = ((await payload.findByID({
+      collection: 'programmes',
+      id: se.id,
+      depth: 0,
+      overrideAccess: true,
+    })) as { slug?: string }).slug
+    const own = [hod, coordSe]
+    for (const u of own) {
+      const row = partsOf(await board(u), 'programmes', se.id)!
+      expect(row.liveHref, u.name ?? '').toBe(`/academics/programmes/${slug}`)
+    }
+    // Same office, but not their page; and a head of another department, who may read the live page.
+    const strangers = [coordAi, otherHead, siteManager, auditor, plainEditor, contributor, admin]
+    for (const u of strangers)
+      expect((await board(u)).find((x) => x.id === se.id && x.collection === 'programmes'), u.role ?? '').toBeUndefined()
   })
 })
 

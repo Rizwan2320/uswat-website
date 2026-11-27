@@ -226,3 +226,24 @@ describe('the parts of a page, on the head and coordinator desks (slice 3ar)', (
     expect(html).toContain('Not live yet')
   })
 })
+
+describe('no other desk shows the parts of a page or the live link (slice 3ar)', () => {
+  it.each(['control', 'readonly', 'desk', 'contributor'] as const)(
+    'the %s desk ignores a board it is handed',
+    (desk) => {
+      const board = [
+        prog({
+          collection: 'departments',
+          stage: 'published',
+          liveHref: '/academics/departments/dcst',
+          parts: describeParts('departments', { vision: 'x' }),
+        }),
+        prog({ liveHref: '/academics/programmes/bs-computer-science' }),
+      ]
+      const html = render({ queues: [], desk, board })
+      expect(html).not.toContain('parts filled')
+      expect(html).not.toContain('View the live page')
+      expect(html).not.toContain('set by the university template')
+    },
+  )
+})
