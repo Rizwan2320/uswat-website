@@ -59,7 +59,9 @@ const stat = (over: Record<string, unknown> = {}) => ({
   verifiedAt: '2026-11-08T00:00:00.000Z',
   ...over,
 })
+// `colours` is cleared here so a colour saved by an earlier case never leaks into the next (the global is one row).
 const complete = () => ({
+  colours: { green: null, yellow: null, maroon: null },
   slides: [slide(m1), slide(m2), slide(m3)],
   stats: [stat(), stat({ label: 'Students', value: 9000 }), stat({ label: 'Faculty', value: 150 })],
 })
@@ -138,6 +140,15 @@ describe('what must be true to publish', () => {
     ['nine slides', () => ({ ...complete(), slides: slides(9) })],
     ['two statistics', () => ({ ...complete(), stats: stats(2) })],
     ['seven statistics', () => ({ ...complete(), stats: stats(7) })],
+    [
+      'a pale green that makes text unreadable',
+      () => ({ ...complete(), colours: { green: '#9bd1a8' } }),
+    ],
+    [
+      'a dark yellow that makes the button labels unreadable',
+      () => ({ ...complete(), colours: { yellow: '#5a4a00' } }),
+    ],
+    ['a pale maroon', () => ({ ...complete(), colours: { maroon: '#e0a0a8' } })],
     ...[
       'javascript:alert(1)',
       'data:text/html,x',
@@ -178,6 +189,24 @@ describe('what must be true to publish', () => {
     expect(out._status).toBe('published')
     expect(out.slides ?? []).toHaveLength(0)
   })
+
+  it('readable colours publish, and are stored as typed', async () => {
+    const out = (await publish(approver, {
+      ...complete(),
+      colours: { green: '#10253f', yellow: '#f2b705', maroon: '#6b1a2b' },
+    })) as Home & { colours?: Record<string, string> }
+    expect(out._status).toBe('published')
+    expect(out.colours).toMatchObject({ green: '#10253f', yellow: '#f2b705', maroon: '#6b1a2b' })
+  })
+
+  it.each(['red', '#fff', '#00;}body{display:none', 'url(x)'])(
+    'a colour of %s is refused at publish',
+    async (bad) => {
+      expect(await can(() => publish(approver, { ...complete(), colours: { green: bad } }))).toBe(
+        false,
+      )
+    },
+  )
 
   it('a sample statistic needs no source or date', async () => {
     const out = (await publish(approver, {

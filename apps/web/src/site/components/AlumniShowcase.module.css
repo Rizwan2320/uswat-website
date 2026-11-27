@@ -10,9 +10,9 @@
 .note { margin: 0 auto 4px; text-align: center; font-size: 0.85rem; color: var(--text); }
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); max-width: 1120px; margin-inline: auto; }
 .cell { display: flex; }
-.card { display: flex; flex-direction: column; width: 100%; background: #fff; border-color: rgb(0 59 23 / 0.07); }
+.card { display: flex; flex-direction: column; width: 100%; background: #fff; border-color: color-mix(in srgb, var(--forest) 7%, transparent); }
 .card:not(:hover):not(:has(:focus-visible)) {
-  box-shadow: 0 12px 16px -10px rgb(0 42 16 / 0.34), 0 3px 6px rgb(0 42 16 / 0.07);
+  box-shadow: 0 12px 16px -10px color-mix(in srgb, var(--forest-deep) 34%, transparent), 0 3px 6px color-mix(in srgb, var(--forest-deep) 7%, transparent);
 }
 /* A portrait crop: the face stays in frame because the picture is anchored near the top. */
 .photo { position: relative; aspect-ratio: 3 / 2; border-radius: var(--radius) var(--radius) 0 0; background: var(--ivory-deep); }

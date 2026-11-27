@@ -40,6 +40,7 @@ import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from 
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
+import { default as default_51cf3d439d0369f4cb0521b99f973237 } from '@/admin/ColourPicker'
 import { default as default_8e105f2def81ec410fec3c4976a2b7c3 } from '@/admin/RoleBanner'
 import { default as default_234f0394bb53ea743a1ddf5fe7c28c2d } from '@/admin/TopBar'
 import { default as default_422294b1f9a6acc018ae49097d1b1330 } from '@/admin/Brand/Icon'
@@ -94,6 +95,7 @@ export const importMap = {
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
+  "@/admin/ColourPicker#default": default_51cf3d439d0369f4cb0521b99f973237,
   "@/admin/RoleBanner#default": default_8e105f2def81ec410fec3c4976a2b7c3,
   "@/admin/TopBar#default": default_234f0394bb53ea743a1ddf5fe7c28c2d,
   "@/admin/Brand/Icon#default": default_422294b1f9a6acc018ae49097d1b1330,

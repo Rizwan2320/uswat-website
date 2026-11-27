@@ -150,3 +150,11 @@ export function slideMediaProblems(
   })
   return out
 }
+
+/** A colour is empty (the standard one) or exactly #rrggbb. Runs for drafts too, so a typo is caught early. */
+export const colourValidate = (value: unknown): true | string => {
+  if (value == null || value === '') return true
+  return typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value)
+    ? true
+    : 'Use a colour code like #003b17: a # and six digits or letters a to f.'
+}

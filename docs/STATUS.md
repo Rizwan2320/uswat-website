@@ -1131,3 +1131,7 @@ P3 agent (slice 3a), own entry:
 - **Done 2026-11-27:** #172 merged and deployed. Production `home-content` filled by SQL (published, no slides, four figures; no audit-log row because SQL bypasses the app; Urdu labels not added). The owner can edit them in Admin, Globals, Home page content, Statistics, then Publish. Cache: up to 300 s on the public page. Prediction `PROD-HOME-STATS`.
 - Merged since the last entry: #163 (via #168), #166, agent 4's real departments (#169), #170 (home reads the global). #94 not merged: its search test expects `/about` for the word Sample and fails on current main; decision pending (agent 4 updates the test, or close).
 
+## Landing-page colour picker (2026-11-27, branch `feat/home-colours`, main agent, owner request)
+- Admin, Globals, Home page content, Colours: pickers for green, yellow and maroon; empty keeps the standard. Landing page only. Derived shades, readability check at publish, migration `20261127_021657_home_colours` (CMS lane, small, told to the CMS agent in the PR). Brief `docs/briefs/home-colours.md`, prediction `HOME-COLOURS-a`.
+- Not changed: the mobile browser-bar colour (`themeColor`), other pages, the ivory background. Not run: a production publish.
+

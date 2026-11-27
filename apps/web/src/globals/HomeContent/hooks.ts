@@ -6,6 +6,7 @@ import {
   type GlobalBeforeOperationHook,
 } from 'payload'
 
+import { paletteMessage } from '../../governance/homePalette'
 import { mayPublishHome, slideImageIds, slideMediaProblems } from '../../governance/homeContent'
 import { actorFromRequest } from '../../governance/roles'
 
@@ -37,6 +38,16 @@ export const homeBeforeChange: GlobalBeforeChangeHook = async ({ data, req }) =>
   if (data?._status !== 'published') return data
 
   if (!mayPublishHome(actorFromRequest(req))) throw publishForbidden()
+
+  const hard = paletteMessage(data.colours)
+  if (hard) {
+    throw new APIError(
+      `The home page content cannot be published yet. ${hard}`,
+      400,
+      { code: 'HOME_COLOUR_PROBLEM' },
+      true,
+    )
+  }
 
   const ids = slideImageIds(data.slides)
   const unique = [...new Set(ids.filter((id): id is string | number => id != null))]

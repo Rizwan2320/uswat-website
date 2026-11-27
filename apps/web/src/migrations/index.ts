@@ -15,6 +15,7 @@ import * as migration_20261121_205706_p3z_home_content from './20261121_205706_p
 import * as migration_20261121_211308_p3ad_department_page_content from './20261121_211308_p3ad_department_page_content'
 import * as migration_20261122_080522_p3ae_programme_page_content from './20261122_080522_p3ae_programme_page_content'
 import * as migration_20261122_094108_p3ah_coordinator_programmes from './20261122_094108_p3ah_coordinator_programmes'
+import * as migration_20261127_021657_home_colours from './20261127_021657_home_colours'
 
 export const migrations = [
   {
@@ -101,5 +102,10 @@ export const migrations = [
     up: migration_20261122_094108_p3ah_coordinator_programmes.up,
     down: migration_20261122_094108_p3ah_coordinator_programmes.down,
     name: '20261122_094108_p3ah_coordinator_programmes',
+  },
+  {
+    up: migration_20261127_021657_home_colours.up,
+    down: migration_20261127_021657_home_colours.down,
+    name: '20261127_021657_home_colours',
   },
 ]

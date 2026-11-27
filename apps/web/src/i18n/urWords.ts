@@ -293,6 +293,18 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
     'اعداد و شمار کی پٹی میں دکھائے جانے والے اعداد۔ 3 سے 6۔ ہر عدد کا ماخذ اور تصدیق کی تاریخ درج ہونی چاہیے، یا اسے نمونہ کے طور پر نشان زد کیا جائے۔',
   'The photographs at the top of the home page, in this order. Each photograph shows with its two buttons. 3 to 8 slides, or none to keep the standard photographs.':
     'ہوم پیج کے اوپر دکھائی جانے والی تصاویر، اسی ترتیب سے۔ ہر تصویر کے ساتھ اس کے دو بٹن نظر آتے ہیں۔ 3 سے 8 سلائیڈز، یا کوئی نہیں تاکہ معیاری تصاویر برقرار رہیں۔',
+  Colours: 'رنگ',
+  Green: 'سبز',
+  Yellow: 'پیلا',
+  Maroon: 'عنابی',
+  'Change the colours of the home page only. Leave a colour empty to keep the standard one. The darker and lighter shades are worked out for you. A choice that makes text hard to read cannot be published.':
+    'صرف ہوم پیج کے رنگ بدلیں۔ معیاری رنگ رکھنے کے لیے خانہ خالی چھوڑ دیں۔ گہرے اور ہلکے شیڈ خود بخود بن جاتے ہیں۔ جو انتخاب متن کو پڑھنا مشکل بنائے وہ شائع نہیں ہو سکتا۔',
+  'The deep green: headings, the top bar, the footer and the page text.':
+    'گہرا سبز: سرخیاں، اوپر کی پٹی، فوٹر اور صفحے کا متن۔',
+  'The gold: buttons, highlights and the accent words on green.':
+    'سنہری پیلا: بٹن، نمایاں حصے اور سبز پر نمایاں الفاظ۔',
+  'The crest maroon: the Apply button, dates and small accents. Use a dark colour.':
+    'نشان کا عنابی رنگ: درخواست کا بٹن، تاریخیں اور چھوٹے نمایاں حصے۔ گہرا رنگ استعمال کریں۔',
   'This is a sample figure': 'یہ ایک نمونہ عدد ہے',
   Trophy: 'ٹرافی',
   'Where the figure comes from': 'عدد کہاں سے لیا گیا',
