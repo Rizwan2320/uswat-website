@@ -293,6 +293,30 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
     'اعداد و شمار کی پٹی میں دکھائے جانے والے اعداد۔ 3 سے 6۔ ہر عدد کا ماخذ اور تصدیق کی تاریخ درج ہونی چاہیے، یا اسے نمونہ کے طور پر نشان زد کیا جائے۔',
   'The photographs at the top of the home page, in this order. Each photograph shows with its two buttons. 3 to 8 slides, or none to keep the standard photographs.':
     'ہوم پیج کے اوپر دکھائی جانے والی تصاویر، اسی ترتیب سے۔ ہر تصویر کے ساتھ اس کے دو بٹن نظر آتے ہیں۔ 3 سے 8 سلائیڈز، یا کوئی نہیں تاکہ معیاری تصاویر برقرار رہیں۔',
+  'Admissions banner': 'داخلہ بینر',
+  'The green bar under the statistics. It shows "Admissions Open" until the last date has passed, then "Closed" with the message below. Leave a field empty to keep the standard text.':
+    'اعداد و شمار کے نیچے سبز پٹی۔ آخری تاریخ گزرنے تک "داخلے جاری ہیں" دکھاتی ہے، پھر نیچے دیے گئے پیغام کے ساتھ "بند"۔ معیاری متن رکھنے کے لیے خانہ خالی چھوڑ دیں۔',
+  Intake: 'داخلہ سیشن',
+  'For example: Fall 2026.': 'مثال کے طور پر: فال 2026۔',
+  'Last day to apply': 'درخواست دینے کی آخری تاریخ',
+  'The bar says Open until the end of this day (Pakistan time) and Closed after it. Empty means Closed.':
+    'پٹی اس دن کے اختتام (پاکستانی وقت) تک "جاری" اور اس کے بعد "بند" دکھاتی ہے۔ خالی کا مطلب بند ہے۔',
+  'Apply Online link': 'آن لائن درخواست کا لنک',
+  'Where the button goes while admissions are open.':
+    'داخلے جاری ہونے کے دوران بٹن جہاں لے جاتا ہے۔',
+  'Link while closed': 'بند ہونے کی صورت میں لنک',
+  'Where the "View Admissions" button goes while admissions are closed.':
+    'داخلے بند ہونے کے دوران "داخلے دیکھیں" بٹن جہاں لے جاتا ہے۔',
+  'Message while closed': 'بند ہونے کی صورت میں پیغام',
+  'Middle heading': 'درمیانی عنوان',
+  'Shown above Undergraduate · Graduate · Postgraduate.':
+    'انڈرگریجویٹ · گریجویٹ · پوسٹ گریجویٹ کے اوپر دکھایا جاتا ہے۔',
+  'Portal cards': 'پورٹل کارڈز',
+  'The cards under "University Portals and Services", in this order. 3 to 8 cards, or none to keep the standard cards.':
+    '"یونیورسٹی پورٹلز اور خدمات" کے نیچے کارڈز، اسی ترتیب سے۔ 3 سے 8 کارڈز، یا کوئی نہیں تاکہ معیاری کارڈز برقرار رہیں۔',
+  Card: 'کارڈ',
+  Cards: 'کارڈز',
+  'One line under the title': 'عنوان کے نیچے ایک سطر',
   Colours: 'رنگ',
   Green: 'سبز',
   Yellow: 'پیلا',

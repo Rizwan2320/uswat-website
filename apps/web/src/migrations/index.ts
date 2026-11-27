@@ -1,21 +1,22 @@
-import * as migration_20261106_113628_initial from './20261106_113628_initial'
-import * as migration_20261109_013938_p3a_governance from './20261109_013938_p3a_governance'
-import * as migration_20261109_115039_p3b_governed_collections from './20261109_115039_p3b_governed_collections'
-import * as migration_20261109_170317_p3c_lifecycle from './20261109_170317_p3c_lifecycle'
-import * as migration_20261110_021434_p3d_post_types from './20261110_021434_p3d_post_types'
-import * as migration_20261110_023005_p3e_organisation from './20261110_023005_p3e_organisation'
-import * as migration_20261111_014816_p3f_media_rules from './20261111_014816_p3f_media_rules'
-import * as migration_20261111_102441_p3h_seo_search_redirects from './20261111_102441_p3h_seo_search_redirects'
-import * as migration_20261118_014656_p3s_verified_by from './20261118_014656_p3s_verified_by'
-import * as migration_20261119_021305_p3t_media_storage_fields from './20261119_021305_p3t_media_storage_fields'
-import * as migration_20261120_015808_p3x_post_fields from './20261120_015808_p3x_post_fields'
-import * as migration_20261120_064238_p3y_programme_apply_link from './20261120_064238_p3y_programme_apply_link'
-import * as migration_20261121_060522_p3aa_review_note from './20261121_060522_p3aa_review_note'
-import * as migration_20261121_205706_p3z_home_content from './20261121_205706_p3z_home_content'
-import * as migration_20261121_211308_p3ad_department_page_content from './20261121_211308_p3ad_department_page_content'
-import * as migration_20261122_080522_p3ae_programme_page_content from './20261122_080522_p3ae_programme_page_content'
-import * as migration_20261122_094108_p3ah_coordinator_programmes from './20261122_094108_p3ah_coordinator_programmes'
-import * as migration_20261127_021657_home_colours from './20261127_021657_home_colours'
+import * as migration_20261106_113628_initial from './20261106_113628_initial';
+import * as migration_20261109_013938_p3a_governance from './20261109_013938_p3a_governance';
+import * as migration_20261109_115039_p3b_governed_collections from './20261109_115039_p3b_governed_collections';
+import * as migration_20261109_170317_p3c_lifecycle from './20261109_170317_p3c_lifecycle';
+import * as migration_20261110_021434_p3d_post_types from './20261110_021434_p3d_post_types';
+import * as migration_20261110_023005_p3e_organisation from './20261110_023005_p3e_organisation';
+import * as migration_20261111_014816_p3f_media_rules from './20261111_014816_p3f_media_rules';
+import * as migration_20261111_102441_p3h_seo_search_redirects from './20261111_102441_p3h_seo_search_redirects';
+import * as migration_20261118_014656_p3s_verified_by from './20261118_014656_p3s_verified_by';
+import * as migration_20261119_021305_p3t_media_storage_fields from './20261119_021305_p3t_media_storage_fields';
+import * as migration_20261120_015808_p3x_post_fields from './20261120_015808_p3x_post_fields';
+import * as migration_20261120_064238_p3y_programme_apply_link from './20261120_064238_p3y_programme_apply_link';
+import * as migration_20261121_060522_p3aa_review_note from './20261121_060522_p3aa_review_note';
+import * as migration_20261121_205706_p3z_home_content from './20261121_205706_p3z_home_content';
+import * as migration_20261121_211308_p3ad_department_page_content from './20261121_211308_p3ad_department_page_content';
+import * as migration_20261122_080522_p3ae_programme_page_content from './20261122_080522_p3ae_programme_page_content';
+import * as migration_20261122_094108_p3ah_coordinator_programmes from './20261122_094108_p3ah_coordinator_programmes';
+import * as migration_20261127_021657_home_colours from './20261127_021657_home_colours';
+import * as migration_20261127_065030_home_admissions_portals from './20261127_065030_home_admissions_portals';
 
 export const migrations = [
   {
@@ -108,4 +109,9 @@ export const migrations = [
     down: migration_20261127_021657_home_colours.down,
     name: '20261127_021657_home_colours',
   },
-]
+  {
+    up: migration_20261127_065030_home_admissions_portals.up,
+    down: migration_20261127_065030_home_admissions_portals.down,
+    name: '20261127_065030_home_admissions_portals'
+  },
+];

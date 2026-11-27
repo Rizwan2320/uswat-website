@@ -1,4 +1,4 @@
-import { admissions } from '../content/admissions'
+import type { AdmissionsData } from '../home/homeMap'
 import { formatDate } from './dates'
 
 export type AdmissionsState = {
@@ -9,8 +9,8 @@ export type AdmissionsState = {
   ctaHref: string
 }
 
-/* Called from a Server Component. The home page sets `revalidate = 3600`, so the state flips within an hour of the deadline. */
-export function getAdmissionsState(now: Date = new Date()): AdmissionsState {
+/* Called from a Server Component. The home page sets `revalidate = 300`, so the state flips within five minutes of the deadline. */
+export function getAdmissionsState(admissions: AdmissionsData, now: Date = new Date()): AdmissionsState {
   const open = now.getTime() <= new Date(admissions.deadlineISO).getTime()
   return open
     ? {

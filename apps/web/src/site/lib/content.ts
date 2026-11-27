@@ -1,6 +1,6 @@
 import { homeEvents, homeFeeds, homeNews } from '../home/cms'
 import { readHomeContent } from '../home/homeContent'
-import { toHeroSlides, toStats } from '../home/homeMap'
+import { toAdmissions, toHeroSlides, toPortals, toStats } from '../home/homeMap'
 import { admissions } from '../content/admissions'
 import { events } from '../content/events'
 import { feeds } from '../content/feeds'
@@ -20,8 +20,8 @@ export async function getHero() { return { content: hero, slides: toHeroSlides(a
 export async function getStats() { return toStats(await readHomeContent(), stats) }
 export async function getHomeColours() { return (await readHomeContent())?.colours ?? null }
 export async function getLeadership() { return leadership }
-export async function getAdmissions() { return admissions }
-export async function getPortals() { return portals }
+export async function getAdmissions() { return toAdmissions(await readHomeContent(), admissions) }
+export async function getPortals() { return toPortals(await readHomeContent(), portals) }
 export async function getFeeds() { return homeFeeds(feeds) }
 export async function getNews() { return homeNews(news) }
 export async function getEvents() { return homeEvents(events) }
