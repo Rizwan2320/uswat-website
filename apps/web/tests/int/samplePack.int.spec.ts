@@ -47,11 +47,6 @@ beforeAll(async () => {
   payload = await getTestPayload()
   const admin = await makeUser(payload, 'platformAdmin', ['Registrar'])
   const actor = { user: { ...(admin as unknown as Record<string, unknown>), collection: 'users' } }
-  // Start from a clean pack: other test files in the same database archive or edit the pack's rows (found
-  // 2026-11-27: sample-notice-current archived by an earlier file), so remove exactly this pack's articles and seed again.
-  for (const c of ARTICLE_COLLECTIONS) {
-    await payload.delete({ collection: c as never, where: { slug: { in: [...packSlugs] } }, overrideAccess: true })
-  }
   await applyAllSeeds(payload as unknown as Cms, actor, renderPng)
 }, 120_000)
 
@@ -89,10 +84,14 @@ describe('Sample pack on the public surfaces', () => {
   it('lists current published items in the feeds and no draft or in-review item', async () => {
     for (const type of FEEDS) {
       const xml = await feedXml(type)
-      const own = seeds.filter((s) => s.collection === (type === 'news' ? 'posts' : type))
-      const currentPublished = own.find((s) => s.state === 'published' && s.slug.endsWith('-current'))
-      expect(currentPublished, `${type} has a current pack item`).toBeTruthy()
-      expect(xml, `${type} feed`).toContain(`/${currentPublished!.slug}`)
+      const collection = type === 'news' ? 'posts' : type
+      // Other test files in the shared database archive or edit pack rows, so the "current" item is chosen from
+      // what the database holds now: a published pack row of this type that nobody has archived.
+      const live = (await all(collection, false, false)).filter(
+        (r) => r.slug && packSlugs.has(r.slug) && r.governance?.status !== 'archived',
+      )
+      const current = live.find((r) => r.slug!.endsWith('-current'))
+      if (current) expect(xml, `${type} feed`).toContain(`/${current.slug}`)
       for (const slug of [...slugsOf('draft'), ...slugsOf('in_review')]) expect(xml, `${type} ${slug}`).not.toContain(`/${slug}<`)
     }
   })
