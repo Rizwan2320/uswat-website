@@ -6,4 +6,4 @@
 "conference","Cap test paper 5","A. Sample","2015","V","","","yes","public"
 "conference","Imported conference paper","D. Other","2021","Proc. Sample","","","no","public"
 "article","Cap test paper 4","A. Sample","2014","V","","","no","public"
-"report","Cap test paper 3","A. Sample","2013","V","","https://example.invalid/report","no","only me"
+"report","Cap test paper three, corrected","A. Sample","2012","V","10.5555/corrected.3","https://example.invalid/report","no","only me"

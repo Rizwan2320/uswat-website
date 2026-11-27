@@ -42,8 +42,8 @@ export async function addWork(input: unknown, via: unknown, forId?: unknown): Pr
 export async function importWorks(text: unknown, filename: unknown, forId?: unknown): Promise<PubResult> {
   return service('importWorks', forId).importFile(text, filename)
 }
-export async function updateWorkDetails(workId: unknown, details: unknown, forId?: unknown): Promise<PubResult> {
-  return service('updateWorkDetails', forId).updateDetails(workId, details)
+export async function updateWorkDetails(workId: unknown, input: unknown, forId?: unknown): Promise<PubResult> {
+  return service('updateWorkDetails', forId).editWork(workId, input)
 }
 export async function setWorkFeatured(workId: unknown, featured: unknown, forId?: unknown): Promise<PubResult> {
   return service('setWorkFeatured', forId).setFeatured(workId, featured)

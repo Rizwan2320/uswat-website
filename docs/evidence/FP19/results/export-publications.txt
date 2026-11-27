@@ -12,4 +12,4 @@ D. Other (2021). Imported conference paper. Proc. Sample.
 
 A. Sample (2014). Cap test paper 4. V.
 
-A. Sample (2013). Cap test paper 3. V. https://example.invalid/report
+A. Sample (2012). Cap test paper three, corrected. V. https://doi.org/10.5555/corrected.3

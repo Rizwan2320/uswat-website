@@ -36,8 +36,6 @@ export type StoredWork = Candidate & {
   isPublic: boolean
 }
 
-/** What the person may change on a claimed work. */
-export type WorkDetails = { workType: WorkType; url: string }
 
 export type WorkLists = { pending: StoredWork[]; claimed: StoredWork[]; rejected: StoredWork[]; duplicate: StoredWork[] }
 
@@ -61,8 +59,8 @@ export interface PublicationStore {
   reject(accountId: string, workId: string): Promise<boolean>
   /** `ofId` must be a claimed work of the same account. Returns false when nothing changed. */
   markDuplicate(accountId: string, workId: string, ofId: string): Promise<boolean>
-  /** Claimed works only. */
-  updateDetails(accountId: string, workId: string, details: WorkDetails): Promise<boolean>
+  /** Rewrites a claimed work (title, authors, year, venue, DOI, kind, link). `exists` when the new title/year or DOI matches another of this account's works. */
+  updateWork(accountId: string, workId: string, work: Candidate): Promise<'ok' | 'nothing' | 'exists'>
   /** Claimed works only. Turning it on fails (false) when five are already featured. */
   setFeatured(accountId: string, workId: string, featured: boolean): Promise<boolean>
   /** Claimed works only. */

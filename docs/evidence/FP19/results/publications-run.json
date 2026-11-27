@@ -60,14 +60,19 @@
     "note": "Cap test paper 3"
   },
   {
-    "id": "P13 kind and link can be edited on a claimed work",
+    "id": "P13 title, year, DOI, kind and link can all be edited on a claimed work",
     "ok": true,
-    "note": "db shows report + url"
+    "note": "db shows the corrected row"
   },
   {
-    "id": "P14 a javascript: link is refused and never stored",
+    "id": "P14 a javascript: link and a bad year are refused beside the form, each box named, and nothing is stored",
     "ok": true,
-    "note": "no javascript url in db: That request was not valid."
+    "note": "2 field errors; That request was not valid."
+  },
+  {
+    "id": "P14b an edit that repeats another work is refused with a plain message and the work is unchanged",
+    "ok": true,
+    "note": "This work is already in your list (it may be under “To review”, “Duplicates” or “Not mine”)."
   },
   {
     "id": "P15 a BibTeX file with 3 records imports 2 to review and skips the broken one, saying so",
@@ -97,7 +102,7 @@
   {
     "id": "P20 exports contain claimed works (including Only me and Urdu) and no pending ones",
     "ok": true,
-    "note": "bib 1099 chars, csv 819 chars"
+    "note": "bib 1145 chars, csv 853 chars"
   },
   {
     "id": "P21 a typed work can be deleted after confirming",

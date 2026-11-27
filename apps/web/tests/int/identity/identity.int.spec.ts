@@ -1343,17 +1343,37 @@ describe.skipIf(!DB)('publication intake (FP-19), PostgreSQL store', () => {
     const a = await account('own-a')
     const b = await account('own-b')
     const id = (await store().addClaimed(a, work(), 'manual')) as { ok: true; id: string }
-    expect(await store().updateDetails(b, id.id, { workType: 'report', url: '' })).toBe(false)
+    expect(await store().updateWork(b, id.id, work({ workType: 'report' }))).toBe('nothing')
     expect(await store().setFeatured(b, id.id, true)).toBe(false)
     expect(await store().setPublic(b, id.id, false)).toBe(false)
     expect(await store().remove(b, id.id)).toBe(false)
-    expect(await store().updateDetails(a, id.id, { workType: 'report', url: 'https://example.invalid/r' })).toBe(true)
-    expect((await store().list(a)).claimed[0]).toMatchObject({ workType: 'report', url: 'https://example.invalid/r' })
+    expect(await store().updateWork(a, id.id, work({ title: 'Corrected title', year: 2023, doi: '10.5555/corr', workType: 'report', url: 'https://example.invalid/r' }))).toBe('ok')
+    expect((await store().list(a)).claimed[0]).toMatchObject({ title: 'Corrected title', year: 2023, workType: 'report', url: 'https://example.invalid/r', origin: 'manual', status: 'claimed' })
     await store().addCandidates(a, [work({ title: 'Pending one', doi: '10.5555/p1' })], true)
     const pending = (await store().list(a)).pending[0]
     expect(await store().setFeatured(a, pending.id, true)).toBe(false)
     expect(await store().setPublic(a, pending.id, false)).toBe(false)
-    expect(await store().updateDetails(a, pending.id, { workType: 'book', url: '' })).toBe(false)
+    expect(await store().updateWork(a, pending.id, work({ title: 'Edited pending' }))).toBe('nothing')
+  })
+
+  it('an edit that would repeat another work of the account is refused and leaves the work unchanged; a work may be saved as itself', async () => {
+    const a = await account('edit-dup')
+    const one = ((await store().addClaimed(a, work({ title: 'First work', year: 2020, doi: '10.5555/e1x' }), 'manual')) as { ok: true; id: string }).id
+    const two = ((await store().addClaimed(a, work({ title: 'Second work', year: 2021 }), 'manual')) as { ok: true; id: string }).id
+    expect(await store().updateWork(a, two, work({ title: 'FIRST work!', year: 2020 }))).toBe('exists')
+    expect(await store().updateWork(a, two, work({ title: 'Second work', year: 2021, doi: 'https://doi.org/10.5555/E1X' }))).toBe('exists')
+    expect((await store().list(a)).claimed.find((w) => w.id === two)).toMatchObject({ title: 'Second work', year: 2021, doi: '' })
+    expect(await store().updateWork(a, one, work({ title: 'First work', year: 2020, doi: '10.5555/e1x', venue: 'New venue' }))).toBe('ok')
+    expect(await store().updateWork(a, one, work({ title: 'First work', year: 2020, doi: '', venue: 'New venue' }))).toBe('ok')
+  })
+
+  it('a harvested work can be corrected too, and keeps its origin and Sample label', async () => {
+    const a = await account('edit-harvest')
+    await store().addCandidates(a, [work({ title: 'Harvested typo', doi: '10.5555/ht' })], true)
+    const id = (await store().list(a)).pending[0].id
+    await store().claim(a, id)
+    expect(await store().updateWork(a, id, work({ title: 'Harvested corrected', doi: '10.5555/ht' }))).toBe('ok')
+    expect((await store().list(a)).claimed[0]).toMatchObject({ title: 'Harvested corrected', origin: 'harvest', sample: true })
   })
 
   it('at most five works can be featured; unfeaturing makes room; featured works list first', async () => {

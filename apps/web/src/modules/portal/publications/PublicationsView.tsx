@@ -13,7 +13,7 @@ import { EXPORT_FORMATS, type ExportFormat } from './exporters'
 
 const C = COPY.publications
 
-function Pending({ w, claimed, busy, run, forId }: { forId?: string; w: StoredWork; claimed: StoredWork[]; busy: boolean; run: (job: () => Promise<PubResult>, ok: string) => void }) {
+function Pending({ w, claimed, busy, run, forId }: { forId?: string; w: StoredWork; claimed: StoredWork[]; busy: boolean; run: (job: () => Promise<PubResult>, ok: string, onResult?: (r: PubResult) => void) => void }) {
   const id = useId()
   const [target, setTarget] = useState('')
   return (
@@ -53,11 +53,12 @@ export default function PublicationsView({ lists, hasOrcid, sampleMode, forId }:
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
   const [pending, start] = useTransition()
 
-  function run(job: () => Promise<PubResult>, okText: string) {
+  function run(job: () => Promise<PubResult>, okText: string, onResult?: (r: PubResult) => void) {
     setMessage(null)
     start(async () => {
       try {
         const r = await job()
+        onResult?.(r)
         if (!r.ok) {
           setMessage({ kind: 'error', text: forId && r.error === 'session' ? COPY.delegation.ended : C.errors[r.error] ?? C.errors.generic })
           return

@@ -18,7 +18,7 @@ function setup(opts: { account?: { id: string; email: string } | null; orcid?: s
     reject: vi.fn(async () => true),
     markDuplicate: vi.fn(async () => true),
     addClaimed: vi.fn(async () => ({ ok: true as const, id: ID })),
-    updateDetails: vi.fn(async () => true),
+    updateWork: vi.fn(async () => 'ok' as const),
     setFeatured: vi.fn(async () => true),
     setPublic: vi.fn(async () => true),
     remove: vi.fn(async () => true),
@@ -108,7 +108,7 @@ describe('publication service: intake, details, featured, export (FP-19)', () =>
       reject: vi.fn(async () => true),
       markDuplicate: vi.fn(async () => true),
       addClaimed: vi.fn(async () => ({ ok: true as const, id: ID })),
-      updateDetails: vi.fn(async () => true),
+      updateWork: vi.fn(async () => 'ok' as const),
       setFeatured: vi.fn(async () => true),
       setPublic: vi.fn(async () => true),
       remove: vi.fn(async () => true),
@@ -123,7 +123,7 @@ describe('publication service: intake, details, featured, export (FP-19)', () =>
 
   it('without a session every new action stops before touching the store or the network', async () => {
     const t = make({ account: null })
-    const results = [await t.service.lookupDoi('10.5555/a'), await t.service.addWork(form(), 'manual'), await t.service.importFile('@a{k,}', 'a.bib'), await t.service.updateDetails(ID, { workType: 'book', url: '' }), await t.service.setFeatured(ID, true), await t.service.setPublic(ID, false), await t.service.remove(ID), await t.service.exportWorks('csv')]
+    const results = [await t.service.lookupDoi('10.5555/a'), await t.service.addWork(form(), 'manual'), await t.service.importFile('@a{k,}', 'a.bib'), await t.service.editWork(ID, form()), await t.service.setFeatured(ID, true), await t.service.setPublic(ID, false), await t.service.remove(ID), await t.service.exportWorks('csv')]
     for (const r of results) expect(r).toEqual({ ok: false, error: 'session' })
     expect(t.lookup).not.toHaveBeenCalled()
     for (const fn of Object.values(t.store)) expect(fn).not.toHaveBeenCalled()
@@ -172,16 +172,18 @@ describe('publication service: intake, details, featured, export (FP-19)', () =>
     expect(await t.service.importFile(many, 'x.bib')).toMatchObject({ ok: true, truncated: true, counts: { added: 500 } })
   })
 
-  it('details: type and link are checked; a bad link names the field', async () => {
+  it('edit: the same checks as adding, then a rewrite of the account\'s own claimed work', async () => {
     const t = make()
-    expect(await t.service.updateDetails(ID, { workType: 'book', url: ' https://example.invalid/b ' })).toEqual({ ok: true })
-    expect(t.store.updateDetails).toHaveBeenCalledWith('u1', ID, { workType: 'book', url: 'https://example.invalid/b' })
-    expect(await t.service.updateDetails(ID, { workType: 'book', url: '' })).toEqual({ ok: true })
-    expect(await t.service.updateDetails(ID, { workType: 'poster', url: '' })).toEqual({ ok: false, error: 'invalid', field: 'type' })
-    expect(await t.service.updateDetails(ID, { workType: 'book', url: 'javascript:alert(1)' })).toEqual({ ok: false, error: 'invalid', field: 'url' })
-    expect(await t.service.updateDetails('not-an-id', { workType: 'book', url: '' })).toEqual({ ok: false, error: 'invalid' })
-    expect(await t.service.updateDetails(ID, null)).toEqual({ ok: false, error: 'invalid' })
-    expect(await make({ store: { updateDetails: vi.fn(async () => false) } }).service.updateDetails(ID, { workType: 'book', url: '' })).toEqual({ ok: false, error: 'nothing' })
+    expect(await t.service.editWork(ID, form({ title: 'Corrected title', doi: 'https://doi.org/10.5555/X', url: ' https://example.invalid/b ' }))).toEqual({ ok: true })
+    expect(t.store.updateWork).toHaveBeenCalledWith('u1', ID, { title: 'Corrected title', year: 2021, venue: 'A journal', doi: '10.5555/x', authors: ['A. Person', 'B. Other'], workType: 'article', url: 'https://example.invalid/b' })
+    expect(await t.service.editWork(ID, form({ year: 'x', url: 'javascript:alert(1)' }))).toEqual({ ok: false, error: 'invalid', field: 'year', fields: ['year', 'url'] })
+    expect(await t.service.editWork('not-an-id', form())).toEqual({ ok: false, error: 'invalid' })
+    expect(await t.service.editWork(ID, null)).toMatchObject({ ok: false, error: 'invalid' })
+    expect(t.store.updateWork).toHaveBeenCalledTimes(1)
+  })
+  it('edit: reports a work that is not claimed or not yours, and a change that would repeat another work', async () => {
+    expect(await make({ store: { updateWork: vi.fn(async () => 'nothing' as const) } }).service.editWork(ID, form())).toEqual({ ok: false, error: 'nothing' })
+    expect(await make({ store: { updateWork: vi.fn(async () => 'exists' as const) } }).service.editWork(ID, form())).toEqual({ ok: false, error: 'exists' })
   })
 
   it('featured: needs a real id and a boolean; a refusal at five says limit, any other refusal says nothing', async () => {
