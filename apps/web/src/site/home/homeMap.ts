@@ -1,5 +1,6 @@
 import type { HeroSlide } from '../content/hero'
 import type { SiteImage, Stat } from '../content/types'
+import type { HomeColours } from '../../governance/homePalette'
 
 /* Pure mapping from the published `home-content` global (the admin's "Home page content") to the shapes the
    home page reads. Nothing here opens the CMS, so unit tests can use it. A part that the global does not hold
@@ -18,6 +19,7 @@ type MediaLike = {
 type CtaDoc = { label?: string | null; href?: string | null; icon?: HeroSlide['primary']['icon'] | null }
 
 export type HomeDoc = {
+  colours?: HomeColours | null
   slides?: { image?: number | MediaLike | null; primary?: CtaDoc | null; secondary?: CtaDoc | null }[] | null
   stats?:
     | {

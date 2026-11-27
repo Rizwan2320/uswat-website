@@ -1,7 +1,7 @@
 .page { padding-block: 28px 56px; max-width: 980px; margin-inline: auto; }
 .layout { display: grid; grid-template-columns: 280px 1fr; gap: 32px; align-items: start; }
 .photo { margin: 0; display: grid; gap: 10px; }
-.frame { position: relative; aspect-ratio: 1 / 1; border-radius: var(--radius); overflow: hidden; background: var(--ivory-deep); box-shadow: 0 10px 24px rgb(0 42 16 / 0.18); }
+.frame { position: relative; aspect-ratio: 1 / 1; border-radius: var(--radius); overflow: hidden; background: var(--ivory-deep); box-shadow: 0 10px 24px color-mix(in srgb, var(--forest-deep) 18%, transparent); }
 .img { object-fit: cover; object-position: 50% 22%; }
 .photo figcaption { display: grid; gap: 2px; font-size: 0.9rem; color: var(--text); }
 .photo strong { color: var(--forest); font-size: 1rem; }
@@ -17,7 +17,7 @@
 .back { margin-top: 32px; }
 .back a { color: var(--forest); font-weight: 700; }
 .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-.list a { display: grid; gap: 4px; padding: 16px 18px; border-radius: var(--radius); background: #fff; border: 1px solid var(--ivory-deep); text-decoration: none; color: var(--text); box-shadow: 0 6px 18px rgb(0 59 23 / 0.08); }
+.list a { display: grid; gap: 4px; padding: 16px 18px; border-radius: var(--radius); background: #fff; border: 1px solid var(--ivory-deep); text-decoration: none; color: var(--text); box-shadow: 0 6px 18px color-mix(in srgb, var(--forest) 8%, transparent); }
 .list a:hover, .list a:focus-visible { border-color: var(--maroon); }
 .list strong { color: var(--forest); font-family: var(--stack-serif); font-size: 1.1rem; }
 .list span { font-size: 0.88rem; }

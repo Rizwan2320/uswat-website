@@ -1,5 +1,5 @@
 .root { display: grid; gap: 10px; }
-.item { background: #fff; border: 1px solid rgb(0 59 23 / 0.07); border-radius: 14px; box-shadow: 0 12px 16px -10px rgb(0 42 16 / 0.28), 0 3px 6px rgb(0 42 16 / 0.06); overflow: hidden; }
+.item { background: #fff; border: 1px solid color-mix(in srgb, var(--forest) 7%, transparent); border-radius: 14px; box-shadow: 0 12px 16px -10px color-mix(in srgb, var(--forest-deep) 28%, transparent), 0 3px 6px color-mix(in srgb, var(--forest-deep) 6%, transparent); overflow: hidden; }
 .heading { margin: 0; font: inherit; }
 .button { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; min-height: 48px; padding: 12px 18px; background: transparent; border: 0; cursor: pointer; text-align: start; font-family: var(--stack-serif); font-weight: 600; font-size: 1.05rem; color: var(--forest); }
 .button:hover { background: var(--ivory); }

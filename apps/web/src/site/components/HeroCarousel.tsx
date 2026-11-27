@@ -184,7 +184,7 @@ function Ridge() {
   return (
     <svg className={styles.ridge} viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
       <path d="M0 400V250l110-70 90 60 130-120 120 100 100-70 150 130 120-90 150 110 130-60V400Z" fill="rgb(252 250 244 / .06)" />
-      <path d="M0 400V310l140-60 120 50 160-90 130 80 150-60 140 70 120-50 240 80V400Z" fill="rgb(242 183 5 / .10)" />
+      <path d="M0 400V310l140-60 120 50 160-90 130 80 150-60 140 70 120-50 240 80V400Z" style={{ fill: 'color-mix(in srgb, var(--gold) 10%, transparent)' }} />
     </svg>
   )
 }

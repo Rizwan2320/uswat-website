@@ -18,6 +18,7 @@ export async function getSite() { return site }
 export async function getNav() { return nav }
 export async function getHero() { return { content: hero, slides: toHeroSlides(await readHomeContent(), heroSlides) } }
 export async function getStats() { return toStats(await readHomeContent(), stats) }
+export async function getHomeColours() { return (await readHomeContent())?.colours ?? null }
 export async function getLeadership() { return leadership }
 export async function getAdmissions() { return admissions }
 export async function getPortals() { return portals }

@@ -4789,6 +4789,23 @@ export interface HomeContent {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Change the colours of the home page only. Leave a colour empty to keep the standard one. The darker and lighter shades are worked out for you.
+   */
+  colours?: {
+    /**
+     * The deep green: headings, the top bar, the footer and the page text.
+     */
+    green?: string | null;
+    /**
+     * The gold: buttons, highlights and the accent words on green.
+     */
+    yellow?: string | null;
+    /**
+     * The crest maroon: the Apply button, dates and small accents. Use a dark colour.
+     */
+    maroon?: string | null;
+  };
   _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -4893,6 +4910,13 @@ export interface HomeContentSelect<T extends boolean = true> {
         source?: T;
         verifiedAt?: T;
         id?: T;
+      };
+  colours?:
+    | T
+    | {
+        green?: T;
+        yellow?: T;
+        maroon?: T;
       };
   _status?: T;
   updatedAt?: T;

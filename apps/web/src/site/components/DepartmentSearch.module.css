@@ -6,11 +6,11 @@
   border: 0;
   border-radius: 20px;
   background: var(--ivory);
-  box-shadow: 0 24px 60px rgba(0, 42, 16, 0.35);
+  box-shadow: 0 24px 60px color-mix(in srgb, var(--forest-deep) 35%, transparent);
   color: var(--forest);
 }
 .dialog:focus, .dialog:focus-visible { outline: none; }
-.dialog::backdrop { background: rgba(0, 42, 16, 0.55); }
+.dialog::backdrop { background: color-mix(in srgb, var(--forest-deep) 55%, transparent); }
 .box { display: flex; flex-direction: column; gap: 8px; }
 .row { display: flex; align-items: center; gap: 8px; }
 .icon { flex: none; margin-inline-start: 10px; font-size: 1.1rem; }

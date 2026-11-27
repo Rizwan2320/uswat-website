@@ -6,9 +6,9 @@
 }
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); align-items: stretch; }
 .card { padding: 22px 22px 14px; display: flex; flex-direction: column; }
-.grid .card { background: #fff; border-color: rgb(0 59 23 / 0.07); }
+.grid .card { background: #fff; border-color: color-mix(in srgb, var(--forest) 7%, transparent); }
 .grid .card:not(:hover):not(:has(:focus-visible)) {
-  box-shadow: 0 12px 16px -10px rgb(0 42 16 / 0.34), 0 3px 6px rgb(0 42 16 / 0.07);
+  box-shadow: 0 12px 16px -10px color-mix(in srgb, var(--forest-deep) 34%, transparent), 0 3px 6px color-mix(in srgb, var(--forest-deep) 7%, transparent);
 }
 .head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 .icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--forest); color: var(--ivory); font-size: 1.2rem; flex: none; }

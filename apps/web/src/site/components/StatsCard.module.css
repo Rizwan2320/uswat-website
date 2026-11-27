@@ -3,13 +3,13 @@
 .card {
   display: grid; grid-template-columns: repeat(4, 1fr); padding: 12px 6px; border-radius: var(--radius); background: #fff;
   max-width: 1040px; margin-inline: auto;
-  box-shadow: 0 12px 16px -10px rgb(0 42 16 / 0.34), 0 3px 6px rgb(0 42 16 / 0.07);
+  box-shadow: 0 12px 16px -10px color-mix(in srgb, var(--forest-deep) 34%, transparent), 0 3px 6px color-mix(in srgb, var(--forest-deep) 7%, transparent);
 }
 /* A visible but soft forest-green outline, semi-transparent (more specific than the .pop border it replaces). */
-.wrap .card { border: 1.5px solid rgb(0 59 23 / 0.38); }
+.wrap .card { border: 1.5px solid color-mix(in srgb, var(--forest) 38%, transparent); }
 /* Icon beside a number and its label, as in the mockup. */
 .stat { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 2px 10px; }
-.stat + .stat { border-inline-start: 1px solid rgb(0 59 23 / 0.3); }
+.stat + .stat { border-inline-start: 1px solid color-mix(in srgb, var(--forest) 30%, transparent); }
 .icon { flex: none; font-size: 2rem; color: var(--forest); }
 .text { display: grid; gap: 2px; min-width: 0; }
 /* Inter, lining and tabular figures: even, clean digits that do not jitter while counting. */
@@ -23,5 +23,5 @@
 @media (max-width: 767px) {
   .card { grid-template-columns: repeat(2, 1fr); row-gap: 18px; padding-block: 16px; }
   .stat + .stat { border-inline-start: 0; }
-  .stat:nth-child(even) { border-inline-start: 1px solid rgb(0 59 23 / 0.3); }
+  .stat:nth-child(even) { border-inline-start: 1px solid color-mix(in srgb, var(--forest) 30%, transparent); }
 }

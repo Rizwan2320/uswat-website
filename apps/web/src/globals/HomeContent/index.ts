@@ -7,12 +7,14 @@ import {
   ICON_LABELS,
   HOME_SLIDES,
   HOME_STATS,
+  colourValidate,
   homeHrefValidate,
   slidesCountValidate,
   SLIDE_ICONS,
   STAT_ICONS,
   sourceUnlessSample,
 } from '../../governance/homeContent'
+import { STANDARD } from '../../governance/homePalette'
 import { actorFromRequest } from '../../governance/roles'
 import { homeAfterChange, homeBeforeChange, homeBeforeOperation } from './hooks'
 
@@ -56,6 +58,24 @@ const button = (name: 'primary' | 'secondary', label: string): GlobalConfig['fie
       admin: { description: 'Optional. A small picture beside the button text.' },
     },
   ],
+})
+
+const colour = (
+  name: 'green' | 'yellow' | 'maroon',
+  label: string,
+  standard: string,
+  description: string,
+): GlobalConfig['fields'][number] => ({
+  name,
+  label,
+  type: 'text',
+  validate: colourValidate,
+  admin: {
+    description,
+    components: {
+      Field: { path: '@/admin/ColourPicker', clientProps: { standard, label, description } },
+    },
+  },
 })
 
 /**
@@ -144,6 +164,35 @@ export const HomeContent: GlobalConfig = {
           validate: dateUnlessSample,
           admin: { date: { pickerAppearance: 'dayOnly' } },
         },
+      ],
+    },
+    {
+      name: 'colours',
+      label: 'Colours',
+      type: 'group',
+      admin: {
+        description:
+          'Change the colours of the home page only. Leave a colour empty to keep the standard one. The darker and lighter shades are worked out for you.',
+      },
+      fields: [
+        colour(
+          'green',
+          'Green',
+          STANDARD.green,
+          'The deep green: headings, the top bar, the footer and the page text.',
+        ),
+        colour(
+          'yellow',
+          'Yellow',
+          STANDARD.yellow,
+          'The gold: buttons, highlights and the accent words on green.',
+        ),
+        colour(
+          'maroon',
+          'Maroon',
+          STANDARD.maroon,
+          'The crest maroon: the Apply button, dates and small accents. Use a dark colour.',
+        ),
       ],
     },
   ],

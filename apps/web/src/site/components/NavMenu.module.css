@@ -21,7 +21,7 @@
   position: absolute; top: calc(100% + 10px); left: var(--sub-x, 0); z-index: 60;
   width: min(450px, calc(100vw - 32px)); padding: 8px; border-radius: 18px; background: var(--ivory);
   border: 1.5px solid #b4d0a9;
-  box-shadow: 0 22px 50px -10px rgb(0 42 16 / 0.28), 0 4px 12px rgb(0 42 16 / 0.08);
+  box-shadow: 0 22px 50px -10px color-mix(in srgb, var(--forest-deep) 28%, transparent), 0 4px 12px color-mix(in srgb, var(--forest-deep) 8%, transparent);
   /* Fades in and out instead of snapping; hidden panels are not focusable or announced (visibility). */
   opacity: 0; visibility: hidden; transform: translateY(6px); pointer-events: none;
   transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;

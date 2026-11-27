@@ -59,7 +59,9 @@ const stat = (over: Record<string, unknown> = {}) => ({
   verifiedAt: '2026-11-08T00:00:00.000Z',
   ...over,
 })
+// `colours` is cleared here so a colour saved by an earlier case never leaks into the next (the global is one row).
 const complete = () => ({
+  colours: { green: null, yellow: null, maroon: null },
   slides: [slide(m1), slide(m2), slide(m3)],
   stats: [stat(), stat({ label: 'Students', value: 9000 }), stat({ label: 'Faculty', value: 150 })],
 })
@@ -178,6 +180,24 @@ describe('what must be true to publish', () => {
     expect(out._status).toBe('published')
     expect(out.slides ?? []).toHaveLength(0)
   })
+
+  it('any colour publishes, however pale or dark: the owner has the final say', async () => {
+    const out = (await publish(approver, {
+      ...complete(),
+      colours: { green: '#6b6b6b', yellow: '#b3a26f', maroon: '#e0a0a8' },
+    })) as Home & { colours?: Record<string, string> }
+    expect(out._status).toBe('published')
+    expect(out.colours).toMatchObject({ green: '#6b6b6b', yellow: '#b3a26f', maroon: '#e0a0a8' })
+  })
+
+  it.each(['red', '#fff', '#00;}body{display:none', 'url(x)'])(
+    'a colour of %s is refused at publish',
+    async (bad) => {
+      expect(await can(() => publish(approver, { ...complete(), colours: { green: bad } }))).toBe(
+        false,
+      )
+    },
+  )
 
   it('a sample statistic needs no source or date', async () => {
     const out = (await publish(approver, {
