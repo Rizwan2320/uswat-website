@@ -59,9 +59,18 @@ export function createPgPublicationStore(pool: pg.Pool): PublicationStore {
     },
     claim: (accountId, workId) => decide(accountId, workId, 'claimed'),
     reject: (accountId, workId) => decide(accountId, workId, 'rejected'),
-    async updateDetails(accountId, workId, d) {
-      const r = await pool.query(`update "publication_candidate" set "workType" = $3, "url" = $4 where "id" = $2 and "userId" = $1 and "status" = 'claimed'`, [accountId, workId, d.workType, d.url])
-      return r.rowCount === 1
+    async updateWork(accountId, workId, w) {
+      try {
+        const r = await pool.query(
+          `update "publication_candidate" set "doiKey" = $3, "titleKey" = $4, "title" = $5, "year" = $6, "venue" = $7, "authors" = $8, "workType" = $9, "url" = $10
+           where "id" = $2 and "userId" = $1 and "status" = 'claimed'`,
+          [accountId, workId, w.doi ? normaliseDoi(w.doi) : null, titleKey(w.title, w.year), w.title, w.year, w.venue, JSON.stringify(w.authors), w.workType ?? 'article', w.url ?? ''],
+        )
+        return r.rowCount === 1 ? 'ok' : 'nothing'
+      } catch (e) {
+        if ((e as { code?: string }).code === '23505') return 'exists'
+        throw e
+      }
     },
     async setFeatured(accountId, workId, featured) {
       if (!featured) {
