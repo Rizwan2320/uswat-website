@@ -3,6 +3,7 @@
  * the departments and programmes (slice 3ar), as the owner account.
  *   pnpm seed:preview
  * With SEED_PAGE_CONTENT_ONLY=true only the page content step runs (seconds, not the full Sample seed).
+ * With SEED_RESET_PASSWORDS=true the existing test accounts also get the password from their SEED_PASSWORD_* variable.
  * Allowed on this machine, or on a hosted database only behind the three locks in `assertSeedTarget`. On Vercel a
  * refusal or a failure prints one clear line and exits 0 so Sample data never fails a build (and a production build only
  * ever prints the refusal); on this machine it exits 1. Nothing here prints a password.
@@ -11,7 +12,7 @@ import { applyAllSeeds } from '../../../scripts/import/seeds/all'
 import { runFromEnv } from '../../../scripts/import/seeds/pool'
 import { assertSeedTarget, type Cms } from '../../../scripts/import/writer'
 
-import { ACCOUNTS, ensureAccounts } from './seed-accounts'
+import { ACCOUNTS, ensureAccounts, resetPasswords } from './seed-accounts'
 import { applyPageContent } from './seed-page-content'
 import { renderPng } from './renderPng'
 
@@ -21,6 +22,9 @@ async function main(): Promise<void> {
     const { getPayload } = await import('payload')
     const payload = await getPayload({ config: await (await import('../src/payload.config')).default })
     const accounts = await ensureAccounts(payload, process.env)
+    // SEED_RESET_PASSWORDS=true also sets the password of the test accounts that already exist, from SEED_PASSWORD_*.
+    // It loosens no lock: assertSeedTarget above has already passed. Off by default; the result never holds a password.
+    const passwordReset = process.env.SEED_RESET_PASSWORDS === 'true' ? await resetPasswords(payload, process.env) : 'off'
     const owner = ACCOUNTS[0].email
     const found = await payload.find({ collection: 'users', where: { email: { equals: owner } }, limit: 1, depth: 0, overrideAccess: true })
     const user = found.docs[0] as unknown as Record<string, unknown> | undefined
@@ -37,7 +41,7 @@ async function main(): Promise<void> {
     // Slice 3ar: the department and programme pages start from what they already show, so a head can edit it.
     // Idempotent; a section someone has edited is never overwritten.
     const pageContent = await applyPageContent(payload, { publishAs: user })
-    console.log(JSON.stringify({ seeded: true, route, accounts, seeds, pageContent }))
+    console.log(JSON.stringify({ seeded: true, route, accounts, passwordReset, seeds, pageContent }))
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e)
     if (route === 'preview') {
