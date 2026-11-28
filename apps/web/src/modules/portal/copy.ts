@@ -302,7 +302,7 @@ export const COPY = {
 
     featuredCount: (n: number, max: number) => `${n} of ${max} featured`,
     featureHelp: 'Featured works are shown first on your list and in your exports.',
-    publicNote: 'Public works can appear on your public page. They are sent when you press “Update my public page”, and again when your profile is approved.',
+    publicNote: 'Public works can appear on your public page. They are sent to your public page a few seconds after each change, and again when your profile is approved. “Update my public page” sends them again.',
     feature: 'Feature',
     unfeature: 'Featured',
     featureFor: (t: string) => `Feature: ${t}`,

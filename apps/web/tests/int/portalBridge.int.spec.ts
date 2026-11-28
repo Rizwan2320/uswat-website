@@ -10,13 +10,14 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn(), 
 import { buildMessage } from '../../src/modules/portal/bridge/contract'
 import { applyPortalMessage } from '../../src/modules/portal/bridge/receive'
 import type { ProfileEdit } from '../../src/modules/portal/profile/types'
+import { toPersonProfile } from '../../src/site/people/shape'
 import { as, getTestPayload, makeUser, refusal, system, uniq } from '../helpers/governance'
 
 let payload: Payload
 const slug = uniq('bridge-person')
 
 const edit: ProfileEdit = {
-  bio: { en: 'Bridge English bio', ur: 'برج اردو تعارف' }, researchInterests: [], officeLocation: '', officeHours: '', orcid: '', scholarUrl: '',
+  bio: { en: 'Bridge English bio', ur: 'برج اردو تعارف' }, researchInterests: ['green solvents', 'catalysis'], officeLocation: 'Block B, room 4', officeHours: 'Mon 10 to 12', orcid: '0000-0002-1825-0097', scholarUrl: 'https://scholar.google.com/citations?user=abc',
   cvLink: 'https://example.org/cv.pdf', visibility: { email: 'public', photo: 'hidden' },
 }
 const work = (o: Record<string, unknown>) => ({ id: 'w', title: 'T', year: 2024, venue: '', doi: '', authors: [], status: 'claimed', duplicateOf: null, sample: true, workType: 'article', origin: 'manual', url: '', featured: false, isPublic: true, ...o }) as never
@@ -83,6 +84,41 @@ describe('portal message applied to a live People record', () => {
     expect(d.publications).toEqual([])
     expect(d.details.en).toBe('Bridge English bio')
     expect(d.cvLink).toBe('https://example.org/cv.pdf')
+  })
+
+  it('writes stage 2: interests, office, hours, ORCID, Scholar and per-work details; the public shape reads them back (FP21)', async () => {
+    const msg = buildMessage(slug, edit, [work({ id: '1', title: 'Detailed', year: 2022, venue: 'Journal of X', workType: 'conference', featured: true, url: 'https://example.org/d.pdf' }), work({ id: '2', title: 'Second', year: 2020 })], new Date())!
+    expect(await applyPortalMessage(payload, msg)).toMatchObject({ ok: true, changed: true })
+    const d = await read()
+    expect(d.researchInterests.map((r: any) => r.text)).toEqual(['green solvents', 'catalysis'])
+    expect([d.officeLocation, d.officeHours, d.orcid, d.scholarUrl]).toEqual(['Block B, room 4', 'Mon 10 to 12', '0000-0002-1825-0097', 'https://scholar.google.com/citations?user=abc'])
+    expect(d.publications[0]).toMatchObject({ title: 'Detailed', year: 2022, venue: 'Journal of X', workType: 'conference', featured: true })
+    const live = (await payload.find({ collection: 'people', where: { slug: { equals: slug } }, draft: false, limit: 1, depth: 1, overrideAccess: false })).docs[0] as never
+    const p = toPersonProfile(live)!
+    expect(p.interests).toEqual(['green solvents', 'catalysis'])
+    expect(p.officeNote).toBe('Block B, room 4')
+    expect(p.orcidHref).toBe('https://orcid.org/0000-0002-1825-0097')
+    expect(p.scholarHref).toBe('https://scholar.google.com/citations?user=abc')
+    expect(p.publications[0]).toMatchObject({ title: 'Detailed', meta: 'Journal of X · 2022 · Conference paper', featured: true, href: 'https://example.org/d.pdf' })
+    expect(p.publications[1]).toMatchObject({ title: 'Second', meta: '2020 · Journal article', featured: false })
+  })
+
+  it('clearing a field in the portal clears it on the site, and a message without stage 2 keys leaves them alone (FP21)', async () => {
+    const cleared = buildMessage(slug, { ...edit, researchInterests: [], officeHours: '', orcid: '', scholarUrl: '' }, [], new Date())!
+    expect(await applyPortalMessage(payload, cleared)).toMatchObject({ ok: true, changed: true })
+    let d = await read()
+    expect(d.researchInterests).toEqual([])
+    expect([d.officeHours, d.orcid, d.scholarUrl]).toEqual([null, null, null])
+    expect(d.officeLocation).toBe('Block B, room 4')
+    const old = { ...buildMessage(slug, edit, [], new Date())! }
+    delete (old.edit as Record<string, unknown>).officeLocation
+    delete (old.edit as Record<string, unknown>).researchInterests
+    delete (old.edit as Record<string, unknown>).officeHours
+    delete (old.edit as Record<string, unknown>).orcid
+    delete (old.edit as Record<string, unknown>).scholarUrl
+    expect(await applyPortalMessage(payload, old)).toMatchObject({ ok: true, changed: false })
+    d = await read()
+    expect(d.officeLocation).toBe('Block B, room 4')
   })
 
   it('a person with no Urdu name still gets everything else; the Urdu text is skipped, not an error', async () => {

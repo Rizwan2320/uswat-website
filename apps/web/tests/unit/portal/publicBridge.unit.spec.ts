@@ -16,7 +16,7 @@ const work = (o: Partial<StoredWork> = {}): StoredWork => ({
   workType: 'article', origin: 'manual', url: '', featured: false, isPublic: true, ...o,
 })
 const edit: ProfileEdit = {
-  bio: { en: 'English bio', ur: 'اردو' }, researchInterests: ['x'], officeLocation: 'secret room', officeHours: 'never', orcid: '', scholarUrl: '', cvLink: 'https://example.org/cv.pdf',
+  bio: { en: 'English bio', ur: 'اردو' }, researchInterests: ['green solvents', 'catalysis'], officeLocation: 'Block B, room 4', officeHours: 'Mon 10 to 12', orcid: '0000-0002-1825-0097', scholarUrl: 'https://scholar.google.com/citations?user=abc', cvLink: 'https://example.org/cv.pdf',
   visibility: { email: 'public', photo: 'hidden' },
 }
 
@@ -60,10 +60,16 @@ describe('payload (FP20-c)', () => {
     expect(workLink({ url: '', doi: '' })).toBe('')
     expect(workLink({ url: 'javascript:alert(1)', doi: '' })).toBe('')
   })
-  it('never carries office, hours, research interests or private works', () => {
+  it('never carries a private work, and never the name, designation or email address', () => {
     const m = buildMessage('sample-person-01', edit, [work({ title: 'Hidden', isPublic: false })], new Date(NOW))!
-    expect(JSON.stringify(m)).not.toMatch(/secret room|never|Hidden/)
+    expect(JSON.stringify(m)).not.toMatch(/Hidden/)
     expect(m.publications).toEqual([])
+    expect(Object.keys(m.edit!).sort()).toEqual(['bio', 'cvLink', 'officeHours', 'officeLocation', 'orcid', 'researchInterests', 'scholarUrl', 'visibility'])
+  })
+  it('carries stage 2 profile fields and per-work details (FP21-b)', () => {
+    const m = buildMessage('sample-person-01', edit, [work({ title: 'W', year: 2021, venue: 'Journal of X', workType: 'conference', featured: true })], new Date(NOW))!
+    expect(m.edit).toMatchObject({ researchInterests: ['green solvents', 'catalysis'], officeLocation: 'Block B, room 4', officeHours: 'Mon 10 to 12', orcid: '0000-0002-1825-0097' })
+    expect(m.publications[0]).toEqual({ title: 'W', url: '', year: 2021, venue: 'Journal of X', workType: 'conference', featured: true })
   })
   it('sends no edit when nothing has been approved, and refuses a bad subject', () => {
     expect(buildMessage('sample-person-01', null, [], new Date(NOW))!.edit).toBeNull()
@@ -78,6 +84,27 @@ describe('allow-list on the site side', () => {
     const m = parseMessage(JSON.parse(JSON.stringify(raw)))!
     expect(m).toEqual(good())
     expect(Object.keys(m).sort()).toEqual(['approvedAt', 'edit', 'publications', 'subject'])
+  })
+  it('accepts a message from an older portal build and leaves the stage 2 keys out (FP21-b)', () => {
+    const old = { subject: 'sample-person-01', approvedAt: new Date(NOW).toISOString(), edit: { bio: { en: 'a', ur: '' }, cvLink: '', visibility: { email: 'hidden', photo: 'hidden' } }, publications: [{ title: 'T', url: '' }] }
+    const m = parseMessage(old)!
+    expect(m.edit).toEqual({ bio: { en: 'a', ur: '' }, cvLink: '', visibility: { email: 'hidden', photo: 'hidden' } })
+    expect(m.publications[0]).toEqual({ title: 'T', url: '', year: null, venue: '', workType: 'other', featured: false })
+  })
+  it('refuses bad stage 2 values (FP21-b)', () => {
+    const base = JSON.parse(JSON.stringify(good()))
+    const bad = (f: (m: Record<string, any>) => void) => { const m = JSON.parse(JSON.stringify(base)); f(m); return parseMessage(m) }
+    expect(bad((m) => { m.edit.orcid = '0000-0002-1825-0098' })).toBeNull() // wrong check character
+    expect(bad((m) => { m.edit.orcid = 'not-an-orcid' })).toBeNull()
+    expect(bad((m) => { m.edit.scholarUrl = 'https://example.org/x' })).toBeNull()
+    expect(bad((m) => { m.edit.scholarUrl = 'http://scholar.google.com/x' })).toBeNull()
+    expect(bad((m) => { m.edit.researchInterests = new Array(16).fill('k') })).toBeNull()
+    expect(bad((m) => { m.edit.researchInterests = ['x'.repeat(61)] })).toBeNull()
+    expect(bad((m) => { m.edit.officeHours = 'x'.repeat(201) })).toBeNull()
+    expect(bad((m) => { m.publications[0].workType = 'magazine' })).toBeNull()
+    expect(bad((m) => { m.publications[0].year = 1800 })).toBeNull()
+    expect(bad((m) => { m.publications[0].featured = 'yes' })).toBeNull()
+    expect(bad((m) => { m.edit.orcid = ''; m.edit.scholarUrl = ''; m.edit.researchInterests = [] })).not.toBeNull() // empty means "cleared"
   })
   it('refuses wrong types, bad links and oversize text', () => {
     const base = JSON.parse(JSON.stringify(good()))

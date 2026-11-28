@@ -42,11 +42,15 @@ export async function applyPortalMessage(payload: Payload, msg: BridgeMessage): 
     })
 
   const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null)
-  const currentPubs = (Array.isArray(doc.publications) ? doc.publications : []).map((p) => ({ title: (p as { title?: string }).title ?? '', url: (p as { url?: string }).url ?? '' }))
-  const wantPubs = msg.publications.map((p) => ({ title: p.title, url: p.url }))
+  type Row = { title?: string; url?: string; year?: number | null; venue?: string; workType?: string; featured?: boolean }
+  const norm = (p: Row) => ({ title: p.title ?? '', url: p.url ?? '', year: p.year ?? null, venue: p.venue ?? '', workType: p.workType ?? 'other', featured: p.featured === true })
+  const currentPubs = (Array.isArray(doc.publications) ? (doc.publications as Row[]) : []).map(norm)
+  const wantPubs = msg.publications.map(norm)
   const data: Record<string, unknown> = {}
   let ur: string | null = null
-  if (!same(currentPubs, wantPubs)) data.publications = msg.publications.map((p) => (p.url ? { title: p.title, url: p.url } : { title: p.title }))
+  if (!same(currentPubs, wantPubs)) {
+    data.publications = msg.publications.map((p) => ({ title: p.title, ...(p.url ? { url: p.url } : {}), ...(p.year !== null ? { year: p.year } : {}), venue: p.venue || null, workType: p.workType, featured: p.featured }))
+  }
 
   if (msg.edit) {
     const current = (await payload.findByID({ collection: 'people', id: doc.id, locale: 'all', depth: 0, draft: false, overrideAccess: true })) as unknown as Doc
@@ -54,6 +58,16 @@ export async function applyPortalMessage(payload: Payload, msg: BridgeMessage): 
     if ((details.en ?? '') !== msg.edit.bio.en) data.details = msg.edit.bio.en
     if ((details.ur ?? '') !== msg.edit.bio.ur) ur = msg.edit.bio.ur
     if ((doc.cvLink ?? '') !== msg.edit.cvLink) data.cvLink = msg.edit.cvLink || null
+    // Stage 2 fields: written only when the message carries them.
+    const e = msg.edit
+    if (e.researchInterests !== undefined) {
+      const now = (Array.isArray(doc.researchInterests) ? (doc.researchInterests as { text?: string }[]) : []).map((r) => r.text ?? '')
+      if (!same(now, e.researchInterests)) data.researchInterests = e.researchInterests.map((text) => ({ text }))
+    }
+    if (e.officeLocation !== undefined && ((doc.officeLocation as string | null) ?? '') !== e.officeLocation) data.officeLocation = e.officeLocation || null
+    if (e.officeHours !== undefined && ((doc.officeHours as string | null) ?? '') !== e.officeHours) data.officeHours = e.officeHours || null
+    if (e.orcid !== undefined && ((doc.orcid as string | null) ?? '') !== e.orcid) data.orcid = e.orcid || null
+    if (e.scholarUrl !== undefined && ((doc.scholarUrl as string | null) ?? '') !== e.scholarUrl) data.scholarUrl = e.scholarUrl || null
     const vis = (doc.visibility ?? {}) as { email?: string; photo?: string }
     if (vis.email !== msg.edit.visibility.email || vis.photo !== msg.edit.visibility.photo) data.visibility = { email: msg.edit.visibility.email, photo: msg.edit.visibility.photo }
   }

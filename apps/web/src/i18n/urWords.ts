@@ -15,6 +15,26 @@
 
 /** English text -> Urdu draft. Keys are copied from the built config by `tests/int/urdu.coverage.int.spec.ts`. */
 export const URDU_WORDS: Readonly<Record<string, string>> = {
+  // --- People: faculty portal profile fields (bridge stage 2). Draft Urdu, same status as the rest of this file.
+  'Research interests': 'تحقیقی دلچسپیاں',
+  'Short keywords, one per row. Written by the person in the faculty portal.': 'مختصر کلیدی الفاظ، ہر قطار میں ایک۔ متعلقہ شخص فیکلٹی پورٹل میں لکھتا ہے۔',
+  'Research Interest': 'تحقیقی دلچسپی',
+  'Research Interests': 'تحقیقی دلچسپیاں',
+  Keyword: 'کلیدی لفظ',
+  'Office location': 'دفتر کا مقام',
+  'ORCID number': 'اورکِڈ نمبر',
+  'Like 0000-0002-1825-0097. The faculty portal checks the last character.': 'مثال: 0000-0002-1825-0097۔ فیکلٹی پورٹل آخری حرف کی جانچ کرتا ہے۔',
+  'Google Scholar link': 'گوگل اسکالر کا لنک',
+  'Journal or venue': 'جریدہ یا مقام',
+  'Kind of work': 'کام کی قسم',
+  'Journal article': 'جریدے کا مقالہ',
+  'Conference paper': 'کانفرنس کا مقالہ',
+  'Book chapter': 'کتاب کا باب',
+  'Thesis supervised': 'زیر نگرانی مقالہ',
+  Report: 'رپورٹ',
+  Patent: 'پیٹنٹ',
+  Other: 'دیگر',
+  'Featured by the person': 'شخص کی طرف سے نمایاں',
   // --- Names of content types and menu groups
   Page: 'صفحہ',
   Pages: 'صفحات',
