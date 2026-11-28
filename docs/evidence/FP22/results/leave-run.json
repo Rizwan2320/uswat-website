@@ -1,0 +1,77 @@
+[
+  {
+    "id": "L1 before: the public page shows the office, hours and email, and no former notice",
+    "ok": true,
+    "note": "current person with contact details"
+  },
+  {
+    "id": "L2 the person is signed in to the portal",
+    "ok": true,
+    "note": "http://localhost:3050/portal"
+  },
+  {
+    "id": "L3 the person has a live session before the departure",
+    "ok": true,
+    "note": "sessions: 2"
+  },
+  {
+    "id": "L4 an empty form is refused and names the outcome, the source and the confirmation",
+    "ok": true,
+    "note": "three field errors shown"
+  },
+  {
+    "id": "L5 nothing changed after the refused attempt",
+    "ok": true,
+    "note": "status still active, no log row"
+  },
+  {
+    "id": "L6 the Registrar sees \"Marked as left\" with the outcome and the source",
+    "ok": true,
+    "note": "Marked as left on 28 Nov 2026, 15:17 UTC as Former faculty. Resignation accepted, order 12 of 20 Nov 2026 (Sample)"
+  },
+  {
+    "id": "L7 the account ended: status left, no sessions, head role removed, one log row",
+    "ok": true,
+    "note": "status=left sessions=0 headRole=0 log=former|{head}"
+  },
+  {
+    "id": "L8 the public page now says Former faculty, at the same address",
+    "ok": true,
+    "note": "notice present, name still shown"
+  },
+  {
+    "id": "L9 no email, office, location or hours on the public page",
+    "ok": true,
+    "note": "all four gone"
+  },
+  {
+    "id": "L10 the CMS record holds former and no contact details",
+    "ok": true,
+    "note": "former|null|null|null"
+  },
+  {
+    "id": "L11 phone width: no sideways scroll",
+    "ok": true,
+    "note": "scrollWidth <= clientWidth at 390 px"
+  },
+  {
+    "id": "L12 the people directory no longer lists them",
+    "ok": true,
+    "note": "name absent from /people"
+  },
+  {
+    "id": "L13 the person’s open portal session has ended",
+    "ok": true,
+    "note": "http://localhost:3050/portal/sign-in"
+  },
+  {
+    "id": "L14 signing in again does not get them into the portal",
+    "ok": true,
+    "note": "http://localhost:3050/portal/sign-in"
+  },
+  {
+    "id": "L15 the Registrar sees the public page was updated, and there is no second leave form",
+    "ok": true,
+    "note": "left-public-ok shown; forms gone"
+  }
+]
