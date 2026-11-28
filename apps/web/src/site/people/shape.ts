@@ -81,7 +81,9 @@ export function toPersonProfile(doc: Doc): PersonProfile | null {
   const card = toPersonCard(doc)
   if (!card) return null
   const status = STATUSES.find((s) => s === doc.facultyStatus) ?? 'current'
-  const email = str(doc.email)
+  // Someone who has left shows no way to reach them at the university, whatever the record still holds (FP-07, section 5.6).
+  const current = status === 'current'
+  const email = current ? str(doc.email) : null
   const pubs = Array.isArray(doc.publications) ? (doc.publications as Doc[]) : []
   return {
     ...card,
@@ -99,10 +101,10 @@ export function toPersonProfile(doc: Doc): PersonProfile | null {
       const meta = [str(p.venue), year, kind].filter(Boolean).join(' · ') || null
       return [{ key: String(p.id ?? i), title, href: safeHref(str(p.url) ?? undefined), meta, featured: p.featured === true }]
     }),
-    office: str(rel(doc.office)?.name),
+    office: current ? str(rel(doc.office)?.name) : null,
     interests: (Array.isArray(doc.researchInterests) ? (doc.researchInterests as Doc[]) : []).flatMap((r) => (str(r?.text) ? [str(r.text) as string] : [])),
-    officeNote: str(doc.officeLocation),
-    officeHours: str(doc.officeHours),
+    officeNote: current ? str(doc.officeLocation) : null,
+    officeHours: current ? str(doc.officeHours) : null,
     orcid: ORCID_SHAPE.test(str(doc.orcid) ?? '') ? (str(doc.orcid) as string) : null,
     orcidHref: ORCID_SHAPE.test(str(doc.orcid) ?? '') ? `https://orcid.org/${str(doc.orcid)}` : null,
     scholarHref: /^https:\/\/scholar\.google\.[a-z.]+\//i.test(str(doc.scholarUrl) ?? '') ? safeHref(str(doc.scholarUrl) ?? undefined) : null,

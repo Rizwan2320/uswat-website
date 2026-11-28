@@ -90,7 +90,7 @@ export default function PersonPage({ person: p }: { person: PersonProfile }) {
             {p.sample ? <SampleNote /> : null}
             {p.status !== 'current' ? (
               <p className={styles.notice} role="note">
-                {p.status === 'emeritus' ? 'Emeritus faculty.' : 'Former faculty. This profile is kept for reference.'}
+                {p.status === 'emeritus' ? 'Emeritus faculty. Contact details are no longer listed.' : 'Former faculty. This profile is kept for reference, and contact details are no longer listed.'}
               </p>
             ) : null}
             <section aria-labelledby="about">
@@ -123,10 +123,12 @@ export default function PersonPage({ person: p }: { person: PersonProfile }) {
                 </ol>
               </section>
             ) : null}
-            <aside className={styles.strip} aria-label="Sign in">
-              <p><T k="Is this your profile? Sign in to the faculty portal to update it." /></p>
-              <a className={styles.stripBtn} href={site.portalLinks.facultySignIn} rel="noopener noreferrer"><T k="Faculty sign in" /></a>
-            </aside>
+            {p.status === 'current' ? (
+              <aside className={styles.strip} aria-label="Sign in">
+                <p><T k="Is this your profile? Sign in to the faculty portal to update it." /></p>
+                <a className={styles.stripBtn} href={site.portalLinks.facultySignIn} rel="noopener noreferrer"><T k="Faculty sign in" /></a>
+              </aside>
+            ) : null}
             <a className={styles.back} href={PEOPLE_PATH}><T k="All faculty and staff" /></a>
           </div>
         </div>
