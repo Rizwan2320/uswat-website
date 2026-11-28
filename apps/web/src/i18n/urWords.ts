@@ -569,7 +569,6 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   Alumni: 'سابق طلبہ',
   Alumnus: 'سابق طالب علم',
   'Year of graduation': 'سالِ فراغت',
-  'Kind of work': 'کام کی نوعیت',
   Thesis: 'مقالہ',
   'Final-year project': 'آخری سال کا منصوبہ',
   'Research paper': 'تحقیقی مقالہ',
