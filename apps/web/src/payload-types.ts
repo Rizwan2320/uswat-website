@@ -4730,7 +4730,7 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
- * The home page: photographs, statistics, admissions bar, portal cards and colours. The headline and the sentence under it do not change here.
+ * The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message and colours. The headline and the sentence under it do not change here.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "home-content".
@@ -4827,6 +4827,36 @@ export interface HomeContent {
         id?: string | null;
       }[]
     | null;
+  /**
+   * The Vice Chancellor’s section on the home page and the full message in the window that opens from "Read Full Message". Leave a field empty to keep the standard text. The photograph stays as it is for now.
+   */
+  leadership?: {
+    /**
+     * For example: Prof. Dr. Husnul Amin.
+     */
+    name?: string | null;
+    /**
+     * For example: Vice Chancellor, University of Swat.
+     */
+    role?: string | null;
+    /**
+     * The short passage in quotation marks next to the photograph. Usually the first lines of the message.
+     */
+    quote?: string | null;
+    /**
+     * The full message, one paragraph per row, in order. Leave it empty to keep the standard full message.
+     */
+    paragraphs?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Shown above the name at the end. For example: With best regards,
+     */
+    closing?: string | null;
+  };
   /**
    * Change the colours of the home page only. Leave a colour empty to keep the standard one. The darker and lighter shades are worked out for you.
    */
@@ -4967,6 +4997,20 @@ export interface HomeContentSelect<T extends boolean = true> {
         href?: T;
         icon?: T;
         id?: T;
+      };
+  leadership?:
+    | T
+    | {
+        name?: T;
+        role?: T;
+        quote?: T;
+        paragraphs?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        closing?: T;
       };
   colours?:
     | T

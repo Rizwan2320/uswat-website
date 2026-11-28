@@ -125,6 +125,8 @@ export type DisciplineProfile = {
   badge?: string
   /** The centre or school that runs the programme, when the university's pages say. */
   centre?: string
+  /** Who may apply, as the university's page words it. Shown when the CMS record has none. */
+  eligibility?: string
   /** Level and duration for the hero card when the CMS record has none. Defaults: BS, 4 years. */
   level?: string
   duration?: string

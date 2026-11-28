@@ -20,6 +20,7 @@ import {
   getAdmissions,
   getHero,
   getHomeColours,
+  getLeadership,
   getPortals,
   getStats,
 } from '../../src/site/lib/content'
@@ -185,5 +186,32 @@ describe('home page reads the home-content global', () => {
     })
     expect((await getAdmissions()).session).toBe('Spring 2099')
     expect((await getPortals()).map((p) => p.title)).toEqual(['one', 'two', 'three'])
+  })
+  it('hands the home page the published Vice Chancellor message, never the draft', async () => {
+    await publish({
+      ...content('Vc'),
+      leadership: {
+        name: 'Prof. Test Name',
+        quote: 'The opening line.',
+        paragraphs: [{ text: 'First paragraph.' }, { text: 'Second paragraph.' }],
+        closing: 'Warm regards,',
+      },
+    })
+    const v = await getLeadership()
+    expect(v).toMatchObject({
+      name: 'Prof. Test Name',
+      quote: 'The opening line.',
+      fullMessage: ['First paragraph.', 'Second paragraph.'],
+      fullMessageComplete: true,
+      closing: 'Warm regards,',
+    })
+    expect(v.role).toBe('Vice Chancellor, University of Swat') // not filled: the standard title stays
+    await saveDraft({ leadership: { name: 'Draft only' } })
+    expect((await getLeadership()).name).toBe('Prof. Test Name')
+    await publish({
+      ...content('Vc2'),
+      leadership: { name: null, quote: null, paragraphs: [], closing: null },
+    })
+    expect((await getLeadership()).name).toBe('Prof. Dr. Husnul Amin')
   })
 })

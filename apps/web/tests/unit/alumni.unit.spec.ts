@@ -35,7 +35,7 @@ describe('alumni work (sample data)', () => {
     }
   })
 
-  it('gives each of the nine programmes exactly three entries', () => {
+  it('gives each of the thirty-nine programmes exactly three entries', () => {
     expect(disciplineProfiles.map((p) => p.slug).sort()).toEqual(
       [
         'bs-artificial-intelligence',
@@ -47,10 +47,44 @@ describe('alumni work (sample data)', () => {
         'bs-dental-technology',
         'doctor-of-physical-therapy',
         'bs-radiography-and-imaging-technology',
+        // 2026-11-26: Physics, Chemistry, and Mathematics and Statistics.
+        'bs-physics-2',
+        'bs-chemistry-2',
+        'bs-mathematics-2',
+        'bs-statistics',
+        // 2026-11-27: the life sciences.
+        'bs-botany-2',
+        'bs-zoology-2',
+        'bs-biotechnology-3',
+        'bs-genetics-3',
+        'bs-microbiology-3',
+        'bs-psychology-2',
+        'bs-forestry',
+        // 2026-11-27: the six departments that were office-style pages.
+        'bs-geology-2',
+        'bs-archaeology',
+        'bs-environmental-sciences',
+        'bs-economics-2',
+        'bs-development-studies-2',
+        'bs-english-2',
+        'bba-hons-2',
+        // 2026-11-27: the ten remaining departments.
+        'b-ed-hons',
+        'bs-home-economics',
+        'bs-islamic-studies-2',
+        'ba-llb-law-and-shariah',
+        'bs-journalism-and-mass-communication-2',
+        'bs-pakistan-studies-2',
+        'bs-pashto',
+        'bs-urdu',
+        'bs-sociology',
+        'bs-criminology',
+        'bs-tourism-and-hospitality-2',
+        'bs-culinary-arts',
       ].sort(),
     )
     for (const p of disciplineProfiles) expect(alumniForProgramme(p.slug)).toHaveLength(3)
-    expect(ALUMNI_WORKS).toHaveLength(27)
+    expect(ALUMNI_WORKS).toHaveLength(117)
   })
 
   it('features three different works on the department page', () => {

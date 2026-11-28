@@ -10,24 +10,18 @@ const nav = readFileSync(path.join(root, 'src/site/content/nav.ts'), 'utf8')
 const sitemap = readFileSync(path.join(root, 'src/site/sitemap/entries.ts'), 'utf8')
 
 /* The pages the header menu links to. The other department pages are reached from the departments list, the sitemap and the old addresses. */
-const MENU = ['academic-calendar', 'central-library-office', 'english-and-foreign-languages', 'management-commerce', 'quality-enhancement-cell']
+const MENU = ['academic-calendar', 'central-library-office', 'quality-enhancement-cell']
 
 describe('office-style pages at their own address (PAGE_PROFILES)', () => {
-  it('has the nineteen pages, each with a unique slug and a path that starts with a slash', () => {
+  it('has the thirteen pages, each with a unique slug and a path that starts with a slash', () => {
     expect(PAGE_PROFILES.map((p) => p.slug).sort()).toEqual(
       [
         'academic-calendar',
         'admissions',
-        'archaeology',
         'central-library-office',
         'convocation-2022',
         'downloads',
-        'economics-and-development-studies',
-        'english-and-foreign-languages',
-        'environmental-sciences',
-        'geology',
         'maincampus',
-        'management-commerce',
         'merit-list',
         'open-day',
         'quality-enhancement-cell',
@@ -121,28 +115,13 @@ describe('office-style pages at their own address (PAGE_PROFILES)', () => {
   })
 
   it('counts in the stats match the lists on the page', () => {
-    const cmc = profileForPage('management-commerce')!
-    expect(cmc.stats?.[0].value).toBe(cmc.itemLists?.[0].items.length)
-    expect(cmc.stats?.[1].value).toBe(cmc.people.length)
-    const defl = profileForPage('english-and-foreign-languages')!
-    expect(defl.stats?.[0].value).toBe(defl.itemLists?.[0].items.length)
-    expect(defl.stats?.[1].value).toBe(defl.people.length)
     const qec = profileForPage('quality-enhancement-cell')!
     expect(qec.stats?.[0].value).toBe(qec.people.length)
     expect(qec.stats?.[1].value).toBe(qec.milestones?.length)
     expect(qec.stats?.[2].value).toBe(qec.itemLists?.[0].items.length)
-    for (const slug of ['geology', 'archaeology', 'environmental-sciences', 'economics-and-development-studies']) {
-      const d = profileForPage(slug)!
-      expect(d.stats?.[0].value, `${slug} programmes`).toBe(d.itemLists?.[0].items.length)
-      expect(d.stats?.[1].value, `${slug} faculty`).toBe(d.people.length)
-    }
   })
 
   it('shows every item list and statement with real words and counts the lists that the page numbers', () => {
-    const archaeology = profileForPage('archaeology')!
-    expect(archaeology.itemLists?.find((l) => l.title === 'Mission')?.items).toHaveLength(8)
-    expect(archaeology.itemLists?.find((l) => l.title === 'Strategic plan for achieving the objectives')?.items).toHaveLength(11)
-    expect(profileForPage('geology')!.itemLists?.find((l) => l.title === 'Groups of elective courses')?.items).toHaveLength(10)
     for (const p of PAGE_PROFILES) {
       for (const l of p.itemLists ?? []) for (const item of l.items) expect(item.trim().length, `${p.slug}: ${l.title}`).toBeGreaterThan(3)
     }

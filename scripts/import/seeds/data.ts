@@ -124,8 +124,162 @@ const dept = (slug: string, subject: string, facultyGroup: string, head: string)
 })
 
 export const departments: DepartmentSeed[] = [
-  dept('physics', 'Physics', 'sample-faculty-of-sciences', 'sample-person-01'),
-  dept('chemistry', 'Chemistry', 'sample-faculty-of-sciences', 'sample-person-02'),
+  // The three science departments below carry the university's own names and text (their pages, read 2026-11-06). Which faculty each belongs to is
+  // not on those pages, so they sit in the same placeholder faculty group as DCST until the owner says.
+  {
+    slug: 'physics',
+    name: 'Department of Physics',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary:
+      'The Department of Physics provides education in the subject so that students can use physics in practical life. It offers the BS in Physics and lists the MS/MPhil as intended.',
+  },
+  {
+    slug: 'chemistry',
+    name: 'Department of Chemistry',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary:
+      'The Department of Chemistry (also called the Institute of Chemical Sciences, established November 2013) offers the BS in Chemistry and the Master of Philosophy in Chemistry.',
+  },
+  {
+    slug: 'mathematics-and-statistics',
+    name: 'Department of Mathematics and Statistics',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary:
+      'The Department of Mathematics and Statistics lists BS Mathematics, BS Statistics, MPhil Mathematics and PhD Mathematics. The statistics department started working in 2010.',
+  },
+  // The six departments below were office-style pages (2026-11-25) and are now in the blueprint layout (2026-11-27); their pages were read 2026-11-06.
+  {
+    slug: 'geology',
+    name: 'Department of Geology',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The Department of Geology became functional in 2014 and offers the four-year BS Geology, with fieldwork at geologically important sites.',
+  },
+  {
+    slug: 'archaeology',
+    name: 'Department of Archaeology',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The Department of Archaeology began academic activities in the fall of 2025 and offers the BS Archaeology, with a university museum of archaeology and ethnology.',
+  },
+  {
+    slug: 'environmental-sciences',
+    name: 'Department of Environmental Sciences',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The Department of Environmental Sciences, established in 2012, lists BS, MS/MPhil and PhD programmes and a one-year postgraduate diploma in Geomatics.',
+  },
+  {
+    slug: 'economics-and-development-studies',
+    name: 'Department of Economics and Development Studies',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department offers BS Economics and BS Development Studies, with MPhil and PhD programmes in preparation.',
+  },
+  {
+    slug: 'english-and-foreign-languages',
+    name: 'Department of English and Foreign Languages',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department teaches English literature and linguistics and lists the BS English and an MPhil in Linguistics.',
+  },
+  {
+    slug: 'management-commerce',
+    name: 'Department of Management and Commerce',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department lists eleven degrees, from BBA (Hons) and four BS programmes to MBA, EMBA, MS and PhD in Management Sciences.',
+  },
+  // The ten departments below (batch 4) carry the university's own names and text (their pages, read 2026-11-06); faculty not on the pages, as above.
+  {
+    slug: 'education-and-staff-training',
+    name: 'Department of Education and Staff Training',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department has trained teachers since 2010 and lists the B.Ed (Hons), the Associate Degree in Education, the MPhil and a planned PhD.',
+  },
+  {
+    slug: 'home-economics',
+    name: 'Department of Home Economics',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'A constituent department of the Women Campus. It offers the BS in Home Economics with five fields of specialisation.',
+  },
+  {
+    slug: 'islamic-and-arabic-studies',
+    name: 'Department of Islamic and Arabic Studies',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'Launched in late 2017, the department offers the BS in Islamic Studies and lists MPhil and PhD degrees.',
+  },
+  {
+    slug: 'law-sharia',
+    name: 'Department of Law and Shari’a',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department offers the five-year BA LL.B in Law and Shari’a, which joins common law and Islamic law.',
+  },
+  {
+    slug: 'media-and-communication-studies',
+    name: 'Department of Media and Communication Studies',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department lists a four-year BS and an MS in Media and Communication Studies.',
+  },
+  {
+    slug: 'pakistan-studies',
+    name: 'Department of Pakistan Studies',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'A multi-disciplinary department that offers the BS in Pakistan Studies and a Master’s in the same field.',
+  },
+  {
+    slug: 'pashto',
+    name: 'Department of Pashto',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department teaches Pashto language, literature and culture and offers the BS in Pashto.',
+  },
+  {
+    slug: 'social-and-gender-studies',
+    name: 'Department of Social and Gender Studies',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department lists BS Sociology, BS Criminology, the MPhil in Sociology and the PhD in Sociology.',
+  },
+  {
+    slug: 'tourism-and-hospitality',
+    name: 'Department of Tourism and Hospitality',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department offers BS Tourism and Hospitality and BS Culinary Arts and runs a Food and Beverages Laboratory.',
+  },
+  {
+    slug: 'urdu',
+    name: 'Department of Urdu',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The department teaches Urdu language, literature and culture and offers the BS in Urdu.',
+  },
+  // The five life-science departments below carry the university's own names and text (their pages, read 2026-11-06); faculty not on the pages, as above.
+  {
+    slug: 'botany',
+    name: 'Department of Botany',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary:
+      'The Department of Botany gives interdisciplinary teaching and research in plant sciences. Its page lists the BS, MPhil and PhD in Botany.',
+  },
+  {
+    slug: 'zoology',
+    name: 'Department of Zoology',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary:
+      'The Department of Zoology, established in 2011, offers the BS in Zoology and the BS in Fisheries, and lists an MSc in Zoology.',
+  },
+  {
+    slug: 'biotechnology-genetics-forensic-and-microbiology',
+    name: 'Department of Biotechnology, Genetics, Forensic and Microbiology',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary:
+      'The department offers research-oriented BS, MPhil and PhD degrees in Biotechnology, Microbiology, Genetics and Forensic Science. Forensic Science joined it in December 2022.',
+  },
+  {
+    slug: 'psychological-studies',
+    name: 'Department of Psychological Studies',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'The Department of Psychological Studies has worked since 17 October 2012 and offers the BS in Psychology.',
+  },
+  {
+    slug: 'agricultural-sciences-and-forestry',
+    name: 'Department of Agricultural Sciences and Forestry',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary:
+      'The Department of Agricultural Sciences and Forestry, established in 2014, offers the BS in Forestry and lists the MPhil in Forestry.',
+  },
   {
     slug: 'dcst',
     name: 'Department of Computer and Software Technologies',
@@ -147,7 +301,6 @@ export const departments: DepartmentSeed[] = [
     facultyGroup: 'faculty-of-allied-health-sciences',
     summary: 'A centre of the Faculty of Allied Health Sciences. The university’s Quality Enhancement Cell lists the Doctor of Physical Therapy (DPT) under it.',
   },
-  dept('mathematics', 'Mathematics', 'sample-faculty-of-sciences', 'sample-person-04'),
   dept('english', 'English', 'sample-faculty-of-arts-and-humanities', 'sample-person-05'),
   dept('history', 'History', 'sample-faculty-of-arts-and-humanities', 'sample-person-06'),
   dept('economics', 'Economics', 'sample-faculty-of-social-and-management-sciences', 'sample-person-07'),
@@ -183,13 +336,46 @@ const alliedProgrammes: ProgrammeSeed[] = [
   { slug: 'bs-radiography-and-imaging-technology', name: 'BS Radiography & Imaging Technology', eligibility: null },
 ]
 
+/** The programmes of the Physics, Chemistry, Mathematics and Statistics, and life-science departments, as their pages list them (read 2026-11-06). The three
+    eligibilities (BS Physics, BS Chemistry, BS Forestry) are the ones those pages state; the others are not published, so they stay empty. BS Statistics has no
+    page of its own on the old site. BS Forensic Sciences and BS Fisheries are listed on their department pages but have no programme page, so they are not seeded. */
+const scienceProgrammes: ProgrammeSeed[] = [
+  { slug: 'bs-physics-2', name: 'BS Physics', department: 'physics', level: 'BS', eligibility: 'F.Sc. or equivalent with at least 45% in the subject of Physics.' },
+  { slug: 'bs-chemistry-2', name: 'BS Chemistry', department: 'chemistry', level: 'BS', eligibility: 'HSSC or equivalent with Chemistry, with at least 45% overall marks and at least 45% in the subject of Chemistry.' },
+  { slug: 'bs-mathematics-2', name: 'BS Mathematics', department: 'mathematics-and-statistics', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-statistics', name: 'BS Statistics', department: 'mathematics-and-statistics', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-botany-2', name: 'BS Botany', department: 'botany', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-zoology-2', name: 'BS Zoology', department: 'zoology', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-biotechnology-3', name: 'BS Biotechnology', department: 'biotechnology-genetics-forensic-and-microbiology', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-genetics-3', name: 'BS Genetics', department: 'biotechnology-genetics-forensic-and-microbiology', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-microbiology-3', name: 'BS Microbiology', department: 'biotechnology-genetics-forensic-and-microbiology', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-psychology-2', name: 'BS Psychology', department: 'psychological-studies', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-forestry', name: 'BS Forestry', department: 'agricultural-sciences-and-forestry', level: 'BS', duration: '4 years', eligibility: 'Open merit: HSSC with at least 45% marks (Pre-Medical or Pre-Engineering).' },
+  { slug: 'bs-geology-2', name: 'BS Geology', department: 'geology', level: 'BS', duration: '4 years', eligibility: 'Intermediate (F.Sc.) or equivalent with at least 45% marks: the science group, another group in which Chemistry, Physics and Mathematics were studied, or a three-year Diploma in Associate Engineering (DAE).' },
+  { slug: 'bs-archaeology', name: 'BS Archaeology', department: 'archaeology', level: 'BS', duration: '4 years', eligibility: 'Intermediate or an equivalent qualification with at least 45% marks.' },
+  { slug: 'bs-environmental-sciences', name: 'BS Environmental Sciences', department: 'environmental-sciences', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-economics-2', name: 'BS Economics', department: 'economics-and-development-studies', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-development-studies-2', name: 'BS Development Studies', department: 'economics-and-development-studies', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-english-2', name: 'BS English', department: 'english-and-foreign-languages', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bba-hons-2', name: 'Bachelor of Business Administration (Hons)', department: 'management-commerce', level: 'BBA', duration: '4 years', eligibility: null },
+  { slug: 'b-ed-hons', name: 'B.Ed (Hons)', department: 'education-and-staff-training', level: 'B.Ed', duration: '4 years', eligibility: 'FA, F.Sc or A level (or equivalent) with a minimum of second division, and at least 45% marks in school subjects with A level.' },
+  { slug: 'bs-home-economics', name: 'BS Home Economics', department: 'home-economics', level: 'BS', duration: '4 years', eligibility: 'FA, F.Sc or an equivalent qualification with at least second division.' },
+  { slug: 'bs-islamic-studies-2', name: 'BS Islamic Studies', department: 'islamic-and-arabic-studies', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'ba-llb-law-and-shariah', name: 'BA LL.B (Law and Shari’a)', department: 'law-sharia', level: 'BA LL.B', duration: '5 years', eligibility: null },
+  { slug: 'bs-journalism-and-mass-communication-2', name: 'BS Media and Communication Studies', department: 'media-and-communication-studies', level: 'BS', duration: '4 years', eligibility: 'HSSC or equivalent with at least 45% marks.' },
+  { slug: 'bs-pakistan-studies-2', name: 'BS Pakistan Studies', department: 'pakistan-studies', level: 'BS', duration: '4 years', eligibility: 'FA, F.Sc or an equivalent qualification with at least 45% marks.' },
+  { slug: 'bs-pashto', name: 'BS Pashto', department: 'pashto', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-urdu', name: 'BS Urdu', department: 'urdu', level: 'BS', duration: '4 years', eligibility: null },
+  { slug: 'bs-sociology', name: 'BS Sociology', department: 'social-and-gender-studies', level: 'BS', duration: '4 years', eligibility: 'As set by the HEC Undergraduate Education Policy 2023, from Fall 2024.' },
+  { slug: 'bs-criminology', name: 'BS Criminology', department: 'social-and-gender-studies', level: 'BS', duration: '4 years', eligibility: 'As set by the HEC Undergraduate Education Policy 2023, from Fall 2024.' },
+  { slug: 'bs-tourism-and-hospitality-2', name: 'BS Tourism and Hospitality', department: 'tourism-and-hospitality', level: 'BS', duration: '4 years', eligibility: 'FA, F.Sc or an equivalent qualification with at least 45% marks.' },
+  { slug: 'bs-culinary-arts', name: 'BS Culinary Arts', department: 'tourism-and-hospitality', level: 'BS', duration: '4 years', eligibility: 'FA, F.Sc or an equivalent qualification with at least 45% marks.' },
+]
+
 export const programmes: ProgrammeSeed[] = [
   ...alliedProgrammes,
   ...['Computer Science', 'Software Engineering', 'Information Technology', 'Data Science', 'Artificial Intelligence'].map(dcstProg),
-  prog('BS', 'Physics', 'physics', 4),
-  prog('MS', 'Physics', 'physics', 2),
-  prog('BS', 'Chemistry', 'chemistry', 4),
-  prog('BS', 'Mathematics', 'mathematics', 4),
+  ...scienceProgrammes,
   prog('BS', 'English', 'english', 4),
   prog('MA', 'English', 'english', 2),
   prog('BS', 'History', 'history', 4, 'sangota'),

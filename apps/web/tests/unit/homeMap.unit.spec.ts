@@ -4,9 +4,11 @@ import { heroSlides } from '../../src/site/content/hero'
 import { stats } from '../../src/site/content/stats'
 import { admissions } from '../../src/site/content/admissions'
 import { portals } from '../../src/site/content/portals'
+import { leadership } from '../../src/site/content/leadership'
 import {
   toAdmissions,
   toHeroSlides,
+  toLeadership,
   toPortals,
   toStats,
   type HomeDoc,
@@ -204,5 +206,33 @@ describe('toPortals', () => {
       href: '/library',
       icon: 'gear',
     })
+  })
+})
+
+describe('toLeadership', () => {
+  it('keeps the sourced message when nothing is entered', () => {
+    expect(toLeadership(null, leadership)).toBe(leadership)
+    expect(toLeadership({ leadership: {} }, leadership)).toEqual(leadership)
+    expect(
+      toLeadership({ leadership: { name: '  ', paragraphs: [{ text: ' ' }, { text: null }] } }, leadership),
+    ).toEqual(leadership)
+  })
+
+  it('replaces only the fields that were filled', () => {
+    const out = toLeadership({ leadership: { name: ' New Name ', closing: 'Regards,' } }, leadership)
+    expect(out.name).toBe('New Name')
+    expect(out.closing).toBe('Regards,')
+    expect(out.role).toBe(leadership.role)
+    expect(out.quote).toBe(leadership.quote)
+    expect(out.fullMessage).toEqual(leadership.fullMessage)
+  })
+
+  it('takes the paragraphs in order, drops empty ones and counts them as complete', () => {
+    const out = toLeadership(
+      { leadership: { paragraphs: [{ text: 'One' }, { text: '' }, { text: ' Two ' }, { text: 'Three' }] } },
+      { ...leadership, fullMessageComplete: false },
+    )
+    expect(out.fullMessage).toEqual(['One', 'Two', 'Three'])
+    expect(out.fullMessageComplete).toBe(true)
   })
 })
