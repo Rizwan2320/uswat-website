@@ -78,6 +78,8 @@ export type DepartmentProfile = {
   heroPhotos?: Art[]
   /** A photograph on the left of the hero card (the green card under the banner) that fades into its green. */
   campusPhoto?: Art
+  /** Put the "News, events and notices" section first, above "About" (owner, 2026-11-28; DCST only so far). The section menu follows. */
+  newsFirst?: boolean
   /** One hero for the whole top of the page, in place of the banner band, the green card and the statistics row: the title as text on the
       left, ONE photograph on the right that fades into the green (no rotation), two buttons, and the statistics in a strip that overlaps the
       bottom of the hero (with `campusPhoto` at its right end). Set for DCST only (owner, 2026-11-28). */

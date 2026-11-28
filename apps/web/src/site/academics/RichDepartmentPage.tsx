@@ -80,7 +80,20 @@ export default function RichDepartmentPage({
     { value: profile.labs.length, label: 'laboratories' },
     { value: profile.research.length, label: 'research areas' },
   ]
+  const newsBand = (
+        <Band
+          id="news"
+          tint
+          kicker="Latest"
+          title="News, events and notices"
+          lede={`Announcements from ${profile.shortName}. Items tagged "${profile.shortName}" in the CMS appear here.`}
+        >
+          <DeptFeed feed={feed} />
+        </Band>
+  )
+  const newsItem = { id: 'news', label: 'News and notices' }
   const nav = [
+    ...(profile.newsFirst ? [newsItem] : []),
     { id: 'overview', label: 'Overview' },
     { id: 'programmes', label: 'Programmes' },
     { id: 'labs', label: 'Laboratories' },
@@ -89,7 +102,7 @@ export default function RichDepartmentPage({
     { id: 'student-life', label: 'Student life' },
     { id: 'people', label: 'Faculty' },
     ...(alumni.length ? [{ id: 'alumni', label: 'Alumni' }] : []),
-    { id: 'news', label: 'News and notices' },
+    ...(profile.newsFirst ? [] : [newsItem]),
     { id: 'faq', label: 'Questions' },
     ...(ref ? [{ id: 'contact', label: 'Contact' }, { id: 'sources', label: 'Sources' }] : []),
   ]
@@ -144,6 +157,8 @@ export default function RichDepartmentPage({
         </>
       )}
       <SectionNav items={nav} />
+
+      {profile.newsFirst ? newsBand : null}
 
       <Band id="overview" kicker="About" title={`About ${profile.shortName}`}>
         <div className={styles.split}>
@@ -285,15 +300,7 @@ export default function RichDepartmentPage({
         lede="Theses, projects and papers by graduates of the department's programmes. Select a card to read about the work."
       />
 
-      <Band
-        id="news"
-        tint
-        kicker="Latest"
-        title="News, events and notices"
-        lede={`Announcements from ${profile.shortName}. Items tagged "${profile.shortName}" in the CMS appear here.`}
-      >
-        <DeptFeed feed={feed} />
-      </Band>
+      {profile.newsFirst ? null : newsBand}
 
       <Band id="faq" kicker="Good to know" title="Questions">
         <FaqList items={profile.faq} />
