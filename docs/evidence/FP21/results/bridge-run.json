@@ -1,0 +1,117 @@
+[
+  {
+    "id": "B1 the public-page panel is on the Publications screen and says nothing has been sent",
+    "ok": true,
+    "note": "Your public page Your approved profile text and the works marked Public appear on your page on the university website. Featured works come first. Nothing has be"
+  },
+  {
+    "id": "B2 publishing the profile sent it to the site automatically (last attempt ok)",
+    "ok": true,
+    "note": "public_sync.lastError = ok"
+  },
+  {
+    "id": "B3 the public profile now shows the approved biography",
+    "ok": true,
+    "note": "bio text present on /people/sample-person-02"
+  },
+  {
+    "id": "B4 the old sample biography is gone (replaced, not appended)",
+    "ok": true,
+    "note": "the sample text had: Sample biography. Teaches organic chemis"
+  },
+  {
+    "id": "B5 the CV link is the one the person entered",
+    "ok": true,
+    "note": "https://example.org/cv/fp20-sample"
+  },
+  {
+    "id": "C1 research interests show as a list",
+    "ok": true,
+    "note": "[\"green solvents\",\"natural product extraction\",\"catalysis\"]"
+  },
+  {
+    "id": "C2 office location and office hours show in the details column",
+    "ok": true,
+    "note": "Sample AR Designation Associate Professor Department Sample Department of Chemistry Office location Block B, room 4 Office hours Mon and Wed 10:00 to 12:00 CV Open the CV ORCID iD 0000-0002-1825-0097 "
+  },
+  {
+    "id": "C3 ORCID links to orcid.org",
+    "ok": true,
+    "note": "https://orcid.org/0000-0002-1825-0097"
+  },
+  {
+    "id": "C4 Google Scholar link is the one entered",
+    "ok": true,
+    "note": "https://scholar.google.com/citations?user=fp21sample"
+  },
+  {
+    "id": "B6 the button reports Sent and the panel shows when",
+    "ok": true,
+    "note": "Sent. Your public page shows the new list within a few minutes."
+  },
+  {
+    "id": "B7 after a reload the panel shows the last-sent time",
+    "ok": true,
+    "note": "Last sent: 28 Nov 2026, 10:27."
+  },
+  {
+    "id": "B8 the public page lists the three public works and not the private one",
+    "ok": true,
+    "note": "[\"Plain work with no link\",\"Full text work\",\"DOI only work\"]"
+  },
+  {
+    "id": "B9 the featured work comes first",
+    "ok": true,
+    "note": "Plain work with no link"
+  },
+  {
+    "id": "B10 a work with a full-text address links to it, a DOI-only work links to the DOI, a bare work is plain text",
+    "ok": true,
+    "note": "{\"Plain work with no link\":null,\"Full text work\":\"https://example.org/papers/fulltext.pdf\",\"DOI only work\":\"https://doi.org/10.5555/fp20.doi\"}"
+  },
+  {
+    "id": "C5 a work shows its journal, year and kind under the title",
+    "ok": true,
+    "note": "Full text work Journal of Green Chemistry · 2022 · Journal article"
+  },
+  {
+    "id": "C6 the featured work carries a Featured mark and the others do not",
+    "ok": true,
+    "note": "Featured on the first only"
+  },
+  {
+    "id": "C7 at 390 px wide the public page does not scroll sideways",
+    "ok": true,
+    "note": "scrollWidth 390"
+  },
+  {
+    "id": "B11 making a work private removes it from the public page with no button press (automatic send)",
+    "ok": true,
+    "note": "gone within the 15 second window"
+  },
+  {
+    "id": "B16 after a failed attempt the panel says it is waiting to appear",
+    "ok": true,
+    "note": "Waiting to appear on the public site. The last attempt did not go through; press the button to try again."
+  },
+  {
+    "id": "B12 an unsigned call to the endpoint gets an empty 404",
+    "ok": true,
+    "note": "status 404"
+  },
+  {
+    "id": "B13 a wrong signature gets an empty 404",
+    "ok": true,
+    "note": "status 404"
+  },
+  {
+    "id": "B14 GET on the endpoint is not served as a page",
+    "ok": true,
+    "note": "status 405"
+  },
+  {
+    "id": "B15 the person's name on the public record is unchanged",
+    "ok": true,
+    "note": "Dr. Amina Rauf (the SQL-filled name; unchanged)"
+  }
+]

@@ -1,13 +1,13 @@
 import { homeEvents, homeFeeds, homeNews } from '../home/cms'
 import { readHomeContent } from '../home/homeContent'
-import { toAdmissions, toFooter, toHeroContent, toTopBar, toHeroSlides, toLeadership, toPortals, toStats } from '../home/homeMap'
+import { toAdmissions, toApply, toFooter, toNav, navStyle, toHeroContent, toTopBar, toHeroSlides, toLeadership, toPortals, toStats } from '../home/homeMap'
 import { admissions } from '../content/admissions'
 import { events } from '../content/events'
 import { feeds } from '../content/feeds'
 import { hero, heroSlides } from '../content/hero'
 import { images } from '../content/images'
 import { leadership } from '../content/leadership'
-import { footerQuick, footerUseful, nav } from '../content/nav'
+import { applyLink, footerQuick, footerUseful, nav } from '../content/nav'
 import { news } from '../content/news'
 import { portals } from '../content/portals'
 import { site } from '../content/site'
@@ -16,7 +16,11 @@ import { stats } from '../content/stats'
 /* Async getters over content/*. Notices, jobs, tenders, news and events come from published CMS records when there are any
    (home/cms.ts) and otherwise from the sourced files; slider photographs and statistics come from the published `home-content` global when it is complete (home/homeMap.ts); the rest still return the typed files. */
 export async function getSite() { return site }
-export async function getNav() { return nav }
+export async function getNav() { return toNav(await readHomeContent(), nav) }
+export async function getNavBar() {
+  const doc = await readHomeContent()
+  return { items: toNav(doc, nav), apply: toApply(doc, applyLink), style: navStyle(doc) }
+}
 export async function getTopBar() {
   return toTopBar(await readHomeContent(), {
     place: 'Swat, Khyber Pakhtunkhwa, Pakistan',

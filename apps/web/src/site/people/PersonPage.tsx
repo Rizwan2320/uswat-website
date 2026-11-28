@@ -48,6 +48,18 @@ export default function PersonPage({ person: p }: { person: PersonProfile }) {
                   <dd>{p.office}</dd>
                 </div>
               ) : null}
+              {p.officeNote ? (
+                <div>
+                  <dt><T k="Office location" /></dt>
+                  <dd>{p.officeNote}</dd>
+                </div>
+              ) : null}
+              {p.officeHours ? (
+                <div>
+                  <dt><T k="Office hours" /></dt>
+                  <dd>{p.officeHours}</dd>
+                </div>
+              ) : null}
               {p.email ? (
                 <div>
                   <dt><T k="Email" /></dt>
@@ -58,6 +70,18 @@ export default function PersonPage({ person: p }: { person: PersonProfile }) {
                 <div>
                   <dt><T k="CV" /></dt>
                   <dd><a href={p.cvHref} rel="noopener noreferrer">Open the CV</a></dd>
+                </div>
+              ) : null}
+              {p.orcidHref ? (
+                <div>
+                  <dt>ORCID iD</dt>
+                  <dd><a href={p.orcidHref} rel="noopener noreferrer">{p.orcid}</a></dd>
+                </div>
+              ) : null}
+              {p.scholarHref ? (
+                <div>
+                  <dt><T k="Google Scholar" /></dt>
+                  <dd><a href={p.scholarHref} rel="noopener noreferrer">Open the Scholar profile</a></dd>
                 </div>
               ) : null}
             </dl>
@@ -77,12 +101,24 @@ export default function PersonPage({ person: p }: { person: PersonProfile }) {
                 <p><T k="This person has not added an introduction yet." /></p>
               )}
             </section>
+            {p.interests.length ? (
+              <section aria-labelledby="interests">
+                <h2 id="interests" className={styles.heading}><T k="Research interests" /></h2>
+                <ul className={styles.interests}>
+                  {p.interests.map((t, i) => <li key={i}>{t}</li>)}
+                </ul>
+              </section>
+            ) : null}
             {p.publications.length ? (
               <section aria-labelledby="pubs">
                 <h2 id="pubs" className={styles.heading}><T k="Publications" /></h2>
                 <ol className={styles.pubs}>
                   {p.publications.map((x) => (
-                    <li key={x.key}>{x.href ? <a href={x.href} rel="noopener noreferrer">{x.title}</a> : x.title}</li>
+                    <li key={x.key}>
+                      {x.href ? <a href={x.href} rel="noopener noreferrer">{x.title}</a> : x.title}
+                      {x.featured ? <span className={styles.featured}> Featured</span> : null}
+                      {x.meta ? <span className={styles.pubMeta}>{x.meta}</span> : null}
+                    </li>
                   ))}
                 </ol>
               </section>

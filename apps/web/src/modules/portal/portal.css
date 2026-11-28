@@ -341,3 +341,10 @@ a.portal-btn { display: inline-flex; align-items: center; box-sizing: border-box
 .pub-edit summary { cursor: pointer; font-weight: 600; color: var(--forest); min-height: 44px; display: flex; align-items: center; }
 .pub-export { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 12px; }
 .pub-export .portal-btn { min-height: 44px; padding: 8px 18px; }
+
+/* FP-20: the public-page panel on the publications screen. */
+.pub-public { border: 1px solid var(--ivory-deep); border-radius: 12px; padding: 14px 16px; margin: 0 0 20px; }
+.pub-public h2 { margin: 0 0 6px; font-size: 1.1rem; }
+.pub-public p { margin: 6px 0; max-width: 68ch; }
+.pub-public .pub-actions { margin-top: 10px; }
+.pub-public .portal-btn { min-height: 44px; display: inline-flex; align-items: center; }

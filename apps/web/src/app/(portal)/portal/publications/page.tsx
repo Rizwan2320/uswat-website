@@ -5,6 +5,8 @@ import DelegationBanner from '@/modules/portal/delegation/Banner'
 import { pageFor } from '@/modules/portal/delegation/wiring'
 import { readPortalConfig } from '@/modules/identity/config'
 import { getIdentityPool } from '@/modules/identity/db'
+import PublicPagePanel from '@/modules/portal/bridge/PublicPagePanel'
+import { readPublicPageStatus } from '@/modules/portal/bridge/wiring'
 import { createSampleProfileStore } from '@/modules/portal/profile/sampleStore'
 import { createPgPublicationStore } from '@/modules/portal/publications/pgStore'
 import PublicationsView from '@/modules/portal/publications/PublicationsView'
@@ -24,7 +26,7 @@ export default async function PublicationsPage({ searchParams }: { searchParams:
   if (forParam !== undefined && !delegated) notFound()
   const subject = delegated ? { id: delegated.subject.id, email: delegated.subject.email } : { id: userId, email }
   const pool = getIdentityPool(config.databaseUrl)
-  const [lists, loaded] = await Promise.all([createPgPublicationStore(pool).list(subject.id), createSampleProfileStore(pool).load(subject)])
+  const [lists, loaded, publicStatus] = await Promise.all([createPgPublicationStore(pool).list(subject.id), createSampleProfileStore(pool).load(subject), readPublicPageStatus(subject.id)])
   const sampleMode = resolveSource(process.env).sample || Object.values(lists).some((l) => l.some((w) => w.sample))
   return (
     <Shell email={email} wide>
@@ -33,6 +35,7 @@ export default async function PublicationsPage({ searchParams }: { searchParams:
         {COPY.publications.title}{' '}
         {sampleMode ? <span className="portal-sample">{COPY.publications.sampleBadge}</span> : null}
       </h1>
+      <PublicPagePanel status={publicStatus} forId={delegated?.subject.id} />
       <PublicationsView lists={lists} hasOrcid={loaded.profile.orcid !== ''} sampleMode={sampleMode} forId={delegated?.subject.id} />
     </Shell>
   )

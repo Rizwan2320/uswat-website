@@ -168,6 +168,8 @@ export const governanceBeforeChange =
       next: { ...toRecordState(merged), target },
       contentChanged:
         operation === 'create' ? true : contentChanged(data, originalDoc, contentFields),
+      // Local API only (a REST client cannot set `context`), and only for People: the faculty portal's approved edit (ADR-0029).
+      approvedElsewhere: req.context?.portalApproved === true && collection.slug === 'people',
       now: new Date().toISOString(),
     })
 

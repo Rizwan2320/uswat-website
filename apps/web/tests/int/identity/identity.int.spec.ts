@@ -87,7 +87,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue', '0012_claim_activation', '0013_delegation', '0014_notifications', '0015_profile_fixed', '0016_verifier', '0017_publication_intake'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue', '0012_claim_activation', '0013_delegation', '0014_notifications', '0015_profile_fixed', '0016_verifier', '0017_publication_intake', '0018_public_sync'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -3607,5 +3607,45 @@ describe.skipIf(!DB)('Registrar’s office, the Verifier role (FP-V, AUTH-07), P
       await roles().revokeVerifier(v.email)
       expect(await service(v).save({ subjectId: p.id, ...values() })).toEqual({ ok: false, error: 'unavailable' })
     })
+  })
+})
+
+describe.skipIf(!DB)('public page bridge (FP-20), PostgreSQL store', () => {
+  const pool = () => getIdentityPool(DB!)
+  beforeAll(async () => {
+    await migrateDown(DB!, {})
+    await migrateUp(DB!, {})
+  })
+  afterAll(async () => {
+    await closeIdentityPool()
+  })
+  async function account(tag: string): Promise<string> {
+    const id = `br-${tag}-${Math.random().toString(36).slice(2, 8)}`
+    await pool().query(`insert into "user" ("id","name","email","emailVerified") values ($1,$2,$3,true)`, [id, `Sample ${tag}`, `${id}@example.invalid`])
+    return id
+  }
+
+  it('reads the record link and the approved edit, and remembers success then failure without personal content', async () => {
+    const { createPgBridgeStore } = await import('@/modules/portal/bridge/pgStore')
+    const s = createPgBridgeStore(pool())
+    const a = await account('state')
+    expect(await s.source(a)).toEqual({ recordRef: null, edit: null, approvedAt: null })
+    expect(await s.state(a)).toBeNull()
+    await pool().query(`insert into "account_status" ("userId","status","recordRef") values ($1,'active','sample-person-02')`, [a])
+    expect((await s.source(a)).recordRef).toBe('sample-person-02')
+    const t1 = new Date('2026-11-27T10:00:00Z')
+    await s.record(a, { ok: true, hash: 'a'.repeat(64), at: t1 })
+    expect(await s.state(a)).toMatchObject({ lastOkAt: t1, lastHash: 'a'.repeat(64), lastError: null })
+    const t2 = new Date('2026-11-27T11:00:00Z')
+    await s.record(a, { ok: false, error: 'site not reachable', at: t2 })
+    expect(await s.state(a)).toMatchObject({ lastAttemptAt: t2, lastOkAt: t1, lastHash: 'a'.repeat(64), lastError: 'site not reachable' })
+  })
+
+  it('refuses an over-long error text at the database, and deleting the account removes the row', async () => {
+    const a = await account('limits')
+    await expect(pool().query(`insert into "public_sync" ("userId","lastAttemptAt","lastError") values ($1, now(), $2)`, [a, 'x'.repeat(201)])).rejects.toThrow()
+    await pool().query(`insert into "public_sync" ("userId","lastAttemptAt") values ($1, now())`, [a])
+    await pool().query(`delete from "user" where "id" = $1`, [a])
+    expect((await pool().query(`select 1 from "public_sync" where "userId" = $1`, [a])).rowCount).toBe(0)
   })
 })

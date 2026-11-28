@@ -1450,10 +1450,30 @@ export interface Person {
   email?: string | null;
   photo?: (number | null) | Media;
   cvLink?: string | null;
+  /**
+   * Short keywords, one per row. Written by the person in the faculty portal.
+   */
+  researchInterests?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  officeLocation?: string | null;
+  officeHours?: string | null;
+  /**
+   * Like 0000-0002-1825-0097. The faculty portal checks the last character.
+   */
+  orcid?: string | null;
+  scholarUrl?: string | null;
   publications?:
     | {
         title: string;
         url?: string | null;
+        year?: number | null;
+        venue?: string | null;
+        workType?: ('article' | 'conference' | 'chapter' | 'book' | 'thesis' | 'report' | 'patent' | 'other') | null;
+        featured?: boolean | null;
         id?: string | null;
       }[]
     | null;
@@ -4415,11 +4435,25 @@ export interface PeopleSelect<T extends boolean = true> {
   email?: T;
   photo?: T;
   cvLink?: T;
+  researchInterests?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  officeLocation?: T;
+  officeHours?: T;
+  orcid?: T;
+  scholarUrl?: T;
   publications?:
     | T
     | {
         title?: T;
         url?: T;
+        year?: T;
+        venue?: T;
+        workType?: T;
+        featured?: T;
         id?: T;
       };
   facultyStatus?: T;
@@ -4808,7 +4842,7 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
- * The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message, the headline text, the top bar and footer (shown on every page) and colours.
+ * The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message, the headline text, the navigation menu, the top bar and footer (shown on every page) and colours.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "home-content".
@@ -5046,6 +5080,84 @@ export interface HomeContent {
       | null;
   };
   /**
+   * The menu in the white bar at the top of every page (and in the phone menu). Add, remove and reorder items and their sub-links, and change the colours. Leave the list empty to keep the standard menu; once you add items, this list is the whole menu.
+   */
+  navigation?: {
+    /**
+     * The background of the menu bar. Standard: white.
+     */
+    barColour?: string | null;
+    /**
+     * The menu words, their icons and the lines between. Standard: the deep green.
+     */
+    textColour?: string | null;
+    /**
+     * The line under the page you are on. Standard: maroon.
+     */
+    accentColour?: string | null;
+    /**
+     * The gold button at the right of the bar. Standard: Apply Here.
+     */
+    applyLabel?: string | null;
+    /**
+     * A page on this site starting with /, or a full address starting with https://
+     */
+    applyUrl?: string | null;
+    /**
+     * Drag the rows to reorder the menu. 3 to 12 items, or none to keep the standard menu.
+     */
+    items?:
+      | {
+          label: string;
+          /**
+           * A page on this site starting with /, or a full address starting with https://
+           */
+          href: string;
+          /**
+           * Tick this when the item has no page of its own to open.
+           */
+          hideExplore?: boolean | null;
+          /**
+           * The links in the dropdown. With none, the item is a plain link.
+           */
+          children?:
+            | {
+                label: string;
+                href: string;
+                icon?:
+                  | (
+                      | 'cap'
+                      | 'book'
+                      | 'building'
+                      | 'calendar'
+                      | 'clipboard'
+                      | 'document'
+                      | 'download'
+                      | 'flask'
+                      | 'gavel'
+                      | 'heart'
+                      | 'laptop'
+                      | 'layers'
+                      | 'megaphone'
+                      | 'newspaper'
+                      | 'palette'
+                      | 'people'
+                      | 'person'
+                      | 'badge'
+                      | 'trending'
+                      | 'trophy'
+                      | 'video'
+                      | 'wallet'
+                    )
+                  | null;
+                id?: string | null;
+              }[]
+            | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  /**
    * Change the colours of the home page only. Leave a colour empty to keep the standard one. The darker and lighter shades are worked out for you.
    */
   colours?: {
@@ -5244,6 +5356,31 @@ export interface HomeContentSelect<T extends boolean = true> {
           | {
               label?: T;
               href?: T;
+              id?: T;
+            };
+      };
+  navigation?:
+    | T
+    | {
+        barColour?: T;
+        textColour?: T;
+        accentColour?: T;
+        applyLabel?: T;
+        applyUrl?: T;
+        items?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              hideExplore?: T;
+              children?:
+                | T
+                | {
+                    label?: T;
+                    href?: T;
+                    icon?: T;
+                    id?: T;
+                  };
               id?: T;
             };
       };

@@ -11,6 +11,10 @@ import {
   colourValidate,
   portalsCountValidate,
   FOOTER_LINKS,
+  NAV_CHILDREN,
+  NAV_ICONS,
+  NAV_ITEMS,
+  navCountValidate,
   phoneValidate,
   homeHrefValidate,
   portalHrefValidate,
@@ -67,7 +71,7 @@ const button = (name: 'primary' | 'secondary', label: string): GlobalConfig['fie
 })
 
 const colour = (
-  name: 'green' | 'yellow' | 'maroon',
+  name: string,
   label: string,
   standard: string,
   description: string,
@@ -98,7 +102,7 @@ export const HomeContent: GlobalConfig = {
     // menu (slice 3as); admin, site manager and auditor do. Access rules are unchanged.
     hidden: hiddenFromEditors,
     description:
-      'The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message, the headline text, the top bar and footer (shown on every page) and colours.',
+      'The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message, the headline text, the navigation menu, the top bar and footer (shown on every page) and colours.',
   },
   access: { read: readHome },
   versions: { max: 25, drafts: true },
@@ -524,6 +528,92 @@ export const HomeContent: GlobalConfig = {
           fields: [
             { name: 'label', label: 'Text', type: 'text', required: true, maxLength: 40 },
             { name: 'href', label: 'Goes to', type: 'text', required: true, validate: portalHrefValidate },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'navigation',
+      label: 'Navigation menu',
+      type: 'group',
+      admin: {
+        description:
+          'The menu in the white bar at the top of every page (and in the phone menu). Add, remove and reorder items and their sub-links, and change the colours. Leave the list empty to keep the standard menu; once you add items, this list is the whole menu.',
+      },
+      fields: [
+        colour('barColour', 'Bar colour', '#ffffff', 'The background of the menu bar. Standard: white.'),
+        colour('textColour', 'Menu text colour', STANDARD.green, 'The menu words, their icons and the lines between. Standard: the deep green.'),
+        colour('accentColour', 'Highlight colour', STANDARD.maroon, 'The line under the page you are on. Standard: maroon.'),
+        {
+          name: 'applyLabel',
+          label: 'Apply button text',
+          type: 'text',
+          maxLength: 30,
+          admin: { description: 'The gold button at the right of the bar. Standard: Apply Here.' },
+        },
+        {
+          name: 'applyUrl',
+          label: 'Apply button goes to',
+          type: 'text',
+          validate: portalHrefValidate,
+          admin: { description: 'A page on this site starting with /, or a full address starting with https://' },
+        },
+        {
+          name: 'items',
+          label: 'Menu items',
+          type: 'array',
+          labels: { singular: 'Menu item', plural: 'Menu items' },
+          maxRows: NAV_ITEMS.max,
+          validate: navCountValidate,
+          admin: {
+            initCollapsed: true,
+            description: `Drag the rows to reorder the menu. ${NAV_ITEMS.min} to ${NAV_ITEMS.max} items, or none to keep the standard menu.`,
+          },
+          fields: [
+            { name: 'label', label: 'Text', type: 'text', required: true, maxLength: 40 },
+            {
+              name: 'href',
+              label: 'Goes to',
+              type: 'text',
+              required: true,
+              validate: portalHrefValidate,
+              admin: { description: 'A page on this site starting with /, or a full address starting with https://' },
+            },
+            {
+              name: 'hideExplore',
+              label: 'Hide the "Explore All" row',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: { description: 'Tick this when the item has no page of its own to open.' },
+            },
+            {
+              name: 'children',
+              label: 'Sub-links',
+              type: 'array',
+              labels: { singular: 'Sub-link', plural: 'Sub-links' },
+              maxRows: NAV_CHILDREN.max,
+              admin: {
+                initCollapsed: true,
+                description: 'The links in the dropdown. With none, the item is a plain link.',
+              },
+              fields: [
+                { name: 'label', label: 'Text', type: 'text', required: true, maxLength: 60 },
+                {
+                  name: 'href',
+                  label: 'Goes to',
+                  type: 'text',
+                  required: true,
+                  validate: portalHrefValidate,
+                },
+                {
+                  name: 'icon',
+                  label: 'Icon',
+                  type: 'select',
+                  options: iconOptions(NAV_ICONS),
+                  defaultValue: 'document',
+                },
+              ],
+            },
           ],
         },
       ],

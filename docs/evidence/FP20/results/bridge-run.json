@@ -1,0 +1,82 @@
+[
+  {
+    "id": "B1 the public-page panel is on the Publications screen and says nothing has been sent",
+    "ok": true,
+    "note": "Your public page Your approved profile text and the works marked Public appear on your page on the university website. Featured works come first. Nothing has be"
+  },
+  {
+    "id": "B2 publishing the profile sent it to the site automatically (last attempt ok)",
+    "ok": true,
+    "note": "public_sync.lastError = ok"
+  },
+  {
+    "id": "B3 the public profile now shows the approved biography",
+    "ok": true,
+    "note": "bio text present on /people/sample-person-02"
+  },
+  {
+    "id": "B4 the old sample biography is gone (replaced, not appended)",
+    "ok": true,
+    "note": "the sample text had: Sample biography. Teaches organic chemis"
+  },
+  {
+    "id": "B5 the CV link is the one the person entered",
+    "ok": true,
+    "note": "https://example.org/cv/fp20-sample"
+  },
+  {
+    "id": "B6 the button reports Sent and the panel shows when",
+    "ok": true,
+    "note": "Sent. Your public page shows the new list within a few minutes."
+  },
+  {
+    "id": "B7 after a reload the panel shows the last-sent time",
+    "ok": true,
+    "note": "Last sent: 28 Nov 2026, 10:04."
+  },
+  {
+    "id": "B8 the public page lists the three public works and not the private one",
+    "ok": true,
+    "note": "[\"Plain work with no link\",\"Full text work\",\"DOI only work\"]"
+  },
+  {
+    "id": "B9 the featured work comes first",
+    "ok": true,
+    "note": "Plain work with no link"
+  },
+  {
+    "id": "B10 a work with a full-text address links to it, a DOI-only work links to the DOI, a bare work is plain text",
+    "ok": true,
+    "note": "{\"Plain work with no link\":null,\"Full text work\":\"https://example.org/papers/fulltext.pdf\",\"DOI only work\":\"https://doi.org/10.5555/fp20.doi\"}"
+  },
+  {
+    "id": "B11 making a work private and pressing the button removes it from the public page",
+    "ok": true,
+    "note": "full text work gone"
+  },
+  {
+    "id": "B16 after a failed attempt the panel says it is waiting to appear",
+    "ok": true,
+    "note": "Waiting to appear on the public site. The last attempt did not go through; press the button to try again."
+  },
+  {
+    "id": "B12 an unsigned call to the endpoint gets an empty 404",
+    "ok": true,
+    "note": "status 404"
+  },
+  {
+    "id": "B13 a wrong signature gets an empty 404",
+    "ok": true,
+    "note": "status 404"
+  },
+  {
+    "id": "B14 GET on the endpoint is not served as a page",
+    "ok": true,
+    "note": "status 405"
+  },
+  {
+    "id": "B15 the person's name on the public record is unchanged",
+    "ok": true,
+    "note": "Dr. Amina Rauf (the SQL-filled name; unchanged)"
+  }
+]

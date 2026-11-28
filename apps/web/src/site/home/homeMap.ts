@@ -1,7 +1,7 @@
 import type { HeroContent, HeroSlide } from '../content/hero'
 import type { admissions as admissionsFile } from '../content/admissions'
-import type { Portal, SiteImage, Stat } from '../content/types'
-import type { HomeColours } from '../../governance/homePalette'
+import type { NavItem, Portal, SiteImage, Stat } from '../content/types'
+import { cleanHex, type HomeColours } from '../../governance/homePalette'
 import { isSafeHref } from '../../utilities/safeHref'
 
 /* Pure mapping from the published `home-content` global (the admin's "Home page content") to the shapes the
@@ -25,8 +25,22 @@ type CtaDoc = {
 }
 
 type LinkRow = { label?: string | null; href?: string | null }
+type NavRow = {
+  label?: string | null
+  href?: string | null
+  hideExplore?: boolean | null
+  children?: (LinkRow & { icon?: string | null })[] | null
+}
 
 export type HomeDoc = {
+  navigation?: {
+    barColour?: string | null
+    textColour?: string | null
+    accentColour?: string | null
+    applyLabel?: string | null
+    applyUrl?: string | null
+    items?: NavRow[] | null
+  } | null
   topBar?: {
     place?: string | null
     established?: string | null
@@ -378,4 +392,69 @@ export function toFooter(doc: HomeDoc | null | undefined, fallback: FooterFallba
     quick: linkRows(f?.quickLinks, fallback.quick),
     useful: linkRows(f?.usefulLinks, fallback.useful),
   }
+}
+
+/**
+ * The header menu. With at least one complete item the list in the admin IS the menu, in its order (so an item can
+ * be added, removed or moved); with none the standard menu stays. A row needs a text and a safe address. Sub-links
+ * are complete safe rows only; an item with none is a plain link. An address that does not start with / leaves the
+ * site and is marked external.
+ */
+export function toNav(doc: HomeDoc | null | undefined, fallback: readonly NavItem[]): NavItem[] {
+  const out: NavItem[] = []
+  for (const row of doc?.navigation?.items ?? []) {
+    if (!filled(row.label) || !filled(row.href) || !isSafeHref(row.href)) continue
+    const href = row.href.trim()
+    const children: NonNullable<NavItem['children']> = []
+    for (const c of row.children ?? []) {
+      if (!filled(c.label) || !filled(c.href) || !isSafeHref(c.href)) continue
+      const ch = c.href.trim()
+      const icon = /^[a-z]{3,12}$/.test(c.icon ?? '') ? (c.icon as string) : 'document' // unknown names draw a document
+      children.push({ label: c.label.trim(), href: ch, icon, ...(ch.startsWith('/') ? {} : { external: true }) })
+    }
+    out.push({
+      label: row.label.trim(),
+      href,
+      ...(href.startsWith('/') ? {} : { external: true }),
+      ...(children.length > 0 ? { children } : {}),
+      ...(children.length > 0 && row.hideExplore ? { noExplore: true } : {}),
+    })
+  }
+  return out.length > 0 ? out : [...fallback]
+}
+
+/** The Apply button in the bar: a filled text or address replaces the standard one. */
+export function toApply<T extends { label: string; href: string; external?: boolean }>(
+  doc: HomeDoc | null | undefined,
+  fallback: T,
+): { label: string; href: string; external: boolean } {
+  const n = doc?.navigation
+  const href = safe(n?.applyUrl, fallback.href)
+  return {
+    label: filled(n?.applyLabel) ? n.applyLabel.trim() : fallback.label,
+    href,
+    external: !href.startsWith('/'),
+  }
+}
+
+/**
+ * The menu bar colours as style variables, only for the colours that were chosen (anything but exactly #rrggbb is
+ * ignored). Hover shades come from the text colour over the bar colour; the dropdown panel takes the bar colour. Nothing is returned when nothing was chosen, so the standard
+ * look is untouched.
+ */
+export function navStyle(doc: HomeDoc | null | undefined): Record<string, string> | undefined {
+  const n = doc?.navigation
+  const bar = cleanHex(n?.barColour)
+  const text = cleanHex(n?.textColour)
+  const accent = cleanHex(n?.accentColour)
+  const out: Record<string, string> = {}
+  if (bar) out['--nav-bg'] = bar
+  if (text) {
+    out['--nav-text'] = text
+    // Shades are mixed over the bar colour, so light text on a dark bar gets a slightly lighter pill, not a white one.
+    out['--nav-hover'] = `color-mix(in srgb, ${text} 14%, ${bar ?? '#fff'})`
+    out['--nav-hover-strong'] = `color-mix(in srgb, ${text} 24%, ${bar ?? '#fff'})`
+  }
+  if (accent) out['--nav-accent'] = accent
+  return Object.keys(out).length > 0 ? out : undefined
 }
