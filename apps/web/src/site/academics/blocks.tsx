@@ -174,10 +174,10 @@ export function HeroBanner({
 }) {
   return (
     <header className={styles.hb}>
-      <div className={styles.hbPhoto} aria-hidden="true">
-        <SafeImage src={hero.photo.src} alt="" fill sizes="(max-width: 860px) 100vw, 62vw" priority className={styles.hbImg} />
-      </div>
       <div className={styles.hbBand}>
+        <div className={styles.hbPhoto} aria-hidden="true">
+          <SafeImage src={hero.photo.src} alt="" fill sizes="(max-width: 860px) 100vw, 62vw" priority className={styles.hbImg} />
+        </div>
         <div className={`container ${styles.hbInner}`}>
           <div className={styles.hbText}>
             <h1 className={styles.hbTitle}>
@@ -213,7 +213,10 @@ export function HeroBanner({
           </ul>
           {campus ? (
             <div className={styles.hbCampus} aria-hidden="true">
-              <SafeImage src={campus.src} alt="" fill sizes="(max-width: 860px) 0px, 300px" />
+              <span className={styles.hbCampusGold} />
+              <div className={styles.hbCampusPhoto}>
+                <SafeImage src={campus.src} alt="" fill sizes="(max-width: 860px) 0px, 440px" className={styles.hbCampusImg} />
+              </div>
             </div>
           ) : null}
         </div>

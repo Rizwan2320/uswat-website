@@ -150,18 +150,43 @@
   outline-offset: 3px;
 }
 
-/* ---- one-photograph hero (DepartmentProfile.heroBanner): title text left, ONE photograph right fading into the green, stats strip overlapping the bottom ---- */
+/* ---- one-photograph hero (DepartmentProfile.heroBanner), laid out like the owner's mock-up of 2026-11-28: a dark hero with the title text on the
+   left and ONE photograph on the right fading into it, and a darker statistics card that hangs half over the hero and half over the page,
+   with a gold bar on its left edge and a sharp diagonal (gold stripe) between the numbers and a crisp campus photograph ---- */
 .hb {
   position: relative;
-  overflow: hidden;
-  background: linear-gradient(100deg, var(--forest-deep) 0%, var(--forest) 55%, var(--forest-deep) 100%);
   color: var(--ivory);
-  padding-bottom: 28px;
+  padding-bottom: 36px;
 }
 .hbBand {
   position: relative;
-  min-height: clamp(380px, 31vw, 470px);
-  padding-bottom: 72px;
+  overflow: hidden;
+  min-height: clamp(400px, 32vw, 480px);
+  padding-bottom: 80px;
+  background: linear-gradient(100deg, var(--forest-deep) 0%, var(--forest) 55%, var(--forest-deep) 100%);
+}
+/* gold wedges, as in the mock-up: one beside the photograph's lower edge, one at the bottom right */
+.hbBand::before,
+.hbBand::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  background: var(--gold);
+  transform: skewX(-38deg);
+  pointer-events: none;
+}
+.hbBand::before {
+  left: 47%;
+  bottom: 44px;
+  width: 7%;
+  height: 52px;
+  opacity: 0.95;
+}
+.hbBand::after {
+  right: -2%;
+  bottom: 0;
+  width: 8%;
+  height: 70px;
 }
 .hbPhoto {
   position: absolute;
@@ -178,7 +203,7 @@
 }
 .hbInner {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   align-items: center;
   min-height: inherit;
@@ -220,66 +245,86 @@
   line-height: 1.5;
   color: rgb(252 250 244 / 0.92);
 }
+/* the statistics card: darker than the hero, half over it and half over the page */
 .hbStrip {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   display: flex;
   align-items: stretch;
-  margin-top: -52px;
+  min-height: 128px;
+  margin-top: -64px;
   overflow: hidden;
-  border-radius: calc(var(--radius) + 6px);
-  background: var(--forest-deep);
-  border: 1px solid rgb(252 250 244 / 0.14);
-  box-shadow: 0 24px 40px -24px rgb(0 42 16 / 0.7);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--forest-deep) 70%, black);
+  box-shadow:
+    inset 7px 0 0 var(--gold),
+    0 22px 40px -22px rgb(0 20 8 / 0.75);
 }
 .hbStats {
+  position: relative;
+  z-index: 1;
   display: grid;
   flex: 1;
   grid-template-columns: repeat(4, 1fr);
   margin: 0;
-  padding: 0;
+  padding: 0 0 0 7px;
   list-style: none;
 }
 .hbStat {
   display: grid;
   justify-items: center;
   align-content: center;
-  gap: 2px;
-  padding: 18px 12px;
+  gap: 4px;
+  padding: 18px 10px;
   text-align: center;
+  font-family: var(--stack-sans);
 }
 .hbStat + .hbStat {
-  border-left: 1px solid rgb(252 250 244 / 0.16);
+  background: linear-gradient(to bottom, transparent 18%, rgb(252 250 244 / 0.2) 18%, rgb(252 250 244 / 0.2) 82%, transparent 82%) left / 1px 100% no-repeat;
 }
 .hbStatIcon {
   color: var(--gold);
   line-height: 0;
 }
 .hbStatValue {
-  font-family: var(--stack-serif);
-  font-size: 1.7rem;
-  font-weight: 700;
+  font-size: 1.9rem;
+  font-weight: 800;
   line-height: 1.1;
 }
 .hbStatLabel {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: rgb(252 250 244 / 0.92);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ivory);
 }
+/* the campus photograph, cut on a diagonal with a gold stripe along the cut (the mock-up's right end of the card) */
 .hbCampus {
   position: relative;
-  flex: 0 0 24%;
-  min-height: 120px;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 28%);
-  mask-image: linear-gradient(to right, transparent 0%, #000 28%);
+  flex: 0 0 33%;
 }
-.hbCampus img {
+.hbCampusGold,
+.hbCampusPhoto {
+  position: absolute;
+  inset: 0;
+}
+.hbCampusGold {
+  background: var(--gold);
+  clip-path: polygon(22% 0, calc(22% + 16px) 0, 16px 100%, 0 100%);
+}
+.hbCampusPhoto {
+  clip-path: polygon(calc(22% + 16px) 0, 100% 0, 100% 100%, 16px 100%);
+}
+.hbCampusImg {
   object-fit: cover;
+  object-position: center 62%;
 }
 @media (max-width: 860px) {
   .hbBand {
     min-height: 0;
-    padding-bottom: 64px;
+    padding-bottom: 72px;
+  }
+  .hbBand::before,
+  .hbBand::after {
+    display: none;
   }
   /* the photograph sits behind the text, dimmed, so the white text keeps its contrast */
   .hbPhoto {
@@ -294,11 +339,14 @@
   .hbStats {
     grid-template-columns: repeat(2, 1fr);
   }
-  .hbStat:nth-child(odd) {
-    border-left: 0;
+  .hbStat + .hbStat {
+    background: none;
+  }
+  .hbStat:nth-child(even) {
+    background: linear-gradient(to bottom, transparent 18%, rgb(252 250 244 / 0.2) 18%, rgb(252 250 244 / 0.2) 82%, transparent 82%) left / 1px 100% no-repeat;
   }
   .hbStat:nth-child(n + 3) {
-    border-top: 1px solid rgb(252 250 244 / 0.16);
+    border-top: 1px solid rgb(252 250 244 / 0.14);
   }
   .hbCampus {
     display: none;
