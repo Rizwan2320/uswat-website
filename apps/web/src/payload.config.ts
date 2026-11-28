@@ -134,7 +134,7 @@ const built = buildConfig({
     defaultLocale: 'en',
     fallback: true,
   },
-  // A coordinator sees only their programme page(s) and media in the menu (slice 3am). A head's and a coordinator's own
+  // A coordinator sees only their programme page(s), media, news, notices and events in the menu (slices 3am, 3at). A head's and a coordinator's own
   // page is a link at the top (slice 3as); the Department and Programme list entries are hidden by a style rule, not here.
   collections: [
     Pages,

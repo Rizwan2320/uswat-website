@@ -221,10 +221,11 @@ describe('the menu: a link to my own page, and Home page content kept for the we
     programmes,
   })
 
-  it('shows a coordinator programmes and media and nothing else; the programme list entry itself is hidden by a style rule, because the link to their page opens inside it', () => {
+  it('shows a coordinator programmes, media, news, notices and events and nothing else; the programme list entry itself is hidden by a style rule, because the link to their page opens inside it', () => {
     const c = as_('editor', [5])
-    for (const slug of ['programmes', 'media']) expect(hiddenFor(slug, c), slug).toBe(false)
-    for (const slug of ['pages', 'posts', 'notices', 'departments', 'events', 'users'])
+    for (const slug of ['programmes', 'media', 'posts', 'notices', 'events'])
+      expect(hiddenFor(slug, c), slug).toBe(false)
+    for (const slug of ['pages', 'departments', 'users', 'offices', 'people'])
       expect(hiddenFor(slug, c), slug).toBe(true)
   })
 

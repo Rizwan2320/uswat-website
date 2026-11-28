@@ -30,13 +30,14 @@ export const hiddenFromUsers = ({ user }: { user?: unknown }): boolean => {
 }
 
 /**
- * A programme coordinator looks after their programme page(s) and the pictures on them, nothing else
- * (slice 3am), so the left menu and the home page show those and not the rest of the site. The
+ * A programme coordinator looks after their programme page(s), the pictures on them and the department's
+ * news, notices and events (slices 3am and 3at), so the left menu and the home page show those and not
+ * the rest of the site. Which news, notice or event they may touch is still decided by the access rules. The
  * Programmes area stays routable (the link to their own page opens inside it, slice 3as); only its
  * menu entry is hidden, by the rule in admin/PageNav/index.scss.
  * Tidiness as above: access rules still decide.
  */
-export const COORDINATOR_AREAS: readonly string[] = ['programmes', 'media']
+export const COORDINATOR_AREAS: readonly string[] = ['programmes', 'media', 'posts', 'notices', 'events']
 
 export const isCoordinatorUser = (user: unknown): boolean => {
   if (!user) return false
