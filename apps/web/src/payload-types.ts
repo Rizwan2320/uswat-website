@@ -4828,9 +4828,13 @@ export interface HomeContent {
       }[]
     | null;
   /**
-   * The Vice Chancellor’s section on the home page and the full message in the window that opens from "Read Full Message". Leave a field empty to keep the standard text. The photograph stays as it is for now.
+   * The Vice Chancellor’s section on the home page and the full message in the window that opens from "Read Full Message". Leave a field empty to keep the standard text or photograph.
    */
   leadership?: {
+    /**
+     * A portrait cut out from its background (PNG or WebP with a transparent background) looks best on the home page. It needs alt text and a recorded rights status in the Media library before you can publish. Leave it empty to keep the standard photograph.
+     */
+    photo?: (number | null) | Media;
     /**
      * For example: Prof. Dr. Husnul Amin.
      */
@@ -5001,6 +5005,7 @@ export interface HomeContentSelect<T extends boolean = true> {
   leadership?:
     | T
     | {
+        photo?: T;
         name?: T;
         role?: T;
         quote?: T;

@@ -209,30 +209,50 @@ describe('toPortals', () => {
   })
 })
 
+const vcPhoto = { src: '/images/vc.webp', alt: 'The standard portrait', width: 450, height: 438 }
+
 describe('toLeadership', () => {
-  it('keeps the sourced message when nothing is entered', () => {
-    expect(toLeadership(null, leadership)).toBe(leadership)
-    expect(toLeadership({ leadership: {} }, leadership)).toEqual(leadership)
+  it('keeps the sourced message and photograph when nothing is entered', () => {
+    const base = { ...leadership, photo: vcPhoto }
+    expect(toLeadership(null, leadership, vcPhoto)).toEqual(base)
+    expect(toLeadership({ leadership: {} }, leadership, vcPhoto)).toEqual(base)
     expect(
-      toLeadership({ leadership: { name: '  ', paragraphs: [{ text: ' ' }, { text: null }] } }, leadership),
-    ).toEqual(leadership)
+      toLeadership({ leadership: { name: '  ', paragraphs: [{ text: ' ' }, { text: null }] } }, leadership, vcPhoto),
+    ).toEqual(base)
   })
 
   it('replaces only the fields that were filled', () => {
-    const out = toLeadership({ leadership: { name: ' New Name ', closing: 'Regards,' } }, leadership)
+    const out = toLeadership({ leadership: { name: ' New Name ', closing: 'Regards,' } }, leadership, vcPhoto)
     expect(out.name).toBe('New Name')
     expect(out.closing).toBe('Regards,')
     expect(out.role).toBe(leadership.role)
     expect(out.quote).toBe(leadership.quote)
     expect(out.fullMessage).toEqual(leadership.fullMessage)
+    expect(out.photo).toEqual(vcPhoto)
   })
 
   it('takes the paragraphs in order, drops empty ones and counts them as complete', () => {
     const out = toLeadership(
       { leadership: { paragraphs: [{ text: 'One' }, { text: '' }, { text: ' Two ' }, { text: 'Three' }] } },
       { ...leadership, fullMessageComplete: false },
+      vcPhoto,
     )
     expect(out.fullMessage).toEqual(['One', 'Two', 'Three'])
     expect(out.fullMessageComplete).toBe(true)
+  })
+
+  it('uses the uploaded photograph when it can be shown, and the standard one otherwise', () => {
+    const up = { url: '/api/media/file/vc.png', alt: 'New portrait', width: 800, height: 900, focalX: 40, focalY: 20 }
+    expect(toLeadership({ leadership: { photo: up } }, leadership, vcPhoto).photo).toEqual({
+      src: '/api/media/file/vc.png',
+      alt: 'New portrait',
+      width: 800,
+      height: 900,
+      focus: '40% 20%',
+    })
+    // a bare id (not loaded), a missing alt text or no size cannot be shown
+    expect(toLeadership({ leadership: { photo: 7 } }, leadership, vcPhoto).photo).toEqual(vcPhoto)
+    expect(toLeadership({ leadership: { photo: { ...up, alt: '' } } }, leadership, vcPhoto).photo).toEqual(vcPhoto)
+    expect(toLeadership({ leadership: { photo: { ...up, width: null } } }, leadership, vcPhoto).photo).toEqual(vcPhoto)
   })
 })

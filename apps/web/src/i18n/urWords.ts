@@ -334,10 +334,12 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
     'سنہری پیلا: بٹن، نمایاں حصے اور سبز پر نمایاں الفاظ۔',
   'The crest maroon: the Apply button, dates and small accents. Use a dark colour.':
     'نشان کا عنابی رنگ: درخواست کا بٹن، تاریخیں اور چھوٹے نمایاں حصے۔ گہرا رنگ استعمال کریں۔',
-  'The Vice Chancellor’s section on the home page and the full message in the window that opens from "Read Full Message". Leave a field empty to keep the standard text. The photograph stays as it is for now.':
-    'ہوم پیج پر وائس چانسلر کا حصہ اور "مکمل پیغام پڑھیں" سے کھلنے والی کھڑکی میں پورا پیغام۔ معیاری متن رکھنے کے لیے خانہ خالی چھوڑ دیں۔ تصویر فی الحال جیسی ہے ویسی رہتی ہے۔',
+  'The Vice Chancellor’s section on the home page and the full message in the window that opens from "Read Full Message". Leave a field empty to keep the standard text or photograph.':
+    'ہوم پیج پر وائس چانسلر کا حصہ اور "مکمل پیغام پڑھیں" سے کھلنے والی کھڑکی میں پورا پیغام۔ معیاری متن یا تصویر رکھنے کے لیے خانہ خالی چھوڑ دیں۔',
   'For example: Prof. Dr. Husnul Amin.': 'مثال: پروفیسر ڈاکٹر حسنُ الامین۔',
   'For example: Vice Chancellor, University of Swat.': 'مثال: وائس چانسلر، یونیورسٹی آف سوات۔',
+  'A portrait cut out from its background (PNG or WebP with a transparent background) looks best on the home page. It needs alt text and a recorded rights status in the Media library before you can publish. Leave it empty to keep the standard photograph.':
+    'پس منظر سے الگ کیا ہوا پورٹریٹ (شفاف پس منظر والی PNG یا WebP) ہوم پیج پر بہترین لگتا ہے۔ شائع کرنے سے پہلے میڈیا لائبریری میں اس کا متبادل متن اور حقوق کی حیثیت درج ہونا ضروری ہے۔ معیاری تصویر رکھنے کے لیے خالی چھوڑ دیں۔',
   'The short passage in quotation marks next to the photograph. Usually the first lines of the message.':
     'تصویر کے ساتھ واوین میں مختصر اقتباس۔ عموماً پیغام کی ابتدائی سطریں۔',
   'The full message, one paragraph per row, in order. Leave it empty to keep the standard full message.':

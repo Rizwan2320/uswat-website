@@ -25,6 +25,7 @@ type CtaDoc = {
 
 export type HomeDoc = {
   leadership?: {
+    photo?: number | MediaLike | null
     name?: string | null
     role?: string | null
     quote?: string | null
@@ -189,11 +190,16 @@ export function toPortals(doc: HomeDoc | null | undefined, fallback: Portal[]): 
  * The Vice Chancellor's message. Each field the editor filled replaces the sourced value; an empty one keeps it.
  * The full message is the filled paragraphs in order; with none, the sourced full message stays. Paragraphs the
  * editor wrote count as the complete message (the "read the rest on the university website" line is only for
- * a message that was cut short).
+ * a message that was cut short). The photograph is the uploaded one when it can be shown (a picture with its
+ * address, alt text and size), and the sourced portrait otherwise.
  */
-export function toLeadership<T extends LeadershipShape>(doc: HomeDoc | null | undefined, fallback: T): T {
+export function toLeadership<T extends LeadershipShape>(
+  doc: HomeDoc | null | undefined,
+  fallback: T,
+  fallbackPhoto: SiteImage,
+): T & { photo: SiteImage } {
   const l = doc?.leadership
-  if (!l) return fallback
+  if (!l) return { ...fallback, photo: fallbackPhoto }
   const paragraphs = (l.paragraphs ?? [])
     .map((p) => (typeof p.text === 'string' ? p.text.trim() : ''))
     .filter((t) => t !== '')
@@ -205,6 +211,7 @@ export function toLeadership<T extends LeadershipShape>(doc: HomeDoc | null | un
     fullMessage: paragraphs.length > 0 ? paragraphs : fallback.fullMessage,
     fullMessageComplete: paragraphs.length > 0 ? true : fallback.fullMessageComplete,
     closing: filled(l.closing) ? l.closing.trim() : fallback.closing,
+    photo: toImage(l.photo) ?? fallbackPhoto,
   }
 }
 

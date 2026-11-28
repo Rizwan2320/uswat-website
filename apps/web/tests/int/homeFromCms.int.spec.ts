@@ -206,11 +206,17 @@ describe('home page reads the home-content global', () => {
       closing: 'Warm regards,',
     })
     expect(v.role).toBe('Vice Chancellor, University of Swat') // not filled: the standard title stays
+    expect(v.photo.src).toBe('/images/vc-husnul-amin-cutout.webp') // no upload: the standard photograph stays
+    const pic = await upload('Uploaded portrait')
+    await publish({ ...content('Vc1'), leadership: { photo: pic, name: 'Prof. Test Name' } })
+    const withPhoto = await getLeadership()
+    expect(withPhoto.photo).toMatchObject({ alt: 'Uploaded portrait', width: 40, height: 30 })
+    expect(withPhoto.photo.src).toMatch(/hfc-.*\.png/)
     await saveDraft({ leadership: { name: 'Draft only' } })
     expect((await getLeadership()).name).toBe('Prof. Test Name')
     await publish({
       ...content('Vc2'),
-      leadership: { name: null, quote: null, paragraphs: [], closing: null },
+      leadership: { photo: null, name: null, quote: null, paragraphs: [], closing: null },
     })
     expect((await getLeadership()).name).toBe('Prof. Dr. Husnul Amin')
   })

@@ -273,9 +273,19 @@ export const HomeContent: GlobalConfig = {
       type: 'group',
       admin: {
         description:
-          'The Vice Chancellor’s section on the home page and the full message in the window that opens from "Read Full Message". Leave a field empty to keep the standard text. The photograph stays as it is for now.',
+          'The Vice Chancellor’s section on the home page and the full message in the window that opens from "Read Full Message". Leave a field empty to keep the standard text or photograph.',
       },
       fields: [
+        {
+          name: 'photo',
+          label: 'Photograph',
+          type: 'upload',
+          relationTo: 'media',
+          admin: {
+            description:
+              'A portrait cut out from its background (PNG or WebP with a transparent background) looks best on the home page. It needs alt text and a recorded rights status in the Media library before you can publish. Leave it empty to keep the standard photograph.',
+          },
+        },
         {
           name: 'name',
           label: 'Name',
