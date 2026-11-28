@@ -4,7 +4,7 @@
  * not an authenticator app, so an account without one gets no access. An unknown person, the Verifier's own record and a
  * non-Verifier all answer 'unavailable'.
  */
-import { SEARCH_MAX, isSubjectId, validateSave, type FixedErrors } from './rules'
+import { SEARCH_MAX, isSubjectId, validateLeave, validateSave, type FixedErrors } from './rules'
 import type { PersonDetail, PersonRow, RegistrarStore } from './types'
 
 export type VerifierSession = { id: string; fresh: boolean; hasPasskey: boolean }
@@ -13,6 +13,7 @@ type Gate = { ok: false; error: 'session' | 'unavailable' }
 export type SearchResult = { ok: true; people: PersonRow[] } | Gate
 export type OpenResult = { ok: true; detail: PersonDetail } | Gate
 export type SaveResult = { ok: true } | { ok: false; error: 'session' | 'invalid' | 'fresh' | 'unavailable' | 'has-role'; errors?: FixedErrors }
+export type LeaveResult = { ok: true; subjectId: string } | { ok: false; error: 'session' | 'invalid' | 'fresh' | 'unavailable' | 'already'; errors?: FixedErrors }
 
 export function createRegistrarService(deps: { store: RegistrarStore; getVerifier: () => Promise<VerifierSession | null>; now?: () => number }) {
   const now = deps.now ?? Date.now
@@ -48,6 +49,18 @@ export function createRegistrarService(deps: { store: RegistrarStore; getVerifie
       if (outcome === 'forbidden') return { ok: false, error: 'unavailable' }
       if (outcome === 'has-role') return { ok: false, error: 'has-role' }
       return { ok: true }
+    },
+    /** Marks a person as left: the account ends and the log row is written together. The caller then tells the public site. */
+    async leave(input: unknown): Promise<LeaveResult> {
+      const me = await gate()
+      if ('ok' in me) return me
+      const v = validateLeave(input)
+      if (!v.ok) return { ok: false, error: 'invalid', errors: v.errors }
+      if (!me.fresh) return { ok: false, error: 'fresh' }
+      const outcome = await deps.store.leave(me.id, v.value, now())
+      if (outcome === 'forbidden') return { ok: false, error: 'unavailable' }
+      if (outcome === 'already') return { ok: false, error: 'already' }
+      return { ok: true, subjectId: v.value.subjectId }
     },
   }
 }

@@ -4,8 +4,9 @@
  */
 import type pg from 'pg'
 
+import { applyStatus } from '../../identity/accountStatus'
 import { changedFields } from './rules'
-import type { ChangeRow, FixedValues, PersonDetail, PersonRow, RegistrarStore, SaveInput, SaveOutcome } from './types'
+import type { AccountState, ChangeRow, Departure, FixedValues, LeaveInput, LeaveOutcome, PersonDetail, PersonRow, RegistrarStore, SaveInput, SaveOutcome } from './types'
 
 const SEARCH_LIMIT = 20
 
@@ -59,7 +60,24 @@ export function createPgRegistrarStore(pool: pg.Pool): RegistrarStore {
         [subjectId],
       )
       const history: ChangeRow[] = hist.rows.map((r) => ({ at: r.at.getTime(), source: r.source, fields: changedFields(r.before, r.after) }))
-      const detail: PersonDetail = { subjectId, name: w.name, email: w.email, current: valuesOf(await current(pool, subjectId)), holdsRole: w.holds, history }
+      const st = await pool.query<{ status: AccountState; recordRef: string | null }>(`select "status", "recordRef" from "account_status" where "userId" = $1`, [subjectId])
+      const dep = await pool.query<{ at: Date; outcome: Departure['outcome']; source: string; rolesRemoved: string[] }>(
+        `select "at", "outcome", "source", "rolesRemoved" from "account_departure" where "subjectId" = $1 order by "at" desc, "id" desc limit 1`,
+        [subjectId],
+      )
+      const d = dep.rows[0]
+      const detail: PersonDetail = {
+        subjectId,
+        name: w.name,
+        email: w.email,
+        current: valuesOf(await current(pool, subjectId)),
+        holdsRole: w.holds,
+        history,
+        // No row means an active account (the existing sample accounts), as everywhere else.
+        state: st.rows[0]?.status ?? 'active',
+        linked: !!st.rows[0]?.recordRef,
+        departure: d ? { at: d.at.getTime(), outcome: d.outcome, source: d.source, rolesRemoved: d.rolesRemoved } : null,
+      }
       return detail
     },
 
@@ -101,6 +119,48 @@ export function createPgRegistrarStore(pool: pg.Pool): RegistrarStore {
         await client.query(
           `insert into "fixed_change" ("subjectId", "verifierId", "before", "after", "source", "at") values ($1, $2, $3, $4, $5, $6)`,
           [input.subjectId, verifierId, before === null ? null : JSON.stringify(before), JSON.stringify(v), input.source, new Date(now)],
+        )
+        await client.query('commit')
+        return 'ok'
+      } catch (e) {
+        await client.query('rollback').catch(() => {})
+        throw e
+      } finally {
+        client.release()
+      }
+    },
+
+    async leave(verifierId, input: LeaveInput, now): Promise<LeaveOutcome> {
+      const client = await pool.connect()
+      try {
+        await client.query('begin')
+        const auth = await client.query(
+          `select 1 from "verifier_role" v join "user" u on u."id" = $2 where v."userId" = $1 and u."id" <> v."userId" for share of v`,
+          [verifierId, input.subjectId],
+        )
+        if (auth.rowCount !== 1) {
+          await client.query('rollback')
+          return 'forbidden'
+        }
+        // Lock the subject's status row so two Registrars cannot both mark the same person.
+        const st = await client.query<{ status: string }>(`select "status" from "account_status" where "userId" = $1 for update`, [input.subjectId])
+        if (st.rows[0]?.status === 'left') {
+          await client.query('rollback')
+          return 'already'
+        }
+        // The roles go with the account: a person who has left must not keep a privilege that is only checked when they sign in.
+        const removed: string[] = []
+        for (const [table, label] of [['verifier_role', 'registrar'], ['reviewer_role', 'reviewer'], ['head_role', 'head']] as const) {
+          const r = await client.query(`delete from "${table}" where "userId" = $1`, [input.subjectId])
+          if (r.rowCount) removed.push(label)
+        }
+        if ((await applyStatus(client, input.subjectId, 'left', now)) !== 'ok') {
+          await client.query('rollback')
+          return 'forbidden'
+        }
+        await client.query(
+          `insert into "account_departure" ("subjectId", "verifierId", "outcome", "source", "rolesRemoved", "at") values ($1, $2, $3, $4, $5, $6)`,
+          [input.subjectId, verifierId, input.outcome, input.source, removed, new Date(now)],
         )
         await client.query('commit')
         return 'ok'
