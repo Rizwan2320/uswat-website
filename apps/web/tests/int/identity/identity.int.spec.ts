@@ -87,7 +87,7 @@ describe.skipIf(!DB)('identity schema migration', () => {
   it('applies, is idempotent, rolls back to nothing, and re-applies to an identical schema (up, down, up)', async () => {
     await migrateDown(DB!, {})
     const first = await migrateUp(DB!, {})
-    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue', '0012_claim_activation', '0013_delegation', '0014_notifications', '0015_profile_fixed', '0016_verifier', '0017_publication_intake', '0018_public_sync'])
+    expect(first).toEqual(['0001_identity', '0002_session_assurance', '0003_recovery_attempt', '0004_signin_failure', '0005_step_up', '0006_session_shared', '0007_profile_draft', '0008_publication_candidate', '0009_course_taught', '0010_security_event', '0011_review_queue', '0012_claim_activation', '0013_delegation', '0014_notifications', '0015_profile_fixed', '0016_verifier', '0017_publication_intake', '0018_public_sync', '0019_departure'])
     const a = await snapshot()
     expect(await migrateUp(DB!, {})).toEqual([])
     await migrateDown(DB!, {})
@@ -3608,6 +3608,64 @@ describe.skipIf(!DB)('Registrar’s office, the Verifier role (FP-V, AUTH-07), P
       expect(await service(v).save({ subjectId: p.id, ...values() })).toEqual({ ok: false, error: 'unavailable' })
     })
   })
+
+  describe('marking someone as left (FP-22)', () => {
+    const leave = (over: Record<string, unknown> = {}) => ({ outcome: 'former', source: 'Resignation accepted, order 12 of 20 Nov 2026', confirmed: true, ...over })
+    const departures = async (id: string) => (await pool().query(`select "verifierId","outcome","source","rolesRemoved" from "account_departure" where "subjectId" = $1`, [id])).rows
+    const status = async (id: string) => (await pool().query(`select "status" from "account_status" where "userId" = $1`, [id])).rows[0]?.status
+    const sessionFor = (id: string) => pool().query(`insert into "session" ("id","expiresAt","token","createdAt","updatedAt","userId") values ($1, now() + interval '7 days', $2, now(), now(), $3)`, [`s-${id}`, `t-${id}`, id])
+
+    it('ends the account, the sessions and the delegations, removes the roles and writes one log row', async () => {
+      const v = await account('v', { verifier: true })
+      const p = await account('p', { dept: 'Dept R' })
+      const other = await account('o')
+      expect(await roles().grantReviewer(p.email)).toBe('ok')
+      expect(await roles().grantHead(p.email)).toBe('ok')
+      await sessionFor(p.id)
+      await pool().query(`insert into "delegation" ("grantorId","delegateId","sections","expiresAt") values ($1,$2,'{profile}', now() + interval '1 day')`, [p.id, other.id])
+      expect(await service(v).leave({ subjectId: p.id, ...leave() })).toEqual({ ok: true, subjectId: p.id })
+      expect(await status(p.id)).toBe('left')
+      expect((await pool().query(`select count(*)::int as n from "session" where "userId" = $1`, [p.id])).rows[0].n).toBe(0)
+      expect((await pool().query(`select count(*)::int as n from "delegation" where "grantorId" = $1 and "revokedAt" is null`, [p.id])).rows[0].n).toBe(0)
+      expect((await pool().query(`select count(*)::int as n from "reviewer_role" where "userId" = $1`, [p.id])).rows[0].n).toBe(0)
+      expect((await pool().query(`select count(*)::int as n from "head_role" where "userId" = $1`, [p.id])).rows[0].n).toBe(0)
+      const rows = await departures(p.id)
+      expect(rows).toHaveLength(1)
+      expect(rows[0]).toMatchObject({ verifierId: v.id, outcome: 'former', source: 'Resignation accepted, order 12 of 20 Nov 2026' })
+      expect([...rows[0].rolesRemoved].sort()).toEqual(['head', 'reviewer'])
+      const detail = await service(v).open(p.id)
+      expect(detail).toMatchObject({ ok: true, detail: { state: 'left', departure: { outcome: 'former' } } })
+    })
+    it('refuses yourself, a person already marked, a non-Registrar, a stale passkey and a missing confirmation, with no trace', async () => {
+      const v = await account('v', { verifier: true })
+      const plain = await account('plain')
+      const p = await account('p')
+      expect(await service(v).leave({ subjectId: v.id, ...leave() })).toEqual({ ok: false, error: 'unavailable' })
+      expect(await service(plain).leave({ subjectId: p.id, ...leave() })).toEqual({ ok: false, error: 'unavailable' })
+      expect(await service(v, { fresh: false }).leave({ subjectId: p.id, ...leave() })).toEqual({ ok: false, error: 'fresh' })
+      expect(await service(v).leave({ subjectId: p.id, ...leave({ confirmed: false }) })).toMatchObject({ ok: false, error: 'invalid' })
+      expect(await service(v).leave({ subjectId: p.id, ...leave({ outcome: 'retired' }) })).toMatchObject({ ok: false, error: 'invalid' })
+      expect(await service(v).leave({ subjectId: p.id, ...leave({ source: 'no' }) })).toMatchObject({ ok: false, error: 'invalid' })
+      expect(await service(null).leave({ subjectId: p.id, ...leave() })).toEqual({ ok: false, error: 'session' })
+      expect(await departures(p.id)).toEqual([])
+      expect(await status(p.id)).toBeUndefined()
+      expect(await service(v).leave({ subjectId: p.id, ...leave({ outcome: 'emeritus' }) })).toMatchObject({ ok: true })
+      expect(await service(v).leave({ subjectId: p.id, ...leave() })).toEqual({ ok: false, error: 'already' })
+      expect(await departures(p.id)).toHaveLength(1)
+    })
+    it('a Registrar marked as left loses the role, and the log cannot be edited or deleted', async () => {
+      const v = await account('v', { verifier: true })
+      const v2 = await account('v2', { verifier: true })
+      expect(await service(v).leave({ subjectId: v2.id, ...leave() })).toMatchObject({ ok: true })
+      expect((await departures(v2.id))[0].rolesRemoved).toEqual(['registrar'])
+      expect(await service(v2).search('Person')).toEqual({ ok: false, error: 'unavailable' })
+    })
+    it('the database refuses a bad outcome or a short source', async () => {
+      const p = await account('p')
+      await expect(pool().query(`insert into "account_departure" ("subjectId","outcome","source") values ($1,'fired','long enough source')`, [p.id])).rejects.toThrow()
+      await expect(pool().query(`insert into "account_departure" ("subjectId","outcome","source") values ($1,'former','abcd')`, [p.id])).rejects.toThrow()
+    })
+  })
 })
 
 describe.skipIf(!DB)('public page bridge (FP-20), PostgreSQL store', () => {
@@ -3629,7 +3687,7 @@ describe.skipIf(!DB)('public page bridge (FP-20), PostgreSQL store', () => {
     const { createPgBridgeStore } = await import('@/modules/portal/bridge/pgStore')
     const s = createPgBridgeStore(pool())
     const a = await account('state')
-    expect(await s.source(a)).toEqual({ recordRef: null, edit: null, approvedAt: null })
+    expect(await s.source(a)).toEqual({ recordRef: null, edit: null, approvedAt: null, departure: null })
     expect(await s.state(a)).toBeNull()
     await pool().query(`insert into "account_status" ("userId","status","recordRef") values ($1,'active','sample-person-02')`, [a])
     expect((await s.source(a)).recordRef).toBe('sample-person-02')
@@ -3639,6 +3697,18 @@ describe.skipIf(!DB)('public page bridge (FP-20), PostgreSQL store', () => {
     const t2 = new Date('2026-11-27T11:00:00Z')
     await s.record(a, { ok: false, error: 'site not reachable', at: t2 })
     expect(await s.state(a)).toMatchObject({ lastAttemptAt: t2, lastOkAt: t1, lastHash: 'a'.repeat(64), lastError: 'site not reachable' })
+  })
+
+  it('reports a departure only while the account is marked as left (FP-22)', async () => {
+    const { createPgBridgeStore } = await import('@/modules/portal/bridge/pgStore')
+    const s = createPgBridgeStore(pool())
+    const a = await account('departed')
+    await pool().query(`insert into "account_status" ("userId","status","recordRef") values ($1,'left','sample-person-02')`, [a])
+    expect((await s.source(a)).departure).toBeNull() // no log row yet
+    await pool().query(`insert into "account_departure" ("subjectId","outcome","source","at") values ($1,'former','Order 1 of 1 Nov 2026', now() - interval '1 day'), ($1,'emeritus','Order 2 of 2 Nov 2026', now())`, [a])
+    expect((await s.source(a)).departure).toBe('emeritus') // the latest row
+    await pool().query(`update "account_status" set "status" = 'active' where "userId" = $1`, [a])
+    expect((await s.source(a)).departure).toBeNull() // reinstated: not a departure
   })
 
   it('refuses an over-long error text at the database, and deleting the account removes the row', async () => {

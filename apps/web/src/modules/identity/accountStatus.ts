@@ -13,6 +13,26 @@ export type StatusStore = {
   set(userId: string, status: AccountStatus, now: number): Promise<'ok' | 'no-account'>
 }
 
+/**
+ * Sets the status inside the caller's transaction. Leaving or suspension ends every session and revokes every delegation the person
+ * gave or holds, the same moment (section 5.6, FP-50). The operator command and the Registrar's "Mark as left" both use this.
+ */
+export async function applyStatus(client: Pick<pg.PoolClient, 'query'>, userId: string, status: AccountStatus, now: number): Promise<'ok' | 'no-account'> {
+  if (!ACCOUNT_STATUSES.includes(status)) throw new Error('unknown account status')
+  const user = await client.query(`select 1 from "user" where "id" = $1`, [userId])
+  if (user.rowCount !== 1) return 'no-account'
+  await client.query(
+    `insert into "account_status" ("userId","status") values ($1,$2)
+     on conflict ("userId") do update set "status" = excluded."status"`,
+    [userId, status],
+  )
+  if (status === 'suspended' || status === 'left') {
+    await client.query(`delete from "session" where "userId" = $1`, [userId])
+    await client.query(`update "delegation" set "revokedAt" = $2 where ("grantorId" = $1 or "delegateId" = $1) and "revokedAt" is null`, [userId, new Date(now)])
+  }
+  return 'ok'
+}
+
 export function createPgStatusStore(pool: pg.Pool): StatusStore {
   return {
     async get(userId) {
@@ -27,23 +47,9 @@ export function createPgStatusStore(pool: pg.Pool): StatusStore {
       const client = await pool.connect()
       try {
         await client.query('begin')
-        const user = await client.query(`select 1 from "user" where "id" = $1`, [userId])
-        if (user.rowCount !== 1) {
-          await client.query('rollback')
-          return 'no-account'
-        }
-        await client.query(
-          `insert into "account_status" ("userId","status") values ($1,$2)
-           on conflict ("userId") do update set "status" = excluded."status"`,
-          [userId, status],
-        )
-        if (status === 'suspended' || status === 'left') {
-          await client.query(`delete from "session" where "userId" = $1`, [userId])
-          // Departure revokes every delegation the person gave or holds, the same moment (section 5.6, FP-50).
-          await client.query(`update "delegation" set "revokedAt" = $2 where ("grantorId" = $1 or "delegateId" = $1) and "revokedAt" is null`, [userId, new Date(now)])
-        }
-        await client.query('commit')
-        return 'ok'
+        const result = await applyStatus(client, userId, status, now)
+        await client.query(result === 'ok' ? 'commit' : 'rollback')
+        return result
       } catch (e) {
         await client.query('rollback').catch(() => {})
         throw e
