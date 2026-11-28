@@ -46,9 +46,11 @@ Your bar at the very top names you: a head of department sees "You are the head 
 
 ## What you control on your department or programme page
 
+Your own page is one click away: the top of the left menu says "Your department page" (head) or "Your programme page" (coordinator) and links straight to it. The same page, with all its parts, is on your dashboard as "Edit the whole page". A head's dashboard lists only the department page; programme pages belong to their coordinators and reach the head through the review tray. "Home page content" is the web team's and is not in the menu of heads or coordinators.
+
 Each page you look after shows, on your dashboard, a link to the live page (once it is live) and a list of its **parts**, each marked filled or empty with how many rows it has. An empty part is not an error: the page then shows the standard text the university template provides for it. Fill a part and your text replaces the standard text for that part only, so one edit never changes anything else on the page.
 
-- **Head of department:** the introduction, about, vision, mission, highlights, labs, research areas, careers, student life, questions and the two pictures of your department page; and, for each programme, the same programme parts as a coordinator. You also add programmes and create coordinator accounts.
+- **Head of department:** the introduction, about, vision, mission, highlights, labs, research areas, careers, student life, questions and the two pictures of your department page. Programme pages are looked after by their coordinators; you review them from your tray (your access to edit them is unchanged). You also add programmes and create coordinator accounts.
 - **Coordinator:** the summary, about, learning outcomes, why study it, tracks, skills, curriculum by semester, careers, questions and pictures of your own programme only.
 - **Nobody edits in the CMS:** the layout, the order and headings of the sections, the colours, the banner artwork and the Urdu interface words. They are the same on every department so the university looks like one place.
 - **Worked out for you:** programme cards, counts, the people list and news. Change the source record (a programme, a person, a news item), not the page.
