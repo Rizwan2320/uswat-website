@@ -2,7 +2,7 @@
 
 **Objective.** Every department and programme page has an alumni section its own head or coordinator can change, from their own dashboard. News, notices and events stay in their menu.
 
-**Paths touched.** `collections/academics/pageFields.ts` (`alumniField`), `Departments.ts`, `Programmes.ts` (field added; department short name limit 60), migration `20261128_100642_alumni_on_academic_pages`, `payload-types.ts`, `governance/pageSections.ts` (part and wording), `governance/adminMenu.ts` and `payload.config.ts` (coordinator keeps Posts, Notices, Events), `site/academics/` (`alumni.ts` card type, `cmsContent.ts`, `Alumni.tsx`, both rich pages, styles), `i18n/urWords.ts` (draft Urdu), tests, docs.
+**Paths touched.** `collections/academics/pageFields.ts` (`alumniField`), `Departments.ts`, `Programmes.ts` (field added; department short name limit 60), migration `20261128_103128_alumni_on_academic_pages`, `payload-types.ts`, `governance/pageSections.ts` (part and wording), `governance/adminMenu.ts` and `payload.config.ts` (coordinator keeps Posts, Notices, Events), `site/academics/` (`alumni.ts` card type, `cmsContent.ts`, `Alumni.tsx`, both rich pages, styles), `i18n/urWords.ts` (draft Urdu), tests, docs.
 
 **Rule.** Same as the other parts (slice 3ar): rows in the CMS replace the code's alumni; none means the sample cards stay. A row needs a name, a year, a kind and a headline. A link is used only if safe; a photograph only with alt text.
 

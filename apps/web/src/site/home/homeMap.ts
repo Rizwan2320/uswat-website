@@ -1,7 +1,8 @@
-import type { HeroSlide } from '../content/hero'
+import type { HeroContent, HeroSlide } from '../content/hero'
 import type { admissions as admissionsFile } from '../content/admissions'
 import type { Portal, SiteImage, Stat } from '../content/types'
 import type { HomeColours } from '../../governance/homePalette'
+import { isSafeHref } from '../../utilities/safeHref'
 
 /* Pure mapping from the published `home-content` global (the admin's "Home page content") to the shapes the
    home page reads. Nothing here opens the CMS, so unit tests can use it. A part that the global does not hold
@@ -23,8 +24,39 @@ type CtaDoc = {
   icon?: HeroSlide['primary']['icon'] | null
 }
 
+type LinkRow = { label?: string | null; href?: string | null }
+
 export type HomeDoc = {
+  topBar?: {
+    place?: string | null
+    established?: string | null
+    studentUrl?: string | null
+    facultyUrl?: string | null
+  } | null
+  footer?: {
+    tagline?: string | null
+    address?: string | null
+    phone?: string | null
+    phoneNote?: string | null
+    email?: string | null
+    facebook?: string | null
+    youtube?: string | null
+    linkedin?: string | null
+    tiktok?: string | null
+    mapUrl?: string | null
+    quickLinks?: LinkRow[] | null
+    usefulLinks?: LinkRow[] | null
+  } | null
+  hero?: {
+    eyebrow?: string | null
+    lineOne?: string | null
+    lineTwo?: string | null
+    lineThree?: string | null
+    accent?: string | null
+    sub?: string | null
+  } | null
   leadership?: {
+    photo?: number | MediaLike | null
     name?: string | null
     role?: string | null
     quote?: string | null
@@ -116,6 +148,9 @@ export function toStats(doc: HomeDoc | null | undefined, fallback: Stat[]): Stat
 
 const filled = (v: string | null | undefined): v is string =>
   typeof v === 'string' && v.trim() !== ''
+/** A link the editor typed: used only when it is safe to put in an `href` (the admin checks it too, at publish). */
+const safe = (v: string | null | undefined, fallback: string): string =>
+  filled(v) && isSafeHref(v) ? v.trim() : fallback
 const ICONS: readonly Portal['icon'][] = ['book', 'badge', 'document', 'calendar', 'gear']
 
 export type AdmissionsData = {
@@ -189,11 +224,16 @@ export function toPortals(doc: HomeDoc | null | undefined, fallback: Portal[]): 
  * The Vice Chancellor's message. Each field the editor filled replaces the sourced value; an empty one keeps it.
  * The full message is the filled paragraphs in order; with none, the sourced full message stays. Paragraphs the
  * editor wrote count as the complete message (the "read the rest on the university website" line is only for
- * a message that was cut short).
+ * a message that was cut short). The photograph is the uploaded one when it can be shown (a picture with its
+ * address, alt text and size), and the sourced portrait otherwise.
  */
-export function toLeadership<T extends LeadershipShape>(doc: HomeDoc | null | undefined, fallback: T): T {
+export function toLeadership<T extends LeadershipShape>(
+  doc: HomeDoc | null | undefined,
+  fallback: T,
+  fallbackPhoto: SiteImage,
+): T & { photo: SiteImage } {
   const l = doc?.leadership
-  if (!l) return fallback
+  if (!l) return { ...fallback, photo: fallbackPhoto }
   const paragraphs = (l.paragraphs ?? [])
     .map((p) => (typeof p.text === 'string' ? p.text.trim() : ''))
     .filter((t) => t !== '')
@@ -205,6 +245,7 @@ export function toLeadership<T extends LeadershipShape>(doc: HomeDoc | null | un
     fullMessage: paragraphs.length > 0 ? paragraphs : fallback.fullMessage,
     fullMessageComplete: paragraphs.length > 0 ? true : fallback.fullMessageComplete,
     closing: filled(l.closing) ? l.closing.trim() : fallback.closing,
+    photo: toImage(l.photo) ?? fallbackPhoto,
   }
 }
 
@@ -215,4 +256,126 @@ type LeadershipShape = {
   fullMessage: string[]
   fullMessageComplete: boolean
   closing: string
+}
+
+/**
+ * The words beside the slider. Each field the editor filled replaces its part of the sourced headline; an empty
+ * one keeps it. The third line carries the highlighted word, so a headline always has three lines.
+ */
+export function toHeroContent(doc: HomeDoc | null | undefined, fallback: HeroContent): HeroContent {
+  const h = doc?.hero
+  if (!h) return fallback
+  const [one, two, three] = fallback.lines
+  return {
+    eyebrow: filled(h.eyebrow) ? h.eyebrow.trim() : fallback.eyebrow,
+    lines: [
+      filled(h.lineOne) ? { text: h.lineOne.trim() } : one!,
+      filled(h.lineTwo) ? { text: h.lineTwo.trim() } : two!,
+      filled(h.lineThree) || filled(h.accent)
+        ? {
+            text: filled(h.lineThree) ? h.lineThree.trim() : three!.text.trim(),
+            accent: filled(h.accent) ? h.accent.trim() : three!.accent,
+          }
+        : three!,
+    ],
+    sub: filled(h.sub) ? h.sub.trim() : fallback.sub,
+  }
+}
+
+export type TopBarData = { place: string; established: string; studentUrl: string; facultyUrl: string }
+
+export type TopBarFallback = {
+  place: string
+  established: string
+  studentUrl: string
+  facultyUrl: string
+}
+
+/** The top bar. Each field the editor filled replaces the standard text or link; an empty one keeps it. */
+export function toTopBar(doc: HomeDoc | null | undefined, fallback: TopBarFallback): TopBarData {
+  const t = doc?.topBar
+  return {
+    place: filled(t?.place) ? t.place.trim() : fallback.place,
+    established: filled(t?.established) ? t.established.trim() : fallback.established,
+    studentUrl: safe(t?.studentUrl, fallback.studentUrl),
+    facultyUrl: safe(t?.facultyUrl, fallback.facultyUrl),
+  }
+}
+
+/**
+ * The number to dial for a telephone written the way people write it: 0946-730510 gives +92946730510, a number
+ * that starts with + keeps its country code, 00 becomes +. Anything else cannot be worked out: null.
+ */
+export function telHref(display: string): string | null {
+  const d = display.trim().replace(/[^\d+]/g, '')
+  if (d.startsWith('+') && d.length >= 8) return d
+  if (d.startsWith('00') && d.length >= 9) return `+${d.slice(2)}`
+  if (d.startsWith('0') && d.length >= 8) return `+92${d.slice(1)}`
+  return null
+}
+
+type FooterLink = { label: string; href: string }
+type SocialLink = { id: string; label: string; href: string }
+
+export type FooterFallback = {
+  tagline: string
+  address: { footerLine: string; sample: boolean }
+  phone: { display: string; tel: string; note: string }
+  email: string
+  social: readonly SocialLink[]
+  mapHref: string
+  quick: readonly FooterLink[]
+  useful: readonly FooterLink[]
+}
+
+export type FooterData = {
+  tagline: string
+  addressLine: string
+  addressSample: boolean
+  phone: { display: string; tel: string; note: string }
+  email: string
+  social: SocialLink[]
+  mapHref: string
+  quick: FooterLink[]
+  useful: FooterLink[]
+}
+
+const linkRows = (rows: LinkRow[] | null | undefined, fallback: readonly FooterLink[]): FooterLink[] => {
+  const out: FooterLink[] = []
+  for (const r of rows ?? []) {
+    if (filled(r.label) && filled(r.href) && isSafeHref(r.href))
+      out.push({ label: r.label.trim(), href: r.href.trim() })
+  }
+  return out.length > 0 ? out : [...fallback]
+}
+
+/**
+ * The footer. Each field the editor filled replaces the standard text or link; an empty one keeps it. An address
+ * the editor typed is the university's own and no longer carries the Sample tag. Link lists are complete rows only;
+ * with none, the standard list stays.
+ */
+export function toFooter(doc: HomeDoc | null | undefined, fallback: FooterFallback): FooterData {
+  const f = doc?.footer
+  const display = filled(f?.phone) ? f.phone.trim() : fallback.phone.display
+  const tel = filled(f?.phone) ? (telHref(f.phone) ?? fallback.phone.tel) : fallback.phone.tel
+  const own: Record<string, string | null | undefined> = {
+    facebook: f?.facebook,
+    youtube: f?.youtube,
+    linkedin: f?.linkedin,
+    tiktok: f?.tiktok,
+  }
+  return {
+    tagline: filled(f?.tagline) ? f.tagline.trim() : fallback.tagline,
+    addressLine: filled(f?.address) ? f.address.trim() : fallback.address.footerLine,
+    addressSample: filled(f?.address) ? false : fallback.address.sample,
+    phone: { display, tel, note: filled(f?.phoneNote) ? f.phoneNote.trim() : fallback.phone.note },
+    email: filled(f?.email) && /^[^\s@]+@[^\s@]+$/.test(f.email.trim()) ? f.email.trim() : fallback.email,
+    social: fallback.social.map((s) => {
+      const v = own[s.id]
+      return { id: s.id, label: s.label, href: safe(v, s.href) }
+    }),
+    mapHref: safe(f?.mapUrl, fallback.mapHref),
+    quick: linkRows(f?.quickLinks, fallback.quick),
+    useful: linkRows(f?.usefulLinks, fallback.useful),
+  }
 }

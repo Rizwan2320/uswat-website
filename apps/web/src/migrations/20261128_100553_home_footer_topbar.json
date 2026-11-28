@@ -22071,236 +22071,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.departments_page_content_alumni": {
-      "name": "departments_page_content_alumni",
-      "schema": "",
-      "columns": {
-        "_order": {
-          "name": "_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "_parent_id": {
-          "name": "_parent_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "varchar",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "class_of": {
-          "name": "class_of",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "kind": {
-          "name": "kind",
-          "type": "enum_departments_page_content_alumni_kind",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "photo_id": {
-          "name": "photo_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "work_url": {
-          "name": "work_url",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "departments_page_content_alumni_order_idx": {
-          "name": "departments_page_content_alumni_order_idx",
-          "columns": [
-            {
-              "expression": "_order",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "departments_page_content_alumni_parent_id_idx": {
-          "name": "departments_page_content_alumni_parent_id_idx",
-          "columns": [
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "departments_page_content_alumni_photo_idx": {
-          "name": "departments_page_content_alumni_photo_idx",
-          "columns": [
-            {
-              "expression": "photo_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "departments_page_content_alumni_photo_id_media_id_fk": {
-          "name": "departments_page_content_alumni_photo_id_media_id_fk",
-          "tableFrom": "departments_page_content_alumni",
-          "tableTo": "media",
-          "columnsFrom": [
-            "photo_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "departments_page_content_alumni_parent_id_fk": {
-          "name": "departments_page_content_alumni_parent_id_fk",
-          "tableFrom": "departments_page_content_alumni",
-          "tableTo": "departments",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.departments_page_content_alumni_locales": {
-      "name": "departments_page_content_alumni_locales",
-      "schema": "",
-      "columns": {
-        "name": {
-          "name": "name",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "headline": {
-          "name": "headline",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "summary": {
-          "name": "summary",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "_locale": {
-          "name": "_locale",
-          "type": "_locales",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "_parent_id": {
-          "name": "_parent_id",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "departments_page_content_alumni_locales_locale_parent_id_uni": {
-          "name": "departments_page_content_alumni_locales_locale_parent_id_uni",
-          "columns": [
-            {
-              "expression": "_locale",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "departments_page_content_alumni_locales_parent_id_idx": {
-          "name": "departments_page_content_alumni_locales_parent_id_idx",
-          "columns": [
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "departments_page_content_alumni_locales_parent_id_fk": {
-          "name": "departments_page_content_alumni_locales_parent_id_fk",
-          "tableFrom": "departments_page_content_alumni_locales",
-          "tableTo": "departments_page_content_alumni",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.departments_page_content_faq": {
       "name": "departments_page_content_faq",
       "schema": "",
@@ -24577,242 +24347,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public._departments_v_version_page_content_alumni": {
-      "name": "_departments_v_version_page_content_alumni",
-      "schema": "",
-      "columns": {
-        "_order": {
-          "name": "_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "_parent_id": {
-          "name": "_parent_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "class_of": {
-          "name": "class_of",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "kind": {
-          "name": "kind",
-          "type": "enum__departments_v_version_page_content_alumni_kind",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "photo_id": {
-          "name": "photo_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "work_url": {
-          "name": "work_url",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "_uuid": {
-          "name": "_uuid",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "_departments_v_version_page_content_alumni_order_idx": {
-          "name": "_departments_v_version_page_content_alumni_order_idx",
-          "columns": [
-            {
-              "expression": "_order",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "_departments_v_version_page_content_alumni_parent_id_idx": {
-          "name": "_departments_v_version_page_content_alumni_parent_id_idx",
-          "columns": [
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "_departments_v_version_page_content_alumni_photo_idx": {
-          "name": "_departments_v_version_page_content_alumni_photo_idx",
-          "columns": [
-            {
-              "expression": "photo_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "_departments_v_version_page_content_alumni_photo_id_media_id_fk": {
-          "name": "_departments_v_version_page_content_alumni_photo_id_media_id_fk",
-          "tableFrom": "_departments_v_version_page_content_alumni",
-          "tableTo": "media",
-          "columnsFrom": [
-            "photo_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "_departments_v_version_page_content_alumni_parent_id_fk": {
-          "name": "_departments_v_version_page_content_alumni_parent_id_fk",
-          "tableFrom": "_departments_v_version_page_content_alumni",
-          "tableTo": "_departments_v",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public._departments_v_version_page_content_alumni_locales": {
-      "name": "_departments_v_version_page_content_alumni_locales",
-      "schema": "",
-      "columns": {
-        "name": {
-          "name": "name",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "headline": {
-          "name": "headline",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "summary": {
-          "name": "summary",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "_locale": {
-          "name": "_locale",
-          "type": "_locales",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "_parent_id": {
-          "name": "_parent_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "_departments_v_version_page_content_alumni_locales_locale_pa": {
-          "name": "_departments_v_version_page_content_alumni_locales_locale_pa",
-          "columns": [
-            {
-              "expression": "_locale",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "_departments_v_version_page_content_alumni_locales_paren_idx": {
-          "name": "_departments_v_version_page_content_alumni_locales_paren_idx",
-          "columns": [
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "_departments_v_version_page_content_alumni_locales_parent_fk": {
-          "name": "_departments_v_version_page_content_alumni_locales_parent_fk",
-          "tableFrom": "_departments_v_version_page_content_alumni_locales",
-          "tableTo": "_departments_v_version_page_content_alumni",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public._departments_v_version_page_content_faq": {
       "name": "_departments_v_version_page_content_faq",
       "schema": "",
@@ -26991,236 +26525,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.programmes_page_content_alumni": {
-      "name": "programmes_page_content_alumni",
-      "schema": "",
-      "columns": {
-        "_order": {
-          "name": "_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "_parent_id": {
-          "name": "_parent_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "varchar",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "class_of": {
-          "name": "class_of",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "kind": {
-          "name": "kind",
-          "type": "enum_programmes_page_content_alumni_kind",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "photo_id": {
-          "name": "photo_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "work_url": {
-          "name": "work_url",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "programmes_page_content_alumni_order_idx": {
-          "name": "programmes_page_content_alumni_order_idx",
-          "columns": [
-            {
-              "expression": "_order",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "programmes_page_content_alumni_parent_id_idx": {
-          "name": "programmes_page_content_alumni_parent_id_idx",
-          "columns": [
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "programmes_page_content_alumni_photo_idx": {
-          "name": "programmes_page_content_alumni_photo_idx",
-          "columns": [
-            {
-              "expression": "photo_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "programmes_page_content_alumni_photo_id_media_id_fk": {
-          "name": "programmes_page_content_alumni_photo_id_media_id_fk",
-          "tableFrom": "programmes_page_content_alumni",
-          "tableTo": "media",
-          "columnsFrom": [
-            "photo_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "programmes_page_content_alumni_parent_id_fk": {
-          "name": "programmes_page_content_alumni_parent_id_fk",
-          "tableFrom": "programmes_page_content_alumni",
-          "tableTo": "programmes",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.programmes_page_content_alumni_locales": {
-      "name": "programmes_page_content_alumni_locales",
-      "schema": "",
-      "columns": {
-        "name": {
-          "name": "name",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "headline": {
-          "name": "headline",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "summary": {
-          "name": "summary",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "_locale": {
-          "name": "_locale",
-          "type": "_locales",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "_parent_id": {
-          "name": "_parent_id",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "programmes_page_content_alumni_locales_locale_parent_id_uniq": {
-          "name": "programmes_page_content_alumni_locales_locale_parent_id_uniq",
-          "columns": [
-            {
-              "expression": "_locale",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "programmes_page_content_alumni_locales_parent_id_idx": {
-          "name": "programmes_page_content_alumni_locales_parent_id_idx",
-          "columns": [
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "programmes_page_content_alumni_locales_parent_id_fk": {
-          "name": "programmes_page_content_alumni_locales_parent_id_fk",
-          "tableFrom": "programmes_page_content_alumni_locales",
-          "tableTo": "programmes_page_content_alumni",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.programmes_page_content_faq": {
       "name": "programmes_page_content_faq",
       "schema": "",
@@ -29298,242 +28602,6 @@
           "name": "_programmes_v_version_page_content_careers_locales_parent_fk",
           "tableFrom": "_programmes_v_version_page_content_careers_locales",
           "tableTo": "_programmes_v_version_page_content_careers",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public._programmes_v_version_page_content_alumni": {
-      "name": "_programmes_v_version_page_content_alumni",
-      "schema": "",
-      "columns": {
-        "_order": {
-          "name": "_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "_parent_id": {
-          "name": "_parent_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "class_of": {
-          "name": "class_of",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "kind": {
-          "name": "kind",
-          "type": "enum__programmes_v_version_page_content_alumni_kind",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "photo_id": {
-          "name": "photo_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "work_url": {
-          "name": "work_url",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "_uuid": {
-          "name": "_uuid",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "_programmes_v_version_page_content_alumni_order_idx": {
-          "name": "_programmes_v_version_page_content_alumni_order_idx",
-          "columns": [
-            {
-              "expression": "_order",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "_programmes_v_version_page_content_alumni_parent_id_idx": {
-          "name": "_programmes_v_version_page_content_alumni_parent_id_idx",
-          "columns": [
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "_programmes_v_version_page_content_alumni_photo_idx": {
-          "name": "_programmes_v_version_page_content_alumni_photo_idx",
-          "columns": [
-            {
-              "expression": "photo_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "_programmes_v_version_page_content_alumni_photo_id_media_id_fk": {
-          "name": "_programmes_v_version_page_content_alumni_photo_id_media_id_fk",
-          "tableFrom": "_programmes_v_version_page_content_alumni",
-          "tableTo": "media",
-          "columnsFrom": [
-            "photo_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "_programmes_v_version_page_content_alumni_parent_id_fk": {
-          "name": "_programmes_v_version_page_content_alumni_parent_id_fk",
-          "tableFrom": "_programmes_v_version_page_content_alumni",
-          "tableTo": "_programmes_v",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public._programmes_v_version_page_content_alumni_locales": {
-      "name": "_programmes_v_version_page_content_alumni_locales",
-      "schema": "",
-      "columns": {
-        "name": {
-          "name": "name",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "headline": {
-          "name": "headline",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "summary": {
-          "name": "summary",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "_locale": {
-          "name": "_locale",
-          "type": "_locales",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "_parent_id": {
-          "name": "_parent_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "_programmes_v_version_page_content_alumni_locales_locale_par": {
-          "name": "_programmes_v_version_page_content_alumni_locales_locale_par",
-          "columns": [
-            {
-              "expression": "_locale",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "_programmes_v_version_page_content_alumni_locales_parent_idx": {
-          "name": "_programmes_v_version_page_content_alumni_locales_parent_idx",
-          "columns": [
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "_programmes_v_version_page_content_alumni_locales_parent__fk": {
-          "name": "_programmes_v_version_page_content_alumni_locales_parent__fk",
-          "tableFrom": "_programmes_v_version_page_content_alumni_locales",
-          "tableTo": "_programmes_v_version_page_content_alumni",
           "columnsFrom": [
             "_parent_id"
           ],
@@ -42072,6 +41140,182 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.home_content_footer_quick_links": {
+      "name": "home_content_footer_quick_links",
+      "schema": "",
+      "columns": {
+        "_order": {
+          "name": "_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "_parent_id": {
+          "name": "_parent_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "href": {
+          "name": "href",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "home_content_footer_quick_links_order_idx": {
+          "name": "home_content_footer_quick_links_order_idx",
+          "columns": [
+            {
+              "expression": "_order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "home_content_footer_quick_links_parent_id_idx": {
+          "name": "home_content_footer_quick_links_parent_id_idx",
+          "columns": [
+            {
+              "expression": "_parent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "home_content_footer_quick_links_parent_id_fk": {
+          "name": "home_content_footer_quick_links_parent_id_fk",
+          "tableFrom": "home_content_footer_quick_links",
+          "tableTo": "home_content",
+          "columnsFrom": [
+            "_parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.home_content_footer_useful_links": {
+      "name": "home_content_footer_useful_links",
+      "schema": "",
+      "columns": {
+        "_order": {
+          "name": "_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "_parent_id": {
+          "name": "_parent_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "href": {
+          "name": "href",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "home_content_footer_useful_links_order_idx": {
+          "name": "home_content_footer_useful_links_order_idx",
+          "columns": [
+            {
+              "expression": "_order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "home_content_footer_useful_links_parent_id_idx": {
+          "name": "home_content_footer_useful_links_parent_id_idx",
+          "columns": [
+            {
+              "expression": "_parent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "home_content_footer_useful_links_parent_id_fk": {
+          "name": "home_content_footer_useful_links_parent_id_fk",
+          "tableFrom": "home_content_footer_useful_links",
+          "tableTo": "home_content",
+          "columnsFrom": [
+            "_parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.home_content": {
       "name": "home_content",
       "schema": "",
@@ -42106,6 +41350,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "leadership_photo_id": {
+          "name": "leadership_photo_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "leadership_name": {
           "name": "leadership_name",
           "type": "varchar",
@@ -42126,6 +41376,126 @@
         },
         "leadership_closing": {
           "name": "leadership_closing",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hero_eyebrow": {
+          "name": "hero_eyebrow",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hero_line_one": {
+          "name": "hero_line_one",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hero_line_two": {
+          "name": "hero_line_two",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hero_line_three": {
+          "name": "hero_line_three",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hero_accent": {
+          "name": "hero_accent",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hero_sub": {
+          "name": "hero_sub",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "top_bar_place": {
+          "name": "top_bar_place",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "top_bar_established": {
+          "name": "top_bar_established",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "top_bar_student_url": {
+          "name": "top_bar_student_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "top_bar_faculty_url": {
+          "name": "top_bar_faculty_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "footer_tagline": {
+          "name": "footer_tagline",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "footer_address": {
+          "name": "footer_address",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "footer_phone": {
+          "name": "footer_phone",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "footer_phone_note": {
+          "name": "footer_phone_note",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "footer_email": {
+          "name": "footer_email",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "footer_facebook": {
+          "name": "footer_facebook",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "footer_youtube": {
+          "name": "footer_youtube",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "footer_linkedin": {
+          "name": "footer_linkedin",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "footer_tiktok": {
+          "name": "footer_tiktok",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "footer_map_url": {
+          "name": "footer_map_url",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
@@ -42170,6 +41540,21 @@
         }
       },
       "indexes": {
+        "home_content_leadership_leadership_photo_idx": {
+          "name": "home_content_leadership_leadership_photo_idx",
+          "columns": [
+            {
+              "expression": "leadership_photo_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "home_content__status_idx": {
           "name": "home_content__status_idx",
           "columns": [
@@ -42186,7 +41571,21 @@
           "with": {}
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "home_content_leadership_photo_id_media_id_fk": {
+          "name": "home_content_leadership_photo_id_media_id_fk",
+          "tableFrom": "home_content",
+          "tableTo": "media",
+          "columnsFrom": [
+            "leadership_photo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -43012,6 +42411,194 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public._home_content_v_version_footer_quick_links": {
+      "name": "_home_content_v_version_footer_quick_links",
+      "schema": "",
+      "columns": {
+        "_order": {
+          "name": "_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "_parent_id": {
+          "name": "_parent_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "href": {
+          "name": "href",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "_uuid": {
+          "name": "_uuid",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "_home_content_v_version_footer_quick_links_order_idx": {
+          "name": "_home_content_v_version_footer_quick_links_order_idx",
+          "columns": [
+            {
+              "expression": "_order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_home_content_v_version_footer_quick_links_parent_id_idx": {
+          "name": "_home_content_v_version_footer_quick_links_parent_id_idx",
+          "columns": [
+            {
+              "expression": "_parent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "_home_content_v_version_footer_quick_links_parent_id_fk": {
+          "name": "_home_content_v_version_footer_quick_links_parent_id_fk",
+          "tableFrom": "_home_content_v_version_footer_quick_links",
+          "tableTo": "_home_content_v",
+          "columnsFrom": [
+            "_parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public._home_content_v_version_footer_useful_links": {
+      "name": "_home_content_v_version_footer_useful_links",
+      "schema": "",
+      "columns": {
+        "_order": {
+          "name": "_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "_parent_id": {
+          "name": "_parent_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "href": {
+          "name": "href",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "_uuid": {
+          "name": "_uuid",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "_home_content_v_version_footer_useful_links_order_idx": {
+          "name": "_home_content_v_version_footer_useful_links_order_idx",
+          "columns": [
+            {
+              "expression": "_order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_home_content_v_version_footer_useful_links_parent_id_idx": {
+          "name": "_home_content_v_version_footer_useful_links_parent_id_idx",
+          "columns": [
+            {
+              "expression": "_parent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "_home_content_v_version_footer_useful_links_parent_id_fk": {
+          "name": "_home_content_v_version_footer_useful_links_parent_id_fk",
+          "tableFrom": "_home_content_v_version_footer_useful_links",
+          "tableTo": "_home_content_v",
+          "columnsFrom": [
+            "_parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public._home_content_v": {
       "name": "_home_content_v",
       "schema": "",
@@ -43046,6 +42633,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "version_leadership_photo_id": {
+          "name": "version_leadership_photo_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "version_leadership_name": {
           "name": "version_leadership_name",
           "type": "varchar",
@@ -43066,6 +42659,126 @@
         },
         "version_leadership_closing": {
           "name": "version_leadership_closing",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hero_eyebrow": {
+          "name": "version_hero_eyebrow",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hero_line_one": {
+          "name": "version_hero_line_one",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hero_line_two": {
+          "name": "version_hero_line_two",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hero_line_three": {
+          "name": "version_hero_line_three",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hero_accent": {
+          "name": "version_hero_accent",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hero_sub": {
+          "name": "version_hero_sub",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_top_bar_place": {
+          "name": "version_top_bar_place",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_top_bar_established": {
+          "name": "version_top_bar_established",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_top_bar_student_url": {
+          "name": "version_top_bar_student_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_top_bar_faculty_url": {
+          "name": "version_top_bar_faculty_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_footer_tagline": {
+          "name": "version_footer_tagline",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_footer_address": {
+          "name": "version_footer_address",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_footer_phone": {
+          "name": "version_footer_phone",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_footer_phone_note": {
+          "name": "version_footer_phone_note",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_footer_email": {
+          "name": "version_footer_email",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_footer_facebook": {
+          "name": "version_footer_facebook",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_footer_youtube": {
+          "name": "version_footer_youtube",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_footer_linkedin": {
+          "name": "version_footer_linkedin",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_footer_tiktok": {
+          "name": "version_footer_tiktok",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_footer_map_url": {
+          "name": "version_footer_map_url",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
@@ -43143,6 +42856,21 @@
         }
       },
       "indexes": {
+        "_home_content_v_version_leadership_version_leadership_ph_idx": {
+          "name": "_home_content_v_version_leadership_version_leadership_ph_idx",
+          "columns": [
+            {
+              "expression": "version_leadership_photo_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "_home_content_v_version_version__status_idx": {
           "name": "_home_content_v_version_version__status_idx",
           "columns": [
@@ -43234,7 +42962,21 @@
           "with": {}
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "_home_content_v_version_leadership_photo_id_media_id_fk": {
+          "name": "_home_content_v_version_leadership_photo_id_media_id_fk",
+          "tableFrom": "_home_content_v",
+          "tableTo": "media",
+          "columnsFrom": [
+            "version_leadership_photo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -44856,15 +44598,6 @@
         "database"
       ]
     },
-    "public.enum_departments_page_content_alumni_kind": {
-      "name": "enum_departments_page_content_alumni_kind",
-      "schema": "public",
-      "values": [
-        "Thesis",
-        "Final-year project",
-        "Research paper"
-      ]
-    },
     "public.enum_departments_governance_status": {
       "name": "enum_departments_governance_status",
       "schema": "public",
@@ -45015,15 +44748,6 @@
         "database"
       ]
     },
-    "public.enum__departments_v_version_page_content_alumni_kind": {
-      "name": "enum__departments_v_version_page_content_alumni_kind",
-      "schema": "public",
-      "values": [
-        "Thesis",
-        "Final-year project",
-        "Research paper"
-      ]
-    },
     "public.enum__departments_v_version_governance_status": {
       "name": "enum__departments_v_version_governance_status",
       "schema": "public",
@@ -45164,15 +44888,6 @@
         "database"
       ]
     },
-    "public.enum_programmes_page_content_alumni_kind": {
-      "name": "enum_programmes_page_content_alumni_kind",
-      "schema": "public",
-      "values": [
-        "Thesis",
-        "Final-year project",
-        "Research paper"
-      ]
-    },
     "public.enum_programmes_governance_status": {
       "name": "enum_programmes_governance_status",
       "schema": "public",
@@ -45303,15 +45018,6 @@
         "cap",
         "gear",
         "database"
-      ]
-    },
-    "public.enum__programmes_v_version_page_content_alumni_kind": {
-      "name": "enum__programmes_v_version_page_content_alumni_kind",
-      "schema": "public",
-      "values": [
-        "Thesis",
-        "Final-year project",
-        "Research paper"
       ]
     },
     "public.enum__programmes_v_version_governance_status": {
@@ -45931,6 +45637,6 @@
     "tables": {},
     "columns": {}
   },
-  "id": "2b05c9da-267a-441e-ab22-362923637d3c",
+  "id": "9929f829-4b53-49ff-9a75-59de9b2746b5",
   "prevId": "00000000-0000-0000-0000-000000000000"
 }

@@ -10,6 +10,8 @@ import {
   HOME_STATS,
   colourValidate,
   portalsCountValidate,
+  FOOTER_LINKS,
+  phoneValidate,
   homeHrefValidate,
   portalHrefValidate,
   slidesCountValidate,
@@ -83,8 +85,8 @@ const colour = (
 })
 
 /**
- * The home page's photograph slider and statistics bar, editable in the CMS (slice 3z). The headline
- * and the sentence under it stay fixed (owner decision 2026-11-07). Drafts may be incomplete; the
+ * The home page, editable in the CMS (slice 3z onwards). The headline and the sentence under it were fixed
+ * (owner decision 2026-11-07) until the owner asked for the whole landing page to be editable (2026-11-28). Drafts may be incomplete; the
  * rules in governance/homeContent.ts apply when it is published, by approvers and above.
  */
 export const HomeContent: GlobalConfig = {
@@ -96,7 +98,7 @@ export const HomeContent: GlobalConfig = {
     // menu (slice 3as); admin, site manager and auditor do. Access rules are unchanged.
     hidden: hiddenFromEditors,
     description:
-      'The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message and colours. The headline and the sentence under it do not change here.',
+      'The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message, the headline text, the top bar and footer (shown on every page) and colours.',
   },
   access: { read: readHome },
   versions: { max: 25, drafts: true },
@@ -275,9 +277,19 @@ export const HomeContent: GlobalConfig = {
       type: 'group',
       admin: {
         description:
-          'The Vice Chancellor’s section on the home page and the full message in the window that opens from "Read Full Message". Leave a field empty to keep the standard text. The photograph stays as it is for now.',
+          'The Vice Chancellor’s section on the home page and the full message in the window that opens from "Read Full Message". Leave a field empty to keep the standard text or photograph.',
       },
       fields: [
+        {
+          name: 'photo',
+          label: 'Photograph',
+          type: 'upload',
+          relationTo: 'media',
+          admin: {
+            description:
+              'A portrait cut out from its background (PNG or WebP with a transparent background) looks best on the home page. It needs alt text and a recorded rights status in the Media library before you can publish. Leave it empty to keep the standard photograph.',
+          },
+        },
         {
           name: 'name',
           label: 'Name',
@@ -322,6 +334,197 @@ export const HomeContent: GlobalConfig = {
           type: 'text',
           maxLength: 60,
           admin: { description: 'Shown above the name at the end. For example: With best regards,' },
+        },
+      ],
+    },
+    {
+      name: 'hero',
+      label: 'Headline text',
+      type: 'group',
+      admin: {
+        description:
+          'The words beside the photographs at the top of the home page. Leave a field empty to keep the standard words.',
+      },
+      fields: [
+        {
+          name: 'eyebrow',
+          label: 'Small line above the headline',
+          type: 'text',
+          maxLength: 40,
+          admin: { description: 'Capital letters work best. For example: UNIVERSITY OF SWAT.' },
+        },
+        {
+          name: 'lineOne',
+          label: 'Headline, first line',
+          type: 'text',
+          maxLength: 40,
+          admin: { description: 'For example: Aspiring for' },
+        },
+        {
+          name: 'lineTwo',
+          label: 'Headline, second line',
+          type: 'text',
+          maxLength: 40,
+          admin: { description: 'For example: Quality Education' },
+        },
+        {
+          name: 'lineThree',
+          label: 'Headline, third line',
+          type: 'text',
+          maxLength: 40,
+          admin: { description: 'The words before the highlighted word. For example: with' },
+        },
+        {
+          name: 'accent',
+          label: 'Highlighted word',
+          type: 'text',
+          maxLength: 30,
+          admin: {
+            description: 'Shown in the gold colour at the end of the third line. For example: Relevance',
+          },
+        },
+        {
+          name: 'sub',
+          label: 'Sentence under the headline',
+          type: 'textarea',
+          maxLength: 220,
+        },
+      ],
+    },
+    {
+      name: 'topBar',
+      label: 'Top bar',
+      type: 'group',
+      admin: {
+        description:
+          'The thin dark green bar at the top of every page. Leave a field empty to keep the standard text or link.',
+      },
+      fields: [
+        {
+          name: 'place',
+          label: 'Place',
+          type: 'text',
+          maxLength: 80,
+          admin: { description: 'For example: Swat, Khyber Pakhtunkhwa, Pakistan.' },
+        },
+        {
+          name: 'established',
+          label: 'Line beside the place',
+          type: 'text',
+          maxLength: 60,
+          admin: { description: 'For example: Established in 2010.' },
+        },
+        {
+          name: 'studentUrl',
+          label: 'Student Portal link',
+          type: 'text',
+          validate: portalHrefValidate,
+          admin: { description: 'Where the Student Portal link in the bar goes.' },
+        },
+        {
+          name: 'facultyUrl',
+          label: 'Faculty Portal link',
+          type: 'text',
+          validate: portalHrefValidate,
+          admin: { description: 'Where the Faculty Portal link in the bar goes.' },
+        },
+      ],
+    },
+    {
+      name: 'footer',
+      label: 'Footer',
+      type: 'group',
+      admin: {
+        description:
+          'The dark green footer at the bottom of every page. Leave a field empty to keep the standard text or link. An address you enter here no longer carries the Sample tag.',
+      },
+      fields: [
+        {
+          name: 'tagline',
+          label: 'Line under the university name',
+          type: 'text',
+          maxLength: 80,
+        },
+        {
+          name: 'address',
+          label: 'Address',
+          type: 'text',
+          maxLength: 120,
+          admin: { description: 'For example: C.T. Road, Odigram, Swat, Khyber Pakhtunkhwa, Pakistan.' },
+        },
+        {
+          name: 'phone',
+          label: 'Telephone',
+          type: 'text',
+          validate: phoneValidate,
+          admin: { description: 'For example: 0946-730510. The link that dials it is worked out for you.' },
+        },
+        {
+          name: 'phoneNote',
+          label: 'Whose telephone it is',
+          type: 'text',
+          maxLength: 60,
+          admin: { description: 'Shown in brackets after the number. For example: Office of the Vice Chancellor.' },
+        },
+        { name: 'email', label: 'Email', type: 'email' },
+        {
+          name: 'facebook',
+          label: 'Facebook link',
+          type: 'text',
+          validate: portalHrefValidate,
+          admin: { description: 'The Facebook icon.' },
+        },
+        {
+          name: 'youtube',
+          label: 'YouTube link',
+          type: 'text',
+          validate: portalHrefValidate,
+          admin: { description: 'The YouTube icon.' },
+        },
+        {
+          name: 'linkedin',
+          label: 'LinkedIn link',
+          type: 'text',
+          validate: portalHrefValidate,
+          admin: { description: 'The LinkedIn icon.' },
+        },
+        {
+          name: 'tiktok',
+          label: 'TikTok link',
+          type: 'text',
+          validate: portalHrefValidate,
+          admin: { description: 'The TikTok icon.' },
+        },
+        {
+          name: 'mapUrl',
+          label: 'Map link',
+          type: 'text',
+          validate: portalHrefValidate,
+          admin: { description: 'Where "Find Us on Map" goes.' },
+        },
+        {
+          name: 'quickLinks',
+          label: 'Quick Links',
+          type: 'array',
+          labels: { singular: 'Link', plural: 'Links' },
+          maxRows: FOOTER_LINKS.max,
+          admin: { initCollapsed: true, description: 'The list under "Quick Links", in this order. Up to 8, or none to keep the standard links.' },
+          fields: [
+            { name: 'label', label: 'Text', type: 'text', required: true, maxLength: 40 },
+            { name: 'href', label: 'Goes to', type: 'text', required: true, validate: portalHrefValidate },
+          ],
+        },
+        {
+          name: 'usefulLinks',
+          label: 'Useful Links',
+          type: 'array',
+          labels: { singular: 'Link', plural: 'Links' },
+          maxRows: FOOTER_LINKS.max,
+          admin: { initCollapsed: true, description: 'The list under "Useful Links", in this order. Up to 8, or none to keep the standard links.' },
+          fields: [
+            { name: 'label', label: 'Text', type: 'text', required: true, maxLength: 40 },
+            { name: 'href', label: 'Goes to', type: 'text', required: true, validate: portalHrefValidate },
+          ],
         },
       ],
     },

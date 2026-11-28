@@ -109,6 +109,19 @@ export const portalHrefValidate: TextFieldSingleValidation = (value, options) =>
     : 'Use a page on this site, starting with / (for example /academics), or a full address starting with https://'
 }
 
+/** A telephone number as people write it: starts with + or 0, then digits, spaces, dashes and brackets. */
+export const phoneValidate: TextFieldSingleValidation = (value, options) => {
+  const base = text(value, options)
+  if (base !== true) return base
+  if (value == null || value === '') return true
+  return typeof value === 'string' && /^(\+|0)[\d\s\-()]{6,25}$/.test(value.trim())
+    ? true
+    : 'Write the number with digits only, starting with 0 or +, for example 0946-730510.'
+}
+
+/** Quick and useful links in the footer: up to 8 each. Empty keeps the standard links. */
+export const FOOTER_LINKS = { max: 8 } as const
+
 const blank = (v: unknown): boolean => v == null || (typeof v === 'string' && v.trim() === '')
 
 /** A statistic needs a source and a date unless it is ticked as a sample (repo rule 3). */
@@ -176,6 +189,28 @@ export function slideMediaProblems(
     })
   })
   return out
+}
+
+/** The Media id of the Vice Chancellor's photograph, or null when none is chosen (the standard photograph stays). */
+export function leadershipPhotoId(leadership: unknown): string | number | null {
+  return idOf((leadership as { photo?: unknown } | null | undefined)?.photo)
+}
+
+/** Why the Vice Chancellor's photograph cannot be on the live home page. Same rule as the slides. */
+export function leadershipPhotoProblems(id: string | number | null, m: MediaLike | null): Problem[] {
+  if (id == null) return []
+  if (!m) {
+    return [{ code: 'HOME_MEDIA_MISSING', message: 'The Vice Chancellor’s photograph was deleted from the Media library.' }]
+  }
+  const problem = mediaPublishProblem(m)
+  if (!problem) return []
+  const name = typeof m.filename === 'string' ? ` (${m.filename})` : ''
+  return [
+    {
+      code: problem.code === 'MEDIA_ALT_MISSING' ? 'HOME_MEDIA_ALT' : 'HOME_MEDIA_RIGHTS',
+      message: `The Vice Chancellor’s photograph${name} ${problem.what}. Fix it in the Media library, then publish again.`,
+    },
+  ]
 }
 
 /** A colour is empty (the standard one) or exactly #rrggbb. Runs for drafts too, so a typo is caught early. */

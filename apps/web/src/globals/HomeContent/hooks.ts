@@ -6,7 +6,13 @@ import {
   type GlobalBeforeOperationHook,
 } from 'payload'
 
-import { mayPublishHome, slideImageIds, slideMediaProblems } from '../../governance/homeContent'
+import {
+  leadershipPhotoId,
+  leadershipPhotoProblems,
+  mayPublishHome,
+  slideImageIds,
+  slideMediaProblems,
+} from '../../governance/homeContent'
 import { actorFromRequest } from '../../governance/roles'
 
 /** The cache tag the site's home getter must carry (the contract with the main agent). */
@@ -39,7 +45,10 @@ export const homeBeforeChange: GlobalBeforeChangeHook = async ({ data, req }) =>
   if (!mayPublishHome(actorFromRequest(req))) throw publishForbidden()
 
   const ids = slideImageIds(data.slides)
-  const unique = [...new Set(ids.filter((id): id is string | number => id != null))]
+  const photoId = leadershipPhotoId(data.leadership)
+  const unique = [
+    ...new Set([...ids, photoId].filter((id): id is string | number => id != null)),
+  ]
   const media = new Map<string | number, Record<string, unknown> | null>()
   for (const id of unique) {
     try {
@@ -57,7 +66,10 @@ export const homeBeforeChange: GlobalBeforeChangeHook = async ({ data, req }) =>
       media.set(id, null)
     }
   }
-  const problems = slideMediaProblems(ids, media)
+  const problems = [
+    ...slideMediaProblems(ids, media),
+    ...leadershipPhotoProblems(photoId, photoId == null ? null : (media.get(photoId) ?? null)),
+  ]
   if (problems.length > 0) {
     throw new APIError(
       `The home page content cannot be published yet. ${problems.map((p) => p.message).join(' ')}`,

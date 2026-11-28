@@ -15,8 +15,8 @@ export type HeroContent = {
   sub: string
 }
 
-/* Layout: photographs on one side, the text on the other. The headline (the tagline) and the sub line never change
-   (user decision 2026-11-07: "sticky, not changing"). The photograph AND the two buttons change together, one slide
+/* Layout: photographs on one side, the text on the other. The headline (the tagline) and the sub line did not change
+   (user decision 2026-11-07: "sticky, not changing") until the owner asked for them to be editable in the admin (2026-11-28); these are the standard words the page keeps when the admin fields are empty. The photograph AND the two buttons change together, one slide
    every 7 seconds (user decisions 2026-11-08: 5 s was too fast, 10 s too slow). Buttons point at the main things: programs, admissions, scholarships, research, campus life, news. Every destination is a real uswat.edu.pk page already used in nav.ts. Labels are short so each pair stays on one row beside the photo. */
 export const hero: HeroContent = {
   eyebrow: 'UNIVERSITY OF SWAT',

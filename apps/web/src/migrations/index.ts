@@ -18,7 +18,10 @@ import * as migration_20261122_094108_p3ah_coordinator_programmes from './202611
 import * as migration_20261127_021657_home_colours from './20261127_021657_home_colours';
 import * as migration_20261127_065030_home_admissions_portals from './20261127_065030_home_admissions_portals';
 import * as migration_20261127_130022_home_leadership from './20261127_130022_home_leadership';
-import * as migration_20261128_100642_alumni_on_academic_pages from './20261128_100642_alumni_on_academic_pages';
+import * as migration_20261128_053758_home_leadership_photo from './20261128_053758_home_leadership_photo';
+import * as migration_20261128_061635_home_hero_text from './20261128_061635_home_hero_text';
+import * as migration_20261128_100553_home_footer_topbar from './20261128_100553_home_footer_topbar';
+import * as migration_20261128_103128_alumni_on_academic_pages from './20261128_103128_alumni_on_academic_pages';
 
 export const migrations = [
   {
@@ -122,8 +125,23 @@ export const migrations = [
     name: '20261127_130022_home_leadership',
   },
   {
-    up: migration_20261128_100642_alumni_on_academic_pages.up,
-    down: migration_20261128_100642_alumni_on_academic_pages.down,
-    name: '20261128_100642_alumni_on_academic_pages'
+    up: migration_20261128_053758_home_leadership_photo.up,
+    down: migration_20261128_053758_home_leadership_photo.down,
+    name: '20261128_053758_home_leadership_photo',
+  },
+  {
+    up: migration_20261128_061635_home_hero_text.up,
+    down: migration_20261128_061635_home_hero_text.down,
+    name: '20261128_061635_home_hero_text',
+  },
+  {
+    up: migration_20261128_100553_home_footer_topbar.up,
+    down: migration_20261128_100553_home_footer_topbar.down,
+    name: '20261128_100553_home_footer_topbar',
+  },
+  {
+    up: migration_20261128_103128_alumni_on_academic_pages.up,
+    down: migration_20261128_103128_alumni_on_academic_pages.down,
+    name: '20261128_103128_alumni_on_academic_pages'
   },
 ];

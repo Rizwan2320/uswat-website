@@ -18,7 +18,9 @@ vi.mock('next/cache', () => ({
 
 import {
   getAdmissions,
+  getFooter,
   getHero,
+  getTopBar,
   getHomeColours,
   getLeadership,
   getPortals,
@@ -206,12 +208,68 @@ describe('home page reads the home-content global', () => {
       closing: 'Warm regards,',
     })
     expect(v.role).toBe('Vice Chancellor, University of Swat') // not filled: the standard title stays
+    expect(v.photo.src).toBe('/images/vc-husnul-amin-cutout.webp') // no upload: the standard photograph stays
+    const pic = await upload('Uploaded portrait')
+    await publish({ ...content('Vc1'), leadership: { photo: pic, name: 'Prof. Test Name' } })
+    const withPhoto = await getLeadership()
+    expect(withPhoto.photo).toMatchObject({ alt: 'Uploaded portrait', width: 40, height: 30 })
+    expect(withPhoto.photo.src).toMatch(/hfc-.*\.png/)
     await saveDraft({ leadership: { name: 'Draft only' } })
     expect((await getLeadership()).name).toBe('Prof. Test Name')
     await publish({
       ...content('Vc2'),
-      leadership: { name: null, quote: null, paragraphs: [], closing: null },
+      leadership: { photo: null, name: null, quote: null, paragraphs: [], closing: null },
     })
     expect((await getLeadership()).name).toBe('Prof. Dr. Husnul Amin')
+  })
+  it('hands the home page the published headline text, never the draft', async () => {
+    await publish({
+      ...content('Hd'),
+      hero: { eyebrow: 'TEST EYEBROW', lineTwo: 'Test Second Line', accent: 'Purpose', sub: 'A test sentence.' },
+    })
+    const { content: c } = await getHero()
+    expect(c.eyebrow).toBe('TEST EYEBROW')
+    expect(c.lines.map((l) => l.text.trim())).toEqual(['Aspiring for', 'Test Second Line', 'with'])
+    expect(c.lines[2]!.accent).toBe('Purpose')
+    expect(c.sub).toBe('A test sentence.')
+    await saveDraft({ hero: { eyebrow: 'DRAFT ONLY' } })
+    expect((await getHero()).content.eyebrow).toBe('TEST EYEBROW')
+    await publish({
+      ...content('Hd2'),
+      hero: { eyebrow: null, lineOne: null, lineTwo: null, lineThree: null, accent: null, sub: null },
+    })
+    const reset = (await getHero()).content
+    expect(reset.eyebrow).toBe('UNIVERSITY OF SWAT')
+    expect(reset.lines[2]!.accent).toBe('Relevance')
+  })
+  it('hands the pages the published top bar and footer, never the draft', async () => {
+    await publish({
+      ...content('Ch'),
+      topBar: { place: 'Test place', facultyUrl: 'https://faculty.test/in' },
+      footer: {
+        address: 'Test address, Swat',
+        phone: '0946-111222',
+        quickLinks: [{ label: 'Test link', href: '/test' }],
+      },
+    })
+    const bar = await getTopBar()
+    expect(bar.place).toBe('Test place')
+    expect(bar.facultyUrl).toBe('https://faculty.test/in')
+    expect(bar.established).toBe('Established in 2010') // not filled: the standard line stays
+    const foot = await getFooter()
+    expect(foot.addressLine).toBe('Test address, Swat')
+    expect(foot.addressSample).toBe(false)
+    expect(foot.phone).toMatchObject({ display: '0946-111222', tel: '+92946111222' })
+    expect(foot.quick).toEqual([{ label: 'Test link', href: '/test' }])
+    expect(foot.useful.length).toBeGreaterThan(1) // not filled: the standard list stays
+    await saveDraft({ topBar: { place: 'Draft only' } })
+    expect((await getTopBar()).place).toBe('Test place')
+    await publish({
+      ...content('Ch2'),
+      topBar: { place: null, facultyUrl: null },
+      footer: { address: null, phone: null, quickLinks: [] },
+    })
+    expect((await getTopBar()).place).toBe('Swat, Khyber Pakhtunkhwa, Pakistan')
+    expect((await getFooter()).addressSample).toBe(true)
   })
 })
