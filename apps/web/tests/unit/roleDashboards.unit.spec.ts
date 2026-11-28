@@ -37,7 +37,6 @@ const prog = (over: Partial<BoardItem> = {}): BoardItem => ({
   sentBackNote: null,
   updatedAt: '2026-11-10T08:00:00.000Z',
   href: '/admin/collections/programmes/5',
-  coordinators: [],
   liveHref: null,
   parts: describeParts('programmes', {}),
   ...over,
@@ -91,7 +90,8 @@ describe('control room (admin, site manager, auditor)', () => {
   })
 })
 
-describe('head of department: a tray and a department board', () => {
+describe('head of department: a tray and the department page only (slice 3as)', () => {
+  // Programme items are handed over on purpose: the head's desk must not list them.
   const board = [
     prog({
       collection: 'departments',
@@ -100,31 +100,42 @@ describe('head of department: a tray and a department board', () => {
       stage: 'published',
       href: '/d/4',
     }),
-    prog({
-      id: 5,
-      name: 'Software Engineering',
-      stage: 'in_review',
-      coordinators: ['Dr Ali', 'Ms Noor'],
-    }),
-    prog({ id: 6, name: 'AI', stage: 'approved', verified: false }),
+    prog({ id: 5, name: 'Software Engineering', stage: 'in_review' }),
+    prog({ id: 6, name: 'Artificial Intelligence', stage: 'approved', verified: false }),
   ]
   const html = render({
-    queues: [q('review', 'Waiting for your review', 1, ['Software Engineering'])],
+    queues: [q('review', 'Waiting for your review', 1, ['A notice'])],
     desk: 'head',
     board,
   })
-  it('lists the tray and the department with coordinators and where each page is', () => {
+  it('lists the tray and the one department page, with where it is and a way to edit all of it', () => {
     expect(html).toContain('Your tray')
-    expect(html).toContain('Department page')
-    expect(html).toContain('Dr Ali, Ms Noor')
-    expect(html).toContain('rd__chip--in_review">Sent to you')
+    expect(html).toContain('Your department page')
+    expect(html).toContain('Computer Science')
+    expect(html).toContain('Edit the whole page')
+    expect(html).toContain('href="/d/4"')
     expect(html).toContain('rd__chip--published">Live')
-    expect(html).toContain('mark it verified')
   })
-  it('says an empty tray is empty, and an empty department is unassigned', () => {
+  it('does not list programme pages: their coordinators edit them, and they reach the head through the tray', () => {
+    expect(html).not.toContain('Software Engineering')
+    expect(html).not.toContain('Artificial Intelligence')
+    expect(html).not.toContain('Coordinator')
+    expect(html).toContain('Programme pages are edited by their coordinators')
+  })
+  it('says what is missing when the page is approved but not verified', () => {
+    const h = render({
+      queues: [],
+      desk: 'head',
+      board: [prog({ collection: 'departments', stage: 'approved', verified: false })],
+    })
+    expect(h).toContain('mark it verified')
+  })
+  it('says an empty tray is empty, and that no department page is assigned', () => {
     const e = render({ queues: [q('review', 'Waiting for your review')], desk: 'head', board: [] })
     expect(e).toContain('Your tray is empty')
-    expect(e).toContain('No department or programme pages are assigned to you yet')
+    expect(e).toContain('No department page is assigned to you yet')
+    const onlyProgrammes = render({ queues: [], desk: 'head', board: [prog()] })
+    expect(onlyProgrammes).toContain('No department page is assigned to you yet')
   })
 })
 

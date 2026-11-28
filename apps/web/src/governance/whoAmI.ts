@@ -72,7 +72,7 @@ export function whoAmI(
             )
           : w('You are an Approver', 'آپ منظوری دہندہ ہیں'),
         detail: w(
-          'You review what your coordinators and editors send you, and you publish. For your own department page and its programme pages you publish yourself, with no one else reviewing. You add programmes to your department and create accounts for your coordinators and editors. You cannot change main pages or other offices.',
+          'You review what your coordinators and editors send you, and you publish. Your own department page you edit and publish yourself, with no one else reviewing; programme pages are edited by their coordinators and reach you in your tray. You add programmes to your department and create accounts for your coordinators and editors. You cannot change main pages or other offices.',
           'آپ اپنے کوآرڈینیٹرز اور ایڈیٹرز کا بھیجا ہوا جانچتے اور شائع کرتے ہیں۔ اپنے شعبے کا صفحہ اور اس کے پروگرام کے صفحات آپ خود شائع کرتے ہیں، کسی اور کی جانچ کے بغیر۔ اپنے شعبے میں نئے پروگرام اور اپنے کوآرڈینیٹرز اور ایڈیٹرز کے اکاؤنٹ آپ بناتے ہیں۔ مرکزی صفحات اور دوسرے دفاتر کو آپ نہیں بدل سکتے۔',
         ),
       }

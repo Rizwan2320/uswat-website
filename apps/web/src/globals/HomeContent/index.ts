@@ -1,6 +1,6 @@
 import type { Access, GlobalConfig } from 'payload'
 
-import { hiddenFromContributors } from '../../governance/adminMenu'
+import { hiddenFromEditors } from '../../governance/adminMenu'
 import {
   dateUnlessSample,
   HOME_READ_ROLES,
@@ -92,7 +92,9 @@ export const HomeContent: GlobalConfig = {
   label: 'Home page content',
   admin: {
     group: 'Content',
-    hidden: hiddenFromContributors,
+    // The home page is the web team's work, so heads, coordinators, editors and contributors do not see it in the
+    // menu (slice 3as); admin, site manager and auditor do. Access rules are unchanged.
+    hidden: hiddenFromEditors,
     description:
       'The home page: photographs, statistics, admissions bar, portal cards and colours. The headline and the sentence under it do not change here.',
   },

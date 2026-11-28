@@ -52,6 +52,8 @@ const built = buildConfig({
       // The editor dashboard (CMS-09): my drafts, review queue, expiring soon, stale, needs alt.
       // Operations (3v): sweep status and work by office, for admin, site manager and auditor only.
       beforeDashboard: ['@/admin/EditorDashboard', '@/admin/OperationsPanel'],
+      // Your own page: one link at the top of the menu for a head and a coordinator (slice 3as).
+      beforeNavLinks: ['@/admin/PageNav'],
       // "You are...": who you are and what that means, on every screen (slice 3ai).
       // Back and Sign out, always visible (slice 3ap).
       header: ['@/admin/RoleBanner', '@/admin/TopBar'],
@@ -132,7 +134,8 @@ const built = buildConfig({
     defaultLocale: 'en',
     fallback: true,
   },
-  // A coordinator sees only their programme pages and media in the menu (slice 3am).
+  // A coordinator sees only their programme page(s) and media in the menu (slice 3am). A head's and a coordinator's own
+  // page is a link at the top (slice 3as); the Department and Programme list entries are hidden by a style rule, not here.
   collections: [
     Pages,
     Posts,

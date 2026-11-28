@@ -1,8 +1,8 @@
 /**
- * The board behind the head's and the coordinator's dashboards (slice 3am): the department page
- * and the programme pages a person looks after, each with where it stands. Read with the person's
- * own access, so a coordinator gets their own programmes and a head their department's, and
- * nobody sees a page they could not open.
+ * The board behind the head's and the coordinator's dashboards (slice 3am, changed in 3as): a head of
+ * department has their department page and nothing else; a programme coordinator has their own
+ * programme page(s). A programme's changes reach the head only as an item in their review tray.
+ * Read with the person's own access, so nobody sees a page they could not open.
  */
 
 import type { Payload, Where } from 'payload'
@@ -24,8 +24,6 @@ export interface BoardItem {
   sentBackNote: string | null
   updatedAt: string | null
   href: string
-  /** The coordinators of a programme, by name (only filled for a head). */
-  coordinators: string[]
   /** The public address, only while the page is live. */
   liveHref: string | null
   /** The parts of the page this person controls, and which are filled. */
@@ -45,96 +43,110 @@ export const hasBoard = (user: UserLike): boolean => {
   )
 }
 
-export async function loadBoard(payload: Payload, user: UserLike): Promise<BoardItem[]> {
-  if (!hasBoard(user)) return []
+/**
+ * Which pages a person looks after: a head's department page (the departments owned by one of their
+ * offices) or a coordinator's own programme pages. Published pages are public, so access alone would
+ * list every department's; this keeps to what the person runs.
+ */
+function scopeOf(payload: Payload, user: UserLike) {
   const adminRoute = payload.config.routes?.admin ?? '/admin'
   const as = { user: { ...user, collection: 'users' } as never, overrideAccess: false }
-
   const actor = actorFromUser(user)
   const isHead = actor.kind === 'user' && actor.role === 'approver'
-  // Published pages are public, so access alone would list every department's. Keep to what this
-  // person looks after: a head's offices, a coordinator's own programmes.
-  const mine = (collection: 'departments' | 'programmes'): Where =>
+  const collection: 'departments' | 'programmes' = isHead ? 'departments' : 'programmes'
+  const where: Where =
     actor.kind !== 'user'
       ? { id: { in: [-1] } }
       : isHead
         ? { 'governance.ownerOffice': { in: actor.offices.length > 0 ? actor.offices : ['-'] } }
-        : collection === 'programmes'
-          ? { id: { in: (actor.programmes ?? []).map(String) } }
-          : { id: { in: [-1] } }
+        : { id: { in: (actor.programmes ?? []).map(String) } }
+  return { adminRoute, as, collection, where }
+}
 
-  const read = async (collection: 'departments' | 'programmes'): Promise<BoardItem[]> => {
-    try {
-      const res = await payload.find({
-        collection,
-        where: mine(collection),
-        draft: true,
-        depth: 0,
-        limit: 100,
-        pagination: false,
-        sort: 'name',
-        ...as,
-      })
-      return res.docs.map((d) => {
-        const doc = d as unknown as Record<string, unknown> & {
-          id: string | number
-          governance?: Record<string, unknown>
-        }
-        const stage = String(doc.governance?.status ?? 'draft')
-        return {
-          collection,
-          id: doc.id,
-          name: text(doc.name) ?? `Untitled (#${doc.id})`,
-          stage: (STAGES.includes(stage) ? stage : 'draft') as BoardStage,
-          verified: doc.governance?.verificationStatus === 'verified',
-          sentBackNote: text(doc.governance?.reviewNote),
-          updatedAt: text(doc.updatedAt),
-          href: `${adminRoute}/collections/${collection}/${doc.id}`,
-          coordinators: [],
-          liveHref:
-            stage === 'published' && text(doc.slug)
-              ? collection === 'departments'
-                ? departmentHref(text(doc.slug)!)
-                : programmeHref(text(doc.slug)!)
-              : null,
-          parts: describeParts(collection, doc),
-        }
-      })
-    } catch (e) {
-      payload.logger.error({ err: e, collection }, 'role board query failed')
-      return []
-    }
-  }
-
-  const [departments, programmes] = await Promise.all([
-    isHead ? read('departments') : Promise.resolve([] as BoardItem[]),
-    read('programmes'),
-  ])
-
-  if (isHead && programmes.length > 0) {
-    try {
-      const people = await payload.find({
-        collection: 'users',
-        where: { programmes: { in: programmes.map((p) => p.id) } },
-        depth: 0,
-        limit: 200,
-        pagination: false,
-        ...as,
-      })
-      for (const person of people.docs) {
-        const p = person as unknown as { name?: unknown; email?: unknown; programmes?: unknown }
-        const who = text(p.name) ?? text(p.email) ?? 'A coordinator'
-        const ids = Array.isArray(p.programmes)
-          ? p.programmes.map((x) => String((x as { id?: unknown })?.id ?? x))
-          : []
-        for (const prog of programmes)
-          if (ids.includes(String(prog.id))) prog.coordinators.push(who)
+export async function loadBoard(payload: Payload, user: UserLike): Promise<BoardItem[]> {
+  if (!hasBoard(user)) return []
+  const { adminRoute, as, collection, where } = scopeOf(payload, user)
+  try {
+    const res = await payload.find({
+      collection,
+      where,
+      draft: true,
+      depth: 0,
+      limit: 100,
+      pagination: false,
+      sort: 'name',
+      ...as,
+    })
+    return res.docs.map((d) => {
+      const doc = d as unknown as Record<string, unknown> & {
+        id: string | number
+        governance?: Record<string, unknown>
       }
-    } catch (e) {
-      payload.logger.error({ err: e }, 'role board coordinators query failed')
-    }
+      const stage = String(doc.governance?.status ?? 'draft')
+      return {
+        collection,
+        id: doc.id,
+        name: text(doc.name) ?? `Untitled (#${doc.id})`,
+        stage: (STAGES.includes(stage) ? stage : 'draft') as BoardStage,
+        verified: doc.governance?.verificationStatus === 'verified',
+        sentBackNote: text(doc.governance?.reviewNote),
+        updatedAt: text(doc.updatedAt),
+        href: `${adminRoute}/collections/${collection}/${doc.id}`,
+        liveHref:
+          stage === 'published' && text(doc.slug)
+            ? collection === 'departments'
+              ? departmentHref(text(doc.slug)!)
+              : programmeHref(text(doc.slug)!)
+            : null,
+        parts: describeParts(collection, doc),
+      }
+    })
+  } catch (e) {
+    payload.logger.error({ err: e, collection }, 'role board query failed')
+    return []
   }
-  return [...departments, ...programmes]
+}
+
+/** One link in the left menu to a page the person runs (slice 3as). */
+export interface PageLink {
+  collection: 'departments' | 'programmes'
+  id: string | number
+  name: string
+  href: string
+}
+
+/**
+ * Just the names and addresses, for the left menu, which draws on every admin screen: the same
+ * scope as `loadBoard` without the parts and the live address.
+ */
+export async function loadPageLinks(payload: Payload, user: UserLike): Promise<PageLink[]> {
+  if (!hasBoard(user)) return []
+  const { adminRoute, as, collection, where } = scopeOf(payload, user)
+  try {
+    const res = await payload.find({
+      collection,
+      where,
+      draft: true,
+      depth: 0,
+      limit: 100,
+      pagination: false,
+      sort: 'name',
+      select: { name: true },
+      ...as,
+    })
+    return res.docs.map((d) => {
+      const doc = d as unknown as { id: string | number; name?: unknown }
+      return {
+        collection,
+        id: doc.id,
+        name: text(doc.name) ?? `Untitled (#${doc.id})`,
+        href: `${adminRoute}/collections/${collection}/${doc.id}`,
+      }
+    })
+  } catch (e) {
+    payload.logger.error({ err: e, collection }, 'page links query failed')
+    return []
+  }
 }
 
 /** Which dashboard a person gets. They differ in layout, not only in what they list. */

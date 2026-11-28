@@ -1,0 +1,45 @@
+/* The link to the page a head or a coordinator runs, at the top of the left menu (slice 3as). */
+.page-nav {
+  margin: 0 0 calc(var(--base) * 0.75);
+  padding-bottom: calc(var(--base) * 0.75);
+  border-bottom: 1px solid var(--theme-elevation-100);
+
+  &__label {
+    margin: 0 0 0.35rem;
+    color: var(--theme-elevation-500);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  &__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__link {
+    display: block;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+}
+
+/*
+ * With the link to their own page in the menu, a head and a coordinator do not need the Departments and
+ * Programmes lists, which show every department and programme on the site. Only the menu entries go:
+ * the areas stay routable, because the link above opens inside them (hiding them in the collection
+ * config would make that link answer "Nothing found"). Applies only while the page link is drawn.
+ */
+.nav:has(.page-nav) {
+  a[href$='/collections/departments'],
+  a[href$='/collections/programmes'] {
+    display: none;
+  }
+
+  /* A group left with nothing but those entries (a coordinator's "Organisation") goes too, not as a bare heading. */
+  .nav-group:has(a[href$='/collections/departments'], a[href$='/collections/programmes']):not(
+      :has(a:not([href$='/collections/departments']):not([href$='/collections/programmes']))
+    ) {
+    display: none;
+  }
+}

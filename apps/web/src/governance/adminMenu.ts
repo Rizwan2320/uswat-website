@@ -4,7 +4,9 @@ import { actorFromUser, type Role } from './roles'
  * Who sees a settings area in the left menu and on the dashboard.
  *
  * This is tidiness, not security: access rules still decide what anyone can read or change
- * (see tests/int/access.matrix.int.spec.ts), and a hidden area can still be reached by its address.
+ * (see tests/int/access.matrix.int.spec.ts). Note that Payload also stops routing to an area that is
+ * hidden for the signed-in person (the address shows "Nothing found"), so never hide an area that a
+ * person has a link to: hide only its menu entry, with a style rule (see admin/PageNav/index.scss).
  * Editors, approvers and contributors have no use for Users, Redirects, Forms, Search or the
  * Header and Footer, so showing them only invites clicks that end in "not allowed".
  */
@@ -28,19 +30,11 @@ export const hiddenFromUsers = ({ user }: { user?: unknown }): boolean => {
 }
 
 /**
- * Areas editors and approvers use but contributors have no part in (slice 3z: the home page content).
- * Auditors keep it visible, read only.
- */
-export const hiddenFromContributors = ({ user }: { user?: unknown }): boolean => {
-  if (!user) return true
-  const actor = actorFromUser(user as { id: string | number; role?: unknown })
-  return actor.kind !== 'user' || actor.role === 'contributor'
-}
-
-/**
- * A programme coordinator looks after their programme pages and the pictures on them, nothing else
- * (slice 3am), so the left menu and the home page show those two and not the rest of the site.
- * Tidiness as above: access rules still decide, and a hidden area can still be reached by address.
+ * A programme coordinator looks after their programme page(s) and the pictures on them, nothing else
+ * (slice 3am), so the left menu and the home page show those and not the rest of the site. The
+ * Programmes area stays routable (the link to their own page opens inside it, slice 3as); only its
+ * menu entry is hidden, by the rule in admin/PageNav/index.scss.
+ * Tidiness as above: access rules still decide.
  */
 export const COORDINATOR_AREAS: readonly string[] = ['programmes', 'media']
 

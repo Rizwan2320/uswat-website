@@ -148,6 +148,9 @@ export function HeadDesk({
 }): React.ReactElement {
   const review = queue(queues, 'review')
   const ready = queue(queues, 'toPublish')
+  // This desk is for the department page only (slice 3as). Programme pages belong to their
+  // coordinators and reach the head only as an item in the tray.
+  const pages = board.filter((b) => b.collection === 'departments')
   return (
     <div className="rd rd--head">
       <div className="rd__main">
@@ -168,41 +171,33 @@ export function HeadDesk({
         ) : null}
       </div>
       <section className="rd__rail rd__board" aria-labelledby="rd-board">
-        <h2 id="rd-board">Your department</h2>
-        {board.length === 0 ? (
-          <p className="rd__empty">No department or programme pages are assigned to you yet.</p>
+        <h2 id="rd-board">Your department page</h2>
+        {pages.length === 0 ? (
+          <p className="rd__empty">No department page is assigned to you yet.</p>
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Page</th>
-                <th scope="col">Coordinator</th>
-                <th scope="col">Where it is</th>
-              </tr>
-            </thead>
-            <tbody>
-              {board.map((b) => (
-                <tr key={`${b.collection}-${b.id}`}>
-                  <th scope="row">
-                    <a href={b.href}>{b.name}</a>
-                    <span className="rd__meta">
-                      {b.collection === 'departments' ? 'Department page' : 'Programme'}
-                    </span>
-                    <LiveLink b={b} />
-                    <Parts b={b} />
-                  </th>
-                  <td>{b.coordinators.length > 0 ? b.coordinators.join(', ') : '-'}</td>
-                  <td>
-                    <span className={`rd__chip rd__chip--${b.stage}`}>{HEAD_STAGE[b.stage]}</span>
-                    {b.stage === 'approved' && !b.verified ? (
-                      <span className="rd__meta">mark it verified</span>
-                    ) : null}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          pages.map((b) => (
+            <article key={`${b.collection}-${b.id}`} className="rd__page">
+              <h3>
+                <a href={b.href}>{b.name}</a>
+              </h3>
+              <p className="rd__page-state">
+                <span className={`rd__chip rd__chip--${b.stage}`}>{HEAD_STAGE[b.stage]}</span>
+                {b.stage === 'approved' && !b.verified ? (
+                  <span className="rd__meta">mark it verified</span>
+                ) : null}
+              </p>
+              <a className="rd__action" href={b.href}>
+                Edit the whole page
+              </a>
+              <LiveLink b={b} />
+              <Parts b={b} open />
+            </article>
+          ))
         )}
+        <p className="rd__meta">
+          Programme pages are edited by their coordinators. When a coordinator sends one for
+          review, it arrives in your tray.
+        </p>
       </section>
     </div>
   )
