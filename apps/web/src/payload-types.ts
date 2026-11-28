@@ -4764,7 +4764,7 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
- * The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message and colours. The headline and the sentence under it do not change here.
+ * The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message, the headline text and colours.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "home-content".
@@ -4862,9 +4862,13 @@ export interface HomeContent {
       }[]
     | null;
   /**
-   * The Vice Chancellor’s section on the home page and the full message in the window that opens from "Read Full Message". Leave a field empty to keep the standard text. The photograph stays as it is for now.
+   * The Vice Chancellor’s section on the home page and the full message in the window that opens from "Read Full Message". Leave a field empty to keep the standard text or photograph.
    */
   leadership?: {
+    /**
+     * A portrait cut out from its background (PNG or WebP with a transparent background) looks best on the home page. It needs alt text and a recorded rights status in the Media library before you can publish. Leave it empty to keep the standard photograph.
+     */
+    photo?: (number | null) | Media;
     /**
      * For example: Prof. Dr. Husnul Amin.
      */
@@ -4890,6 +4894,32 @@ export interface HomeContent {
      * Shown above the name at the end. For example: With best regards,
      */
     closing?: string | null;
+  };
+  /**
+   * The words beside the photographs at the top of the home page. Leave a field empty to keep the standard words.
+   */
+  hero?: {
+    /**
+     * Capital letters work best. For example: UNIVERSITY OF SWAT.
+     */
+    eyebrow?: string | null;
+    /**
+     * For example: Aspiring for
+     */
+    lineOne?: string | null;
+    /**
+     * For example: Quality Education
+     */
+    lineTwo?: string | null;
+    /**
+     * The words before the highlighted word. For example: with
+     */
+    lineThree?: string | null;
+    /**
+     * Shown in the gold colour at the end of the third line. For example: Relevance
+     */
+    accent?: string | null;
+    sub?: string | null;
   };
   /**
    * Change the colours of the home page only. Leave a colour empty to keep the standard one. The darker and lighter shades are worked out for you.
@@ -5035,6 +5065,7 @@ export interface HomeContentSelect<T extends boolean = true> {
   leadership?:
     | T
     | {
+        photo?: T;
         name?: T;
         role?: T;
         quote?: T;
@@ -5045,6 +5076,16 @@ export interface HomeContentSelect<T extends boolean = true> {
               id?: T;
             };
         closing?: T;
+      };
+  hero?:
+    | T
+    | {
+        eyebrow?: T;
+        lineOne?: T;
+        lineTwo?: T;
+        lineThree?: T;
+        accent?: T;
+        sub?: T;
       };
   colours?:
     | T

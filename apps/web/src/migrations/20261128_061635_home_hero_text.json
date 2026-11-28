@@ -32566,88 +32566,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.people_research_interests": {
-      "name": "people_research_interests",
-      "schema": "",
-      "columns": {
-        "_order": {
-          "name": "_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "_parent_id": {
-          "name": "_parent_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "varchar",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "text": {
-          "name": "text",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "people_research_interests_order_idx": {
-          "name": "people_research_interests_order_idx",
-          "columns": [
-            {
-              "expression": "_order",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "people_research_interests_parent_id_idx": {
-          "name": "people_research_interests_parent_id_idx",
-          "columns": [
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "people_research_interests_parent_id_fk": {
-          "name": "people_research_interests_parent_id_fk",
-          "tableFrom": "people_research_interests",
-          "tableTo": "people",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.people_publications": {
       "name": "people_publications",
       "schema": "",
@@ -32681,32 +32599,6 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
-        },
-        "year": {
-          "name": "year",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "venue": {
-          "name": "venue",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "work_type": {
-          "name": "work_type",
-          "type": "enum_people_publications_work_type",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "featured": {
-          "name": "featured",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
         }
       },
       "indexes": {
@@ -32811,30 +32703,6 @@
         },
         "cv_link": {
           "name": "cv_link",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "office_location": {
-          "name": "office_location",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "office_hours": {
-          "name": "office_hours",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "orcid": {
-          "name": "orcid",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "scholar_url": {
-          "name": "scholar_url",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
@@ -33353,94 +33221,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public._people_v_version_research_interests": {
-      "name": "_people_v_version_research_interests",
-      "schema": "",
-      "columns": {
-        "_order": {
-          "name": "_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "_parent_id": {
-          "name": "_parent_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "text": {
-          "name": "text",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "_uuid": {
-          "name": "_uuid",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "_people_v_version_research_interests_order_idx": {
-          "name": "_people_v_version_research_interests_order_idx",
-          "columns": [
-            {
-              "expression": "_order",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "_people_v_version_research_interests_parent_id_idx": {
-          "name": "_people_v_version_research_interests_parent_id_idx",
-          "columns": [
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "_people_v_version_research_interests_parent_id_fk": {
-          "name": "_people_v_version_research_interests_parent_id_fk",
-          "tableFrom": "_people_v_version_research_interests",
-          "tableTo": "_people_v",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public._people_v_version_publications": {
       "name": "_people_v_version_publications",
       "schema": "",
@@ -33474,32 +33254,6 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
-        },
-        "year": {
-          "name": "year",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "venue": {
-          "name": "venue",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "work_type": {
-          "name": "work_type",
-          "type": "enum__people_v_version_publications_work_type",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "featured": {
-          "name": "featured",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
         },
         "_uuid": {
           "name": "_uuid",
@@ -33616,30 +33370,6 @@
         },
         "version_cv_link": {
           "name": "version_cv_link",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "version_office_location": {
-          "name": "version_office_location",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "version_office_hours": {
-          "name": "version_office_hours",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "version_orcid": {
-          "name": "version_orcid",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "version_scholar_url": {
-          "name": "version_scholar_url",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
@@ -41444,6 +41174,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "leadership_photo_id": {
+          "name": "leadership_photo_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "leadership_name": {
           "name": "leadership_name",
           "type": "varchar",
@@ -41464,6 +41200,42 @@
         },
         "leadership_closing": {
           "name": "leadership_closing",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hero_eyebrow": {
+          "name": "hero_eyebrow",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hero_line_one": {
+          "name": "hero_line_one",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hero_line_two": {
+          "name": "hero_line_two",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hero_line_three": {
+          "name": "hero_line_three",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hero_accent": {
+          "name": "hero_accent",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hero_sub": {
+          "name": "hero_sub",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
@@ -41508,6 +41280,21 @@
         }
       },
       "indexes": {
+        "home_content_leadership_leadership_photo_idx": {
+          "name": "home_content_leadership_leadership_photo_idx",
+          "columns": [
+            {
+              "expression": "leadership_photo_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "home_content__status_idx": {
           "name": "home_content__status_idx",
           "columns": [
@@ -41524,7 +41311,21 @@
           "with": {}
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "home_content_leadership_photo_id_media_id_fk": {
+          "name": "home_content_leadership_photo_id_media_id_fk",
+          "tableFrom": "home_content",
+          "tableTo": "media",
+          "columnsFrom": [
+            "leadership_photo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -42384,6 +42185,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "version_leadership_photo_id": {
+          "name": "version_leadership_photo_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "version_leadership_name": {
           "name": "version_leadership_name",
           "type": "varchar",
@@ -42404,6 +42211,42 @@
         },
         "version_leadership_closing": {
           "name": "version_leadership_closing",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hero_eyebrow": {
+          "name": "version_hero_eyebrow",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hero_line_one": {
+          "name": "version_hero_line_one",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hero_line_two": {
+          "name": "version_hero_line_two",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hero_line_three": {
+          "name": "version_hero_line_three",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hero_accent": {
+          "name": "version_hero_accent",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hero_sub": {
+          "name": "version_hero_sub",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
@@ -42481,6 +42324,21 @@
         }
       },
       "indexes": {
+        "_home_content_v_version_leadership_version_leadership_ph_idx": {
+          "name": "_home_content_v_version_leadership_version_leadership_ph_idx",
+          "columns": [
+            {
+              "expression": "version_leadership_photo_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "_home_content_v_version_version__status_idx": {
           "name": "_home_content_v_version_version__status_idx",
           "columns": [
@@ -42572,7 +42430,21 @@
           "with": {}
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "_home_content_v_version_leadership_photo_id_media_id_fk": {
+          "name": "_home_content_v_version_leadership_photo_id_media_id_fk",
+          "tableFrom": "_home_content_v",
+          "tableTo": "media",
+          "columnsFrom": [
+            "version_leadership_photo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -44870,20 +44742,6 @@
         "ur"
       ]
     },
-    "public.enum_people_publications_work_type": {
-      "name": "enum_people_publications_work_type",
-      "schema": "public",
-      "values": [
-        "article",
-        "conference",
-        "chapter",
-        "book",
-        "thesis",
-        "report",
-        "patent",
-        "other"
-      ]
-    },
     "public.enum_people_faculty_status": {
       "name": "enum_people_faculty_status",
       "schema": "public",
@@ -44955,20 +44813,6 @@
       "values": [
         "draft",
         "published"
-      ]
-    },
-    "public.enum__people_v_version_publications_work_type": {
-      "name": "enum__people_v_version_publications_work_type",
-      "schema": "public",
-      "values": [
-        "article",
-        "conference",
-        "chapter",
-        "book",
-        "thesis",
-        "report",
-        "patent",
-        "other"
       ]
     },
     "public.enum__people_v_version_faculty_status": {
@@ -45261,6 +45105,6 @@
     "tables": {},
     "columns": {}
   },
-  "id": "1cbde11b-3475-4e12-aeb1-9af916eafc4f",
+  "id": "5cf010bc-c51a-46e9-862c-32f9be057bd6",
   "prevId": "00000000-0000-0000-0000-000000000000"
 }

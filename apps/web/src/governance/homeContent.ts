@@ -178,6 +178,28 @@ export function slideMediaProblems(
   return out
 }
 
+/** The Media id of the Vice Chancellor's photograph, or null when none is chosen (the standard photograph stays). */
+export function leadershipPhotoId(leadership: unknown): string | number | null {
+  return idOf((leadership as { photo?: unknown } | null | undefined)?.photo)
+}
+
+/** Why the Vice Chancellor's photograph cannot be on the live home page. Same rule as the slides. */
+export function leadershipPhotoProblems(id: string | number | null, m: MediaLike | null): Problem[] {
+  if (id == null) return []
+  if (!m) {
+    return [{ code: 'HOME_MEDIA_MISSING', message: 'The Vice Chancellor’s photograph was deleted from the Media library.' }]
+  }
+  const problem = mediaPublishProblem(m)
+  if (!problem) return []
+  const name = typeof m.filename === 'string' ? ` (${m.filename})` : ''
+  return [
+    {
+      code: problem.code === 'MEDIA_ALT_MISSING' ? 'HOME_MEDIA_ALT' : 'HOME_MEDIA_RIGHTS',
+      message: `The Vice Chancellor’s photograph${name} ${problem.what}. Fix it in the Media library, then publish again.`,
+    },
+  ]
+}
+
 /** A colour is empty (the standard one) or exactly #rrggbb. Runs for drafts too, so a typo is caught early. */
 export const colourValidate = (value: unknown): true | string => {
   if (value == null || value === '') return true

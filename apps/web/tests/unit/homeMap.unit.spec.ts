@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { heroSlides } from '../../src/site/content/hero'
+import { hero, heroSlides } from '../../src/site/content/hero'
 import { stats } from '../../src/site/content/stats'
 import { admissions } from '../../src/site/content/admissions'
 import { portals } from '../../src/site/content/portals'
 import { leadership } from '../../src/site/content/leadership'
 import {
   toAdmissions,
+  toHeroContent,
   toHeroSlides,
   toLeadership,
   toPortals,
@@ -209,30 +210,76 @@ describe('toPortals', () => {
   })
 })
 
+const vcPhoto = { src: '/images/vc.webp', alt: 'The standard portrait', width: 450, height: 438 }
+
 describe('toLeadership', () => {
-  it('keeps the sourced message when nothing is entered', () => {
-    expect(toLeadership(null, leadership)).toBe(leadership)
-    expect(toLeadership({ leadership: {} }, leadership)).toEqual(leadership)
+  it('keeps the sourced message and photograph when nothing is entered', () => {
+    const base = { ...leadership, photo: vcPhoto }
+    expect(toLeadership(null, leadership, vcPhoto)).toEqual(base)
+    expect(toLeadership({ leadership: {} }, leadership, vcPhoto)).toEqual(base)
     expect(
-      toLeadership({ leadership: { name: '  ', paragraphs: [{ text: ' ' }, { text: null }] } }, leadership),
-    ).toEqual(leadership)
+      toLeadership({ leadership: { name: '  ', paragraphs: [{ text: ' ' }, { text: null }] } }, leadership, vcPhoto),
+    ).toEqual(base)
   })
 
   it('replaces only the fields that were filled', () => {
-    const out = toLeadership({ leadership: { name: ' New Name ', closing: 'Regards,' } }, leadership)
+    const out = toLeadership({ leadership: { name: ' New Name ', closing: 'Regards,' } }, leadership, vcPhoto)
     expect(out.name).toBe('New Name')
     expect(out.closing).toBe('Regards,')
     expect(out.role).toBe(leadership.role)
     expect(out.quote).toBe(leadership.quote)
     expect(out.fullMessage).toEqual(leadership.fullMessage)
+    expect(out.photo).toEqual(vcPhoto)
   })
 
   it('takes the paragraphs in order, drops empty ones and counts them as complete', () => {
     const out = toLeadership(
       { leadership: { paragraphs: [{ text: 'One' }, { text: '' }, { text: ' Two ' }, { text: 'Three' }] } },
       { ...leadership, fullMessageComplete: false },
+      vcPhoto,
     )
     expect(out.fullMessage).toEqual(['One', 'Two', 'Three'])
     expect(out.fullMessageComplete).toBe(true)
+  })
+
+  it('uses the uploaded photograph when it can be shown, and the standard one otherwise', () => {
+    const up = { url: '/api/media/file/vc.png', alt: 'New portrait', width: 800, height: 900, focalX: 40, focalY: 20 }
+    expect(toLeadership({ leadership: { photo: up } }, leadership, vcPhoto).photo).toEqual({
+      src: '/api/media/file/vc.png',
+      alt: 'New portrait',
+      width: 800,
+      height: 900,
+      focus: '40% 20%',
+    })
+    // a bare id (not loaded), a missing alt text or no size cannot be shown
+    expect(toLeadership({ leadership: { photo: 7 } }, leadership, vcPhoto).photo).toEqual(vcPhoto)
+    expect(toLeadership({ leadership: { photo: { ...up, alt: '' } } }, leadership, vcPhoto).photo).toEqual(vcPhoto)
+    expect(toLeadership({ leadership: { photo: { ...up, width: null } } }, leadership, vcPhoto).photo).toEqual(vcPhoto)
+  })
+})
+
+describe('toHeroContent', () => {
+  it('keeps the sourced words when nothing is entered', () => {
+    expect(toHeroContent(null, hero)).toBe(hero)
+    expect(toHeroContent({ hero: {} }, hero)).toEqual(hero)
+    expect(toHeroContent({ hero: { lineOne: '  ', accent: null, sub: '' } }, hero)).toEqual(hero)
+  })
+
+  it('replaces only the parts that were filled', () => {
+    const out = toHeroContent({ hero: { lineTwo: ' Quality Learning ', sub: 'A new sentence.' } }, hero)
+    expect(out.lines[0]).toEqual(hero.lines[0])
+    expect(out.lines[1]).toEqual({ text: 'Quality Learning' })
+    expect(out.lines[2]).toEqual(hero.lines[2])
+    expect(out.sub).toBe('A new sentence.')
+    expect(out.eyebrow).toBe(hero.eyebrow)
+  })
+
+  it('builds the third line from its words and the highlighted word', () => {
+    expect(toHeroContent({ hero: { accent: 'Impact' } }, hero).lines[2]).toEqual({ text: 'with', accent: 'Impact' })
+    expect(toHeroContent({ hero: { lineThree: 'and', accent: 'Purpose' } }, hero).lines[2]).toEqual({
+      text: 'and',
+      accent: 'Purpose',
+    })
+    expect(toHeroContent({ hero: { lineThree: 'and' } }, hero).lines[2]).toEqual({ text: 'and', accent: 'Relevance' })
   })
 })

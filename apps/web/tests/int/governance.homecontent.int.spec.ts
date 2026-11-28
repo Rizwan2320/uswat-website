@@ -72,7 +72,8 @@ const complete = () => ({
   colours: { green: null, yellow: null, maroon: null },
   admissions: { session: null, deadline: null, applyUrl: null, closedUrl: null },
   portals: [],
-  leadership: { name: null, role: null, quote: null, paragraphs: [], closing: null },
+  hero: { eyebrow: null, lineOne: null, lineTwo: null, lineThree: null, accent: null, sub: null },
+  leadership: { photo: null, name: null, role: null, quote: null, paragraphs: [], closing: null },
   slides: [slide(m1), slide(m2), slide(m3)],
   stats: [stat(), stat({ label: 'Students', value: 9000 }), stat({ label: 'Faculty', value: 150 })],
 })
@@ -274,6 +275,29 @@ describe('the pictures', () => {
       expect(code).toBe('HOME_MEDIA_PROBLEM')
       expect(message).toMatch(what)
     }
+  })
+
+  it('the Vice Chancellor’s photograph needs alt text and rights too, and a good one publishes', async () => {
+    const noAlt = await upload({ rightsStatus: 'owned' }, true)
+    const noRights = await upload({ alt: 'A portrait' }, true)
+    for (const [bad, what] of [
+      [noAlt, /Vice Chancellor.s photograph.*no alt text/i],
+      [noRights, /Vice Chancellor.s photograph.*no recorded rights/i],
+    ] as const) {
+      let message = ''
+      const code = await refusal(async () => {
+        try {
+          await publish(approver, { ...complete(), leadership: { photo: bad } })
+        } catch (e) {
+          message = (e as Error).message
+          throw e
+        }
+      })
+      expect(code).toBe('HOME_MEDIA_PROBLEM')
+      expect(message).toMatch(what)
+    }
+    expect(await can(() => publish(approver, { ...complete(), leadership: { photo: m1 } }))).toBe(true)
+    await publish(approver, complete()) // leave the shared row without a photograph
   })
 
   it('a slide whose picture was deleted is refused', async () => {

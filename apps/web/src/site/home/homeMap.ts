@@ -1,4 +1,4 @@
-import type { HeroSlide } from '../content/hero'
+import type { HeroContent, HeroSlide } from '../content/hero'
 import type { admissions as admissionsFile } from '../content/admissions'
 import type { Portal, SiteImage, Stat } from '../content/types'
 import type { HomeColours } from '../../governance/homePalette'
@@ -24,7 +24,16 @@ type CtaDoc = {
 }
 
 export type HomeDoc = {
+  hero?: {
+    eyebrow?: string | null
+    lineOne?: string | null
+    lineTwo?: string | null
+    lineThree?: string | null
+    accent?: string | null
+    sub?: string | null
+  } | null
   leadership?: {
+    photo?: number | MediaLike | null
     name?: string | null
     role?: string | null
     quote?: string | null
@@ -189,11 +198,16 @@ export function toPortals(doc: HomeDoc | null | undefined, fallback: Portal[]): 
  * The Vice Chancellor's message. Each field the editor filled replaces the sourced value; an empty one keeps it.
  * The full message is the filled paragraphs in order; with none, the sourced full message stays. Paragraphs the
  * editor wrote count as the complete message (the "read the rest on the university website" line is only for
- * a message that was cut short).
+ * a message that was cut short). The photograph is the uploaded one when it can be shown (a picture with its
+ * address, alt text and size), and the sourced portrait otherwise.
  */
-export function toLeadership<T extends LeadershipShape>(doc: HomeDoc | null | undefined, fallback: T): T {
+export function toLeadership<T extends LeadershipShape>(
+  doc: HomeDoc | null | undefined,
+  fallback: T,
+  fallbackPhoto: SiteImage,
+): T & { photo: SiteImage } {
   const l = doc?.leadership
-  if (!l) return fallback
+  if (!l) return { ...fallback, photo: fallbackPhoto }
   const paragraphs = (l.paragraphs ?? [])
     .map((p) => (typeof p.text === 'string' ? p.text.trim() : ''))
     .filter((t) => t !== '')
@@ -205,6 +219,7 @@ export function toLeadership<T extends LeadershipShape>(doc: HomeDoc | null | un
     fullMessage: paragraphs.length > 0 ? paragraphs : fallback.fullMessage,
     fullMessageComplete: paragraphs.length > 0 ? true : fallback.fullMessageComplete,
     closing: filled(l.closing) ? l.closing.trim() : fallback.closing,
+    photo: toImage(l.photo) ?? fallbackPhoto,
   }
 }
 
@@ -215,4 +230,28 @@ type LeadershipShape = {
   fullMessage: string[]
   fullMessageComplete: boolean
   closing: string
+}
+
+/**
+ * The words beside the slider. Each field the editor filled replaces its part of the sourced headline; an empty
+ * one keeps it. The third line carries the highlighted word, so a headline always has three lines.
+ */
+export function toHeroContent(doc: HomeDoc | null | undefined, fallback: HeroContent): HeroContent {
+  const h = doc?.hero
+  if (!h) return fallback
+  const [one, two, three] = fallback.lines
+  return {
+    eyebrow: filled(h.eyebrow) ? h.eyebrow.trim() : fallback.eyebrow,
+    lines: [
+      filled(h.lineOne) ? { text: h.lineOne.trim() } : one!,
+      filled(h.lineTwo) ? { text: h.lineTwo.trim() } : two!,
+      filled(h.lineThree) || filled(h.accent)
+        ? {
+            text: filled(h.lineThree) ? h.lineThree.trim() : three!.text.trim(),
+            accent: filled(h.accent) ? h.accent.trim() : three!.accent,
+          }
+        : three!,
+    ],
+    sub: filled(h.sub) ? h.sub.trim() : fallback.sub,
+  }
 }

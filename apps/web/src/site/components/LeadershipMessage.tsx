@@ -21,10 +21,10 @@ export default async function LeadershipMessage() {
       <div className={`container ${styles.grid}`}>
         <figure className={styles.figure}>
           <SafeImage
-            src={images.vc.src}
-            alt={images.vc.alt}
-            width={images.vc.width}
-            height={images.vc.height}
+            src={vc.photo.src}
+            alt={vc.photo.alt}
+            width={vc.photo.width}
+            height={vc.photo.height}
             sizes="(max-width: 767px) 80vw, 340px"
             priority
             className={styles.portrait}
