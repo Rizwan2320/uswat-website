@@ -19,7 +19,7 @@ import HeroPhotos from './HeroPhotos'
 import { CAMPUS_PHOTOS } from './campusPhotos'
 import styles from './Academics.module.css'
 import type { DepartmentFeed } from './feed'
-import type { Art, Faq, IconTitled, TeamMember, Titled, Year } from './types'
+import type { Art, DepartmentProfile, Faq, IconName, IconTitled, TeamMember, Titled, Year } from './types'
 
 /* Next Link for pages of this site, a plain link for in-page anchors and other sites. */
 export function SiteLink({
@@ -152,6 +152,78 @@ export function Hero({
         </div>
       </div>
     </div>
+  )
+}
+
+/** The whole top of a department page as one hero (see `DepartmentProfile.heroBanner`): title as text, one photograph that fades into the green,
+    two buttons, and the statistics in a strip that overlaps the hero's bottom edge, with the campus photograph at its right end. */
+export function HeroBanner({
+  hero,
+  crumbs,
+  lead,
+  actions,
+  stats,
+  campus,
+}: {
+  hero: NonNullable<DepartmentProfile['heroBanner']>
+  crumbs: Crumb[]
+  lead: string
+  actions: { label: string; href: string; ghost?: boolean }[]
+  stats: { value: string | number; label: string; icon: IconName }[]
+  campus?: Art
+}) {
+  return (
+    <header className={styles.hb}>
+      <div className={styles.hbPhoto} aria-hidden="true">
+        <SafeImage src={hero.photo.src} alt="" fill sizes="(max-width: 860px) 100vw, 62vw" priority className={styles.hbImg} />
+      </div>
+      <div className={styles.hbBand}>
+        <div className={`container ${styles.hbInner}`}>
+          <div className={styles.hbText}>
+            <h1 className={styles.hbTitle}>
+              <span className={styles.hbPre}>{hero.pre}</span> <span className={styles.hbMain}>{hero.main}</span>{' '}
+              <span className={styles.hbAccent}>{hero.accent}</span>
+            </h1>
+            <p className={styles.hbLine}>{hero.line}</p>
+            <p className={styles.hbLead}>{lead}</p>
+            <div className={styles.actions}>
+              {actions.map((a) => (
+                <SiteLink key={a.label} href={a.href} className={a.ghost ? styles.btnGhost : styles.btn}>
+                  <T k={a.label} />
+                </SiteLink>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="container">
+        <div className={styles.hbStrip}>
+          <ul className={styles.hbStats}>
+            {stats.map((s) => (
+              <li key={s.label} className={styles.hbStat}>
+                <span className={styles.hbStatIcon} aria-hidden="true">
+                  <AcademicIcon name={s.icon} size="28px" />
+                </span>
+                <span className={styles.hbStatValue}>{s.value}</span>
+                <span className={styles.hbStatLabel}>
+                  <T k={s.label} />
+                </span>
+              </li>
+            ))}
+          </ul>
+          {campus ? (
+            <div className={styles.hbCampus} aria-hidden="true">
+              <SafeImage src={campus.src} alt="" fill sizes="(max-width: 860px) 0px, 300px" />
+            </div>
+          ) : null}
+        </div>
+      </div>
+      <div className={`${styles.bannerCrumbs} ${styles.crumbsHidden}`}>
+        <div className="container">
+          <Breadcrumbs items={crumbs} tone="dark" />
+        </div>
+      </div>
+    </header>
   )
 }
 

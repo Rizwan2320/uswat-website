@@ -78,6 +78,10 @@ export type DepartmentProfile = {
   heroPhotos?: Art[]
   /** A photograph on the left of the hero card (the green card under the banner) that fades into its green. */
   campusPhoto?: Art
+  /** One hero for the whole top of the page, in place of the banner band, the green card and the statistics row: the title as text on the
+      left, ONE photograph on the right that fades into the green (no rotation), two buttons, and the statistics in a strip that overlaps the
+      bottom of the hero (with `campusPhoto` at its right end). Set for DCST only (owner, 2026-11-28). */
+  heroBanner?: { photo: Art; pre: string; main: string; accent: string; line: string }
   /** The wide banner at the top of the page (1672 x 941, the title is in the picture, so `alt` is the page title and tagline). */
   banner: Art
   about: string[]

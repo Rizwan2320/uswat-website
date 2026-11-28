@@ -20,6 +20,14 @@ export const dcst: DepartmentProfile = {
     photo('dcst-hero-4', 678, 452),
     photo('dcst-hero-5', 638, 480),
   ],
+  // One photograph, no slider (owner, 2026-11-28): the laptop picture from the owner's mock-up, cropped and enlarged, so it is soft until the original is supplied.
+  heroBanner: {
+    photo: photo('dcst-hero-main', 1408, 960),
+    pre: 'Department of',
+    main: 'Computer and Software',
+    accent: 'Technologies',
+    line: 'Learn · Develop · Innovate',
+  },
   campusPhoto: photo('dcst-campus', 900, 1125, 'The University of Swat campus at sunset'),
   banner: banner('dcst', 'Department of Computer and Software Technologies (DCST). Learn, Develop, Innovate.'),
   about: [

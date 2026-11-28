@@ -20,6 +20,7 @@ import {
   HeadCard,
   HeadIntroCard,
   Hero,
+  HeroBanner,
   IconCards,
   IconRows,
   Photo,
@@ -94,33 +95,54 @@ export default function RichDepartmentPage({
   ]
   return (
     <div className={styles.root}>
-      <BannerHeader
-        banner={profile.banner}
-        crumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Academics', href: '/academics' },
-          { label: 'Departments', href: DEPARTMENTS_PATH },
-          { label: profile.shortName },
-        ]}
-        hideCrumbs
-        photos={profile.heroPhotos}
-      />
-      <Hero
-        art={profile.hero}
-        photo={profile.campusPhoto}
-        badge={profile.shortName}
-        lead={profile.intro}
-        facts={[
-          ['Programmes', String(programmes.length)],
-          ['Level', profile.levelText ?? 'BS'],
-          ['Duration', profile.durationText ?? '4 years'],
-        ]}
-        actions={[
-          { label: 'Explore programmes', href: '#programmes' },
-          { label: 'News and notices', href: '#news', ghost: true },
-        ]}
-      />
-      <Stats items={stats} />
+      {profile.heroBanner ? (
+        <HeroBanner
+          hero={profile.heroBanner}
+          crumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Academics', href: '/academics' },
+            { label: 'Departments', href: DEPARTMENTS_PATH },
+            { label: profile.shortName },
+          ]}
+          lead={profile.intro}
+          actions={[
+            { label: 'Explore programmes', href: '#programmes' },
+            { label: 'News and notices', href: '#news', ghost: true },
+          ]}
+          stats={stats.map((st, i) => ({ ...st, icon: (['cap', 'book', 'flask', 'search'] as const)[i % 4] }))}
+          campus={profile.campusPhoto}
+        />
+      ) : (
+        <>
+        <BannerHeader
+          banner={profile.banner}
+          crumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Academics', href: '/academics' },
+            { label: 'Departments', href: DEPARTMENTS_PATH },
+            { label: profile.shortName },
+          ]}
+          hideCrumbs
+          photos={profile.heroPhotos}
+        />
+        <Hero
+          art={profile.hero}
+          photo={profile.campusPhoto}
+          badge={profile.shortName}
+          lead={profile.intro}
+          facts={[
+            ['Programmes', String(programmes.length)],
+            ['Level', profile.levelText ?? 'BS'],
+            ['Duration', profile.durationText ?? '4 years'],
+          ]}
+          actions={[
+            { label: 'Explore programmes', href: '#programmes' },
+            { label: 'News and notices', href: '#news', ghost: true },
+          ]}
+        />
+        <Stats items={stats} />
+        </>
+      )}
       <SectionNav items={nav} />
 
       <Band id="overview" kicker="About" title={`About ${profile.shortName}`}>
