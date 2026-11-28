@@ -1,4 +1,5 @@
 import { site } from '../content/site'
+import { getTopBar } from '../lib/content'
 import DepartmentSearch from './DepartmentSearch'
 import { LanguageToggle, T } from './I18n'
 import { PinIcon } from './icons'
@@ -8,16 +9,17 @@ import styles from './TopBar.module.css'
 
 /* Darkest green utility bar. Sticks with the header (see .site-head) so the "Established in 2010" line is always visible.
    The street address is NOT shown here: it is unconfirmed (Odigram vs Charbagh) and is labelled Sample in the footer. */
-export default function TopBar() {
+export default async function TopBar() {
+  const bar = await getTopBar()
   return (
     <aside className={styles.bar} aria-label="University utility bar">
       <div className={`container ${styles.inner}`}>
         <p className={styles.left}>
           <span className={styles.place}>
-            <PinIcon /> <span>Swat, Khyber Pakhtunkhwa, Pakistan</span>
+            <PinIcon /> <span>{bar.place}</span>
           </span>
           <span className={styles.divider} aria-hidden="true" />
-          <span className={styles.tagline}>{site.established}</span>
+          <span className={styles.tagline}>{bar.established}</span>
         </p>
         <nav className={styles.right} aria-label="Portals and language">
           <DepartmentSearch triggerClassName={styles.linkBtn} />
@@ -30,13 +32,13 @@ export default function TopBar() {
           <span aria-hidden="true" className={styles.sep}>
             |
           </span>
-          <a href={site.portalLinks.student} rel="noopener noreferrer">
+          <a href={bar.studentUrl} rel="noopener noreferrer">
             <T k="Student Portal" />
           </a>
           <span aria-hidden="true" className={styles.sep}>
             |
           </span>
-          <a href={site.portalLinks.faculty} rel="noopener noreferrer">
+          <a href={bar.facultyUrl} rel="noopener noreferrer">
             <T k="Faculty Portal" />
           </a>
           <span aria-hidden="true" className={styles.sep}>

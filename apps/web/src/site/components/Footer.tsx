@@ -1,5 +1,4 @@
-import { footerQuick, footerUseful } from '../content/nav'
-import { getSite } from '../lib/content'
+import { getFooter, getSite } from '../lib/content'
 import { T } from './I18n'
 import { FacebookIcon, LinkedinIcon, MailIcon, PhoneIcon, PinIcon, TiktokIcon, YoutubeIcon } from './icons'
 import { Crest } from './Logo'
@@ -14,6 +13,7 @@ const social = { facebook: FacebookIcon, youtube: YoutubeIcon, linkedin: Linkedi
    which carries a visible Sample tag until the Odigram/Charbagh conflict is settled. */
 export default async function Footer() {
   const site = await getSite()
+  const f = await getFooter()
   const year = new Intl.DateTimeFormat('en-US', { year: 'numeric', timeZone: 'Asia/Karachi' }).format(new Date())
   return (
     <footer className={styles.footer}>
@@ -29,27 +29,27 @@ export default async function Footer() {
             <Crest size={52} />
             <span>
               <span className={styles.brandName}>{site.nameCaps}</span>
-              <span className={styles.brandTag}>{site.tagline}</span>
+              <span className={styles.brandTag}>{f.tagline}</span>
             </span>
           </p>
           <address className={styles.address}>
-            <p><PinIcon /> <span>{site.address.footerLine}{site.address.sample ? <span className="sample-tag">Sample</span> : null}</span></p>
-            <p><PhoneIcon /> <a href={`tel:${site.phone.tel}`}>{site.phone.display}</a> <small><bdi>({site.phone.note})</bdi></small></p>
-            <p><MailIcon /> <a href={`mailto:${site.email.address}`}>{site.email.address}</a></p>
+            <p><PinIcon /> <span>{f.addressLine}{f.addressSample ? <span className="sample-tag">Sample</span> : null}</span></p>
+            <p><PhoneIcon /> <a href={`tel:${f.phone.tel}`}>{f.phone.display}</a> <small><bdi>({f.phone.note})</bdi></small></p>
+            <p><MailIcon /> <a href={`mailto:${f.email}`}>{f.email}</a></p>
           </address>
         </div>
 
         <nav aria-label="Quick links">
           <h2 className={styles.h}><T k="Quick Links" /></h2>
           <ul className={styles.links}>
-            {footerQuick.map((l) => (<li key={l.label}><SiteLink href={l.href}>{l.label}</SiteLink></li>))}
+            {f.quick.map((l) => (<li key={l.label}><SiteLink href={l.href}>{l.label}</SiteLink></li>))}
           </ul>
         </nav>
 
         <nav aria-label="Useful links">
           <h2 className={styles.h}><T k="Useful Links" /></h2>
           <ul className={styles.links}>
-            {footerUseful.map((l) => (<li key={l.label}><SiteLink href={l.href}>{l.label}</SiteLink></li>))}
+            {f.useful.map((l) => (<li key={l.label}><SiteLink href={l.href}>{l.label}</SiteLink></li>))}
           </ul>
         </nav>
 
@@ -58,7 +58,7 @@ export default async function Footer() {
           <p className={styles.small}><T k="Subscribe to our newsletter for updates" /></p>
           <NewsletterForm />
           <ul className={styles.social}>
-            {site.social.map((s) => {
+            {f.social.map((s) => {
               const Icon = social[s.id as keyof typeof social]
               return (
                 <li key={s.id}>
@@ -71,7 +71,7 @@ export default async function Footer() {
 
         <div>
           <h2 className={styles.h}><T k="Find Us on Map" /></h2>
-          <a className={styles.map} href={site.mapHref} target="_blank" rel="noopener noreferrer" aria-label="Find University of Swat on the map (opens in a new tab)">
+          <a className={styles.map} href={f.mapHref} target="_blank" rel="noopener noreferrer" aria-label="Find University of Swat on the map (opens in a new tab)">
             <svg viewBox="0 0 240 150" aria-hidden="true" focusable="false">
               <rect width="240" height="150" fill="#e6efe0" />
               <path d="M0 110c40-20 70 10 110-6s70-34 130-10v56H0Z" fill="#cfe0c8" />

@@ -9,9 +9,12 @@ import {
   toAdmissions,
   toHeroContent,
   toHeroSlides,
+  telHref,
+  toFooter,
   toLeadership,
   toPortals,
   toStats,
+  toTopBar,
   type HomeDoc,
 } from '../../src/site/home/homeMap'
 
@@ -281,5 +284,103 @@ describe('toHeroContent', () => {
       accent: 'Purpose',
     })
     expect(toHeroContent({ hero: { lineThree: 'and' } }, hero).lines[2]).toEqual({ text: 'and', accent: 'Relevance' })
+  })
+})
+
+const barFallback = { place: 'Swat, KP', established: 'Established in 2010', studentUrl: 'https://s.test/', facultyUrl: '/people' }
+const footFallback = {
+  tagline: 'The tagline',
+  address: { footerLine: 'Old street, Swat', sample: true },
+  phone: { display: '0946-730510', tel: '+92946730510', note: 'Office of the Vice Chancellor' },
+  email: 'webmaster@uswat.edu.pk',
+  social: [
+    { id: 'facebook', label: 'Facebook', href: 'https://www.facebook.com/old/' },
+    { id: 'youtube', label: 'YouTube', href: 'https://www.youtube.com/old' },
+  ],
+  mapHref: 'https://map.test/old',
+  quick: [{ label: 'About Us', href: '/about' }],
+  useful: [{ label: 'News', href: '/news' }],
+}
+
+describe('toTopBar', () => {
+  it('keeps the standard bar when nothing is entered', () => {
+    expect(toTopBar(null, barFallback)).toEqual(barFallback)
+    expect(toTopBar({ topBar: { place: ' ', studentUrl: '' } }, barFallback)).toEqual(barFallback)
+  })
+  it('replaces only what was filled, and never takes an unsafe link', () => {
+    const out = toTopBar(
+      { topBar: { place: ' Mingora ', studentUrl: 'javascript:alert(1)', facultyUrl: 'https://f.test/in' } },
+      barFallback,
+    )
+    expect(out).toEqual({ ...barFallback, place: 'Mingora', facultyUrl: 'https://f.test/in' })
+  })
+})
+
+describe('telHref', () => {
+  it('works out the number to dial', () => {
+    expect(telHref('0946-730510')).toBe('+92946730510')
+    expect(telHref('+92 946 730510')).toBe('+92946730510')
+    expect(telHref('0092 946 730510')).toBe('+92946730510')
+    expect(telHref('(0946) 730510')).toBe('+92946730510')
+  })
+  it('gives up on anything it cannot read', () => {
+    expect(telHref('call me')).toBeNull()
+    expect(telHref('12')).toBeNull()
+  })
+})
+
+describe('toFooter', () => {
+  it('keeps the standard footer, Sample tag included, when nothing is entered', () => {
+    const out = toFooter(null, footFallback)
+    expect(out.addressLine).toBe('Old street, Swat')
+    expect(out.addressSample).toBe(true)
+    expect(out.phone).toEqual(footFallback.phone)
+    expect(out.social).toEqual(footFallback.social)
+    expect(out.quick).toEqual(footFallback.quick)
+    expect(toFooter({ footer: { quickLinks: [{ label: '', href: '/x' }, { label: 'y', href: '' }] } }, footFallback).quick).toEqual(
+      footFallback.quick,
+    )
+  })
+  it('an address the editor typed loses the Sample tag', () => {
+    const out = toFooter({ footer: { address: ' Charbagh, Swat ' } }, footFallback)
+    expect(out.addressLine).toBe('Charbagh, Swat')
+    expect(out.addressSample).toBe(false)
+  })
+  it('a telephone gives its dialling link, and keeps the old one when it cannot be read', () => {
+    expect(toFooter({ footer: { phone: '0300-1234567' } }, footFallback).phone).toMatchObject({
+      display: '0300-1234567',
+      tel: '+923001234567',
+    })
+    expect(toFooter({ footer: { phone: 'abc' } }, footFallback).phone).toMatchObject({ display: 'abc', tel: '+92946730510' })
+  })
+  it('replaces the filled icons and links, ignores unsafe ones and a bad email', () => {
+    const out = toFooter(
+      { footer: { facebook: 'https://fb.test/new', youtube: 'javascript:x', mapUrl: 'https://m.test/new', email: 'not an email' } },
+      footFallback,
+    )
+    expect(out.social).toEqual([
+      { id: 'facebook', label: 'Facebook', href: 'https://fb.test/new' },
+      footFallback.social[1],
+    ])
+    expect(out.mapHref).toBe('https://m.test/new')
+    expect(out.email).toBe('webmaster@uswat.edu.pk')
+  })
+  it('takes complete safe link rows in order, and drops the rest', () => {
+    const out = toFooter(
+      {
+        footer: {
+          usefulLinks: [
+            { label: 'One', href: '/one' },
+            { label: 'Bad', href: 'javascript:x' },
+            { label: 'Two', href: 'https://two.test' },
+          ],
+        },
+      },
+      footFallback,
+    )
+    expect(out.useful).toEqual([
+      { label: 'One', href: '/one' },
+      { label: 'Two', href: 'https://two.test' },
+    ])
   })
 })

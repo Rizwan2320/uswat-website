@@ -4730,7 +4730,7 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
- * The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message, the headline text and colours.
+ * The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message, the headline text, the top bar and footer (shown on every page) and colours.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "home-content".
@@ -4886,6 +4886,86 @@ export interface HomeContent {
      */
     accent?: string | null;
     sub?: string | null;
+  };
+  /**
+   * The thin dark green bar at the top of every page. Leave a field empty to keep the standard text or link.
+   */
+  topBar?: {
+    /**
+     * For example: Swat, Khyber Pakhtunkhwa, Pakistan.
+     */
+    place?: string | null;
+    /**
+     * For example: Established in 2010.
+     */
+    established?: string | null;
+    /**
+     * Where the Student Portal link in the bar goes.
+     */
+    studentUrl?: string | null;
+    /**
+     * Where the Faculty Portal link in the bar goes.
+     */
+    facultyUrl?: string | null;
+  };
+  /**
+   * The dark green footer at the bottom of every page. Leave a field empty to keep the standard text or link. An address you enter here no longer carries the Sample tag.
+   */
+  footer?: {
+    tagline?: string | null;
+    /**
+     * For example: C.T. Road, Odigram, Swat, Khyber Pakhtunkhwa, Pakistan.
+     */
+    address?: string | null;
+    /**
+     * For example: 0946-730510. The link that dials it is worked out for you.
+     */
+    phone?: string | null;
+    /**
+     * Shown in brackets after the number. For example: Office of the Vice Chancellor.
+     */
+    phoneNote?: string | null;
+    email?: string | null;
+    /**
+     * The Facebook icon.
+     */
+    facebook?: string | null;
+    /**
+     * The YouTube icon.
+     */
+    youtube?: string | null;
+    /**
+     * The LinkedIn icon.
+     */
+    linkedin?: string | null;
+    /**
+     * The TikTok icon.
+     */
+    tiktok?: string | null;
+    /**
+     * Where "Find Us on Map" goes.
+     */
+    mapUrl?: string | null;
+    /**
+     * The list under "Quick Links", in this order. Up to 8, or none to keep the standard links.
+     */
+    quickLinks?:
+      | {
+          label: string;
+          href: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * The list under "Useful Links", in this order. Up to 8, or none to keep the standard links.
+     */
+    usefulLinks?:
+      | {
+          label: string;
+          href: string;
+          id?: string | null;
+        }[]
+      | null;
   };
   /**
    * Change the colours of the home page only. Leave a colour empty to keep the standard one. The darker and lighter shades are worked out for you.
@@ -5052,6 +5132,42 @@ export interface HomeContentSelect<T extends boolean = true> {
         lineThree?: T;
         accent?: T;
         sub?: T;
+      };
+  topBar?:
+    | T
+    | {
+        place?: T;
+        established?: T;
+        studentUrl?: T;
+        facultyUrl?: T;
+      };
+  footer?:
+    | T
+    | {
+        tagline?: T;
+        address?: T;
+        phone?: T;
+        phoneNote?: T;
+        email?: T;
+        facebook?: T;
+        youtube?: T;
+        linkedin?: T;
+        tiktok?: T;
+        mapUrl?: T;
+        quickLinks?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              id?: T;
+            };
+        usefulLinks?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              id?: T;
+            };
       };
   colours?:
     | T

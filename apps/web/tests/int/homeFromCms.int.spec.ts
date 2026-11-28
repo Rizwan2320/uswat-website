@@ -18,7 +18,9 @@ vi.mock('next/cache', () => ({
 
 import {
   getAdmissions,
+  getFooter,
   getHero,
+  getTopBar,
   getHomeColours,
   getLeadership,
   getPortals,
@@ -239,5 +241,35 @@ describe('home page reads the home-content global', () => {
     const reset = (await getHero()).content
     expect(reset.eyebrow).toBe('UNIVERSITY OF SWAT')
     expect(reset.lines[2]!.accent).toBe('Relevance')
+  })
+  it('hands the pages the published top bar and footer, never the draft', async () => {
+    await publish({
+      ...content('Ch'),
+      topBar: { place: 'Test place', facultyUrl: 'https://faculty.test/in' },
+      footer: {
+        address: 'Test address, Swat',
+        phone: '0946-111222',
+        quickLinks: [{ label: 'Test link', href: '/test' }],
+      },
+    })
+    const bar = await getTopBar()
+    expect(bar.place).toBe('Test place')
+    expect(bar.facultyUrl).toBe('https://faculty.test/in')
+    expect(bar.established).toBe('Established in 2010') // not filled: the standard line stays
+    const foot = await getFooter()
+    expect(foot.addressLine).toBe('Test address, Swat')
+    expect(foot.addressSample).toBe(false)
+    expect(foot.phone).toMatchObject({ display: '0946-111222', tel: '+92946111222' })
+    expect(foot.quick).toEqual([{ label: 'Test link', href: '/test' }])
+    expect(foot.useful.length).toBeGreaterThan(1) // not filled: the standard list stays
+    await saveDraft({ topBar: { place: 'Draft only' } })
+    expect((await getTopBar()).place).toBe('Test place')
+    await publish({
+      ...content('Ch2'),
+      topBar: { place: null, facultyUrl: null },
+      footer: { address: null, phone: null, quickLinks: [] },
+    })
+    expect((await getTopBar()).place).toBe('Swat, Khyber Pakhtunkhwa, Pakistan')
+    expect((await getFooter()).addressSample).toBe(true)
   })
 })

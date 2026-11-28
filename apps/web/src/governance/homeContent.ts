@@ -109,6 +109,19 @@ export const portalHrefValidate: TextFieldSingleValidation = (value, options) =>
     : 'Use a page on this site, starting with / (for example /academics), or a full address starting with https://'
 }
 
+/** A telephone number as people write it: starts with + or 0, then digits, spaces, dashes and brackets. */
+export const phoneValidate: TextFieldSingleValidation = (value, options) => {
+  const base = text(value, options)
+  if (base !== true) return base
+  if (value == null || value === '') return true
+  return typeof value === 'string' && /^(\+|0)[\d\s\-()]{6,25}$/.test(value.trim())
+    ? true
+    : 'Write the number with digits only, starting with 0 or +, for example 0946-730510.'
+}
+
+/** Quick and useful links in the footer: up to 8 each. Empty keeps the standard links. */
+export const FOOTER_LINKS = { max: 8 } as const
+
 const blank = (v: unknown): boolean => v == null || (typeof v === 'string' && v.trim() === '')
 
 /** A statistic needs a source and a date unless it is ticked as a sample (repo rule 3). */

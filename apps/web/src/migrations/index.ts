@@ -20,6 +20,7 @@ import * as migration_20261127_065030_home_admissions_portals from './20261127_0
 import * as migration_20261127_130022_home_leadership from './20261127_130022_home_leadership';
 import * as migration_20261128_053758_home_leadership_photo from './20261128_053758_home_leadership_photo';
 import * as migration_20261128_061635_home_hero_text from './20261128_061635_home_hero_text';
+import * as migration_20261128_100553_home_footer_topbar from './20261128_100553_home_footer_topbar';
 
 export const migrations = [
   {
@@ -130,6 +131,11 @@ export const migrations = [
   {
     up: migration_20261128_061635_home_hero_text.up,
     down: migration_20261128_061635_home_hero_text.down,
-    name: '20261128_061635_home_hero_text'
+    name: '20261128_061635_home_hero_text',
+  },
+  {
+    up: migration_20261128_100553_home_footer_topbar.up,
+    down: migration_20261128_100553_home_footer_topbar.down,
+    name: '20261128_100553_home_footer_topbar'
   },
 ];
