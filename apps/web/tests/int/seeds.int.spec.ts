@@ -39,7 +39,7 @@ describe('applySeeds', () => {
     await applySeeds(cms, actor)
     const before = Object.fromEntries(await Promise.all(Object.keys(seedRows()).map(async (c) => [c, await versions(c)])))
     const second = await applySeeds(cms, actor)
-    expect(second).toMatchObject({ created: 0, linked: 0, published: 0, unchanged: 82 })
+    expect(second).toMatchObject({ created: 0, linked: 0, published: 0, unchanged: Object.values(seedRows()).reduce((n, rows) => n + rows.length, 0) })
     for (const [c, rows] of Object.entries(seedRows())) {
       expect((await count(c)).totalDocs, c).toBe(rows.length)
       expect(await versions(c), c).toBe(before[c])
@@ -48,22 +48,25 @@ describe('applySeeds', () => {
 
   it('shows anonymous readers the published rows with their relations', async () => {
     const depts = await anon('departments')
-    // 8 departments with invented names and heads, plus the 2 centres of the real Faculty of Allied Health Sciences (no head).
-    expect(depts.totalDocs).toBe(10)
+    // Every department and programme the pack declares, read from the pack itself so that adding a department page does not
+    // break this count (it had been a number that had to be edited each time).
+    expect(depts.totalDocs).toBe(seedRows().departments!.length)
     for (const d of depts.docs as unknown as { slug: string; facultyGroup: { name: string }; head?: { name: string } | null }[]) {
       expect(d.facultyGroup.name, d.slug).toMatch(/^(Sample Faculty|Faculty of Allied Health Sciences)/)
       if (d.head) expect(d.head.name, d.slug).toMatch(/^Sample Person/)
-      else expect(d.facultyGroup.name, d.slug).toBe('Faculty of Allied Health Sciences')
+      // A department without a head is no longer only an Allied Health centre: the departments that carry the university's own text have no head named yet.
     }
     const progs = await anon('programmes')
-    // 16 invented programmes plus the 4 of the Faculty of Allied Health Sciences (one has no department or campus).
-    expect(progs.totalDocs).toBe(20)
+    expect(progs.totalDocs).toBe(seedRows().programmes!.length)
     for (const p of progs.docs as unknown as { department?: { name: string } | null; campus?: { name: string } | null }[]) {
       if (p.department) expect(p.department.name).toMatch(/^(Sample )?(Department|Centre)/)
       if (p.campus) expect(p.campus.name).toMatch(/Campus$/)
     }
     const heads = (await anon('people')).docs as unknown as { slug: string; department?: { name: string } | null }[]
-    expect(heads.find((p) => p.slug === 'sample-person-01')?.department?.name).toBe('Sample Department of Physics')
+    // The departments that carry the university's own text have no Sample head, so check the relation on the heads that remain.
+    const withDept = heads.filter((p) => p.department)
+    expect(withDept.length).toBeGreaterThan(0)
+    for (const p of withDept) expect(p.department!.name, p.slug).toMatch(/^(Sample )?Department/)
   })
 
   it('hides a hidden email from anonymous readers and shows the one public email', async () => {

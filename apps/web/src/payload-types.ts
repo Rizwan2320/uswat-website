@@ -657,7 +657,7 @@ export interface Department {
      */
     shortName?: string | null;
     /**
-     * One short line under the name.
+     * One short line under the name. Not shown on the public page yet.
      */
     tagline?: string | null;
     /**
@@ -850,9 +850,12 @@ export interface Department {
         }[]
       | null;
     /**
-     * Where the department is on campus.
+     * Where the department is on campus. Not shown on the public page yet.
      */
     location?: string | null;
+    /**
+     * When the office is open. Not shown on the public page yet.
+     */
     officeHours?: string | null;
   };
   governance?: {
@@ -1062,7 +1065,7 @@ export interface Programme {
      */
     shortName?: string | null;
     /**
-     * One short line under the name.
+     * One short line under the name. Not shown on the public page yet.
      */
     tagline?: string | null;
     /**
@@ -4727,7 +4730,7 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
- * The photographs and the statistics at the top of the home page. The headline and the sentence under it do not change here.
+ * The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message and colours. The headline and the sentence under it do not change here.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "home-content".
@@ -4786,6 +4789,74 @@ export interface HomeContent {
         id?: string | null;
       }[]
     | null;
+  /**
+   * The green bar under the statistics. It shows "Admissions Open" until the last date has passed, then "Closed" with the message below. Leave a field empty to keep the standard text.
+   */
+  admissions?: {
+    /**
+     * For example: Fall 2026.
+     */
+    session?: string | null;
+    /**
+     * The bar says Open until the end of this day (Pakistan time) and Closed after it. Empty means Closed.
+     */
+    deadline?: string | null;
+    /**
+     * Where the button goes while admissions are open.
+     */
+    applyUrl?: string | null;
+    /**
+     * Where the "View Admissions" button goes while admissions are closed.
+     */
+    closedUrl?: string | null;
+    closedDetail?: string | null;
+    /**
+     * Shown above Undergraduate · Graduate · Postgraduate.
+     */
+    servicesHeading?: string | null;
+  };
+  /**
+   * The cards under "University Portals and Services", in this order. 3 to 8 cards, or none to keep the standard cards.
+   */
+  portals?:
+    | {
+        title: string;
+        description: string;
+        href: string;
+        icon: 'book' | 'badge' | 'document' | 'calendar' | 'gear';
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * The Vice Chancellor’s section on the home page and the full message in the window that opens from "Read Full Message". Leave a field empty to keep the standard text. The photograph stays as it is for now.
+   */
+  leadership?: {
+    /**
+     * For example: Prof. Dr. Husnul Amin.
+     */
+    name?: string | null;
+    /**
+     * For example: Vice Chancellor, University of Swat.
+     */
+    role?: string | null;
+    /**
+     * The short passage in quotation marks next to the photograph. Usually the first lines of the message.
+     */
+    quote?: string | null;
+    /**
+     * The full message, one paragraph per row, in order. Leave it empty to keep the standard full message.
+     */
+    paragraphs?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Shown above the name at the end. For example: With best regards,
+     */
+    closing?: string | null;
+  };
   /**
    * Change the colours of the home page only. Leave a colour empty to keep the standard one. The darker and lighter shades are worked out for you.
    */
@@ -4907,6 +4978,39 @@ export interface HomeContentSelect<T extends boolean = true> {
         source?: T;
         verifiedAt?: T;
         id?: T;
+      };
+  admissions?:
+    | T
+    | {
+        session?: T;
+        deadline?: T;
+        applyUrl?: T;
+        closedUrl?: T;
+        closedDetail?: T;
+        servicesHeading?: T;
+      };
+  portals?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        href?: T;
+        icon?: T;
+        id?: T;
+      };
+  leadership?:
+    | T
+    | {
+        name?: T;
+        role?: T;
+        quote?: T;
+        paragraphs?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        closing?: T;
       };
   colours?:
     | T

@@ -59,9 +59,20 @@ const stat = (over: Record<string, unknown> = {}) => ({
   verifiedAt: '2026-11-08T00:00:00.000Z',
   ...over,
 })
+const card = (over: Record<string, unknown> = {}) => ({
+  title: 'Library',
+  description: 'Books and journals',
+  href: '/library',
+  icon: 'book',
+  ...over,
+})
+
 // `colours` is cleared here so a colour saved by an earlier case never leaks into the next (the global is one row).
 const complete = () => ({
   colours: { green: null, yellow: null, maroon: null },
+  admissions: { session: null, deadline: null, applyUrl: null, closedUrl: null },
+  portals: [],
+  leadership: { name: null, role: null, quote: null, paragraphs: [], closing: null },
   slides: [slide(m1), slide(m2), slide(m3)],
   stats: [stat(), stat({ label: 'Students', value: 9000 }), stat({ label: 'Faculty', value: 150 })],
 })
@@ -140,6 +151,16 @@ describe('what must be true to publish', () => {
     ['nine slides', () => ({ ...complete(), slides: slides(9) })],
     ['two statistics', () => ({ ...complete(), stats: stats(2) })],
     ['seven statistics', () => ({ ...complete(), stats: stats(7) })],
+    ['two portal cards', () => ({ ...complete(), portals: [card(), card()] })],
+    ['nine portal cards', () => ({ ...complete(), portals: Array.from({ length: 9 }, card) })],
+    [
+      'a portal card with a javascript link',
+      () => ({ ...complete(), portals: [card(), card(), card({ href: 'javascript:alert(1)' })] }),
+    ],
+    [
+      'an apply link that is not a page or https',
+      () => ({ ...complete(), admissions: { applyUrl: 'ftp://x.test/a' } }),
+    ],
     ...[
       'javascript:alert(1)',
       'data:text/html,x',
@@ -198,6 +219,30 @@ describe('what must be true to publish', () => {
       )
     },
   )
+
+  it('portal cards, including the university examination system on plain http, publish', async () => {
+    const out = (await publish(approver, {
+      ...complete(),
+      admissions: {
+        session: 'Fall 2027',
+        deadline: '2027-09-30',
+        applyUrl: 'https://cms1.uswat.edu.pk/admission/program/list',
+      },
+      portals: [
+        card(),
+        card({ title: 'Exam', href: 'http://exam.uswat.edu.pk/', icon: 'calendar' }),
+        card({ icon: 'gear' }),
+      ],
+    })) as Home & { portals?: unknown[]; admissions?: { session?: string } }
+    expect(out._status).toBe('published')
+    expect(out.portals).toHaveLength(3)
+    expect(out.admissions?.session).toBe('Fall 2027')
+  })
+
+  it('no portal cards at all publishes: the standard cards stay', async () => {
+    const out = (await publish(approver, { ...complete(), portals: [] })) as Home
+    expect(out._status).toBe('published')
+  })
 
   it('a sample statistic needs no source or date', async () => {
     const out = (await publish(approver, {

@@ -5,12 +5,16 @@ import {
   dateUnlessSample,
   HOME_READ_ROLES,
   ICON_LABELS,
+  HOME_PORTALS,
   HOME_SLIDES,
   HOME_STATS,
   colourValidate,
+  portalsCountValidate,
   homeHrefValidate,
+  portalHrefValidate,
   slidesCountValidate,
   SLIDE_ICONS,
+  PORTAL_ICONS,
   STAT_ICONS,
   sourceUnlessSample,
 } from '../../governance/homeContent'
@@ -90,7 +94,7 @@ export const HomeContent: GlobalConfig = {
     group: 'Content',
     hidden: hiddenFromContributors,
     description:
-      'The photographs and the statistics at the top of the home page. The headline and the sentence under it do not change here.',
+      'The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message and colours. The headline and the sentence under it do not change here.',
   },
   access: { read: readHome },
   versions: { max: 25, drafts: true },
@@ -163,6 +167,159 @@ export const HomeContent: GlobalConfig = {
           type: 'date',
           validate: dateUnlessSample,
           admin: { date: { pickerAppearance: 'dayOnly' } },
+        },
+      ],
+    },
+    {
+      name: 'admissions',
+      label: 'Admissions banner',
+      type: 'group',
+      admin: {
+        description:
+          'The green bar under the statistics. It shows "Admissions Open" until the last date has passed, then "Closed" with the message below. Leave a field empty to keep the standard text.',
+      },
+      fields: [
+        {
+          name: 'session',
+          label: 'Intake',
+          type: 'text',
+          maxLength: 40,
+          admin: { description: 'For example: Fall 2026.' },
+        },
+        {
+          name: 'deadline',
+          label: 'Last day to apply',
+          type: 'date',
+          admin: {
+            date: { pickerAppearance: 'dayOnly' },
+            description:
+              'The bar says Open until the end of this day (Pakistan time) and Closed after it. Empty means Closed.',
+          },
+        },
+        {
+          name: 'applyUrl',
+          label: 'Apply Online link',
+          type: 'text',
+          validate: homeHrefValidate,
+          admin: { description: 'Where the button goes while admissions are open.' },
+        },
+        {
+          name: 'closedUrl',
+          label: 'Link while closed',
+          type: 'text',
+          validate: homeHrefValidate,
+          admin: {
+            description: 'Where the "View Admissions" button goes while admissions are closed.',
+          },
+        },
+        {
+          name: 'closedDetail',
+          label: 'Message while closed',
+          type: 'text',
+          localized: true,
+          maxLength: 160,
+        },
+        {
+          name: 'servicesHeading',
+          label: 'Middle heading',
+          type: 'text',
+          localized: true,
+          maxLength: 60,
+          admin: { description: 'Shown above Undergraduate · Graduate · Postgraduate.' },
+        },
+      ],
+    },
+    {
+      name: 'portals',
+      label: 'Portal cards',
+      type: 'array',
+      maxRows: HOME_PORTALS.max,
+      validate: portalsCountValidate,
+      admin: {
+        initCollapsed: true,
+        description: `The cards under "University Portals and Services", in this order. ${HOME_PORTALS.min} to ${HOME_PORTALS.max} cards, or none to keep the standard cards.`,
+      },
+      labels: { singular: 'Card', plural: 'Cards' },
+      fields: [
+        {
+          name: 'title',
+          label: 'Title',
+          type: 'text',
+          required: true,
+          localized: true,
+          maxLength: 60,
+        },
+        {
+          name: 'description',
+          label: 'One line under the title',
+          type: 'text',
+          required: true,
+          localized: true,
+          maxLength: 120,
+        },
+        { name: 'href', label: 'Link', type: 'text', required: true, validate: portalHrefValidate },
+        {
+          name: 'icon',
+          label: 'Icon',
+          type: 'select',
+          required: true,
+          options: iconOptions(PORTAL_ICONS),
+        },
+      ],
+    },
+    {
+      name: 'leadership',
+      label: 'Vice Chancellor’s message',
+      type: 'group',
+      admin: {
+        description:
+          'The Vice Chancellor’s section on the home page and the full message in the window that opens from "Read Full Message". Leave a field empty to keep the standard text. The photograph stays as it is for now.',
+      },
+      fields: [
+        {
+          name: 'name',
+          label: 'Name',
+          type: 'text',
+          maxLength: 80,
+          admin: { description: 'For example: Prof. Dr. Husnul Amin.' },
+        },
+        {
+          name: 'role',
+          label: 'Job title',
+          type: 'text',
+          maxLength: 120,
+          admin: { description: 'For example: Vice Chancellor, University of Swat.' },
+        },
+        {
+          name: 'quote',
+          label: 'Opening shown on the page',
+          type: 'textarea',
+          maxLength: 700,
+          admin: {
+            description: 'The short passage in quotation marks next to the photograph. Usually the first lines of the message.',
+          },
+        },
+        {
+          name: 'paragraphs',
+          label: 'Full message',
+          type: 'array',
+          labels: { singular: 'Paragraph', plural: 'Paragraphs' },
+          maxRows: 40,
+          admin: {
+            initCollapsed: true,
+            description:
+              'The full message, one paragraph per row, in order. Leave it empty to keep the standard full message.',
+          },
+          fields: [
+            { name: 'text', label: 'Paragraph', type: 'textarea', required: true, maxLength: 4000 },
+          ],
+        },
+        {
+          name: 'closing',
+          label: 'Closing words',
+          type: 'text',
+          maxLength: 60,
+          admin: { description: 'Shown above the name at the end. For example: With best regards,' },
         },
       ],
     },

@@ -4,24 +4,18 @@ import { administrationDirectorate } from './administration-directorate'
 import { admissions } from './admissions'
 import { admissionsHub } from './admissions-hub'
 import { alumni } from './alumni'
-import { archaeology } from './archaeology'
 import { calendar } from './calendar'
-import { cmc } from './cmc'
 import { coe } from './coe'
 import { convocation } from './convocation'
 import { dasr } from './dasr'
 import { deanOfficeChemicalSciences } from './dean-office-chemical-sciences'
 import { deans } from './deans'
-import { deds } from './deds'
-import { defl } from './defl'
 import { developmentalProjects } from './developmental-projects'
 import { dit } from './dit'
 import { downloads } from './downloads'
 import { eOffice } from './e-office'
 import { election } from './election'
-import { environmentalSciences } from './environmental-sciences'
 import { financialAid } from './financial-aid'
-import { geology } from './geology'
 import { hunerkada } from './hunerkada'
 import { library } from './library'
 import { mainCampus } from './main-campus'
@@ -89,6 +83,6 @@ export function officesByGroup(area: OfficeArea): { group: OfficeGroup; items: O
 
 /* Pages served at their own static address (not under /administration/{slug}), built with the same template. They are not listed on the
    Research or Administration landings (`lists` is empty) and need no CMS record. */
-export const PAGE_PROFILES: OfficeProfile[] = [cmc, defl, geology, archaeology, environmentalSciences, deds, library, qec, calendar, researchGroup,
+export const PAGE_PROFILES: OfficeProfile[] = [library, qec, calendar, researchGroup,
   mainCampus, womenCampus, sangotaCampus, redCrescent, convocation, openDay, admissionsHub, meritLists, downloads]
 export const profileForPage = (slug: string): OfficeProfile | undefined => PAGE_PROFILES.find((p) => p.slug === slug)

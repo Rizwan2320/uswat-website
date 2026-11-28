@@ -16,7 +16,14 @@ vi.mock('next/cache', () => ({
   unstable_cache: (fn: unknown) => fn,
 }))
 
-import { getHero, getHomeColours, getStats } from '../../src/site/lib/content'
+import {
+  getAdmissions,
+  getHero,
+  getHomeColours,
+  getLeadership,
+  getPortals,
+  getStats,
+} from '../../src/site/lib/content'
 import { as, getTestPayload, makeUser } from '../helpers/governance'
 
 let payload: Payload
@@ -143,5 +150,68 @@ describe('home page reads the home-content global', () => {
     expect((await getHomeColours())?.green).toBe('#10253f')
     await publish({ ...content('Col'), colours: { green: null, yellow: null, maroon: null } })
     expect((await getHomeColours())?.green ?? null).toBeNull()
+  })
+
+  it('hands the home page the published admissions bar and portal cards, never the draft', async () => {
+    const adm = {
+      session: 'Spring 2099',
+      deadline: '2099-02-01',
+      applyUrl: '/apply',
+      closedUrl: '/closed',
+      closedDetail: 'Closed for now',
+      servicesHeading: 'Explore',
+    }
+    const card = (t: string) => ({
+      title: t,
+      description: `${t} line`,
+      href: `/${t}`,
+      icon: 'book',
+    })
+    await publish({
+      ...content('Adm'),
+      admissions: adm,
+      portals: [card('one'), card('two'), card('three')],
+    })
+    const a = await getAdmissions()
+    expect(a).toMatchObject({
+      session: 'Spring 2099',
+      applyUrl: '/apply',
+      closedDetail: 'Closed for now',
+    })
+    expect(a.deadlineISO).toBe('2099-02-01T23:59:59+05:00')
+    expect((await getPortals()).map((p) => p.title)).toEqual(['one', 'two', 'three'])
+    await saveDraft({
+      admissions: { session: 'Draft only' },
+      portals: [card('x'), card('y'), card('z')],
+    })
+    expect((await getAdmissions()).session).toBe('Spring 2099')
+    expect((await getPortals()).map((p) => p.title)).toEqual(['one', 'two', 'three'])
+  })
+  it('hands the home page the published Vice Chancellor message, never the draft', async () => {
+    await publish({
+      ...content('Vc'),
+      leadership: {
+        name: 'Prof. Test Name',
+        quote: 'The opening line.',
+        paragraphs: [{ text: 'First paragraph.' }, { text: 'Second paragraph.' }],
+        closing: 'Warm regards,',
+      },
+    })
+    const v = await getLeadership()
+    expect(v).toMatchObject({
+      name: 'Prof. Test Name',
+      quote: 'The opening line.',
+      fullMessage: ['First paragraph.', 'Second paragraph.'],
+      fullMessageComplete: true,
+      closing: 'Warm regards,',
+    })
+    expect(v.role).toBe('Vice Chancellor, University of Swat') // not filled: the standard title stays
+    await saveDraft({ leadership: { name: 'Draft only' } })
+    expect((await getLeadership()).name).toBe('Prof. Test Name')
+    await publish({
+      ...content('Vc2'),
+      leadership: { name: null, quote: null, paragraphs: [], closing: null },
+    })
+    expect((await getLeadership()).name).toBe('Prof. Dr. Husnul Amin')
   })
 })

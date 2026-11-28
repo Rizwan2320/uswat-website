@@ -6,7 +6,7 @@
 import type { Payload } from 'payload'
 import { beforeAll, describe, expect, it } from 'vitest'
 
-import { ACCOUNTS, ensureAccounts } from '../../scripts/seed-accounts'
+import { ACCOUNTS, ensureAccounts, resetPasswords } from '../../scripts/seed-accounts'
 import { getTestPayload } from '../helpers/governance'
 
 let payload: Payload
@@ -51,5 +51,35 @@ describe('seed accounts', () => {
     // The original password still logs in.
     const login = await payload.login({ collection: 'users', data: { email: 'test-owner@sample.invalid', password: env.SEED_PASSWORD_OWNER } })
     expect(login.token).toBeTruthy()
+  })
+
+  it('resetPasswords sets the password of existing accounts from their variables, skips empty or short ones, and returns no password', async () => {
+    const fresh = {
+      SEED_PASSWORD_OWNER: 'Owner-brand-new-pw-2!',
+      SEED_PASSWORD_APPROVER: 'abc123',
+      SEED_PASSWORD_EDITOR: '',
+    }
+    const result = await resetPasswords(payload, fresh)
+    expect(result.reset).toEqual(['test-owner@sample.invalid'])
+    expect(result.skipped.map((x) => x.email).sort()).toEqual(['test-approver@sample.invalid', 'test-editor@sample.invalid'])
+    const out = JSON.stringify(result)
+    for (const v of [...Object.values(fresh), ...Object.values(env)]) if (v) expect(out).not.toContain(v)
+
+    // The new owner password logs in; the old one no longer does.
+    const ok = await payload.login({ collection: 'users', data: { email: 'test-owner@sample.invalid', password: fresh.SEED_PASSWORD_OWNER } })
+    expect(ok.token).toBeTruthy()
+    await expect(payload.login({ collection: 'users', data: { email: 'test-owner@sample.invalid', password: env.SEED_PASSWORD_OWNER } })).rejects.toThrow()
+    // A skipped account keeps the password it had.
+    const kept = await payload.login({ collection: 'users', data: { email: 'test-approver@sample.invalid', password: env.SEED_PASSWORD_APPROVER } })
+    expect(kept.token).toBeTruthy()
+  })
+
+  it('resetPasswords skips an account that does not exist instead of creating it', async () => {
+    const approver = (await users()).docs.find((u) => u.email === 'test-approver@sample.invalid')
+    await payload.delete({ collection: 'users', id: approver!.id, overrideAccess: true })
+    const result = await resetPasswords(payload, { SEED_PASSWORD_APPROVER: 'Approver-another-pw-3!' })
+    expect(result.reset).toEqual([])
+    expect(result.skipped.find((x) => x.email === 'test-approver@sample.invalid')?.reason).toContain('does not exist')
+    expect((await users()).docs.some((u) => u.email === 'test-approver@sample.invalid')).toBe(false)
   })
 })

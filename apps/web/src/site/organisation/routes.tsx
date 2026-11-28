@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import RichDepartmentPage from '../academics/RichDepartmentPage'
 import RichDisciplinePage from '../academics/RichDisciplinePage'
 import { departmentFeed } from '../academics/feed'
+import { applyDepartmentContent, applyProgrammeContent } from '../academics/cmsContent'
 import { departmentPath, disciplinesOf, profileForDepartment, profileForDiscipline } from '../academics/profiles'
 import RichAboutPage from '../about/RichAboutPage'
 import RichMessagePage from '../about/RichMessagePage'
@@ -51,14 +52,16 @@ const stub = (slug: string): Doc => ({ id: slug })
 export async function DepartmentRoute({ params }: { params: SlugParams }) {
   const slug = decode((await params).slug ?? '')
   const doc = await getDepartment(slug, await preview())
-  const profile = profileForDepartment(doc ? (str(doc.slug) ?? '') : slug)
+  const base = profileForDepartment(doc ? (str(doc.slug) ?? '') : slug)
+  // Sections the head has filled in the CMS replace the code profile's (slice 3ar).
+  const profile = base && doc ? applyDepartmentContent(base, doc) : base
   if (!doc && !profile) notFound()
   if (profile) {
     const [stored, feed] = await Promise.all([doc ? programmesOfDepartment(doc.id) : Promise.resolve([] as ProgrammeCard[]), departmentFeed(profile.slug)])
     const have = new Set(stored.map((p) => p.slug))
     const fromProfile: ProgrammeCard[] = disciplinesOf(profile.slug)
       .filter((d) => !have.has(d.slug))
-      .map((d) => ({ id: d.slug, name: d.shortName, slug: d.slug, level: null, duration: null, campus: null, departmentId: profile.slug, departmentName: profile.shortName, sample: false }))
+      .map((d) => ({ id: d.slug, name: d.name ?? `BS ${d.shortName}`, slug: d.slug, level: d.level ?? 'BS', duration: d.duration ?? '4 years', campus: null, departmentId: profile.slug, departmentName: profile.shortName, sample: false }))
     return <RichDepartmentPage doc={doc ?? stub(profile.slug)} profile={profile} programmes={[...stored, ...fromProfile]} feed={feed} />
   }
   const [programmes, people] = await Promise.all([programmesOfDepartment(doc!.id), peopleOfDepartment(doc!.id)])
@@ -68,7 +71,7 @@ export async function departmentMetadata({ params }: { params: SlugParams }): Pr
   const slug = decode((await params).slug ?? '')
   const doc = await getDepartment(slug, await preview())
   const profile = profileForDepartment(slug)
-  const title = (doc && str(doc.name)) ?? profile?.shortName
+  const title = (doc && str(doc.name)) ?? profile?.fullName ?? profile?.shortName
   return title
     ? { title, description: (doc && str(doc.summary)?.slice(0, 160)) ?? profile?.intro?.slice(0, 160), alternates: { canonical: `${DEPARTMENTS_PATH}/${encodeURIComponent(slug)}` } }
     : { title: 'Department' }
@@ -78,7 +81,8 @@ export async function ProgrammeRoute({ params }: { params: SlugParams }) {
   const slug = decode((await params).slug ?? '')
   const doc = await getProgramme(slug, await preview())
   const key = doc ? (str(doc.slug) ?? '') : slug
-  const profile = profileForDiscipline(key)
+  const base = profileForDiscipline(key)
+  const profile = base && doc ? applyProgrammeContent(base, doc) : base
   if (!doc && !profile) notFound()
   if (profile) {
     const feed = await departmentFeed(profile.department)
@@ -89,9 +93,10 @@ export async function ProgrammeRoute({ params }: { params: SlugParams }) {
 export async function programmeMetadata({ params }: { params: SlugParams }): Promise<Metadata> {
   const slug = decode((await params).slug ?? '')
   const doc = await getProgramme(slug, await preview())
-  const title = (doc && str(doc.name)) ?? profileForDiscipline(slug)?.shortName
+  const own = profileForDiscipline(slug)
+  const title = (doc && str(doc.name)) ?? own?.name ?? (own ? `BS ${own.shortName}` : undefined)
   return title
-    ? { title, description: (doc && str(doc.eligibility)?.slice(0, 160)) || undefined, alternates: { canonical: `${PROGRAMMES_PATH}/${encodeURIComponent(slug)}` } }
+    ? { title, description: (doc && str(doc.eligibility)?.slice(0, 160)) || own?.summary || undefined, alternates: { canonical: `${PROGRAMMES_PATH}/${encodeURIComponent(slug)}` } }
     : { title: 'Programme' }
 }
 

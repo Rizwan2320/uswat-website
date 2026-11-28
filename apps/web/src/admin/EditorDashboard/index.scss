@@ -52,6 +52,54 @@
   }
 
   &__help,
+  /* The parts of a page a head or coordinator controls (slice 3ar). */
+  &__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  &__live {
+    display: block;
+    margin-top: calc(var(--base) / 4);
+    font-weight: 400;
+  }
+
+  &__parts {
+    margin-top: calc(var(--base) / 2);
+    font-weight: 400;
+
+    summary {
+      cursor: pointer;
+      color: var(--rd-quiet);
+    }
+
+    ul {
+      list-style: none;
+      margin: calc(var(--base) / 3) 0;
+      padding: 0;
+    }
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--base);
+      padding: calc(var(--base) / 6) 0;
+      border-bottom: 1px solid var(--theme-elevation-100);
+    }
+
+    li[data-filled='no'] > span:first-child {
+      color: var(--rd-quiet);
+    }
+
+    p {
+      margin: calc(var(--base) / 3) 0 0;
+    }
+  }
+
   &__meta,
   &__empty {
     color: var(--rd-quiet);
