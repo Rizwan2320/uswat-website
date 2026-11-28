@@ -840,6 +840,33 @@ export interface Department {
         }[]
       | null;
     /**
+     * Graduates whose work you want to show, up to 6. Add a photograph only with the person’s consent. Leave empty to show the example entries.
+     */
+    alumni?:
+      | {
+          name?: string | null;
+          classOf: number;
+          kind: 'Thesis' | 'Final-year project' | 'Research paper';
+          /**
+           * What the work is, in one line.
+           */
+          headline?: string | null;
+          /**
+           * Two or three sentences about the work.
+           */
+          summary?: string | null;
+          /**
+           * A portrait, about 4:5. Only with the person’s consent. It needs alt text in the media library.
+           */
+          photo?: (number | null) | Media;
+          /**
+           * The public address of the thesis, project or paper (https://...). Leave empty if there is none.
+           */
+          workUrl?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
      * Common questions, up to 12.
      */
     faq?:
@@ -1231,6 +1258,33 @@ export interface Programme {
             | 'database';
           title?: string | null;
           text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Graduates whose work you want to show, up to 6. Add a photograph only with the person’s consent. Leave empty to show the example entries.
+     */
+    alumni?:
+      | {
+          name?: string | null;
+          classOf: number;
+          kind: 'Thesis' | 'Final-year project' | 'Research paper';
+          /**
+           * What the work is, in one line.
+           */
+          headline?: string | null;
+          /**
+           * Two or three sentences about the work.
+           */
+          summary?: string | null;
+          /**
+           * A portrait, about 4:5. Only with the person’s consent. It needs alt text in the media library.
+           */
+          photo?: (number | null) | Media;
+          /**
+           * The public address of the thesis, project or paper (https://...). Leave empty if there is none.
+           */
+          workUrl?: string | null;
           id?: string | null;
         }[]
       | null;
@@ -4084,6 +4138,18 @@ export interface DepartmentsSelect<T extends boolean = true> {
               text?: T;
               id?: T;
             };
+        alumni?:
+          | T
+          | {
+              name?: T;
+              classOf?: T;
+              kind?: T;
+              headline?: T;
+              summary?: T;
+              photo?: T;
+              workUrl?: T;
+              id?: T;
+            };
         faq?:
           | T
           | {
@@ -4195,6 +4261,18 @@ export interface ProgrammesSelect<T extends boolean = true> {
               icon?: T;
               title?: T;
               text?: T;
+              id?: T;
+            };
+        alumni?:
+          | T
+          | {
+              name?: T;
+              classOf?: T;
+              kind?: T;
+              headline?: T;
+              summary?: T;
+              photo?: T;
+              workUrl?: T;
               id?: T;
             };
         faq?:

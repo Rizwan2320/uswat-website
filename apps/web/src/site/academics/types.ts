@@ -4,6 +4,8 @@
 
 import type { OfficePhone, Source } from '../offices/types'
 
+import type { AlumniCard } from './alumni'
+
 export type IconName =
   | 'code'
   | 'layers'
@@ -97,6 +99,8 @@ export type DepartmentProfile = {
   tile?: Art
   /** Slugs of the alumni work shown on the department page (see alumni.ts). */
   alumni?: string[]
+  /** Alumni cards written in the CMS (slice 3at). When there are any they replace the sample entries above. */
+  alumniCards?: AlumniCard[]
   /** The faculty band: its title and the line under it. Defaults: the DCST wording (head and programme coordinators). */
   peopleTitle?: string
   peopleLede?: string
@@ -148,5 +152,7 @@ export type DisciplineProfile = {
   tracks: IconTitled[]
   skills: { group: string; items: string[] }[]
   careers: IconTitled[]
+  /** Alumni cards written in the CMS (slice 3at). When there are any they replace the sample entries. */
+  alumniCards?: AlumniCard[]
   faq: Faq[]
 }

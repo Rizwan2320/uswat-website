@@ -4,6 +4,7 @@ import type { ArrayField } from 'payload'
 
 import { safeHrefValidate } from '../governance/fields'
 import {
+  alumniField,
   faqField,
   iconTitledList,
   line,
@@ -207,6 +208,7 @@ export const Programmes = governedCollection({
           max: 8,
           description: 'Where graduates work.',
         }),
+        alumniField,
         faqField,
       ],
     },

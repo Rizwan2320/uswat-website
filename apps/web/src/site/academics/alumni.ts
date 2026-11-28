@@ -34,8 +34,38 @@ export const SAMPLE_PORTRAITS = [
   '/images/alumni/sample-portrait-3.webp',
 ]
 
+/** One card on the alumni band: a sample entry from this file, or an entry a head or coordinator wrote in the CMS (slice 3at). */
+export type AlumniCard = {
+  key: string
+  name: string
+  classOf: number
+  kind: AlumniKind
+  headline: string
+  /** Shown on the card itself when the card has no page of its own. */
+  summary: string | null
+  photo: { src: string; alt: string } | null
+  /** Where the card goes: a page on this site, or the public address of the work. Null: not a link. */
+  href: string | null
+  external: boolean
+  /** True for the example entries kept in this file, which carry the "Sample" tag. */
+  sample: boolean
+}
+
 export const ALUMNI_PATH = '/academics/alumni-work'
 export const alumniHref = (slug: string) => `${ALUMNI_PATH}/${slug}`
+
+export const cardOfWork = (w: AlumniWork): AlumniCard => ({
+  key: w.slug,
+  name: w.name,
+  classOf: w.classOf,
+  kind: w.kind,
+  headline: w.headline,
+  summary: null,
+  photo: w.photo ? { src: w.photo, alt: `Portrait of ${w.name}` } : null,
+  href: alumniHref(w.slug),
+  external: false,
+  sample: true,
+})
 
 export const ALUMNI_WORKS: AlumniWork[] = [
   /* Computer Science */

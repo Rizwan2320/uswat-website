@@ -2,6 +2,7 @@ import { plainSlugField } from '@/fields/plainSlug'
 
 import { departmentOwnsItself } from './academics/departmentOwner'
 import {
+  alumniField,
   faqField,
   iconTitledList,
   line,
@@ -63,7 +64,7 @@ export const Departments = governedCollection({
       fields: [
         line('shortName', {
           label: 'Short name',
-          maxLength: 40,
+          maxLength: 60,
           description: 'For example "DCST".',
         }),
         line('tagline', { label: 'Tagline', description: 'One short line under the name. Not shown on the public page yet.' }),
@@ -123,6 +124,7 @@ export const Departments = governedCollection({
           max: 6,
           description: 'Societies, events and support for students.',
         }),
+        alumniField,
         faqField,
         line('location', { label: 'Location', description: 'Where the department is on campus. Not shown on the public page yet.' }),
         line('officeHours', {

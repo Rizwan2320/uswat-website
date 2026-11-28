@@ -26,7 +26,11 @@ export default function AlumniWorkPage({ work }: { work: AlumniWork }) {
       <Band id="work" kicker="About the work" title="Summary">
         <div className={styles.workGrid}>
           <div className={styles.workPortrait}>
-            <AlumniPortrait work={work} sizes="(max-width: 700px) 60vw, 240px" />
+            <AlumniPortrait
+              name={work.name}
+              photo={work.photo ? { src: work.photo, alt: `Portrait of ${work.name}` } : null}
+              sizes="(max-width: 700px) 60vw, 240px"
+            />
           </div>
           <div>
             <p className={styles.alumniNote}>

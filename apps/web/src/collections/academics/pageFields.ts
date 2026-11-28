@@ -13,6 +13,7 @@ import type {
 } from 'payload'
 import { text, textarea } from 'payload/shared'
 
+import { safeHrefValidate } from '../../governance/fields'
 import { PLAIN_TEXT_MESSAGE, plainTextProblem } from '../../governance/plainText'
 
 /** The 20 icons the public pages can draw. Keep equal to `IconName` in `src/site/academics/types.ts`. */
@@ -166,6 +167,70 @@ export const faqField: ArrayField = {
   fields: [
     line('question', { label: 'Question', maxLength: 160 }),
     paragraph('answer', { label: 'Answer', maxLength: 600 }),
+  ],
+}
+
+/** The kinds of work an alumni card can show. Keep equal to `AlumniKind` in `src/site/academics/alumni.ts`. */
+export const ALUMNI_KINDS = ['Thesis', 'Final-year project', 'Research paper'] as const
+
+/**
+ * "Our alumni" on a department or programme page (slice 3at): graduates whose work the department wants to
+ * show. Each is a card on the page; the card links to the work when a link is given. A photograph is only
+ * for someone who agreed to it.
+ */
+export const alumniField: ArrayField = {
+  name: 'alumni',
+  label: 'Alumni',
+  type: 'array',
+  maxRows: 6,
+  labels: { singular: 'Alumnus', plural: 'Alumni' },
+  admin: {
+    description:
+      'Graduates whose work you want to show, up to 6. Add a photograph only with the person’s consent. Leave empty to show the example entries.',
+    initCollapsed: true,
+  },
+  fields: [
+    line('name', { label: 'Name', maxLength: 80 }),
+    {
+      name: 'classOf',
+      label: 'Year of graduation',
+      type: 'number',
+      required: true,
+      min: 1990,
+      max: 2100,
+    },
+    {
+      name: 'kind',
+      label: 'Kind of work',
+      type: 'select',
+      required: true,
+      options: ALUMNI_KINDS.map((value) => ({ label: value, value })),
+    },
+    line('headline', {
+      label: 'Headline',
+      maxLength: 140,
+      description: 'What the work is, in one line.',
+    }),
+    paragraph('summary', {
+      label: 'Summary',
+      maxLength: 400,
+      description: 'Two or three sentences about the work.',
+    }),
+    pictureField(
+      'photo',
+      'Photograph',
+      'A portrait, about 4:5. Only with the person’s consent. It needs alt text in the media library.',
+    ),
+    {
+      name: 'workUrl',
+      label: 'Link to the work',
+      type: 'text',
+      validate: safeHrefValidate,
+      admin: {
+        description:
+          'The public address of the thesis, project or paper (https://...). Leave empty if there is none.',
+      },
+    },
   ],
 }
 

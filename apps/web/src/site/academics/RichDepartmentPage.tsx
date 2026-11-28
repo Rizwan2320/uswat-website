@@ -32,7 +32,7 @@ import {
 import { ContactList, Sources } from '../offices/blocks'
 
 import AlumniShowcase from './Alumni'
-import { alumniBySlugs } from './alumni'
+import { alumniBySlugs, cardOfWork } from './alumni'
 import { art } from './profiles/art'
 import { disciplinesOf } from './profiles'
 import type { DepartmentFeed } from './feed'
@@ -70,7 +70,9 @@ export default function RichDepartmentPage({
     return { p, d }
   })
 
-  const alumni = alumniBySlugs(profile.alumni ?? [])
+  const alumni = profile.alumniCards?.length
+    ? profile.alumniCards
+    : alumniBySlugs(profile.alumni ?? []).map(cardOfWork)
   const ref = profile.reference
 
   const stats = [
@@ -260,7 +262,7 @@ export default function RichDepartmentPage({
 
       <AlumniShowcase
         items={alumni}
-        lede="Theses, projects and papers by graduates of the department's programmes. Select a card to read about the work."
+        lede={`Theses, projects and papers by graduates of the department's programmes.${alumni.some((a) => a.href) ? ' Select a card to read about the work.' : ''}`}
       />
 
       <Band

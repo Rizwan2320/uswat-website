@@ -18,6 +18,7 @@ import * as migration_20261122_094108_p3ah_coordinator_programmes from './202611
 import * as migration_20261127_021657_home_colours from './20261127_021657_home_colours';
 import * as migration_20261127_065030_home_admissions_portals from './20261127_065030_home_admissions_portals';
 import * as migration_20261127_130022_home_leadership from './20261127_130022_home_leadership';
+import * as migration_20261128_100642_alumni_on_academic_pages from './20261128_100642_alumni_on_academic_pages';
 
 export const migrations = [
   {
@@ -118,6 +119,11 @@ export const migrations = [
   {
     up: migration_20261127_130022_home_leadership.up,
     down: migration_20261127_130022_home_leadership.down,
-    name: '20261127_130022_home_leadership'
+    name: '20261127_130022_home_leadership',
+  },
+  {
+    up: migration_20261128_100642_alumni_on_academic_pages.up,
+    down: migration_20261128_100642_alumni_on_academic_pages.down,
+    name: '20261128_100642_alumni_on_academic_pages'
   },
 ];

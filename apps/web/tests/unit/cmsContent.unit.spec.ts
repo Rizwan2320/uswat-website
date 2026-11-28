@@ -8,6 +8,7 @@ import {
 import {
   KNOWN_ICONS,
   applyDepartmentContent,
+  alumniCardsOf,
   applyProgrammeContent,
   pictureOf,
 } from '../../src/site/academics/cmsContent'
@@ -162,5 +163,62 @@ describe('the seed never overwrites an edit (slice 3ar)', () => {
       intro: 'I',
     })
     expect(missingSections({ tagline: 'a', labs: [1], faq: [1], intro: 'b' }, wanted)).toEqual({})
+  })
+})
+
+describe('alumni on the rich pages (slice 3at)', () => {
+  const row = (over: Record<string, unknown> = {}) => ({
+    id: 'a1',
+    name: 'Amina Khan',
+    classOf: 2024,
+    kind: 'Thesis',
+    headline: 'A thesis on road safety',
+    summary: 'Two sentences.',
+    ...over,
+  })
+
+  it('turns a filled row into a card with no Sample tag, and a safe link', () => {
+    const [c] = alumniCardsOf([row({ workUrl: 'https://example.org/thesis' })])
+    expect(c).toMatchObject({
+      name: 'Amina Khan',
+      classOf: 2024,
+      kind: 'Thesis',
+      sample: false,
+      href: 'https://example.org/thesis',
+      external: true,
+      summary: 'Two sentences.',
+      photo: null,
+    })
+  })
+
+  it('leaves out a row with no name, headline, year or known kind, and drops an unsafe link', () => {
+    const cards = alumniCardsOf([
+      row({ name: '' }),
+      row({ headline: ' ' }),
+      row({ classOf: null }),
+      row({ kind: 'Poem' }),
+      row({ workUrl: 'javascript:alert(1)' }),
+    ])
+    expect(cards).toHaveLength(1)
+    expect(cards[0]!.href).toBeNull()
+    expect(cards[0]!.external).toBe(false)
+  })
+
+  it('uses a photograph only with an address and alt text', () => {
+    const media = { url: '/api/media/file/a.jpg', width: 400, height: 500, alt: 'Amina Khan' }
+    expect(alumniCardsOf([row({ photo: media })])[0]!.photo).toEqual({
+      src: '/api/media/file/a.jpg',
+      alt: 'Amina Khan',
+    })
+    expect(alumniCardsOf([row({ photo: { ...media, alt: '' } })])[0]!.photo).toBeNull()
+  })
+
+  it('replaces the page’s own alumni when the CMS has some, and keeps them when it has none', () => {
+    const doc = { id: 1, pageContent: { alumni: [row()] } }
+    expect(applyDepartmentContent(dcst, doc).alumniCards).toHaveLength(1)
+    expect(applyProgrammeContent(cs, doc).alumniCards).toHaveLength(1)
+    const empty = { id: 1, pageContent: { alumni: [] } }
+    expect(applyDepartmentContent(dcst, empty).alumniCards).toBeUndefined()
+    expect(applyProgrammeContent(cs, empty).alumniCards).toBeUndefined()
   })
 })

@@ -10,7 +10,7 @@ import {
 
 import styles from './Academics.module.css'
 import AlumniShowcase from './Alumni'
-import { alumniForProgramme } from './alumni'
+import { alumniForProgramme, cardOfWork } from './alumni'
 import {
   BannerHeader,
   Band,
@@ -72,7 +72,9 @@ export default function RichDisciplinePage({
   const department = profileForDepartment(profile.department)
   const deptHref = department ? departmentPath(department) : null
 
-  const alumni = alumniForProgramme(profile.slug).slice(0, 3)
+  const alumni = profile.alumniCards?.length
+    ? profile.alumniCards
+    : alumniForProgramme(profile.slug).slice(0, 3).map(cardOfWork)
 
   const facts: [string, string][] = [
     ['Level', str(doc.level) ?? profile.level ?? 'BS'],
@@ -188,7 +190,7 @@ export default function RichDisciplinePage({
 
       <AlumniShowcase
         items={alumni}
-        lede={`Theses, projects and papers by graduates of ${profile.badge ?? `BS ${profile.shortName}`}. Select a card to read about the work.`}
+        lede={`Theses, projects and papers by graduates of ${profile.badge ?? `BS ${profile.shortName}`}.${alumni.some((a) => a.href) ? ' Select a card to read about the work.' : ''}`}
       />
 
       <Band id="admission" tint kicker="Admission" title="Eligibility and how to apply">

@@ -4,7 +4,10 @@
    Pure: no CMS access, so unit tests can use it. The fields are `departments.pageContent` and `programmes.pageContent`
    (src/collections/academics/pageFields.ts). */
 
+import { safeHref } from '../../utilities/safeHref'
 import { paragraphs as splitParagraphs, rel, str, type Doc } from '../organisation/shape'
+
+import type { AlumniCard, AlumniKind } from './alumni'
 
 import type {
   Art,
@@ -83,6 +86,46 @@ function faqOf(v: unknown): Faq[] {
 const paragraphList = (v: unknown): string[] =>
   rows(v).flatMap((r) => splitParagraphs(r.text))
 
+const ALUMNI_KINDS: readonly AlumniKind[] = ['Thesis', 'Final-year project', 'Research paper']
+
+/**
+ * The alumni a head or coordinator wrote (slice 3at). A card needs a name, a year, a kind and a headline;
+ * a row without them is left out. The link is used only when it is safe, and a photograph only when it has
+ * an address and alt text (otherwise the card shows initials).
+ */
+export function alumniCardsOf(v: unknown): AlumniCard[] {
+  return rows(v).flatMap((r, i) => {
+    const name = str(r.name)
+    const headline = str(r.headline)
+    const kind = ALUMNI_KINDS.find((k) => k === r.kind)
+    const classOf = typeof r.classOf === 'number' ? r.classOf : Number(r.classOf)
+    if (!name || !headline || !kind || !Number.isInteger(classOf) || classOf < 1990 || classOf > 2100)
+      return []
+    const pic = pictureOf(r.photo)
+    const href = safeHref(str(r.workUrl))
+    return [
+      {
+        key: `cms-${str(r.id) ?? i}`,
+        name,
+        classOf,
+        kind,
+        headline,
+        summary: str(r.summary),
+        photo: pic && pic.alt ? { src: pic.src, alt: pic.alt } : null,
+        href,
+        external: href !== null && !href.startsWith('/'),
+        sample: false,
+      },
+    ]
+  })
+}
+
+/** `{ alumniCards }` when the CMS has alumni rows, else nothing, so a page nobody edited is unchanged. */
+const alumniOf = (pc: Row, profile: { alumniCards?: AlumniCard[] }) => {
+  const cards = alumniCardsOf(pc.alumni)
+  return cards.length > 0 ? { alumniCards: cards } : profile.alumniCards ? { alumniCards: profile.alumniCards } : {}
+}
+
 /** The CMS list when it has rows, else the profile's. */
 const pick = <T>(fromCms: T[], fromProfile: T[]): T[] => (fromCms.length > 0 ? fromCms : fromProfile)
 
@@ -113,6 +156,7 @@ export function applyDepartmentContent(profile: DepartmentProfile, doc: Doc): De
     research: pick(research, profile.research),
     careers: pick(iconTitled(pc.careers), profile.careers),
     studentLife: pick(iconTitled(pc.studentLife), profile.studentLife),
+    ...alumniOf(pc, profile),
     faq: pick(faqOf(pc.faq), profile.faq),
   }
 }
@@ -164,6 +208,7 @@ export function applyProgrammeContent(profile: DisciplineProfile, doc: Doc): Dis
     skills: pick(skills, profile.skills),
     years: pick(yearsOf(pc.curriculum), profile.years),
     careers: pick(iconTitled(pc.careers), profile.careers),
+    ...alumniOf(pc, profile),
     faq: pick(faqOf(pc.faq), profile.faq),
   }
 }

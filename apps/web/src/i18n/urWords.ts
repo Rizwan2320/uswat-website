@@ -465,6 +465,24 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   Question: 'سوال',
   Questions: 'سوالات',
   'Questions and answers': 'سوالات اور جوابات',
+  // --- Alumni on department and programme pages (slice 3at). Draft, like every line in this file.
+  Alumni: 'سابق طلبہ',
+  Alumnus: 'سابق طالب علم',
+  'Year of graduation': 'سالِ فراغت',
+  'Kind of work': 'کام کی نوعیت',
+  Thesis: 'مقالہ',
+  'Final-year project': 'آخری سال کا منصوبہ',
+  'Research paper': 'تحقیقی مقالہ',
+  Headline: 'سرخی',
+  'Link to the work': 'کام کا لنک',
+  'What the work is, in one line.': 'کام کیا ہے، ایک سطر میں۔',
+  'Two or three sentences about the work.': 'کام کے بارے میں دو یا تین جملے۔',
+  'A portrait, about 4:5. Only with the person’s consent. It needs alt text in the media library.':
+    'تقریباً 4:5 کا پورٹریٹ۔ صرف اس شخص کی رضامندی سے۔ میڈیا لائبریری میں اس کا متبادل متن ضروری ہے۔',
+  'The public address of the thesis, project or paper (https://...). Leave empty if there is none.':
+    'مقالے، منصوبے یا تحقیقی مقالے کا عوامی پتہ (https://...)۔ نہ ہو تو خالی چھوڑ دیں۔',
+  'Graduates whose work you want to show, up to 6. Add a photograph only with the person’s consent. Leave empty to show the example entries.':
+    'وہ فارغ التحصیل افراد جن کا کام آپ دکھانا چاہتے ہیں، زیادہ سے زیادہ 6۔ تصویر صرف اس شخص کی رضامندی سے شامل کریں۔ مثالی اندراجات دکھانے کے لیے خالی چھوڑ دیں۔',
   'Research area': 'تحقیقی شعبہ',
   'Research areas': 'تحقیقی شعبے',
   Rocket: 'راکٹ',

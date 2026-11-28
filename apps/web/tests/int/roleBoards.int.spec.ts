@@ -157,7 +157,7 @@ describe('the parts of a page and the live link reach only the head who runs it 
   it('the head sees the parts of the department page, and no live link while it is a draft', async () => {
     const b = await board(hod)
     const d = partsOf(b, 'departments', dept.id)!
-    expect(d.parts).toHaveLength(11)
+    expect(d.parts).toHaveLength(12)
     expect(d.parts.every((p) => !p.filled)).toBe(true)
     expect(d.liveHref).toBeNull()
     expect(partsOf(b, 'programmes', se.id)).toBeUndefined()

@@ -30,6 +30,7 @@ const DEPARTMENT_PARTS: Def[] = [
   { key: 'researchAreas', label: 'Research areas', kind: 'list' },
   { key: 'careers', label: 'Careers', kind: 'list' },
   { key: 'studentLife', label: 'Student life', kind: 'list' },
+  { key: 'alumni', label: 'Alumni', kind: 'list' },
   { key: 'faq', label: 'Questions and answers', kind: 'list' },
   { key: 'pictures', label: 'Pictures', kind: 'pictures', pictures: ['heroImage', 'campusPhoto'] },
 ]
@@ -43,6 +44,7 @@ const PROGRAMME_PARTS: Def[] = [
   { key: 'skills', label: 'Skills', kind: 'list' },
   { key: 'curriculum', label: 'Curriculum by semester', kind: 'list' },
   { key: 'careers', label: 'Careers', kind: 'list' },
+  { key: 'alumni', label: 'Alumni', kind: 'list' },
   { key: 'faq', label: 'Questions and answers', kind: 'list' },
   {
     key: 'pictures',
@@ -78,10 +80,12 @@ export const partsSummary = (parts: readonly PartStatus[]): string =>
 
 /** What each kind of count reads like beside a part: "3 rows", "2 pictures", "filled", "empty". */
 export function partCountText(p: PartStatus): string {
-  if (!p.filled)
+  if (!p.filled) {
+    if (p.key === 'alumni') return 'Empty: the page shows example entries'
     return p.kind === 'pictures'
       ? "Empty: the template's artwork shows"
       : 'Empty: the template shows its standard text'
+  }
   if (p.kind === 'text') return 'Filled'
   if (p.kind === 'pictures') return p.count === 1 ? '1 picture' : `${p.count} pictures`
   return p.count === 1 ? '1 row' : `${p.count} rows`
