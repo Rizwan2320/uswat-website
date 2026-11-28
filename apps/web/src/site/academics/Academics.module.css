@@ -288,7 +288,7 @@
   z-index: 1;
   display: grid;
   flex: 1;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(var(--hb-cols, 4), 1fr);
   margin: 0;
   padding: 0 0 0 7px;
   list-style: none;
@@ -296,9 +296,9 @@
 .hbStat {
   display: grid;
   justify-items: center;
-  align-content: center;
+  align-content: start;
   gap: 4px;
-  padding: 18px 10px;
+  padding: 22px 10px 18px;
   text-align: center;
   font-family: var(--stack-sans);
 }
@@ -367,6 +367,9 @@
   }
   .hbStat:nth-child(even) {
     background: linear-gradient(to bottom, transparent 18%, rgb(252 250 244 / 0.2) 18%, rgb(252 250 244 / 0.2) 82%, transparent 82%) left / 1px 100% no-repeat;
+  }
+  .hbStat:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
   .hbStat:nth-child(n + 3) {
     border-top: 1px solid rgb(252 250 244 / 0.14);

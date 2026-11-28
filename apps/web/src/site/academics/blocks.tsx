@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import type { AnchorHTMLAttributes, ReactNode } from 'react'
+import type { AnchorHTMLAttributes, CSSProperties, ReactNode } from 'react'
 
 import { T } from '../components/I18n'
 import SafeImage from '../components/SafeImage'
@@ -211,7 +211,7 @@ export function HeroBanner({
       </div>
       <div className="container">
         <div className={styles.hbStrip}>
-          <ul className={styles.hbStats}>
+          <ul className={styles.hbStats} style={{ '--hb-cols': stats.length } as CSSProperties}>
             {stats.map((s) => (
               <li key={s.label} className={styles.hbStat}>
                 <span className={styles.hbStatIcon} aria-hidden="true">

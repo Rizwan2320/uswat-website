@@ -58,6 +58,8 @@ export type OfficeProfile = {
   /** Other places the office points to (portals and forms); each is opened as an outside link. */
   links?: { label: string; href: string }[]
   /** The office's own page on the university site. */
+  /** Use the one-photograph hero (the department and programme pages' layout) instead of the banner, green card and statistics row. Opt-in; set on Affiliated Colleges (owner, 2026-11-28). */
+  photoHero?: boolean
   officialPage: string
   sources: Source[]
   /** The day the sources were read (the register is `docs/plan/official-data-raw-2026-11-05.md`). */

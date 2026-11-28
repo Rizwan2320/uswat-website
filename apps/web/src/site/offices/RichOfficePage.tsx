@@ -1,6 +1,7 @@
 import styles from '../academics/Academics.module.css'
-import { Band, BannerHeader, Cta, DeptFeed, Hero, IconCards, SectionNav, SiteLink, Stats } from '../academics/blocks'
+import { Band, BannerHeader, Cta, DeptFeed, Hero, HeroBanner, IconCards, SectionNav, SiteLink, Stats } from '../academics/blocks'
 import type { DepartmentFeed } from '../academics/feed'
+import { DEFAULT_HERO_PHOTO, DEFAULT_STRIP_PHOTO } from '../academics/heroSpec'
 import { str, type Doc } from '../organisation/shape'
 
 import { ContactList, Milestones, PeopleCards, Sources } from './blocks'
@@ -37,21 +38,37 @@ export default function RichOfficePage({ doc, profile, feed }: { doc: Doc; profi
   ]
   return (
     <div className={styles.root}>
-      <BannerHeader
-        banner={profile.banner}
-        crumbs={[{ label: 'Home', href: '/' }, ...trail, { label: profile.shortName }]}
-      />
-      <Hero
-        art={profile.hero}
-        badge={profile.shortName}
-        lead={profile.lead}
-        facts={facts}
-        actions={[
-          hasContact ? { label: 'Contact details', href: '#contact' } : hasPeople ? { label: 'People', href: '#people' } : { label: 'Sources', href: '#sources' },
-          { label: 'Open the university’s page', href: profile.officialPage, ghost: true },
-        ]}
-      />
-      {profile.stats?.length ? <Stats items={profile.stats} /> : null}
+      {profile.photoHero ? (
+        <HeroBanner
+          hero={{ photo: DEFAULT_HERO_PHOTO, pre: 'University of Swat', accent: profile.name, line: profile.group }}
+          crumbs={[{ label: 'Home', href: '/' }, ...trail, { label: profile.shortName }]}
+          lead={profile.lead}
+          actions={[
+            profile.itemLists?.length ? { label: 'See the list', href: '#lists' } : { label: 'Sources', href: '#sources' },
+            { label: 'Open the university’s page', href: profile.officialPage, ghost: true },
+          ]}
+          stats={(profile.stats ?? []).map((st, i) => ({ ...st, icon: (['cap', 'book', 'globe', 'users'] as const)[i % 4] }))}
+          campus={DEFAULT_STRIP_PHOTO}
+        />
+      ) : (
+        <>
+        <BannerHeader
+          banner={profile.banner}
+          crumbs={[{ label: 'Home', href: '/' }, ...trail, { label: profile.shortName }]}
+        />
+        <Hero
+          art={profile.hero}
+          badge={profile.shortName}
+          lead={profile.lead}
+          facts={facts}
+          actions={[
+            hasContact ? { label: 'Contact details', href: '#contact' } : hasPeople ? { label: 'People', href: '#people' } : { label: 'Sources', href: '#sources' },
+            { label: 'Open the university’s page', href: profile.officialPage, ghost: true },
+          ]}
+        />
+        {profile.stats?.length ? <Stats items={profile.stats} /> : null}
+        </>
+      )}
       <SectionNav items={nav} />
 
       {hasAbout ? (

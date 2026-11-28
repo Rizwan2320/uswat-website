@@ -14,6 +14,7 @@ const ASSOCIATE = 'https://uswat.edu.pk/associate-degree-training-for-affiliated
 
 export const affiliatedColleges: OfficeProfile = {
   slug: 'affiliated-colleges',
+  photoHero: true,
   path: '/academics/affiliated-colleges',
   trail: [{ label: 'Academics', href: '/academics' }],
   lists: [],
