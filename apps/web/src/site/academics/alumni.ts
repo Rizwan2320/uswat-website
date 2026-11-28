@@ -1451,6 +1451,42 @@ export const ALUMNI_WORKS: AlumniWork[] = [
       'The project observes reading lessons in two primary classes. It records the methods used and suggests three games to help children read aloud.',
     tags: ['Reading', 'Primary school', 'Classroom study'],
   },
+  {
+    slug: 'flood-risk-in-a-valley-village',
+    name: 'Rahim Ullah',
+    classOf: 2025,
+    photo: SAMPLE_PORTRAITS[0],
+    programme: 'bs-disaster-preparedness-and-climate-change',
+    kind: 'Final-year project',
+    headline: 'Flood risk in a valley village, mapped with the people who live there',
+    summary:
+      'The project walks a village with its elders and marks the places the river has reached in the past. It turns the marks into a simple risk map and a plan for where to move the stores and the school.',
+    tags: ['Flood risk', 'Community mapping', 'Field work'],
+  },
+  {
+    slug: 'a-school-evacuation-plan-for-a-hill-town',
+    name: 'Zeeshan Ali',
+    classOf: 2024,
+    photo: SAMPLE_PORTRAITS[1],
+    programme: 'bs-disaster-preparedness-and-climate-change',
+    kind: 'Research paper',
+    headline: 'An evacuation plan for a school in a hill town',
+    summary:
+      'The paper times a fire and landslide drill in one school and records where the exits jam. It proposes new routes and a signal that every class can hear.',
+    tags: ['Evacuation', 'Schools', 'Preparedness'],
+  },
+  {
+    slug: 'glacier-melt-and-a-local-water-channel',
+    name: 'Mohib Khan',
+    classOf: 2023,
+    photo: SAMPLE_PORTRAITS[2],
+    programme: 'bs-disaster-preparedness-and-climate-change',
+    kind: 'Thesis',
+    headline: 'Glacier melt and a village water channel',
+    summary:
+      'The thesis compares the flow of one channel across three summers with rainfall and temperature records. It asks how a warmer year changes the water the village can count on.',
+    tags: ['Glaciers', 'Water', 'Climate data'],
+  },
 ]
 
 export const alumniWork = (slug: string) => ALUMNI_WORKS.find((w) => w.slug === slug) ?? null

@@ -9,7 +9,7 @@ const all = Object.entries(rows).flatMap(([c, rs]) => rs.map((r) => ({ c, ...r }
 describe('Sample seed data', () => {
   it('has the planned counts', () => {
     expect(Object.fromEntries(Object.entries(rows).map(([c, r]) => [c, r.length]))).toEqual({
-      faculties: 4, campuses: 3, people: 14, offices: 31, departments: 31, programmes: 46,
+      faculties: 4, campuses: 3, people: 14, offices: 31, departments: 32, programmes: 47,
     })
   })
   it('labels every invented record Sample and gives every record a sample.invalid source', () => {
@@ -34,7 +34,9 @@ describe('Sample seed data', () => {
       'education-and-staff-training', 'home-economics', 'islamic-and-arabic-studies', 'law-sharia', 'media-and-communication-studies', 'pakistan-studies', 'pashto',
       'social-and-gender-studies', 'tourism-and-hospitality', 'urdu',
       'b-ed-hons', 'bs-home-economics', 'bs-islamic-studies-2', 'ba-llb-law-and-shariah', 'bs-journalism-and-mass-communication-2', 'bs-pakistan-studies-2',
-      'bs-pashto', 'bs-urdu', 'bs-sociology', 'bs-criminology', 'bs-tourism-and-hospitality-2', 'bs-culinary-arts']
+      'bs-pashto', 'bs-urdu', 'bs-sociology', 'bs-criminology', 'bs-tourism-and-hospitality-2', 'bs-culinary-arts',
+      // 2026-11-28: the illustrative Climate Change and Disaster Management department and its programme.
+      'climate-change-and-disaster-management', 'bs-disaster-preparedness-and-climate-change']
     const real = (r: { c: string; slug: string }) =>
       REAL_ALLIED.includes(r.slug) || REAL_SCIENCES.includes(r.slug) || r.c === 'campuses' || (r.c === 'offices' && REAL_OFFICES.includes(r.slug)) || (r.c === 'departments' && r.slug === 'dcst') || (r.c === 'programmes' && programmes.find((p) => p.slug === r.slug)?.department === 'dcst')
     for (const r of all) {

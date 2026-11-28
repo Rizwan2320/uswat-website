@@ -108,7 +108,7 @@ export const environmentalSciences: DepartmentProfile = {
       'One of the four mission lines on the page is cut off mid-sentence, so it is not shown.',
       'The page gives no department phone number or e-mail address, only personal addresses of staff, which are not shown here.',
       'The MPhil in Environmental Biotechnology and Bioremediation appears next to Dr. Muhammad Ayaz in the research group text, while his staff entry gives no degree; it is shown as the page words it.',
-      'BS Disaster Preparedness and Climate Change and the Geomatics diploma are named in the text only: no page for them is in the old site’s address list.',
+      'The Geomatics diploma is named in the text only: no page for it is in the old site’s address list. BS Disaster Preparedness and Climate Change has an illustrative page under the Department of Climate Change and Disaster Management.',
       'The study plan, outcomes and careers on the programme page, and the highlights, laboratories, careers and student life on this page, are illustrative text for the template, not statements by the department.',
     ],
   },

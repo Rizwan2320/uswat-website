@@ -13,11 +13,12 @@ const sitemap = readFileSync(path.join(root, 'src/site/sitemap/entries.ts'), 'ut
 const MENU = ['academic-calendar', 'central-library-office', 'quality-enhancement-cell']
 
 describe('office-style pages at their own address (PAGE_PROFILES)', () => {
-  it('has the thirteen pages, each with a unique slug and a path that starts with a slash', () => {
+  it('has the fourteen pages, each with a unique slug and a path that starts with a slash', () => {
     expect(PAGE_PROFILES.map((p) => p.slug).sort()).toEqual(
       [
         'academic-calendar',
         'admissions',
+        'affiliated-colleges',
         'central-library-office',
         'convocation-2022',
         'downloads',

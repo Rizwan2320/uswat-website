@@ -92,7 +92,7 @@ export const nav: NavItem[] = [
       { label: 'About University', href: '/about', icon: 'building' },
       { label: 'Contact Directory', href: '/contact/directory', icon: 'people' },
       { label: 'Vice Chancellor’s Message', href: '/about/vice-chancellors-message', icon: 'person' },
-      { label: 'Affiliated Colleges', href: `${U}/public-sector-affiliated-colleges/`, external: true, icon: 'cap' },
+      { label: 'Affiliated Colleges', href: '/academics/affiliated-colleges', icon: 'cap' },
       { label: 'Alumni Association', href: '/administration/alumni', icon: 'people' },
     ],
   },

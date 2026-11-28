@@ -116,7 +116,9 @@ describe('department and discipline profiles', () => {
     for (const p of departmentProfiles) {
       // A department whose staff come from the university's page (`reference`) may have no head when the page names none (Agricultural Sciences and Forestry).
       const heads = p.team.filter((m) => m.role === 'head')
-      if (p.reference && heads.length === 0) expect(p.team.length, p.slug).toBeGreaterThan(0)
+      // A department the owner asked to be invented (Climate Change and Disaster Management, 2026-11-28) names no staff at all; its page says so.
+      if (p.reference && heads.length === 0 && p.team.length === 0) expect(p.status, p.slug).toBe('draft')
+      else if (p.reference && heads.length === 0) expect(p.team.length, p.slug).toBeGreaterThan(0)
       else {
         expect(heads, p.slug).toHaveLength(1)
         expect(p.team[0]?.role, 'the head comes first').toBe('head')

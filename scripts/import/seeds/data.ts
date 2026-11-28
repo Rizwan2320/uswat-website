@@ -245,6 +245,13 @@ export const departments: DepartmentSeed[] = [
     facultyGroup: 'sample-faculty-of-sciences',
     summary: 'The department teaches Urdu language, literature and culture and offers the BS in Urdu.',
   },
+  // Illustrative department (the owner asked for it, 2026-11-28): the university's page holds only the title.
+  {
+    slug: 'climate-change-and-disaster-management',
+    name: 'Department of Climate Change and Disaster Management',
+    facultyGroup: 'sample-faculty-of-sciences',
+    summary: 'Illustrative text: the university’s page for this department holds only its title. The department offers the BS in Disaster Preparedness and Climate Change.',
+  },
   // The five life-science departments below carry the university's own names and text (their pages, read 2026-11-06); faculty not on the pages, as above.
   {
     slug: 'botany',
@@ -370,6 +377,7 @@ const scienceProgrammes: ProgrammeSeed[] = [
   { slug: 'bs-criminology', name: 'BS Criminology', department: 'social-and-gender-studies', level: 'BS', duration: '4 years', eligibility: 'As set by the HEC Undergraduate Education Policy 2023, from Fall 2024.' },
   { slug: 'bs-tourism-and-hospitality-2', name: 'BS Tourism and Hospitality', department: 'tourism-and-hospitality', level: 'BS', duration: '4 years', eligibility: 'FA, F.Sc or an equivalent qualification with at least 45% marks.' },
   { slug: 'bs-culinary-arts', name: 'BS Culinary Arts', department: 'tourism-and-hospitality', level: 'BS', duration: '4 years', eligibility: 'FA, F.Sc or an equivalent qualification with at least 45% marks.' },
+  { slug: 'bs-disaster-preparedness-and-climate-change', name: 'BS Disaster Preparedness and Climate Change', department: 'climate-change-and-disaster-management', level: 'BS', duration: '4 years', eligibility: null },
 ]
 
 export const programmes: ProgrammeSeed[] = [

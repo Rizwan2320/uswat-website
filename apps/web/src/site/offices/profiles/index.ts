@@ -3,6 +3,7 @@ import type { OfficeArea, OfficeGroup, OfficeProfile } from '../types'
 import { administrationDirectorate } from './administration-directorate'
 import { admissions } from './admissions'
 import { admissionsHub } from './admissions-hub'
+import { affiliatedColleges } from './affiliated-colleges'
 import { alumni } from './alumni'
 import { calendar } from './calendar'
 import { coe } from './coe'
@@ -84,5 +85,5 @@ export function officesByGroup(area: OfficeArea): { group: OfficeGroup; items: O
 /* Pages served at their own static address (not under /administration/{slug}), built with the same template. They are not listed on the
    Research or Administration landings (`lists` is empty) and need no CMS record. */
 export const PAGE_PROFILES: OfficeProfile[] = [library, qec, calendar, researchGroup,
-  mainCampus, womenCampus, sangotaCampus, redCrescent, convocation, openDay, admissionsHub, meritLists, downloads]
+  mainCampus, womenCampus, sangotaCampus, redCrescent, convocation, openDay, admissionsHub, meritLists, downloads, affiliatedColleges]
 export const profileForPage = (slug: string): OfficeProfile | undefined => PAGE_PROFILES.find((p) => p.slug === slug)

@@ -139,6 +139,9 @@ const BANNERS = [
   { key: 'bs-culinary-arts', icon: 'heart', pre: 'Tourism and Hospitality', one: 'BS', two: 'Culinary Arts', tag: 'University of Swat' },
   { key: 'bs-pashto', icon: 'book', pre: 'Department of Pashto', one: 'BS', two: 'Pashto', tag: 'University of Swat' },
   { key: 'bs-urdu', icon: 'book', pre: 'Department of Urdu', one: 'BS', two: 'Urdu', tag: 'University of Swat' },
+  { key: 'affiliated-colleges', icon: 'cap', pre: 'University of Swat', one: 'Affiliated', two: 'Colleges', tag: 'Academics' },
+  { key: 'climate-change-and-disaster-management', icon: 'globe', pre: 'Department of Climate Change', one: 'and Disaster', two: 'Management', tag: 'University of Swat' },
+  { key: 'bs-disaster-preparedness-and-climate-change', icon: 'shield', pre: 'Climate Change and Disaster Management', one: 'BS', two: 'Disaster Preparedness', tag: 'University of Swat' },
 ]
 
 const circuit = (flip) => {
