@@ -20,6 +20,8 @@ import {
   getAdmissions,
   getFooter,
   getHero,
+  getNav,
+  getNavBar,
   getTopBar,
   getHomeColours,
   getLeadership,
@@ -271,5 +273,33 @@ describe('home page reads the home-content global', () => {
     })
     expect((await getTopBar()).place).toBe('Swat, Khyber Pakhtunkhwa, Pakistan')
     expect((await getFooter()).addressSample).toBe(true)
+  })
+  it('hands the pages the published menu, in its order and with its colours, never the draft', async () => {
+    await publish({
+      ...content('Nv'),
+      navigation: {
+        barColour: '#112233',
+        applyLabel: 'Join us',
+        items: [
+          { label: 'Research', href: '/research', children: [{ label: 'ORIC', href: '/administration/oric-2', icon: 'flask' }] },
+          { label: 'Home', href: '/' },
+          { label: 'Library', href: 'https://lib.test/' },
+        ],
+      },
+    })
+    const bar = await getNavBar()
+    expect(bar.items.map((i) => i.label)).toEqual(['Research', 'Home', 'Library'])
+    expect(bar.items[0]!.children).toEqual([{ label: 'ORIC', href: '/administration/oric-2', icon: 'flask' }])
+    expect(bar.items[2]!.external).toBe(true)
+    expect(bar.apply.label).toBe('Join us')
+    expect(bar.style).toEqual({ '--nav-bg': '#112233' })
+    await saveDraft({ navigation: { items: [{ label: 'Draft only', href: '/x' }] } })
+    expect((await getNav()).map((i) => i.label)).toEqual(['Research', 'Home', 'Library'])
+    await publish({ ...content('Nv2'), navigation: { barColour: null, applyLabel: null, items: [] } })
+    const reset = await getNavBar()
+    expect(reset.items[0]!.label).toBe('Home')
+    expect(reset.items.length).toBeGreaterThan(6)
+    expect(reset.style).toBeUndefined()
+    expect(reset.apply.label).toBe('Apply Here')
   })
 })

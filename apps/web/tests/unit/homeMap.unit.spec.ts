@@ -3,13 +3,17 @@ import { describe, expect, it } from 'vitest'
 import { hero, heroSlides } from '../../src/site/content/hero'
 import { stats } from '../../src/site/content/stats'
 import { admissions } from '../../src/site/content/admissions'
+import { applyLink, nav } from '../../src/site/content/nav'
 import { portals } from '../../src/site/content/portals'
 import { leadership } from '../../src/site/content/leadership'
 import {
   toAdmissions,
   toHeroContent,
   toHeroSlides,
+  navStyle,
   telHref,
+  toApply,
+  toNav,
   toFooter,
   toLeadership,
   toPortals,
@@ -382,5 +386,91 @@ describe('toFooter', () => {
       { label: 'One', href: '/one' },
       { label: 'Two', href: 'https://two.test' },
     ])
+  })
+})
+
+describe('toNav', () => {
+  it('keeps the standard menu when nothing complete is entered', () => {
+    expect(toNav(null, nav)).toEqual(nav)
+    expect(toNav({ navigation: { items: [] } }, nav)).toEqual(nav)
+    expect(toNav({ navigation: { items: [{ label: '', href: '/x' }, { label: 'y', href: 'javascript:alert(1)' }] } }, nav)).toEqual(nav)
+  })
+
+  it('the list in the admin is the whole menu, in its order', () => {
+    const out = toNav(
+      {
+        navigation: {
+          items: [
+            { label: 'Research', href: '/research' },
+            { label: 'Home', href: '/' },
+            { label: 'Library', href: 'https://lib.test/', children: [] },
+          ],
+        },
+      },
+      nav,
+    )
+    expect(out.map((i) => i.label)).toEqual(['Research', 'Home', 'Library'])
+    expect(out[0]!.external).toBeUndefined()
+    expect(out[2]).toEqual({ label: 'Library', href: 'https://lib.test/', external: true })
+  })
+
+  it('builds sub-links from complete safe rows, with an icon, and marks outside addresses external', () => {
+    const [item] = toNav(
+      {
+        navigation: {
+          items: [
+            {
+              label: 'About',
+              href: '/about',
+              hideExplore: true,
+              children: [
+                { label: 'One', href: '/one', icon: 'people' },
+                { label: 'Two', href: 'https://two.test', icon: 'Bad Icon' },
+                { label: 'Bad', href: 'javascript:x', icon: 'cap' },
+                { label: '', href: '/z' },
+              ],
+            },
+          ],
+        },
+      },
+      nav,
+    )
+    expect(item!.noExplore).toBe(true)
+    expect(item!.children).toEqual([
+      { label: 'One', href: '/one', icon: 'people' },
+      { label: 'Two', href: 'https://two.test', icon: 'document', external: true },
+    ])
+  })
+
+  it('an item with no sub-links is a plain link and ignores hideExplore', () => {
+    const [item] = toNav({ navigation: { items: [{ label: 'A', href: '/a', hideExplore: true, children: [] }] } }, nav)
+    expect(item).toEqual({ label: 'A', href: '/a' })
+  })
+})
+
+describe('toApply and navStyle', () => {
+  it('keeps the standard Apply button unless filled, and never takes an unsafe address', () => {
+    expect(toApply(null, applyLink)).toEqual({ label: applyLink.label, href: applyLink.href, external: true })
+    expect(toApply({ navigation: { applyLabel: ' Join us ', applyUrl: '/admissions' } }, applyLink)).toEqual({
+      label: 'Join us',
+      href: '/admissions',
+      external: false,
+    })
+    expect(toApply({ navigation: { applyUrl: 'javascript:alert(1)' } }, applyLink).href).toBe(applyLink.href)
+  })
+
+  it('emits no style when no colour is chosen, and only valid colours otherwise', () => {
+    expect(navStyle(null)).toBeUndefined()
+    expect(navStyle({ navigation: { barColour: '', textColour: 'red', accentColour: '#12' } })).toBeUndefined()
+    expect(navStyle({ navigation: { barColour: '#112233', accentColour: '#AABBCC', textColour: 'x' } })).toEqual({
+      '--nav-bg': '#112233',
+      '--nav-accent': '#aabbcc',
+    })
+    const withText = navStyle({ navigation: { textColour: '#003b17' } })!
+    expect(withText['--nav-text']).toBe('#003b17')
+    expect(withText['--nav-hover']).toBe('color-mix(in srgb, #003b17 14%, #fff)')
+    expect(navStyle({ navigation: { barColour: '#003b17', textColour: '#ffffff' } })!['--nav-hover']).toBe(
+      'color-mix(in srgb, #ffffff 14%, #003b17)',
+    )
   })
 })

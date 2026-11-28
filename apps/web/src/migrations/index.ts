@@ -22,6 +22,7 @@ import * as migration_20261128_053758_home_leadership_photo from './20261128_053
 import * as migration_20261128_061635_home_hero_text from './20261128_061635_home_hero_text';
 import * as migration_20261128_100553_home_footer_topbar from './20261128_100553_home_footer_topbar';
 import * as migration_20261128_101050_people_profile_fields from './20261128_101050_people_profile_fields';
+import * as migration_20261128_113232_home_navigation from './20261128_113232_home_navigation';
 
 export const migrations = [
   {
@@ -137,11 +138,16 @@ export const migrations = [
   {
     up: migration_20261128_100553_home_footer_topbar.up,
     down: migration_20261128_100553_home_footer_topbar.down,
-    name: '20261128_100553_home_footer_topbar'
+    name: '20261128_100553_home_footer_topbar',
   },
   {
     up: migration_20261128_101050_people_profile_fields.up,
     down: migration_20261128_101050_people_profile_fields.down,
-    name: '20261128_101050_people_profile_fields'
+    name: '20261128_101050_people_profile_fields',
+  },
+  {
+    up: migration_20261128_113232_home_navigation.up,
+    down: migration_20261128_113232_home_navigation.down,
+    name: '20261128_113232_home_navigation'
   },
 ];

@@ -4,22 +4,22 @@
 .item { position: static; }
 .link {
   position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 4px 9px;
-  border: 0; border-radius: 999px; background: transparent; color: var(--forest);
+  border: 0; border-radius: 999px; background: transparent; color: var(--nav-text, var(--forest));
   font: inherit; font-family: var(--stack-nav); font-weight: 500; font-size: 0.95rem; letter-spacing: -0.005em; text-decoration: none; cursor: pointer; white-space: nowrap;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
-.link:hover, .link[aria-expanded='true'] { background: #e8efe1; }
+.link:hover, .link[aria-expanded='true'] { background: var(--nav-hover, #e8efe1); }
 /* Current page: forest text with a maroon bar under it (as on "Home" in the reference). */
 .active, .active:hover { font-weight: 600; background: transparent; }
 .active::after {
-  content: ''; position: absolute; inset-inline: 9px; bottom: 0; height: 3px; border-radius: 3px; background: var(--maroon);
+  content: ''; position: absolute; inset-inline: 9px; bottom: 0; height: 3px; border-radius: 3px; background: var(--nav-accent, var(--maroon));
 }
 .caret { font-size: 0.95em; transition: transform 0.2s ease; }
 [aria-expanded='true'] > .caret { transform: rotate(180deg); }
 
 .sub {
   position: absolute; top: calc(100% + 10px); left: var(--sub-x, 0); z-index: 60;
-  width: min(450px, calc(100vw - 32px)); padding: 8px; border-radius: 18px; background: var(--ivory);
+  width: min(450px, calc(100vw - 32px)); padding: 8px; border-radius: 18px; background: var(--nav-bg, var(--ivory));
   border: 1.5px solid #b4d0a9;
   box-shadow: 0 22px 50px -10px color-mix(in srgb, var(--forest-deep) 28%, transparent), 0 4px 12px color-mix(in srgb, var(--forest-deep) 8%, transparent);
   /* Fades in and out instead of snapping; hidden panels are not focusable or announced (visibility). */
@@ -32,7 +32,7 @@
 /* The notch that points up at the link. */
 .sub::after {
   content: ''; position: absolute; top: -9px; left: var(--notch-x, 40px); width: 18px; height: 18px; border-radius: 4px 0 0 0;
-  background: var(--ivory); border-top: 1.5px solid #b4d0a9; border-left: 1.5px solid #b4d0a9;
+  background: var(--nav-bg, var(--ivory)); border-top: 1.5px solid #b4d0a9; border-left: 1.5px solid #b4d0a9;
   transform: rotate(45deg);
 }
 @media (prefers-reduced-motion: reduce) { .sub { transition: none; transform: none; } }
@@ -43,19 +43,19 @@
 .col:first-child { padding-inline-end: 6px; }
 .col a {
   display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 4px 8px; border-radius: 10px;
-  color: var(--forest); text-decoration: none; font-family: var(--stack-nav); font-size: 0.88rem; font-weight: 500; line-height: 1.25;
+  color: var(--nav-text, var(--forest)); text-decoration: none; font-family: var(--stack-nav); font-size: 0.88rem; font-weight: 500; line-height: 1.25;
 }
-.ico { flex: none; display: grid; place-items: center; width: 22px; font-size: 1.25rem; color: var(--forest); }
-.col a:hover, .col a:focus-visible { background: #e8efe1; }
+.ico { flex: none; display: grid; place-items: center; width: 22px; font-size: 1.25rem; color: var(--nav-text, var(--forest)); }
+.col a:hover, .col a:focus-visible { background: var(--nav-hover, #e8efe1); }
 .all {
   display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; margin-top: 6px; padding: 6px 14px;
-  border-radius: 10px; background: #e8efe1; color: var(--forest); text-decoration: none; font-family: var(--stack-nav); font-size: 0.9rem; font-weight: 600;
+  border-radius: 10px; background: var(--nav-hover, #e8efe1); color: var(--nav-text, var(--forest)); text-decoration: none; font-family: var(--stack-nav); font-size: 0.9rem; font-weight: 600;
 }
-.all:hover, .all:focus-visible { background: #dbe6d1; }
+.all:hover, .all:focus-visible { background: var(--nav-hover-strong, #dbe6d1); }
 
 .burger {
-  display: none; place-items: center; width: 48px; height: 48px; border: 2px solid var(--forest); border-radius: 50%;
-  background: transparent; color: var(--forest); font-size: 1.5rem; cursor: pointer;
+  display: none; place-items: center; width: 48px; height: 48px; border: 2px solid var(--nav-text, var(--forest)); border-radius: 50%;
+  background: transparent; color: var(--nav-text, var(--forest)); font-size: 1.5rem; cursor: pointer;
 }
 @media (max-width: 1279px) {
   .nav { display: none; }

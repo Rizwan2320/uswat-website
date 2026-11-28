@@ -38,6 +38,21 @@ export const portalsCountValidate = (value: unknown): true | string => {
     ? `Use ${HOME_PORTALS.min} to ${HOME_PORTALS.max} cards, or remove them all to keep the standard cards.`
     : true
 }
+/** The header menu: 0 items keeps the standard menu, otherwise 3 to 12 (sub-links: up to 12 each). */
+export const NAV_ITEMS = { min: 3, max: 12 } as const
+export const NAV_CHILDREN = { max: 12 } as const
+export const NAV_ICONS = [
+  'cap', 'book', 'building', 'calendar', 'clipboard', 'document', 'download', 'flask', 'gavel', 'heart', 'laptop',
+  'layers', 'megaphone', 'newspaper', 'palette', 'people', 'person', 'badge', 'trending', 'trophy', 'video', 'wallet',
+] as const
+
+export const navCountValidate = (value: unknown): true | string => {
+  const n = Array.isArray(value) ? value.length : 0
+  if (n === 0) return true
+  return n < NAV_ITEMS.min || n > NAV_ITEMS.max
+    ? `Use ${NAV_ITEMS.min} to ${NAV_ITEMS.max} menu items, or remove them all to keep the standard menu.`
+    : true
+}
 /** The icon names `site/content/hero.ts` and `types.ts` already use. */
 export const SLIDE_ICONS = ['cap', 'document', 'book', 'calendar', 'people', 'badge'] as const
 export const STAT_ICONS = ['cap', 'people', 'person', 'trophy'] as const
@@ -53,6 +68,20 @@ export const ICON_LABELS: Record<string, string> = {
   badge: 'Badge',
   trophy: 'Trophy',
   gear: 'Gear',
+  building: 'Building',
+  clipboard: 'Clipboard',
+  download: 'Download',
+  flask: 'Flask',
+  gavel: 'Gavel',
+  heart: 'Heart',
+  laptop: 'Laptop',
+  layers: 'Layers',
+  megaphone: 'Megaphone',
+  newspaper: 'Newspaper',
+  palette: 'Palette',
+  trending: 'Rising chart',
+  video: 'Video',
+  wallet: 'Wallet',
 }
 
 /** Only these may publish; an editor saves drafts (same as Pages). The system (seeds) may too. */

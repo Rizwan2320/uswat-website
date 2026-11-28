@@ -59,6 +59,7 @@ const stat = (over: Record<string, unknown> = {}) => ({
   verifiedAt: '2026-11-08T00:00:00.000Z',
   ...over,
 })
+const nav = (label: string) => ({ label, href: '/about', hideExplore: false, children: [] })
 const card = (over: Record<string, unknown> = {}) => ({
   title: 'Library',
   description: 'Books and journals',
@@ -72,6 +73,14 @@ const complete = () => ({
   colours: { green: null, yellow: null, maroon: null },
   admissions: { session: null, deadline: null, applyUrl: null, closedUrl: null },
   portals: [],
+  navigation: {
+    barColour: null,
+    textColour: null,
+    accentColour: null,
+    applyLabel: null,
+    applyUrl: null,
+    items: [],
+  },
   topBar: { place: null, established: null, studentUrl: null, facultyUrl: null },
   footer: {
     tagline: null,
@@ -181,6 +190,27 @@ describe('what must be true to publish', () => {
       }),
     ],
     ['a footer social link that is not a page or https', () => ({ ...complete(), footer: { youtube: 'ftp://x.test/a' } })],
+    [
+      'a menu item with a javascript address',
+      () => ({
+        ...complete(),
+        navigation: { items: [nav('A'), nav('B'), { ...nav('C'), href: 'javascript:alert(1)' }] },
+      }),
+    ],
+    [
+      'a menu sub-link that is not a page or https',
+      () => ({
+        ...complete(),
+        navigation: { items: [nav('A'), nav('B'), { ...nav('C'), children: [{ label: 'x', href: 'ftp://x.test', icon: 'cap' }] }] },
+      }),
+    ],
+    ['two menu items', () => ({ ...complete(), navigation: { items: [nav('A'), nav('B')] } })],
+    [
+      'thirteen menu items',
+      () => ({ ...complete(), navigation: { items: Array.from({ length: 13 }, (_, i) => nav(`N${i}`)) } }),
+    ],
+    ['a menu colour that is not a colour code', () => ({ ...complete(), navigation: { barColour: 'white' } })],
+    ['an apply button that is not a page or https', () => ({ ...complete(), navigation: { applyUrl: 'ftp://x.test' } })],
     ['a footer telephone with letters', () => ({ ...complete(), footer: { phone: 'call me' } })],
     ['a top bar link of data:', () => ({ ...complete(), topBar: { studentUrl: 'data:text/html,x' } })],
     [
