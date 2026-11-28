@@ -72,6 +72,7 @@ const complete = () => ({
   colours: { green: null, yellow: null, maroon: null },
   admissions: { session: null, deadline: null, applyUrl: null, closedUrl: null },
   portals: [],
+  leadership: { name: null, role: null, quote: null, paragraphs: [], closing: null },
   slides: [slide(m1), slide(m2), slide(m3)],
   stats: [stat(), stat({ label: 'Students', value: 9000 }), stat({ label: 'Faculty', value: 150 })],
 })

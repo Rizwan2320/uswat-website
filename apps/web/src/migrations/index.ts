@@ -17,6 +17,7 @@ import * as migration_20261122_080522_p3ae_programme_page_content from './202611
 import * as migration_20261122_094108_p3ah_coordinator_programmes from './20261122_094108_p3ah_coordinator_programmes';
 import * as migration_20261127_021657_home_colours from './20261127_021657_home_colours';
 import * as migration_20261127_065030_home_admissions_portals from './20261127_065030_home_admissions_portals';
+import * as migration_20261127_130022_home_leadership from './20261127_130022_home_leadership';
 
 export const migrations = [
   {
@@ -112,6 +113,11 @@ export const migrations = [
   {
     up: migration_20261127_065030_home_admissions_portals.up,
     down: migration_20261127_065030_home_admissions_portals.down,
-    name: '20261127_065030_home_admissions_portals'
+    name: '20261127_065030_home_admissions_portals',
+  },
+  {
+    up: migration_20261127_130022_home_leadership.up,
+    down: migration_20261127_130022_home_leadership.down,
+    name: '20261127_130022_home_leadership'
   },
 ];

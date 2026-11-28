@@ -94,7 +94,7 @@ export const HomeContent: GlobalConfig = {
     group: 'Content',
     hidden: hiddenFromContributors,
     description:
-      'The home page: photographs, statistics, admissions bar, portal cards and colours. The headline and the sentence under it do not change here.',
+      'The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message and colours. The headline and the sentence under it do not change here.',
   },
   access: { read: readHome },
   versions: { max: 25, drafts: true },
@@ -264,6 +264,62 @@ export const HomeContent: GlobalConfig = {
           type: 'select',
           required: true,
           options: iconOptions(PORTAL_ICONS),
+        },
+      ],
+    },
+    {
+      name: 'leadership',
+      label: 'Vice Chancellor’s message',
+      type: 'group',
+      admin: {
+        description:
+          'The Vice Chancellor’s section on the home page and the full message in the window that opens from "Read Full Message". Leave a field empty to keep the standard text. The photograph stays as it is for now.',
+      },
+      fields: [
+        {
+          name: 'name',
+          label: 'Name',
+          type: 'text',
+          maxLength: 80,
+          admin: { description: 'For example: Prof. Dr. Husnul Amin.' },
+        },
+        {
+          name: 'role',
+          label: 'Job title',
+          type: 'text',
+          maxLength: 120,
+          admin: { description: 'For example: Vice Chancellor, University of Swat.' },
+        },
+        {
+          name: 'quote',
+          label: 'Opening shown on the page',
+          type: 'textarea',
+          maxLength: 700,
+          admin: {
+            description: 'The short passage in quotation marks next to the photograph. Usually the first lines of the message.',
+          },
+        },
+        {
+          name: 'paragraphs',
+          label: 'Full message',
+          type: 'array',
+          labels: { singular: 'Paragraph', plural: 'Paragraphs' },
+          maxRows: 40,
+          admin: {
+            initCollapsed: true,
+            description:
+              'The full message, one paragraph per row, in order. Leave it empty to keep the standard full message.',
+          },
+          fields: [
+            { name: 'text', label: 'Paragraph', type: 'textarea', required: true, maxLength: 4000 },
+          ],
+        },
+        {
+          name: 'closing',
+          label: 'Closing words',
+          type: 'text',
+          maxLength: 60,
+          admin: { description: 'Shown above the name at the end. For example: With best regards,' },
         },
       ],
     },

@@ -24,6 +24,13 @@ type CtaDoc = {
 }
 
 export type HomeDoc = {
+  leadership?: {
+    name?: string | null
+    role?: string | null
+    quote?: string | null
+    paragraphs?: { text?: string | null }[] | null
+    closing?: string | null
+  } | null
   admissions?: {
     session?: string | null
     deadline?: string | null
@@ -176,4 +183,36 @@ export function toPortals(doc: HomeDoc | null | undefined, fallback: Portal[]): 
     }
   }
   return out.length >= MIN_PORTALS ? out : fallback
+}
+
+/**
+ * The Vice Chancellor's message. Each field the editor filled replaces the sourced value; an empty one keeps it.
+ * The full message is the filled paragraphs in order; with none, the sourced full message stays. Paragraphs the
+ * editor wrote count as the complete message (the "read the rest on the university website" line is only for
+ * a message that was cut short).
+ */
+export function toLeadership<T extends LeadershipShape>(doc: HomeDoc | null | undefined, fallback: T): T {
+  const l = doc?.leadership
+  if (!l) return fallback
+  const paragraphs = (l.paragraphs ?? [])
+    .map((p) => (typeof p.text === 'string' ? p.text.trim() : ''))
+    .filter((t) => t !== '')
+  return {
+    ...fallback,
+    name: filled(l.name) ? l.name.trim() : fallback.name,
+    role: filled(l.role) ? l.role.trim() : fallback.role,
+    quote: filled(l.quote) ? l.quote.trim() : fallback.quote,
+    fullMessage: paragraphs.length > 0 ? paragraphs : fallback.fullMessage,
+    fullMessageComplete: paragraphs.length > 0 ? true : fallback.fullMessageComplete,
+    closing: filled(l.closing) ? l.closing.trim() : fallback.closing,
+  }
+}
+
+type LeadershipShape = {
+  name: string
+  role: string
+  quote: string
+  fullMessage: string[]
+  fullMessageComplete: boolean
+  closing: string
 }

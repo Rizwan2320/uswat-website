@@ -294,6 +294,11 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
   'The photographs at the top of the home page, in this order. Each photograph shows with its two buttons. 3 to 8 slides, or none to keep the standard photographs.':
     'ہوم پیج کے اوپر دکھائی جانے والی تصاویر، اسی ترتیب سے۔ ہر تصویر کے ساتھ اس کے دو بٹن نظر آتے ہیں۔ 3 سے 8 سلائیڈز، یا کوئی نہیں تاکہ معیاری تصاویر برقرار رہیں۔',
   'Admissions banner': 'داخلہ بینر',
+  'Vice Chancellor’s message': 'وائس چانسلر کا پیغام',
+  'Job title': 'عہدہ',
+  'Opening shown on the page': 'صفحے پر دکھایا جانے والا ابتدائی حصہ',
+  'Full message': 'مکمل پیغام',
+  'Closing words': 'اختتامی کلمات',
   'The green bar under the statistics. It shows "Admissions Open" until the last date has passed, then "Closed" with the message below. Leave a field empty to keep the standard text.':
     'اعداد و شمار کے نیچے سبز پٹی۔ آخری تاریخ گزرنے تک "داخلے جاری ہیں" دکھاتی ہے، پھر نیچے دیے گئے پیغام کے ساتھ "بند"۔ معیاری متن رکھنے کے لیے خانہ خالی چھوڑ دیں۔',
   Intake: 'داخلہ سیشن',
@@ -329,6 +334,16 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
     'سنہری پیلا: بٹن، نمایاں حصے اور سبز پر نمایاں الفاظ۔',
   'The crest maroon: the Apply button, dates and small accents. Use a dark colour.':
     'نشان کا عنابی رنگ: درخواست کا بٹن، تاریخیں اور چھوٹے نمایاں حصے۔ گہرا رنگ استعمال کریں۔',
+  'The Vice Chancellor’s section on the home page and the full message in the window that opens from "Read Full Message". Leave a field empty to keep the standard text. The photograph stays as it is for now.':
+    'ہوم پیج پر وائس چانسلر کا حصہ اور "مکمل پیغام پڑھیں" سے کھلنے والی کھڑکی میں پورا پیغام۔ معیاری متن رکھنے کے لیے خانہ خالی چھوڑ دیں۔ تصویر فی الحال جیسی ہے ویسی رہتی ہے۔',
+  'For example: Prof. Dr. Husnul Amin.': 'مثال: پروفیسر ڈاکٹر حسنُ الامین۔',
+  'For example: Vice Chancellor, University of Swat.': 'مثال: وائس چانسلر، یونیورسٹی آف سوات۔',
+  'The short passage in quotation marks next to the photograph. Usually the first lines of the message.':
+    'تصویر کے ساتھ واوین میں مختصر اقتباس۔ عموماً پیغام کی ابتدائی سطریں۔',
+  'The full message, one paragraph per row, in order. Leave it empty to keep the standard full message.':
+    'پورا پیغام، ہر سطر میں ایک پیراگراف، ترتیب سے۔ معیاری پیغام رکھنے کے لیے خالی چھوڑ دیں۔',
+  'Shown above the name at the end. For example: With best regards,':
+    'آخر میں نام کے اوپر دکھایا جاتا ہے۔ مثال: نیک تمناؤں کے ساتھ،',
   'This is a sample figure': 'یہ ایک نمونہ عدد ہے',
   Trophy: 'ٹرافی',
   'Where the figure comes from': 'عدد کہاں سے لیا گیا',
