@@ -142,7 +142,7 @@ export const COPY = {
   profile: {
     title: 'Your profile',
     sampleBadge: 'Sample',
-    sampleNote: 'This profile is sample data for demonstration. Nothing you save here is public or sent to anyone.',
+    sampleNote: 'This profile is sample data for demonstration. Once approved, your biography, CV link and the works you mark Public can appear on your page on the university website.',
     intro: 'Change the details you are allowed to change. Nothing becomes public until your department editor approves it.',
     statusNone: 'You have not saved anything yet.',
     statusDraft: 'Saved as a draft. It has not been sent for review.',
@@ -302,7 +302,7 @@ export const COPY = {
 
     featuredCount: (n: number, max: number) => `${n} of ${max} featured`,
     featureHelp: 'Featured works are shown first on your list and in your exports.',
-    publicNote: 'Public works can appear on your public page. Nothing is published from the portal yet, so for now this only records your choice.',
+    publicNote: 'Public works can appear on your public page. They are sent when you press “Update my public page”, and again when your profile is approved.',
     feature: 'Feature',
     unfeature: 'Featured',
     featureFor: (t: string) => `Feature: ${t}`,

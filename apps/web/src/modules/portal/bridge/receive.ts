@@ -8,9 +8,13 @@ import type { Payload } from 'payload'
 
 import type { BridgeMessage } from './contract'
 
-export type ApplyResult = { ok: true; slug: string; changed: boolean } | { ok: false; reason: 'no-record' | 'refused' }
+export type ApplyResult = { ok: true; slug: string; changed: boolean; urduSkipped: boolean } | { ok: false; reason: 'no-record' | 'refused' }
 
 type Doc = Record<string, unknown> & { id: number | string }
+
+/** Fields the portal never writes: their live values travel unchanged with every write (see the note in applyPortalMessage). */
+const KEEP = ['name', 'designation', 'department', 'office', 'email', 'photo', 'facultyStatus'] as const
+const LOCALIZED_KEEP: readonly string[] = ['name', 'designation']
 
 export async function applyPortalMessage(payload: Payload, msg: BridgeMessage): Promise<ApplyResult> {
   const found = await payload.find({
@@ -41,9 +45,9 @@ export async function applyPortalMessage(payload: Payload, msg: BridgeMessage): 
   const currentPubs = (Array.isArray(doc.publications) ? doc.publications : []).map((p) => ({ title: (p as { title?: string }).title ?? '', url: (p as { url?: string }).url ?? '' }))
   const wantPubs = msg.publications.map((p) => ({ title: p.title, url: p.url }))
   const data: Record<string, unknown> = {}
+  let ur: string | null = null
   if (!same(currentPubs, wantPubs)) data.publications = msg.publications.map((p) => (p.url ? { title: p.title, url: p.url } : { title: p.title }))
 
-  let ur: string | null = null
   if (msg.edit) {
     const current = (await payload.findByID({ collection: 'people', id: doc.id, locale: 'all', depth: 0, draft: false, overrideAccess: true })) as unknown as Doc
     const details = (current.details ?? {}) as { en?: string; ur?: string }
@@ -54,11 +58,31 @@ export async function applyPortalMessage(payload: Payload, msg: BridgeMessage): 
     if (vis.email !== msg.edit.visibility.email || vis.photo !== msg.edit.visibility.photo) data.visibility = { email: msg.edit.visibility.email, photo: msg.edit.visibility.photo }
   }
 
+  // Payload applies an update on top of the latest saved version, not on top of the live row. If the live row was ever changed
+  // outside Payload (a SQL data fill on a preview database), a plain update would quietly put the older values back. Sending the
+  // live values of the fields the portal does not own makes each write a no-op for them whatever the history. The two language
+  // fields (name, designation) are carried only in the language they were read in.
+  const keep = (locale: 'en' | 'ur') => {
+    const out: Record<string, unknown> = {}
+    for (const f of KEEP) if (doc[f] !== undefined && doc[f] !== null && (locale === 'en' || !LOCALIZED_KEEP.includes(f))) out[f] = doc[f]
+    return out
+  }
+  const hasEnglish = Object.keys(data).length > 0
   try {
-    if (Object.keys(data).length) await write('en', data)
-    if (ur !== null) await write('ur', { details: ur })
+    if (hasEnglish) await write('en', { ...keep('en'), ...data })
   } catch {
     return { ok: false, reason: 'refused' }
   }
-  return { ok: true, slug: msg.subject, changed: Object.keys(data).length > 0 || ur !== null }
+  // A save in Urdu needs the person's Urdu name (the People field is required in every language it is saved in). Without one the
+  // Urdu text is left out and the rest still goes through; the Registrar's office adds the Urdu name.
+  let urduSkipped = false
+  if (ur !== null) {
+    try {
+      await write('ur', { ...keep('ur'), details: ur })
+    } catch {
+      urduSkipped = true
+      ur = null
+    }
+  }
+  return { ok: true, slug: msg.subject, changed: hasEnglish || ur !== null, urduSkipped }
 }
