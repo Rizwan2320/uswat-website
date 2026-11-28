@@ -161,13 +161,15 @@ export function HeroBanner({
   hero,
   crumbs,
   lead,
+  facts,
   actions,
   stats,
   campus,
 }: {
-  hero: NonNullable<DepartmentProfile['heroBanner']>
+  hero: Omit<NonNullable<DepartmentProfile['heroBanner']>, 'main'> & { main?: string }
   crumbs: Crumb[]
   lead: string
+  facts?: [string, string][]
   actions: { label: string; href: string; ghost?: boolean }[]
   stats: { value: string | number; label: string; icon: IconName }[]
   campus?: Art
@@ -181,11 +183,21 @@ export function HeroBanner({
         <div className={`container ${styles.hbInner}`}>
           <div className={styles.hbText}>
             <h1 className={styles.hbTitle}>
-              <span className={styles.hbPre}>{hero.pre}</span> <span className={styles.hbMain}>{hero.main}</span>{' '}
+              <span className={styles.hbPre}>{hero.pre}</span>{' '}
+              {hero.main ? <span className={styles.hbMain}>{hero.main} </span> : null}
               <span className={styles.hbAccent}>{hero.accent}</span>
             </h1>
             <p className={styles.hbLine}>{hero.line}</p>
             <p className={styles.hbLead}>{lead}</p>
+            {facts?.length ? (
+              <ul className={styles.hbFacts}>
+                {facts.map(([k, v]) => (
+                  <li key={k}>
+                    <span>{k}</span> {v}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
             <div className={styles.actions}>
               {actions.map((a) => (
                 <SiteLink key={a.label} href={a.href} className={a.ghost ? styles.btnGhost : styles.btn}>

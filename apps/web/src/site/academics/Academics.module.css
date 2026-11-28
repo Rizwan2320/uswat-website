@@ -245,6 +245,25 @@
   line-height: 1.5;
   color: rgb(252 250 244 / 0.92);
 }
+.hbFacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hbFacts li {
+  padding: 4px 12px;
+  border: 1px solid rgb(252 250 244 / 0.4);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.hbFacts li span {
+  font-weight: 500;
+  color: var(--gold);
+}
 /* the statistics card: darker than the hero, half over it and half over the page */
 .hbStrip {
   position: relative;

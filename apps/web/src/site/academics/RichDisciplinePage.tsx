@@ -22,6 +22,7 @@ import {
   DraftNote,
   FaqList,
   Hero,
+  HeroBanner,
   IconCards,
   IconRows,
   Photo,
@@ -80,7 +81,21 @@ export default function RichDisciplinePage({
     ...(profile.centre ? ([['Centre', profile.centre]] as [string, string][]) : []),
     ...(campus && str(campus.name) ? ([['Campus', str(campus.name)!]] as [string, string][]) : []),
   ]
+  const crumbs = [
+      { label: 'Home', href: '/' },
+      { label: 'Academics', href: '/academics' },
+      ...(deptHref
+        ? [{ label: (dept && str(dept.name)) || department?.shortName || 'Department', href: deptHref }]
+        : dept && str(dept.slug)
+          ? [{ label: str(dept.name) ?? 'Department', href: departmentHref(str(dept.slug)!) }]
+          : [{ label: 'Departments', href: DEPARTMENTS_PATH }]),
+      { label: profile.shortName },
+    
+  ]
+  const newsFirst = Boolean(department?.newsFirst)
+  const newsItem = { id: 'news', label: 'News and notices' }
   const nav = [
+    ...(newsFirst ? [newsItem] : []),
     { id: 'overview', label: 'Overview' },
     { id: 'why', label: 'Why study it' },
     { id: 'outcomes', label: 'What you learn' },
@@ -90,44 +105,75 @@ export default function RichDisciplinePage({
     ...(alumni.length ? [{ id: 'alumni', label: 'Alumni' }] : []),
     { id: 'admission', label: 'Admission' },
     { id: 'faq', label: 'Questions' },
-    { id: 'news', label: 'News and notices' },
+    ...(newsFirst ? [] : [newsItem]),
   ]
+  const newsBand = (
+        <Band
+          id="news"
+          tint
+          kicker="From the department"
+          title="News, events and notices"
+          lede="Announcements from the department that runs this programme."
+        >
+          <DeptFeed feed={feed} />
+        </Band>
+  )
   return (
     <div className={styles.root}>
-      <BannerHeader
-        banner={profile.banner}
-        crumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Academics', href: '/academics' },
-          ...(deptHref
-            ? [{ label: (dept && str(dept.name)) || department?.shortName || 'Department', href: deptHref }]
-            : dept && str(dept.slug)
-              ? [{ label: str(dept.name) ?? 'Department', href: departmentHref(str(dept.slug)!) }]
-              : [{ label: 'Departments', href: DEPARTMENTS_PATH }]),
-          { label: profile.shortName },
-        ]}
-        hideCrumbs
-        photos={department?.heroPhotos}
-      />
-      <Hero
-        art={profile.hero}
-        badge={profile.badge ?? `BS ${profile.shortName}`}
-        lead={profile.summary}
-        facts={facts}
-        actions={[
-          { label: 'See the curriculum', href: '#curriculum' },
-          { label: 'How to apply', href: '#admission', ghost: true },
-        ]}
-      />
-      <Stats
-        items={[
-          { value: profile.years.length, label: 'years' },
-          { value: profile.years.length * 2, label: 'semesters' },
-          { value: courseCount, label: 'courses in the plan' },
-          { value: profile.tracks.length, label: 'elective tracks' },
-        ]}
-      />
+      {department?.heroBanner ? (
+        <HeroBanner
+          hero={{
+            photo: department.heroBanner.photo,
+            pre: (profile.level ?? 'BS') === 'BS' ? 'Bachelor of Science in' : (profile.level ?? ''),
+            accent: (profile.name ?? name).replace(/^BS\s+/, ''),
+            line: department.heroBanner.line,
+          }}
+          crumbs={crumbs}
+          lead={profile.summary}
+          facts={facts}
+          actions={[
+            { label: 'See the curriculum', href: '#curriculum' },
+            { label: 'How to apply', href: '#admission', ghost: true },
+          ]}
+          stats={[
+            { value: profile.years.length, label: 'years', icon: 'cap' },
+            { value: profile.years.length * 2, label: 'semesters', icon: 'book' },
+            { value: courseCount, label: 'courses in the plan', icon: 'layers' },
+            { value: profile.tracks.length, label: 'elective tracks', icon: 'spark' },
+          ]}
+          campus={department.campusPhoto}
+        />
+      ) : (
+        <>
+        <BannerHeader
+          banner={profile.banner}
+          crumbs={crumbs}
+          hideCrumbs
+          photos={department?.heroPhotos}
+        />
+        <Hero
+          art={profile.hero}
+          badge={profile.badge ?? `BS ${profile.shortName}`}
+          lead={profile.summary}
+          facts={facts}
+          actions={[
+            { label: 'See the curriculum', href: '#curriculum' },
+            { label: 'How to apply', href: '#admission', ghost: true },
+          ]}
+        />
+        <Stats
+          items={[
+            { value: profile.years.length, label: 'years' },
+            { value: profile.years.length * 2, label: 'semesters' },
+            { value: courseCount, label: 'courses in the plan' },
+            { value: profile.tracks.length, label: 'elective tracks' },
+          ]}
+        />
+        </>
+      )}
       <SectionNav items={nav} />
+
+      {newsFirst ? newsBand : null}
 
       <Band id="overview" kicker="About the programme" title={`About ${name}`}>
         <div className={styles.split}>
@@ -207,15 +253,7 @@ export default function RichDisciplinePage({
         <FaqList items={profile.faq} />
       </Band>
 
-      <Band
-        id="news"
-        tint
-        kicker="From the department"
-        title="News, events and notices"
-        lede="Announcements from the department that runs this programme."
-      >
-        <DeptFeed feed={feed} />
-      </Band>
+      {newsFirst ? null : newsBand}
 
       <div className="container">
         <Cta
