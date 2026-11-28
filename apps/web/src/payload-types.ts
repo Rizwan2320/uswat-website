@@ -1396,10 +1396,30 @@ export interface Person {
   email?: string | null;
   photo?: (number | null) | Media;
   cvLink?: string | null;
+  /**
+   * Short keywords, one per row. Written by the person in the faculty portal.
+   */
+  researchInterests?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  officeLocation?: string | null;
+  officeHours?: string | null;
+  /**
+   * Like 0000-0002-1825-0097. The faculty portal checks the last character.
+   */
+  orcid?: string | null;
+  scholarUrl?: string | null;
   publications?:
     | {
         title: string;
         url?: string | null;
+        year?: number | null;
+        venue?: string | null;
+        workType?: ('article' | 'conference' | 'chapter' | 'book' | 'thesis' | 'report' | 'patent' | 'other') | null;
+        featured?: boolean | null;
         id?: string | null;
       }[]
     | null;
@@ -4337,11 +4357,25 @@ export interface PeopleSelect<T extends boolean = true> {
   email?: T;
   photo?: T;
   cvLink?: T;
+  researchInterests?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  officeLocation?: T;
+  officeHours?: T;
+  orcid?: T;
+  scholarUrl?: T;
   publications?:
     | T
     | {
         title?: T;
         url?: T;
+        year?: T;
+        venue?: T;
+        workType?: T;
+        featured?: T;
         id?: T;
       };
   facultyStatus?: T;

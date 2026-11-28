@@ -30,9 +30,22 @@ export type PersonProfile = PersonCard & {
   email: string | null
   emailHref: string | null
   cvHref: string | null
-  publications: { key: string; title: string; href: string | null }[]
+  publications: { key: string; title: string; href: string | null; meta: string | null; featured: boolean }[]
   office: string | null
+  /** Written by the person in the faculty portal (bridge stage 2). Plain text; links only when the address is safe. */
+  interests: string[]
+  officeNote: string | null
+  officeHours: string | null
+  orcid: string | null
+  orcidHref: string | null
+  scholarHref: string | null
 }
+
+const WORK_KIND: Record<string, string> = {
+  article: 'Journal article', conference: 'Conference paper', chapter: 'Book chapter', book: 'Book',
+  thesis: 'Thesis supervised', patent: 'Patent', report: 'Report', other: 'Other',
+}
+const ORCID_SHAPE = /^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/
 
 const STATUSES = ['current', 'former', 'emeritus'] as const
 
@@ -80,8 +93,18 @@ export function toPersonProfile(doc: Doc): PersonProfile | null {
     cvHref: safeHref(str(doc.cvLink) ?? undefined),
     publications: pubs.flatMap((p, i) => {
       const title = str(p?.title)
-      return title ? [{ key: String(p.id ?? i), title, href: safeHref(str(p.url) ?? undefined) }] : []
+      if (!title) return []
+      const year = typeof p.year === 'number' && Number.isInteger(p.year) ? String(p.year) : null
+      const kind = typeof p.workType === 'string' ? WORK_KIND[p.workType] ?? null : null
+      const meta = [str(p.venue), year, kind].filter(Boolean).join(' · ') || null
+      return [{ key: String(p.id ?? i), title, href: safeHref(str(p.url) ?? undefined), meta, featured: p.featured === true }]
     }),
     office: str(rel(doc.office)?.name),
+    interests: (Array.isArray(doc.researchInterests) ? (doc.researchInterests as Doc[]) : []).flatMap((r) => (str(r?.text) ? [str(r.text) as string] : [])),
+    officeNote: str(doc.officeLocation),
+    officeHours: str(doc.officeHours),
+    orcid: ORCID_SHAPE.test(str(doc.orcid) ?? '') ? (str(doc.orcid) as string) : null,
+    orcidHref: ORCID_SHAPE.test(str(doc.orcid) ?? '') ? `https://orcid.org/${str(doc.orcid)}` : null,
+    scholarHref: /^https:\/\/scholar\.google\.[a-z.]+\//i.test(str(doc.scholarUrl) ?? '') ? safeHref(str(doc.scholarUrl) ?? undefined) : null,
   }
 }

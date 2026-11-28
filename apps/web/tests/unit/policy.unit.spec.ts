@@ -763,3 +763,19 @@ describe('LIF-04: types that need an expiry', () => {
     expect(submit({ expireAt: null }, false).ok).toBe(true)
   })
 })
+
+describe('approvedElsewhere (faculty portal bridge, ADR-0029)', () => {
+  const live = record({ status: 'published', verification: 'verified' })
+  const edit = (actor: Actor, approvedElsewhere?: boolean) =>
+    save({ actor, publishing: true, prev: live, next: live, contentChanged: true, approvedElsewhere })
+
+  it('lets the system change live content and keeps Fact-check verified', () => {
+    expect(edit(system, true)).toMatchObject({ ok: true, values: { status: 'published', verification: 'verified' } })
+  })
+  it('still refuses the same system write without the flag', () => {
+    expect(edit(system)).toMatchObject({ ok: false, code: 'EDIT_LIVE_NEEDS_REVIEWER' })
+  })
+  it('ignores the flag for every actor but the system', () => {
+    for (const a of [editorIn, contributor, approverOut, anonymous]) expect(edit(a, true)).toMatchObject({ ok: false })
+  })
+})

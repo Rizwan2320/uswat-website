@@ -107,3 +107,9 @@
 .changeBtn:hover { background: var(--maroon); }
 .changeBtn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 @media (max-width: 560px) { .mode { flex: 1 1 100%; justify-content: center; } }
+
+/* Bridge stage 2: research interests, work details and the featured mark. Plain text only. */
+.interests { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; padding: 0; list-style: none; }
+.interests li { padding: 6px 12px; background: var(--ivory-deep); border-radius: 999px; font-size: 0.95rem; overflow-wrap: anywhere; unicode-bidi: plaintext; }
+.pubMeta { display: block; margin-top: 4px; font-size: 0.88rem; color: rgb(0 59 23 / 0.75); overflow-wrap: anywhere; }
+.featured { margin-inline-start: 8px; padding: 2px 8px; border-radius: 999px; background: var(--gold); color: var(--forest); font-size: 0.75rem; font-weight: 800; white-space: nowrap; }
