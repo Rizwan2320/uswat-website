@@ -346,6 +346,21 @@ export const URDU_WORDS: Readonly<Record<string, string>> = {
     'پورا پیغام، ہر سطر میں ایک پیراگراف، ترتیب سے۔ معیاری پیغام رکھنے کے لیے خالی چھوڑ دیں۔',
   'Shown above the name at the end. For example: With best regards,':
     'آخر میں نام کے اوپر دکھایا جاتا ہے۔ مثال: نیک تمناؤں کے ساتھ،',
+  'Headline text': 'سرخی کا متن',
+  'The words beside the photographs at the top of the home page. Leave a field empty to keep the standard words.':
+    'ہوم پیج کے اوپر تصاویر کے ساتھ دکھائے جانے والے الفاظ۔ معیاری الفاظ رکھنے کے لیے خانہ خالی چھوڑ دیں۔',
+  'Small line above the headline': 'سرخی کے اوپر چھوٹی سطر',
+  'Capital letters work best. For example: UNIVERSITY OF SWAT.': 'بڑے حروف بہتر لگتے ہیں۔ مثال: UNIVERSITY OF SWAT۔',
+  'Headline, first line': 'سرخی، پہلی سطر',
+  'For example: Aspiring for': 'مثال: Aspiring for',
+  'Headline, second line': 'سرخی، دوسری سطر',
+  'For example: Quality Education': 'مثال: Quality Education',
+  'Headline, third line': 'سرخی، تیسری سطر',
+  'The words before the highlighted word. For example: with': 'نمایاں لفظ سے پہلے کے الفاظ۔ مثال: with',
+  'Highlighted word': 'نمایاں لفظ',
+  'Shown in the gold colour at the end of the third line. For example: Relevance':
+    'تیسری سطر کے آخر میں سنہری رنگ میں دکھایا جاتا ہے۔ مثال: Relevance',
+  'Sentence under the headline': 'سرخی کے نیچے جملہ',
   'This is a sample figure': 'یہ ایک نمونہ عدد ہے',
   Trophy: 'ٹرافی',
   'Where the figure comes from': 'عدد کہاں سے لیا گیا',

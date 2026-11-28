@@ -1,4 +1,4 @@
-import type { HeroSlide } from '../content/hero'
+import type { HeroContent, HeroSlide } from '../content/hero'
 import type { admissions as admissionsFile } from '../content/admissions'
 import type { Portal, SiteImage, Stat } from '../content/types'
 import type { HomeColours } from '../../governance/homePalette'
@@ -24,6 +24,14 @@ type CtaDoc = {
 }
 
 export type HomeDoc = {
+  hero?: {
+    eyebrow?: string | null
+    lineOne?: string | null
+    lineTwo?: string | null
+    lineThree?: string | null
+    accent?: string | null
+    sub?: string | null
+  } | null
   leadership?: {
     photo?: number | MediaLike | null
     name?: string | null
@@ -222,4 +230,28 @@ type LeadershipShape = {
   fullMessage: string[]
   fullMessageComplete: boolean
   closing: string
+}
+
+/**
+ * The words beside the slider. Each field the editor filled replaces its part of the sourced headline; an empty
+ * one keeps it. The third line carries the highlighted word, so a headline always has three lines.
+ */
+export function toHeroContent(doc: HomeDoc | null | undefined, fallback: HeroContent): HeroContent {
+  const h = doc?.hero
+  if (!h) return fallback
+  const [one, two, three] = fallback.lines
+  return {
+    eyebrow: filled(h.eyebrow) ? h.eyebrow.trim() : fallback.eyebrow,
+    lines: [
+      filled(h.lineOne) ? { text: h.lineOne.trim() } : one!,
+      filled(h.lineTwo) ? { text: h.lineTwo.trim() } : two!,
+      filled(h.lineThree) || filled(h.accent)
+        ? {
+            text: filled(h.lineThree) ? h.lineThree.trim() : three!.text.trim(),
+            accent: filled(h.accent) ? h.accent.trim() : three!.accent,
+          }
+        : three!,
+    ],
+    sub: filled(h.sub) ? h.sub.trim() : fallback.sub,
+  }
 }

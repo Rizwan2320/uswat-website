@@ -83,8 +83,8 @@ const colour = (
 })
 
 /**
- * The home page's photograph slider and statistics bar, editable in the CMS (slice 3z). The headline
- * and the sentence under it stay fixed (owner decision 2026-11-07). Drafts may be incomplete; the
+ * The home page, editable in the CMS (slice 3z onwards). The headline and the sentence under it were fixed
+ * (owner decision 2026-11-07) until the owner asked for the whole landing page to be editable (2026-11-28). Drafts may be incomplete; the
  * rules in governance/homeContent.ts apply when it is published, by approvers and above.
  */
 export const HomeContent: GlobalConfig = {
@@ -94,7 +94,7 @@ export const HomeContent: GlobalConfig = {
     group: 'Content',
     hidden: hiddenFromContributors,
     description:
-      'The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message and colours. The headline and the sentence under it do not change here.',
+      'The home page: photographs, statistics, admissions bar, portal cards, the Vice Chancellor’s message, the headline text and colours.',
   },
   access: { read: readHome },
   versions: { max: 25, drafts: true },
@@ -330,6 +330,60 @@ export const HomeContent: GlobalConfig = {
           type: 'text',
           maxLength: 60,
           admin: { description: 'Shown above the name at the end. For example: With best regards,' },
+        },
+      ],
+    },
+    {
+      name: 'hero',
+      label: 'Headline text',
+      type: 'group',
+      admin: {
+        description:
+          'The words beside the photographs at the top of the home page. Leave a field empty to keep the standard words.',
+      },
+      fields: [
+        {
+          name: 'eyebrow',
+          label: 'Small line above the headline',
+          type: 'text',
+          maxLength: 40,
+          admin: { description: 'Capital letters work best. For example: UNIVERSITY OF SWAT.' },
+        },
+        {
+          name: 'lineOne',
+          label: 'Headline, first line',
+          type: 'text',
+          maxLength: 40,
+          admin: { description: 'For example: Aspiring for' },
+        },
+        {
+          name: 'lineTwo',
+          label: 'Headline, second line',
+          type: 'text',
+          maxLength: 40,
+          admin: { description: 'For example: Quality Education' },
+        },
+        {
+          name: 'lineThree',
+          label: 'Headline, third line',
+          type: 'text',
+          maxLength: 40,
+          admin: { description: 'The words before the highlighted word. For example: with' },
+        },
+        {
+          name: 'accent',
+          label: 'Highlighted word',
+          type: 'text',
+          maxLength: 30,
+          admin: {
+            description: 'Shown in the gold colour at the end of the third line. For example: Relevance',
+          },
+        },
+        {
+          name: 'sub',
+          label: 'Sentence under the headline',
+          type: 'textarea',
+          maxLength: 220,
         },
       ],
     },

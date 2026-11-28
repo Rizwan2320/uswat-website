@@ -220,4 +220,24 @@ describe('home page reads the home-content global', () => {
     })
     expect((await getLeadership()).name).toBe('Prof. Dr. Husnul Amin')
   })
+  it('hands the home page the published headline text, never the draft', async () => {
+    await publish({
+      ...content('Hd'),
+      hero: { eyebrow: 'TEST EYEBROW', lineTwo: 'Test Second Line', accent: 'Purpose', sub: 'A test sentence.' },
+    })
+    const { content: c } = await getHero()
+    expect(c.eyebrow).toBe('TEST EYEBROW')
+    expect(c.lines.map((l) => l.text.trim())).toEqual(['Aspiring for', 'Test Second Line', 'with'])
+    expect(c.lines[2]!.accent).toBe('Purpose')
+    expect(c.sub).toBe('A test sentence.')
+    await saveDraft({ hero: { eyebrow: 'DRAFT ONLY' } })
+    expect((await getHero()).content.eyebrow).toBe('TEST EYEBROW')
+    await publish({
+      ...content('Hd2'),
+      hero: { eyebrow: null, lineOne: null, lineTwo: null, lineThree: null, accent: null, sub: null },
+    })
+    const reset = (await getHero()).content
+    expect(reset.eyebrow).toBe('UNIVERSITY OF SWAT')
+    expect(reset.lines[2]!.accent).toBe('Relevance')
+  })
 })
