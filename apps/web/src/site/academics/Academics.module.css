@@ -233,6 +233,10 @@
 .hbAccent {
   color: var(--gold);
 }
+.hbLong .hbMain,
+.hbLong .hbAccent {
+  font-size: clamp(1.7rem, 3vw, 2.6rem);
+}
 .hbLine {
   margin: 0;
   font-weight: 700;

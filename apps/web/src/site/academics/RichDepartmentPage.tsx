@@ -9,8 +9,8 @@ import {
 } from '../organisation/shape'
 
 import styles from './Academics.module.css'
+import { DEFAULT_STRIP_PHOTO, departmentHero } from './heroSpec'
 import {
-  BannerHeader,
   Band,
   CoordinatorCards,
   Cta,
@@ -19,7 +19,6 @@ import {
   FaqList,
   HeadCard,
   HeadIntroCard,
-  Hero,
   HeroBanner,
   IconCards,
   IconRows,
@@ -27,7 +26,6 @@ import {
   PictureCard,
   Prose,
   SectionNav,
-  Stats,
   TitledCards,
 } from './blocks'
 import { ContactList, Sources } from '../offices/blocks'
@@ -93,7 +91,7 @@ export default function RichDepartmentPage({
   )
   const newsItem = { id: 'news', label: 'News and notices' }
   const nav = [
-    ...(profile.newsFirst ? [newsItem] : []),
+    newsItem,
     { id: 'overview', label: 'Overview' },
     { id: 'programmes', label: 'Programmes' },
     { id: 'labs', label: 'Laboratories' },
@@ -102,63 +100,30 @@ export default function RichDepartmentPage({
     { id: 'student-life', label: 'Student life' },
     { id: 'people', label: 'Faculty' },
     ...(alumni.length ? [{ id: 'alumni', label: 'Alumni' }] : []),
-    ...(profile.newsFirst ? [] : [newsItem]),
     { id: 'faq', label: 'Questions' },
     ...(ref ? [{ id: 'contact', label: 'Contact' }, { id: 'sources', label: 'Sources' }] : []),
   ]
   return (
     <div className={styles.root}>
-      {profile.heroBanner ? (
-        <HeroBanner
-          hero={profile.heroBanner}
-          crumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Academics', href: '/academics' },
-            { label: 'Departments', href: DEPARTMENTS_PATH },
-            { label: profile.shortName },
-          ]}
-          lead={profile.intro}
-          actions={[
-            { label: 'Explore programmes', href: '#programmes' },
-            { label: 'News and notices', href: '#news', ghost: true },
-          ]}
-          stats={stats.map((st, i) => ({ ...st, icon: (['cap', 'book', 'flask', 'search'] as const)[i % 4] }))}
-          campus={profile.campusPhoto}
-        />
-      ) : (
-        <>
-        <BannerHeader
-          banner={profile.banner}
-          crumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Academics', href: '/academics' },
-            { label: 'Departments', href: DEPARTMENTS_PATH },
-            { label: profile.shortName },
-          ]}
-          hideCrumbs
-          photos={profile.heroPhotos}
-        />
-        <Hero
-          art={profile.hero}
-          photo={profile.campusPhoto}
-          badge={profile.shortName}
-          lead={profile.intro}
-          facts={[
-            ['Programmes', String(programmes.length)],
-            ['Level', profile.levelText ?? 'BS'],
-            ['Duration', profile.durationText ?? '4 years'],
-          ]}
-          actions={[
-            { label: 'Explore programmes', href: '#programmes' },
-            { label: 'News and notices', href: '#news', ghost: true },
-          ]}
-        />
-        <Stats items={stats} />
-        </>
-      )}
+      <HeroBanner
+        hero={departmentHero(profile)}
+        crumbs={[
+          { label: 'Home', href: '/' },
+          { label: 'Academics', href: '/academics' },
+          { label: 'Departments', href: DEPARTMENTS_PATH },
+          { label: profile.shortName },
+        ]}
+        lead={profile.intro}
+        actions={[
+          { label: 'Explore programmes', href: '#programmes' },
+          { label: 'News and notices', href: '#news', ghost: true },
+        ]}
+        stats={stats.map((st, i) => ({ ...st, icon: (['cap', 'book', 'flask', 'search'] as const)[i % 4] }))}
+        campus={profile.campusPhoto ?? DEFAULT_STRIP_PHOTO}
+      />
       <SectionNav items={nav} />
 
-      {profile.newsFirst ? newsBand : null}
+      {newsBand}
 
       <Band id="overview" kicker="About" title={`About ${profile.shortName}`}>
         <div className={styles.split}>
@@ -299,8 +264,6 @@ export default function RichDepartmentPage({
         items={alumni}
         lede="Theses, projects and papers by graduates of the department's programmes. Select a card to read about the work."
       />
-
-      {profile.newsFirst ? null : newsBand}
 
       <Band id="faq" kicker="Good to know" title="Questions">
         <FaqList items={profile.faq} />

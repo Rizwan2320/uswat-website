@@ -13,14 +13,6 @@ export const dcst: DepartmentProfile = {
   intro:
     'Five four-year BS programmes in computing, one shared first year, and laboratory work in every semester.',
   hero: art('dcst', 'hero'),
-  heroPhotos: [
-    photo('dcst-hero-1', 547, 365),
-    photo('dcst-hero-2', 678, 452),
-    photo('dcst-hero-3', 565, 353),
-    photo('dcst-hero-4', 678, 452),
-    photo('dcst-hero-5', 638, 480),
-  ],
-  newsFirst: true,
   // One photograph, no slider (owner, 2026-11-28): the laptop picture from the owner's mock-up, cropped and enlarged, so it is soft until the original is supplied.
   heroBanner: {
     photo: photo('dcst-hero-main', 1408, 960),

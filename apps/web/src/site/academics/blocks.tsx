@@ -19,7 +19,8 @@ import HeroPhotos from './HeroPhotos'
 import { CAMPUS_PHOTOS } from './campusPhotos'
 import styles from './Academics.module.css'
 import type { DepartmentFeed } from './feed'
-import type { Art, DepartmentProfile, Faq, IconName, IconTitled, TeamMember, Titled, Year } from './types'
+import type { HeroSpec } from './heroSpec'
+import type { Art, Faq, IconName, IconTitled, TeamMember, Titled, Year } from './types'
 
 /* Next Link for pages of this site, a plain link for in-page anchors and other sites. */
 export function SiteLink({
@@ -166,7 +167,7 @@ export function HeroBanner({
   stats,
   campus,
 }: {
-  hero: Omit<NonNullable<DepartmentProfile['heroBanner']>, 'main'> & { main?: string }
+  hero: HeroSpec
   crumbs: Crumb[]
   lead: string
   facts?: [string, string][]
@@ -182,8 +183,8 @@ export function HeroBanner({
         </div>
         <div className={`container ${styles.hbInner}`}>
           <div className={styles.hbText}>
-            <h1 className={styles.hbTitle}>
-              <span className={styles.hbPre}>{hero.pre}</span>{' '}
+            <h1 className={`${styles.hbTitle} ${(hero.main?.length ?? 0) + hero.accent.length > 30 ? styles.hbLong : ''}`}>
+              {hero.pre ? <span className={styles.hbPre}>{hero.pre} </span> : null}
               {hero.main ? <span className={styles.hbMain}>{hero.main} </span> : null}
               <span className={styles.hbAccent}>{hero.accent}</span>
             </h1>
