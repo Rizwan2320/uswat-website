@@ -32,7 +32,7 @@ export async function syncPublicPage(deps: BridgeDeps, accountId: string, opts: 
   const src = await deps.store.source(accountId)
   if (!src.recordRef) return { status: 'not-linked' }
   const lists = await deps.publications.list(accountId)
-  const message = buildMessage(src.recordRef, src.edit, lists.claimed, src.approvedAt ?? new Date(0))
+  const message = buildMessage(src.recordRef, src.edit, lists.claimed, src.approvedAt ?? new Date(0), src.departure)
   if (!message) return { status: 'not-linked' }
   const hash = createHash('sha256').update(JSON.stringify(message)).digest('hex')
   const state = await deps.store.state(accountId)

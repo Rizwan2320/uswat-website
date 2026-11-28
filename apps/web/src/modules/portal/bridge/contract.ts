@@ -26,6 +26,8 @@ export type BridgeEdit = {
   orcid?: string
   scholarUrl?: string
 }
+export type BridgeDeparture = 'former' | 'emeritus'
+export const DEPARTURES: readonly BridgeDeparture[] = ['former', 'emeritus']
 export type BridgeMessage = {
   /** The People slug of this person; it is the account's `recordRef`. */
   subject: string
@@ -33,6 +35,8 @@ export type BridgeMessage = {
   /** Null when nothing has been approved yet: the site then leaves the person's text, CV link and visibility as they are. */
   edit: BridgeEdit | null
   publications: BridgeWork[]
+  /** Set only once the Registrar has marked the person as left (FP-22). The site then shows a former or emeritus page without contact details. */
+  departure?: BridgeDeparture
 }
 
 const SUBJECT = /^[A-Za-z0-9_-]{1,64}$/
@@ -58,12 +62,14 @@ export function publicWorks(works: readonly StoredWork[]): BridgeWork[] {
   }))
 }
 
-export function buildMessage(subject: string, edit: ProfileEdit | null, works: readonly StoredWork[], approvedAt: Date): BridgeMessage | null {
+export function buildMessage(subject: string, edit: ProfileEdit | null, works: readonly StoredWork[], approvedAt: Date, departure: BridgeDeparture | null = null): BridgeMessage | null {
   if (!SUBJECT.test(subject)) return null
   return {
     subject,
     approvedAt: approvedAt.toISOString(),
-    edit: edit
+    ...(departure ? { departure } : {}),
+    // A departure carries no profile text: nothing the person wrote is republished after they have left.
+    edit: edit && !departure
       ? {
           bio: { en: edit.bio.en, ur: edit.bio.ur },
           cvLink: edit.cvLink,
@@ -149,5 +155,11 @@ export function parseMessage(raw: unknown): BridgeMessage | null {
     if (venue === null || workType === null || year === undefined || featured === null) return null
     publications.push({ title: title.trim(), url, year, venue: venue.trim(), workType, featured })
   }
-  return { subject, approvedAt, edit: parsedEdit, publications }
+  let departure: BridgeDeparture | undefined
+  if (raw.departure !== undefined && raw.departure !== null) {
+    const d = DEPARTURES.find((x) => x === raw.departure)
+    if (!d) return null
+    departure = d
+  }
+  return { subject, approvedAt, edit: departure ? null : parsedEdit, publications, ...(departure ? { departure } : {}) }
 }

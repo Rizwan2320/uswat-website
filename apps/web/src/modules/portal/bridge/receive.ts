@@ -1,6 +1,6 @@
 /**
  * Applies one verified message from the faculty portal to a People record (ADR-0029). Only the fields below are ever written;
- * name, designation, department, status, email address and photo are never touched. The write runs as the system actor through
+ * name, designation, department and photo are never touched; the status and the contact details change only for a departure (FP-22). The write runs as the system actor through
  * the Local API with `portalApproved`, so the governance hooks, the audit log and Fact-check all apply as they do for any save.
  * A record that does not exist is never created: the answer is "no record".
  */
@@ -52,7 +52,13 @@ export async function applyPortalMessage(payload: Payload, msg: BridgeMessage): 
     data.publications = msg.publications.map((p) => ({ title: p.title, ...(p.url ? { url: p.url } : {}), ...(p.year !== null ? { year: p.year } : {}), venue: p.venue || null, workType: p.workType, featured: p.featured }))
   }
 
-  if (msg.edit) {
+  if (msg.departure) {
+    // The person has left: former or emeritus, and no contact details. Name, biography, photo and works stay; the page stays alive.
+    if (doc.facultyStatus !== msg.departure) data.facultyStatus = msg.departure
+    if (doc.email) data.email = null
+    if (doc.officeLocation) data.officeLocation = null
+    if (doc.officeHours) data.officeHours = null
+  } else if (msg.edit) {
     const current = (await payload.findByID({ collection: 'people', id: doc.id, locale: 'all', depth: 0, draft: false, overrideAccess: true })) as unknown as Doc
     const details = (current.details ?? {}) as { en?: string; ur?: string }
     if ((details.en ?? '') !== msg.edit.bio.en) data.details = msg.edit.bio.en

@@ -1,10 +1,11 @@
 /** What the bridge reads and remembers, in the portal database. The account id always comes from the session. */
 import type pg from 'pg'
 
+import type { BridgeDeparture } from './contract'
 import type { ProfileEdit } from '../profile/types'
 import { pickEditable } from '../profile/sampleStore'
 
-export type BridgeSource = { recordRef: string | null; edit: ProfileEdit | null; approvedAt: Date | null }
+export type BridgeSource = { recordRef: string | null; edit: ProfileEdit | null; approvedAt: Date | null; departure: BridgeDeparture | null }
 export type SyncState = { lastAttemptAt: Date; lastOkAt: Date | null; lastHash: string | null; lastError: string | null } | null
 
 export interface BridgeStore {
@@ -18,7 +19,18 @@ export function createPgBridgeStore(pool: pg.Pool): BridgeStore {
     async source(accountId) {
       const ref = await pool.query<{ recordRef: string | null }>(`select "recordRef" from "account_status" where "userId" = $1`, [accountId])
       const pub = await pool.query<{ edit: Partial<ProfileEdit>; approvedAt: Date }>(`select "edit","approvedAt" from "profile_published" where "userId" = $1`, [accountId])
-      return { recordRef: ref.rows[0]?.recordRef ?? null, edit: pub.rows[0] ? pickEditable(pub.rows[0].edit) : null, approvedAt: pub.rows[0]?.approvedAt ?? null }
+      // The latest departure counts, but only while the account is still marked as left (a reinstated account is not a departure).
+      const dep = await pool.query<{ outcome: BridgeDeparture }>(
+        `select d."outcome" from "account_departure" d join "account_status" s on s."userId" = d."subjectId" and s."status" = 'left'
+          where d."subjectId" = $1 order by d."at" desc, d."id" desc limit 1`,
+        [accountId],
+      )
+      return {
+        recordRef: ref.rows[0]?.recordRef ?? null,
+        edit: pub.rows[0] ? pickEditable(pub.rows[0].edit) : null,
+        approvedAt: pub.rows[0]?.approvedAt ?? null,
+        departure: dep.rows[0]?.outcome ?? null,
+      }
     },
     async state(accountId) {
       const r = await pool.query<NonNullable<SyncState>>(`select "lastAttemptAt","lastOkAt","lastHash","lastError" from "public_sync" where "userId" = $1`, [accountId])

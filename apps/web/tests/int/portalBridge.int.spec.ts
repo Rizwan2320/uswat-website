@@ -149,3 +149,43 @@ describe('portal message applied to a live People record', () => {
     expect(await applyPortalMessage(payload, msg)).toEqual({ ok: false, reason: 'no-record' })
   })
 })
+
+describe('a departure applied to a live People record (FP-22, FP22-d)', () => {
+  it('sets former, clears email and office details, keeps the rest, and the public page then shows no contact details', async () => {
+    const other = uniq('bridge-left')
+    await makeLive(other, true)
+    // Give the person contact details first, through the normal message, so there is something to remove.
+    const pool = (payload.db as unknown as { pool: { query: (q: string, v: unknown[]) => Promise<unknown> } }).pool
+    await pool.query(`update people set email = $1 where slug = $2`, ['someone@example.invalid', other])
+    expect(await applyPortalMessage(payload, buildMessage(other, edit, [work({ id: '1', title: 'Kept work' })], new Date())!)).toMatchObject({ ok: true, changed: true })
+    const before = (await payload.find({ collection: 'people', where: { slug: { equals: other } }, draft: false, limit: 1, locale: 'all', depth: 0, overrideAccess: true })).docs[0] as Record<string, any>
+    expect(before.officeLocation).toBe('Block B, room 4')
+    expect(before.email).toBe('someone@example.invalid')
+
+    const msg = buildMessage(other, edit, [work({ id: '1', title: 'Kept work' })], new Date(), 'former')!
+    expect(msg.edit).toBeNull()
+    expect(await applyPortalMessage(payload, msg)).toMatchObject({ ok: true, changed: true })
+    const d = (await payload.find({ collection: 'people', where: { slug: { equals: other } }, draft: false, limit: 1, locale: 'all', depth: 0, overrideAccess: true })).docs[0] as Record<string, any>
+    expect(d.facultyStatus).toBe('former')
+    expect(d.email ?? null).toBeNull()
+    expect(d.officeLocation ?? null).toBeNull()
+    expect(d.officeHours ?? null).toBeNull()
+    expect(d.name.en).toBe('Bridge Person')
+    expect(d.name.ur).toBe('برج شخص')
+    expect(d.designation.en).toBe('Lecturer')
+    expect(d.details.en).toBe('Bridge English bio')
+    expect(d.publications).toHaveLength(1)
+
+    // The public shape hides contact details even if a record still holds them.
+    const shown = toPersonProfile({ ...d, name: d.name.en, designation: d.designation.en, details: d.details.en, email: 'still@example.invalid', officeLocation: 'Block B', officeHours: 'Mon', facultyStatus: 'emeritus' } as never)!
+    expect(shown.status).toBe('emeritus')
+    expect(shown.email).toBeNull()
+    expect(shown.emailHref).toBeNull()
+    expect(shown.officeNote).toBeNull()
+    expect(shown.officeHours).toBeNull()
+    expect(shown.office).toBeNull()
+
+    // Sending it again changes nothing.
+    expect(await applyPortalMessage(payload, msg)).toMatchObject({ ok: true, changed: false })
+  })
+})

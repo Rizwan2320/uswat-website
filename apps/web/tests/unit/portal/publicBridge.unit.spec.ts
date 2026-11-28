@@ -181,3 +181,27 @@ describe('sync service', () => {
     expect(t.record).toHaveBeenCalledWith('u1', expect.objectContaining({ ok: false, error: 'site not reachable' }))
   })
 })
+
+describe('departure (FP22-c)', () => {
+  const base = () => JSON.parse(JSON.stringify(buildMessage('sample-person-02', edit, [work()], new Date(NOW))))
+  it('a departure round-trips, and carries no profile text', () => {
+    for (const d of ['former', 'emeritus'] as const) {
+      const msg = buildMessage('sample-person-02', edit, [work()], new Date(NOW), d)!
+      expect(msg.departure).toBe(d)
+      expect(msg.edit).toBeNull()
+      expect(parseMessage(JSON.parse(JSON.stringify(msg)))).toMatchObject({ subject: 'sample-person-02', departure: d, edit: null })
+    }
+  })
+  it('refuses any other value, and a message without one is as before', () => {
+    expect(parseMessage({ ...base(), departure: 'retired' })).toBeNull()
+    expect(parseMessage({ ...base(), departure: 7 })).toBeNull()
+    expect(parseMessage({ ...base(), departure: 'current' })).toBeNull()
+    const plain = parseMessage(base())!
+    expect(plain.departure).toBeUndefined()
+    expect(plain.edit).not.toBeNull()
+    expect(parseMessage({ ...base(), departure: null })!.departure).toBeUndefined()
+  })
+  it('a parsed departure drops an edit sent with it', () => {
+    expect(parseMessage({ ...base(), departure: 'former' })!.edit).toBeNull()
+  })
+})
